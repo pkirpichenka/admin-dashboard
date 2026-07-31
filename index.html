@@ -10,6 +10,7 @@
 <title>Стретч-студии · Дашборд</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Golos+Text:wght@400;500;600;700&display=swap');
@@ -222,57 +223,53 @@ const studioName = id => SMAP[id]?SMAP[id].name:(id||'—');
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'Br'; // белорусский рубль (BYN)
 
-/* ---- Хранилище: window.storage внутри Claude, localStorage на вашем сайте ----
-   На GitHub Pages нет window.storage, поэтому используется localStorage
-   (данные только в этом браузере). Этот блок позже заменяется на Supabase. */
-const store = (typeof window!=='undefined' && window.storage) ? window.storage : {
-  async get(key){ const v=localStorage.getItem(key); return v==null?null:{key,value:v}; },
-  async set(key,value){ localStorage.setItem(key,String(value)); return {key,value}; },
-  async delete(key){ localStorage.removeItem(key); return {key,deleted:true}; },
-  async list(prefix){ const keys=[]; for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i); if(!prefix||k.startsWith(prefix))keys.push(k);} return {keys}; }
-};
+/* ================= Подключение к Supabase =================
+   Вставьте два значения из Supabase: Project Settings → API.
+   Больше в этом файле менять ничего не нужно. */
+const SUPABASE_URL      = 'https://llashpaqgeeezacyjppd.supabase.co/rest/v1/';       // напр. https://abcdxyz.supabase.co
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxsYXNocGFxZ2VlZXphY3lqcHBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0ODgyOTksImV4cCI6MjEwMTA2NDI5OX0.mG5cGRIOyTnqcRUJ3OlOIOrxxdCfAByts69KHdj2Ks0';   // длинный публичный ключ "anon"
 
-/* ================= Storage: users ================= */
-const SH = true;
-const UKEY = l => 'user:'+String(l).toLowerCase();
-async function getUser(login){ try{const r=await store.get(UKEY(login),SH);return r?JSON.parse(r.value):null;}catch(e){return null;} }
-async function setUser(u){ await store.set(UKEY(u.login),JSON.stringify(u),SH); }
-async function deleteUser(login){ try{await store.delete(UKEY(login),SH);}catch(e){} }
-async function listUsers(){
-  try{const r=await store.list('user:',SH); if(!r||!r.keys)return[];
-    const out=[]; for(const k of r.keys){ try{const rr=await store.get(k,SH); if(rr)out.push(JSON.parse(rr.value));}catch(e){} }
-    return out;
-  }catch(e){return[];}
+const CONFIGURED = !/ВСТАВЬТЕ/.test(SUPABASE_URL) && !/ВСТАВЬТЕ/.test(SUPABASE_ANON_KEY);
+const sb = (CONFIGURED && window.supabase) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+let TOKEN = null;
+
+async function rpc(fn, args){
+  const {data, error} = await sb.rpc(fn, args || {});
+  if(error) throw error;
+  return data;
+}
+function handleErr(e){
+  const msg = (e && e.message) ? e.message : String(e);
+  if(/forbidden/i.test(msg)){ toast('Сессия истекла — войдите снова', true); doLogout(); return; }
+  toast('Ошибка: ' + msg, true);
+}
+function saveSession(s){
+  TOKEN = s.token;
+  session = {login:s.login, name:s.name, role:s.role, senior:s.senior};
+  try{ sessionStorage.setItem('sess', JSON.stringify(s)); }catch(e){}
+}
+async function doLogout(){
+  try{ if(TOKEN) await rpc('app_logout', {p_token:TOKEN}); }catch(e){}
+  TOKEN = null; session = null; REPORTS = null;
+  try{ sessionStorage.removeItem('sess'); }catch(e){}
+  boot();
 }
 
-/* ================= Storage: reports (per studio) ================= */
-const RKEY = (s,d)=>'report:'+s+':'+d;
-async function getEntry(studio,date){ try{const r=await store.get(RKEY(studio,date),SH);return r?JSON.parse(r.value):null;}catch(e){return null;} }
-async function setEntry(studio,date,data){ await store.set(RKEY(studio,date),JSON.stringify(data),SH); }
-async function listReports(){
-  try{const r=await store.list('report:',SH); if(!r||!r.keys)return[];
-    const out=[];
-    for(const k of r.keys){
-      const p=k.split(':'); let studio,date;
-      if(p.length>=3){studio=p[1];date=p[2];} else {studio='—';date=p[1];}
-      try{const rr=await store.get(k,SH); if(rr){const e=JSON.parse(rr.value); e.studioId=e.studioId||studio; e.date=e.date||date; out.push(e);}}catch(e){}
-    }
-    out.sort((a,b)=> a.date<b.date?1:(a.date>b.date?-1:(a.studioId<b.studioId?-1:1)));
-    return out;
-  }catch(e){return[];}
+/* ---- Отчёты: кэш + доступ, которым пользуется остальной код ---- */
+let REPORTS = null;
+async function loadReports(force){
+  if(REPORTS === null || force){ REPORTS = await rpc('app_list_reports', {p_token:TOKEN}) || []; }
+  return REPORTS;
 }
-
-/* ================= Password hashing ================= */
-function makeSalt(){ return Math.random().toString(36).slice(2)+Date.now().toString(36); }
-async function hashPassword(pw,salt){
-  const data=new TextEncoder().encode(salt+'::'+pw);
-  try{
-    if(window.crypto&&crypto.subtle){
-      const buf=await crypto.subtle.digest('SHA-256',data);
-      return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
-    }
-  }catch(e){}
-  let h=0; const s=salt+'::'+pw; for(let i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i))|0;} return 'w'+(h>>>0).toString(16);
+async function getEntry(studio, date){
+  const all = await loadReports();
+  return all.find(e => e.studioId === studio && e.date === date) || null;
+}
+async function apiSaveReport(studio, date, payload){
+  const r = await rpc('app_save_report', {p_token:TOKEN, p_studio:studio, p_date:date, p_payload:payload});
+  REPORTS = null; // при следующем чтении подгрузим свежие
+  return r;
 }
 
 /* ================= Format helpers ================= */
@@ -310,9 +307,26 @@ const LEAF='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-wi
 /* ================= Boot ================= */
 async function boot(){
   session=null;
-  const users=await listUsers();
-  const owner=users.find(u=>u.role==='owner');
-  if(!owner) renderSetup(); else renderLogin();
+  if(!CONFIGURED){ renderConfigError(); return; }
+  if(!sb){ renderConfigError({message:'Не загрузилась библиотека Supabase — проверьте интернет или блокировщик рекламы.'}); return; }
+  // попытка восстановить сессию после обновления страницы
+  let saved=null; try{ saved=JSON.parse(sessionStorage.getItem('sess')); }catch(e){}
+  if(saved && saved.token){
+    TOKEN=saved.token; session={login:saved.login,name:saved.name,role:saved.role,senior:saved.senior};
+    try{ await loadReports(true); renderApp(); return; }
+    catch(e){ TOKEN=null; session=null; try{sessionStorage.removeItem('sess');}catch(_){} }
+  }
+  let needs;
+  try{ needs=await rpc('app_needs_setup', {}); }
+  catch(e){ renderConfigError(e); return; }
+  if(needs) renderSetup(); else renderLogin();
+}
+function renderConfigError(e){
+  const root=document.getElementById('root');
+  root.innerHTML=`<div class="login-shell"><div class="login fade-in">
+    <div class="mark">${LEAF}</div><h1>Подключите базу данных</h1>
+    <p class="lead">Откройте файл index.html и вставьте два значения из Supabase (Project Settings → API): <b>Project URL</b> и <b>anon public key</b>. Затем сохраните и обновите страницу.${e?'<br><br>Сообщение: '+escapeHtml((e&&e.message)||String(e)):''}</p>
+  </div></div>`;
 }
 
 /* ================= Setup (first run: create owner) ================= */
@@ -333,11 +347,11 @@ function renderSetup(){
     const pass=root.querySelector('#s-pass').value;
     if(!name||!login||!pass){toast('Заполните все поля',true);return;}
     if(pass.length<4){toast('Пароль слишком короткий',true);return;}
-    const salt=makeSalt();
-    const u={login,name,salt,passHash:await hashPassword(pass,salt),role:'owner',active:true,senior:true,createdAt:new Date().toISOString()};
-    await setUser(u);
-    session={login:u.login,name:u.name,role:'owner',senior:true};
-    toast('Аккаунт руководителя создан'); renderApp();
+    try{
+      const res=await rpc('app_bootstrap_owner', {p_login:login, p_name:name, p_password:pass});
+      if(res && res.error==='exists'){ toast('Руководитель уже создан — войдите',true); renderLogin(); return; }
+      saveSession(res); toast('Аккаунт руководителя создан'); renderApp();
+    }catch(e){ handleErr(e); }
   };
 }
 
@@ -356,13 +370,12 @@ function renderLogin(){
     const login=root.querySelector('#l-login').value.trim().toLowerCase();
     const pass=root.querySelector('#l-pass').value;
     if(!login||!pass){toast('Введите логин и пароль',true);return;}
-    const u=await getUser(login);
-    if(!u){toast('Неверный логин или пароль',true);return;}
-    const h=await hashPassword(pass,u.salt);
-    if(h!==u.passHash){toast('Неверный логин или пароль',true);return;}
-    if(!u.active){toast('Доступ отключён. Обратитесь к руководителю.',true);return;}
-    session={login:u.login,name:u.name,role:u.role,senior:!!u.senior};
-    renderApp();
+    try{
+      const res=await rpc('app_login', {p_login:login, p_password:pass});
+      if(!res){ toast('Неверный логин или пароль',true); return; }
+      if(res.error==='disabled'){ toast('Доступ отключён. Обратитесь к руководителю.',true); return; }
+      saveSession(res); renderApp();
+    }catch(e){ handleErr(e); }
   };
   root.querySelector('#l-ok').onclick=go;
   root.querySelector('#l-pass').addEventListener('keydown',e=>{if(e.key==='Enter')go();});
@@ -391,7 +404,7 @@ function renderRoleUI(tabs){
   root.innerHTML=header()+`<div class="wrap">
     ${tabs.length>1?`<div class="tabs">${tabs.map((t,i)=>`<button class="tab${i===0?' on':''}" data-i="${i}">${t.label}</button>`).join('')}</div>`:''}
     <div id="tabbody"></div></div>`;
-  root.querySelector('#logout').onclick=()=>boot();
+  root.querySelector('#logout').onclick=()=>doLogout();
   const body=root.querySelector('#tabbody');
   function show(i){root.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',+b.dataset.i===i));tabs[i].render(body);}
   root.querySelectorAll('.tab').forEach(b=>b.onclick=()=>show(+b.dataset.i));
@@ -575,7 +588,7 @@ function renderForm(container,studio,date,data,onSaved,opts){
       comments:valStr('comments'),
       filledBy:session.name, filledByLogin:session.login, submittedAt:new Date().toISOString()
     };
-    try{await setEntry(studio,date,rec);toast(data.filledBy?'Отчёт обновлён':'Отчёт сохранён · '+session.name);onSaved&&onSaved();}
+    try{await apiSaveReport(studio,date,rec);toast(data.filledBy?'Отчёт обновлён':'Отчёт сохранён · '+session.name);onSaved&&onSaved();}
     catch(e){toast('Не удалось сохранить',true);}
   };
   function valNum(id){const v=container.querySelector('#'+id).value;return v===''?null:num(v);}
@@ -634,7 +647,7 @@ function dayCard(e,open){
 
 /* ================= All reports (owner + senior) ================= */
 async function renderAllReports(body){
-  const all=await listReports();
+  let all; try{ all=await loadReports(true); }catch(e){ return handleErr(e); }
   body.innerHTML=`
     <div class="bar fade-in">
       <div class="datepick"><span class="lbl">День:</span><input type="date" id="pick" max="${todayStr()}" value="${all[0]?all[0].date:todayStr()}" style="width:auto"/></div>
@@ -696,7 +709,11 @@ function exportExcel(entries){
 
 /* ================= User management (owner only) ================= */
 async function renderUsers(body){
-  const users=(await listUsers()).filter(u=>u.role==='admin').sort((a,b)=>a.name.localeCompare(b.name,'ru'));
+  let users;
+  try{ users = await rpc('app_list_users', {p_token:TOKEN}) || []; }
+  catch(e){ return handleErr(e); }
+  users.sort((a,b)=>a.name.localeCompare(b.name,'ru'));
+  const byLogin = Object.fromEntries(users.map(u=>[u.login,u]));
   body.innerHTML=`
     <div class="bar fade-in"><div class="grow"><div class="section-title" style="margin:0">Администраторы (${users.length})</div></div>
       <button class="btn btn-primary" id="add">+ Добавить администратора</button></div>
@@ -705,14 +722,16 @@ async function renderUsers(body){
   const list=body.querySelector('#ulist');
   list.innerHTML=users.length?users.map(userRow).join(''):`<div class="empty">Пока нет администраторов. Добавьте первого.</div>`;
   list.querySelectorAll('.urow').forEach(row=>{
-    const login=row.dataset.login;
+    const login=row.dataset.login; const u=byLogin[login]; if(!u) return;
     row.querySelectorAll('[data-act]').forEach(el=>{
       el.onclick=async()=>{
-        const u=await getUser(login); if(!u)return; const act=el.dataset.act;
-        if(act==='active'){u.active=!u.active;await setUser(u);toast(u.active?'Доступ включён':'Доступ отключён');renderUsers(body);}
-        else if(act==='senior'){u.senior=!u.senior;await setUser(u);toast(u.senior?'Назначен старшим (полный доступ)':'Полный доступ снят');renderUsers(body);}
-        else if(act==='reset'){resetPwModal(u,()=>renderUsers(body));}
-        else if(act==='del'){confirmModal(`Удалить администратора «${u.name}»? Он больше не сможет войти. Его отчёты сохранятся в логе.`,async()=>{await deleteUser(login);toast('Администратор удалён');renderUsers(body);});}
+        const act=el.dataset.act;
+        try{
+          if(act==='active'){ await rpc('app_update_admin',{p_token:TOKEN,p_login:login,p_active:!u.active,p_senior:u.senior}); toast(!u.active?'Доступ включён':'Доступ отключён'); renderUsers(body); }
+          else if(act==='senior'){ await rpc('app_update_admin',{p_token:TOKEN,p_login:login,p_active:u.active,p_senior:!u.senior}); toast(!u.senior?'Назначен старшим (полный доступ)':'Полный доступ снят'); renderUsers(body); }
+          else if(act==='reset'){ resetPwModal(u,()=>renderUsers(body)); }
+          else if(act==='del'){ confirmModal(`Удалить администратора «${u.name}»? Он больше не сможет войти. Его отчёты сохранятся в логе.`, async()=>{ try{ await rpc('app_delete_admin',{p_token:TOKEN,p_login:login}); toast('Администратор удалён'); renderUsers(body); }catch(e){ handleErr(e); } }); }
+        }catch(e){ handleErr(e); }
       };
     });
   });
@@ -743,10 +762,11 @@ function addAdminModal(onDone){
     const pass=el.querySelector('#m-pass').value;
     if(!name||!login||!pass){toast('Заполните все поля',true);return;}
     if(pass.length<4){toast('Пароль слишком короткий',true);return;}
-    if(await getUser(login)){toast('Такой логин уже занят',true);return;}
-    const salt=makeSalt();
-    await setUser({login,name,salt,passHash:await hashPassword(pass,salt),role:'admin',active:true,senior:el.querySelector('#m-senior').checked,createdAt:new Date().toISOString()});
-    closeModal(el); toast('Администратор добавлен'); onDone&&onDone();
+    try{
+      const res=await rpc('app_create_admin',{p_token:TOKEN,p_login:login,p_name:name,p_password:pass,p_senior:el.querySelector('#m-senior').checked});
+      if(res && res.error==='login_taken'){ toast('Такой логин уже занят',true); return; }
+      closeModal(el); toast('Администратор добавлен'); onDone&&onDone();
+    }catch(e){ handleErr(e); }
   };
 }
 function resetPwModal(u,onDone){
@@ -755,8 +775,8 @@ function resetPwModal(u,onDone){
     <div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="r-ok">Сохранить</button></div>`);
   el.querySelector('#r-ok').onclick=async()=>{
     const p=el.querySelector('#r-pass').value; if(p.length<4){toast('Пароль слишком короткий',true);return;}
-    const salt=makeSalt(); u.salt=salt; u.passHash=await hashPassword(p,salt); await setUser(u);
-    closeModal(el); toast('Пароль обновлён'); onDone&&onDone();
+    try{ await rpc('app_reset_password',{p_token:TOKEN,p_login:u.login,p_new_password:p}); closeModal(el); toast('Пароль обновлён'); onDone&&onDone(); }
+    catch(e){ handleErr(e); }
   };
 }
 function confirmModal(msg,onYes){
