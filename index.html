@@ -226,7 +226,7 @@ const CUR = 'Br'; // белорусский рубль (BYN)
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
    Больше в этом файле менять ничего не нужно. */
-const SUPABASE_URL      = 'https://llashpaqgeeezacyjppd.supabase.co/rest/v1/';       // напр. https://abcdxyz.supabase.co
+const SUPABASE_URL = 'https://llashpaqgeeezacyjppd.supabase.co';       // напр. https://abcdxyz.supabase.co
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxsYXNocGFxZ2VlZXphY3lqcHBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0ODgyOTksImV4cCI6MjEwMTA2NDI5OX0.mG5cGRIOyTnqcRUJ3OlOIOrxxdCfAByts69KHdj2Ks0';   // длинный публичный ключ "anon"
 
 const CONFIGURED = !/ВСТАВЬТЕ/.test(SUPABASE_URL) && !/ВСТАВЬТЕ/.test(SUPABASE_ANON_KEY);
