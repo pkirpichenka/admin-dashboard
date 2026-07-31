@@ -1,0 +1,770 @@
+<!--
+  Дашборд администратора сети студий растяжки (Минск) — прототип
+  Студии: Машерова 11 · Куйбышева 22 · Толбухина 2
+  Роли: Руководитель (полный доступ + управление доступом) /
+        Старший администратор (полный доступ к отчётам) / Администратор (смена)
+  Учётные записи с паролями; регистрация и отзыв доступа — только у руководителя.
+  Валюта: BYN (Br). Записи сохраняются между сессиями, выгрузка лога в Excel.
+-->
+<meta charset="utf-8" />
+<title>Стретч-студии · Дашборд</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Golos+Text:wght@400;500;600;700&display=swap');
+
+:root{
+  --bg:#E7ECE6; --surface:#FFFFFF; --surface-2:#F3F6F2;
+  --ink:#17261F; --ink-soft:#5C6E64; --ink-faint:#8A998F;
+  --accent:#2E7D5B; --accent-deep:#1E5C41;
+  --gold:#C58A2E; --gold-soft:#F6EAD2;
+  --clay:#C05038; --clay-soft:#F7E1DA;
+  --line:#D5DED6; --line-strong:#BCC8BD;
+  --radius:14px; --shadow:0 1px 2px rgba(23,38,31,.06), 0 8px 24px rgba(23,38,31,.06);
+  --fx:250ms cubic-bezier(.2,.7,.2,1);
+}
+*{box-sizing:border-box} html,body{margin:0}
+body{
+  background:radial-gradient(1200px 600px at 80% -10%, rgba(46,125,91,.10), transparent 60%), var(--bg);
+  color:var(--ink); font-family:'Golos Text', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased; min-height:100vh;
+}
+.wrap{max-width:1000px;margin:0 auto;padding:22px 20px 80px}
+
+/* Header */
+.top{display:flex;align-items:center;gap:14px;padding:16px 20px;margin:22px auto 0;max-width:1000px;
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.mark{width:42px;height:42px;border-radius:12px;flex:0 0 auto;background:linear-gradient(150deg,var(--accent),var(--accent-deep));
+  display:grid;place-items:center;color:#fff}
+.mark svg{width:24px;height:24px}
+.brand{line-height:1.15}
+.brand .name{font-family:'Unbounded';font-weight:700;font-size:16px;letter-spacing:.2px}
+.brand .sub{font-size:12px;color:var(--ink-faint);letter-spacing:.3px;text-transform:uppercase}
+.top .spacer{flex:1}
+.who{text-align:right;line-height:1.25}
+.who .fio{font-weight:600;font-size:14px}
+.who .role{font-size:12px;color:var(--ink-soft)}
+.role-pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:.3px}
+.role-admin{background:var(--surface-2);color:var(--accent-deep)}
+.role-boss{background:var(--gold-soft);color:var(--gold)}
+
+button{font-family:inherit;cursor:pointer}
+.btn{border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);padding:9px 14px;border-radius:10px;
+  font-size:14px;font-weight:600;transition:var(--fx)}
+.btn:hover{border-color:var(--accent);color:var(--accent-deep)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-deep);border-color:var(--accent-deep);color:#fff}
+.btn-ghost{background:transparent;border-color:transparent;color:var(--ink-soft);padding:8px 10px}
+.btn-ghost:hover{color:var(--clay);background:var(--clay-soft)}
+.btn-sm{padding:6px 10px;font-size:13px;border-radius:8px}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);
+  margin-bottom:18px;overflow:hidden}
+.card-head{display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--line)}
+.card-head .idx{font-family:'Unbounded';font-weight:700;font-size:13px;color:var(--accent);width:26px;height:26px;
+  border-radius:8px;background:var(--surface-2);display:grid;place-items:center}
+.card-head h2{margin:0;font-size:15px;font-weight:600;letter-spacing:.2px}
+.card-head .hint{margin-left:auto;font-size:12px;color:var(--ink-faint)}
+.card-body{padding:18px 20px}
+
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:1fr 1fr 1fr}
+label.field{display:block}
+.field .lbl{font-size:12.5px;color:var(--ink-soft);font-weight:600;margin-bottom:6px;letter-spacing:.2px}
+.field .lbl small{color:var(--ink-faint);font-weight:500}
+input,textarea,select{width:100%;font-family:inherit;font-size:15px;color:var(--ink);background:var(--surface-2);
+  border:1px solid var(--line);border-radius:10px;padding:10px 12px;transition:var(--fx)}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba(46,125,91,.14)}
+input[type="number"]{font-variant-numeric:tabular-nums}
+textarea{resize:vertical;min-height:52px;line-height:1.45}
+.cur{position:relative}
+.cur input{padding-right:38px}
+.cur .sym{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--ink-faint);font-weight:600;pointer-events:none;font-size:13px}
+
+.tape{background:linear-gradient(180deg,#fff, var(--surface-2));border:1px dashed var(--line-strong);border-radius:12px;
+  padding:14px 16px;margin-bottom:16px;display:flex;align-items:stretch;gap:8px;flex-wrap:wrap}
+.tape .seg{display:flex;flex-direction:column;gap:2px;padding:4px 10px;min-width:110px}
+.tape .seg .k{font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.4px}
+.tape .seg .v{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums}
+.tape .op{align-self:center;color:var(--ink-faint);font-size:18px;font-weight:700}
+.tape .seg.in .v{color:var(--gold)} .tape .seg.out .v{color:var(--clay)}
+.tape .seg.exp{margin-left:auto;text-align:right;border-left:1px solid var(--line);padding-left:16px}
+.tape .seg.exp .v{color:var(--accent-deep)}
+.diff-chip{display:inline-flex;align-items:center;gap:6px;margin-top:2px;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700}
+.diff-ok{background:var(--surface-2);color:var(--accent)} .diff-bad{background:var(--clay-soft);color:var(--clay)}
+
+.chg{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.chg select{width:130px;flex:0 0 auto} .chg .amt{width:150px;flex:0 0 auto} .chg .cmt{flex:1} .chg .x{flex:0 0 auto}
+.add-row{display:inline-flex;align-items:center;gap:6px;margin-top:2px}
+
+/* Clients dynamic */
+.cl-block{margin-bottom:4px}
+.cl-sep{border:none;border-top:1px solid var(--line);margin:20px 0}
+.cl-row2{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.cl-row2 .field{flex:1 1 170px;max-width:230px}
+.cl-badge{font-size:13px;color:var(--ink-soft);background:var(--surface-2);border:1px solid var(--line);border-radius:999px;
+  padding:7px 13px;font-weight:600;white-space:nowrap;margin-bottom:1px}
+.cl-badge b{color:var(--accent-deep);font-variant-numeric:tabular-nums}
+.cl-badge.warn{background:var(--clay-soft);border-color:var(--clay-soft)} .cl-badge.warn b{color:var(--clay)}
+.cl-list{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.cl-list:empty{margin-top:0}
+.cl-item{display:flex;align-items:center;gap:8px}
+.cl-item .ix{width:24px;height:24px;flex:0 0 auto;border-radius:7px;background:var(--surface-2);color:var(--ink-soft);
+  font-size:12px;font-weight:700;display:grid;place-items:center}
+.cl-item .cl-note{flex:1}
+.cl-toggle{flex:0 0 auto;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink-soft);border-radius:999px;
+  padding:8px 13px;font-size:12.5px;font-weight:600;display:inline-flex;align-items:center;gap:7px;transition:var(--fx);white-space:nowrap}
+.cl-toggle:hover{border-color:var(--gold)}
+.cl-toggle.on{background:var(--gold-soft);border-color:var(--gold);color:var(--gold)}
+.cl-toggle .dot{width:8px;height:8px;border-radius:50%;background:var(--line-strong);transition:var(--fx)}
+.cl-toggle.on .dot{background:var(--gold)}
+@media (max-width:640px){.cl-item .cl-toggle{padding:8px 10px}.cl-row2 .field{max-width:none}}
+
+/* History */
+.day{border:1px solid var(--line);border-radius:12px;margin-bottom:12px;overflow:hidden;background:var(--surface)}
+.day-head{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;transition:var(--fx)}
+.day-head:hover{background:var(--surface-2)}
+.day-date{font-weight:700;font-size:14px}
+.day-date .dow{color:var(--ink-faint);font-weight:500;font-size:12px;margin-left:6px}
+.st-tag{font-size:11px;font-weight:700;color:var(--accent-deep);background:var(--surface-2);border:1px solid var(--line);
+  padding:2px 9px;border-radius:999px}
+.day-by{margin-left:auto;font-size:12px;color:var(--ink-soft);text-align:right}
+.day-by b{color:var(--ink);font-weight:600}
+.chev{transition:transform var(--fx);color:var(--ink-faint)}
+.day.open .chev{transform:rotate(90deg)}
+.day-body{display:none;padding:4px 16px 16px;border-top:1px solid var(--line)}
+.day.open .day-body{display:block}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px 18px;margin:10px 0}
+.kv .item .k{font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.3px}
+.kv .item .v{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+.notes{background:var(--surface-2);border-radius:10px;padding:10px 12px;margin-top:8px;font-size:13.5px}
+.notes .k{font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px}
+.empty{text-align:center;color:var(--ink-faint);padding:30px 16px;font-size:14px;border:1px dashed var(--line-strong);
+  border-radius:12px;background:var(--surface-2)}
+
+/* Tabs / studios / bar */
+.tabs{display:flex;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:5px;
+  margin-bottom:22px;box-shadow:var(--shadow);width:fit-content;max-width:100%;flex-wrap:wrap}
+.tab{border:none;background:transparent;padding:9px 16px;border-radius:8px;font-weight:600;font-size:14px;color:var(--ink-soft);transition:var(--fx)}
+.tab:hover{color:var(--ink)} .tab.on{background:var(--accent);color:#fff}
+.studios{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.st-btn{border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 16px;text-align:left;
+  cursor:pointer;transition:var(--fx);min-width:150px}
+.st-btn:hover{border-color:var(--line-strong)}
+.st-btn.on{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba(46,125,91,.12)}
+.st-btn .t{font-weight:700;font-size:13px} .st-btn .a{font-size:12px;color:var(--ink-faint)}
+.bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+.bar .grow{flex:1}
+.datepick{display:flex;align-items:center;gap:8px}
+.datepick .lbl{margin:0;color:var(--ink-soft);font-weight:600;font-size:13px}
+.section-title{font-family:'Unbounded';font-weight:600;font-size:14px;color:var(--ink-soft);letter-spacing:.4px;
+  text-transform:uppercase;margin:26px 2px 12px}
+
+/* User management */
+.urow{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;
+  margin-bottom:10px;background:var(--surface);flex-wrap:wrap;box-shadow:var(--shadow)}
+.u-main{min-width:150px}
+.u-name{font-weight:700;display:flex;align-items:center;gap:8px}
+.u-login{font-size:12.5px;color:var(--ink-faint)}
+.u-ctl{display:flex;align-items:center;gap:12px;margin-left:auto;flex-wrap:wrap}
+.ctl-item{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-soft);font-weight:600}
+.st-pill{font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px}
+.st-on{background:var(--surface-2);color:var(--accent)} .st-off{background:var(--clay-soft);color:var(--clay)}
+.badge-senior{background:var(--gold-soft);color:var(--gold);font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px}
+.sw{width:42px;height:24px;border-radius:999px;background:var(--line-strong);position:relative;cursor:pointer;
+  transition:var(--fx);border:none;flex:0 0 auto;padding:0}
+.sw::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:var(--fx)}
+.sw.on{background:var(--accent)} .sw.on::after{transform:translateX(18px)}
+
+/* Login / setup / modal */
+.login-shell{min-height:100vh;display:grid;place-items:center;padding:20px}
+.login{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--line);border-radius:18px;
+  box-shadow:var(--shadow);padding:30px 28px}
+.login .mark{width:52px;height:52px;margin-bottom:16px}
+.login h1{font-family:'Unbounded';font-weight:700;font-size:20px;margin:0 0 4px}
+.login p.lead{color:var(--ink-soft);font-size:13.5px;margin:0 0 22px}
+.overlay{position:fixed;inset:0;background:rgba(23,38,31,.42);display:grid;place-items:center;z-index:60;padding:20px}
+.modal{background:#fff;border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.3);width:100%;max-width:390px;padding:24px}
+.modal h3{margin:0 0 4px;font-family:'Unbounded';font-size:17px}
+.modal p{margin:0 0 16px;color:var(--ink-soft);font-size:13.5px}
+.modal .field{margin-bottom:12px}
+.modal .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+.chk{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;color:var(--ink);font-weight:500}
+.chk input{width:auto}
+
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;
+  padding:11px 18px;border-radius:12px;font-size:14px;font-weight:500;box-shadow:0 12px 30px rgba(0,0,0,.25);opacity:0;
+  pointer-events:none;transition:var(--fx);z-index:80;max-width:90vw}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)} .toast.err{background:var(--clay)}
+.hidden{display:none !important}
+.fade-in{animation:fade var(--fx) both}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important}}
+@media (max-width:640px){.g2,.g3{grid-template-columns:1fr}
+  .chg{flex-wrap:wrap}.chg select,.chg .amt{width:calc(50% - 4px)}.chg .cmt{width:100%}
+  .tape .seg.exp{margin-left:0}}
+</style>
+
+<div id="root"></div>
+<div id="toast" class="toast"></div>
+
+<script>
+/* ================= Studios & currency ================= */
+const STUDIOS = [
+  {id:'masherova',  name:'Машерова',  address:'Машерова, 11'},
+  {id:'kuibysheva', name:'Куйбышева', address:'Куйбышева, 22'},
+  {id:'tolbuhina',  name:'Толбухина', address:'Толбухина, 2'}
+];
+const SMAP = Object.fromEntries(STUDIOS.map(s=>[s.id,s]));
+const studioName = id => SMAP[id]?SMAP[id].name:(id||'—');
+const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
+const CUR = 'Br'; // белорусский рубль (BYN)
+
+/* ---- Хранилище: window.storage внутри Claude, localStorage на вашем сайте ----
+   На GitHub Pages нет window.storage, поэтому используется localStorage
+   (данные только в этом браузере). Этот блок позже заменяется на Supabase. */
+const store = (typeof window!=='undefined' && window.storage) ? window.storage : {
+  async get(key){ const v=localStorage.getItem(key); return v==null?null:{key,value:v}; },
+  async set(key,value){ localStorage.setItem(key,String(value)); return {key,value}; },
+  async delete(key){ localStorage.removeItem(key); return {key,deleted:true}; },
+  async list(prefix){ const keys=[]; for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i); if(!prefix||k.startsWith(prefix))keys.push(k);} return {keys}; }
+};
+
+/* ================= Storage: users ================= */
+const SH = true;
+const UKEY = l => 'user:'+String(l).toLowerCase();
+async function getUser(login){ try{const r=await store.get(UKEY(login),SH);return r?JSON.parse(r.value):null;}catch(e){return null;} }
+async function setUser(u){ await store.set(UKEY(u.login),JSON.stringify(u),SH); }
+async function deleteUser(login){ try{await store.delete(UKEY(login),SH);}catch(e){} }
+async function listUsers(){
+  try{const r=await store.list('user:',SH); if(!r||!r.keys)return[];
+    const out=[]; for(const k of r.keys){ try{const rr=await store.get(k,SH); if(rr)out.push(JSON.parse(rr.value));}catch(e){} }
+    return out;
+  }catch(e){return[];}
+}
+
+/* ================= Storage: reports (per studio) ================= */
+const RKEY = (s,d)=>'report:'+s+':'+d;
+async function getEntry(studio,date){ try{const r=await store.get(RKEY(studio,date),SH);return r?JSON.parse(r.value):null;}catch(e){return null;} }
+async function setEntry(studio,date,data){ await store.set(RKEY(studio,date),JSON.stringify(data),SH); }
+async function listReports(){
+  try{const r=await store.list('report:',SH); if(!r||!r.keys)return[];
+    const out=[];
+    for(const k of r.keys){
+      const p=k.split(':'); let studio,date;
+      if(p.length>=3){studio=p[1];date=p[2];} else {studio='—';date=p[1];}
+      try{const rr=await store.get(k,SH); if(rr){const e=JSON.parse(rr.value); e.studioId=e.studioId||studio; e.date=e.date||date; out.push(e);}}catch(e){}
+    }
+    out.sort((a,b)=> a.date<b.date?1:(a.date>b.date?-1:(a.studioId<b.studioId?-1:1)));
+    return out;
+  }catch(e){return[];}
+}
+
+/* ================= Password hashing ================= */
+function makeSalt(){ return Math.random().toString(36).slice(2)+Date.now().toString(36); }
+async function hashPassword(pw,salt){
+  const data=new TextEncoder().encode(salt+'::'+pw);
+  try{
+    if(window.crypto&&crypto.subtle){
+      const buf=await crypto.subtle.digest('SHA-256',data);
+      return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+    }
+  }catch(e){}
+  let h=0; const s=salt+'::'+pw; for(let i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i))|0;} return 'w'+(h>>>0).toString(16);
+}
+
+/* ================= Format helpers ================= */
+const DOW=['вс','пн','вт','ср','чт','пт','сб'];
+const MON=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+function todayStr(){const d=new Date();const o=d.getTimezoneOffset();return new Date(d.getTime()-o*60000).toISOString().slice(0,10);}
+function fmtLong(iso){const [y,m,dd]=iso.split('-').map(Number);return dd+' '+MON[m-1]+' '+y;}
+function fmtDow(iso){const [y,m,dd]=iso.split('-').map(Number);return DOW[new Date(y,m-1,dd).getDay()];}
+function money(n){if(n===''||n===null||n===undefined||isNaN(n))return '—';return Number(n).toLocaleString('ru-RU')+' '+CUR;}
+function num(v){const n=parseFloat(v);return isNaN(n)?0:n;}
+function prevDays(iso,count){const [y,m,dd]=iso.split('-').map(Number);const out=[];
+  for(let i=1;i<=count;i++){const d=new Date(y,m-1,dd-i);const o=d.getTimezoneOffset();out.push(new Date(d.getTime()-o*60000).toISOString().slice(0,10));}return out;}
+function fmtTime(iso){if(!iso)return '';return new Date(iso).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+/* ================= Toast & modal ================= */
+let toastT;
+function toast(msg,err){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(err?' err':'');
+  clearTimeout(toastT);toastT=setTimeout(()=>t.className='toast',2600);}
+function modal(inner){
+  const ov=document.createElement('div');ov.className='overlay';
+  ov.innerHTML='<div class="modal fade-in">'+inner+'</div>';
+  document.body.appendChild(ov);
+  ov.addEventListener('click',e=>{if(e.target===ov)closeModal(ov);});
+  ov.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>closeModal(ov));
+  return ov;
+}
+function closeModal(ov){ov.remove();}
+
+/* ================= Session ================= */
+let session=null;   // {login,name,role:'owner'|'admin',senior}
+let shiftStudio=null;
+const LEAF='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/></svg>';
+
+/* ================= Boot ================= */
+async function boot(){
+  session=null;
+  const users=await listUsers();
+  const owner=users.find(u=>u.role==='owner');
+  if(!owner) renderSetup(); else renderLogin();
+}
+
+/* ================= Setup (first run: create owner) ================= */
+function renderSetup(){
+  const root=document.getElementById('root');
+  root.innerHTML=`<div class="login-shell"><div class="login fade-in">
+    <div class="mark">${LEAF}</div>
+    <h1>Первый запуск</h1>
+    <p class="lead">Создайте аккаунт руководителя. Только вы сможете добавлять администраторов и отключать им доступ.</p>
+    <div class="field" style="margin-bottom:12px"><div class="lbl">ФИО</div><input id="s-name" placeholder="Ваше имя"/></div>
+    <div class="field" style="margin-bottom:12px"><div class="lbl">Логин</div><input id="s-login" placeholder="owner" autocapitalize="off"/></div>
+    <div class="field" style="margin-bottom:16px"><div class="lbl">Пароль</div><input id="s-pass" type="password" placeholder="минимум 4 символа"/></div>
+    <button class="btn btn-primary" style="width:100%" id="s-ok">Создать и войти</button>
+  </div></div>`;
+  root.querySelector('#s-ok').onclick=async()=>{
+    const name=root.querySelector('#s-name').value.trim();
+    const login=root.querySelector('#s-login').value.trim().toLowerCase();
+    const pass=root.querySelector('#s-pass').value;
+    if(!name||!login||!pass){toast('Заполните все поля',true);return;}
+    if(pass.length<4){toast('Пароль слишком короткий',true);return;}
+    const salt=makeSalt();
+    const u={login,name,salt,passHash:await hashPassword(pass,salt),role:'owner',active:true,senior:true,createdAt:new Date().toISOString()};
+    await setUser(u);
+    session={login:u.login,name:u.name,role:'owner',senior:true};
+    toast('Аккаунт руководителя создан'); renderApp();
+  };
+}
+
+/* ================= Login ================= */
+function renderLogin(){
+  const root=document.getElementById('root');
+  root.innerHTML=`<div class="login-shell"><div class="login fade-in">
+    <div class="mark">${LEAF}</div>
+    <h1>Стретч-студии · Минск</h1>
+    <p class="lead">Отчёт смены. Войдите под своей учётной записью.</p>
+    <div class="field" style="margin-bottom:12px"><div class="lbl">Логин</div><input id="l-login" placeholder="логин" autocapitalize="off"/></div>
+    <div class="field" style="margin-bottom:18px"><div class="lbl">Пароль</div><input id="l-pass" type="password" placeholder="пароль"/></div>
+    <button class="btn btn-primary" style="width:100%" id="l-ok">Войти</button>
+  </div></div>`;
+  const go=async()=>{
+    const login=root.querySelector('#l-login').value.trim().toLowerCase();
+    const pass=root.querySelector('#l-pass').value;
+    if(!login||!pass){toast('Введите логин и пароль',true);return;}
+    const u=await getUser(login);
+    if(!u){toast('Неверный логин или пароль',true);return;}
+    const h=await hashPassword(pass,u.salt);
+    if(h!==u.passHash){toast('Неверный логин или пароль',true);return;}
+    if(!u.active){toast('Доступ отключён. Обратитесь к руководителю.',true);return;}
+    session={login:u.login,name:u.name,role:u.role,senior:!!u.senior};
+    renderApp();
+  };
+  root.querySelector('#l-ok').onclick=go;
+  root.querySelector('#l-pass').addEventListener('keydown',e=>{if(e.key==='Enter')go();});
+}
+
+/* ================= App shell / routing ================= */
+function roleLabel(){ return session.role==='owner'?'Руководитель':(session.senior?'Старший администратор':'Администратор'); }
+function header(){
+  const full=session.role==='owner'||session.senior;
+  const pill=full?'<span class="role-pill role-boss">полный доступ</span>':'<span class="role-pill role-admin">смена</span>';
+  return `<div class="top fade-in">
+    <div class="mark">${LEAF}</div>
+    <div class="brand"><div class="name">Стретч-студии</div><div class="sub">Минск · отчёт смены</div></div>
+    <div class="spacer"></div>
+    <div class="who"><div class="fio">${escapeHtml(session.name)}</div><div class="role">${roleLabel()} ${pill}</div></div>
+    <button class="btn btn-ghost btn-sm" id="logout">Выйти</button>
+  </div>`;
+}
+function renderApp(){
+  if(session.role==='owner') renderRoleUI([{label:'Отчёты',render:renderAllReports},{label:'Администраторы',render:renderUsers}]);
+  else if(session.senior)    renderRoleUI([{label:'Моя смена',render:renderShift},{label:'Все отчёты',render:renderAllReports}]);
+  else                       renderRoleUI([{label:'Смена',render:renderShift}]);
+}
+function renderRoleUI(tabs){
+  const root=document.getElementById('root');
+  root.innerHTML=header()+`<div class="wrap">
+    ${tabs.length>1?`<div class="tabs">${tabs.map((t,i)=>`<button class="tab${i===0?' on':''}" data-i="${i}">${t.label}</button>`).join('')}</div>`:''}
+    <div id="tabbody"></div></div>`;
+  root.querySelector('#logout').onclick=()=>boot();
+  const body=root.querySelector('#tabbody');
+  function show(i){root.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',+b.dataset.i===i));tabs[i].render(body);}
+  root.querySelectorAll('.tab').forEach(b=>b.onclick=()=>show(+b.dataset.i));
+  show(0);
+}
+
+/* ================= Field builders ================= */
+function moneyField(id,label,val,sub){return `<label class="field"><div class="lbl">${label} ${sub?`<small>${sub}</small>`:''}</div>
+  <div class="cur"><input id="${id}" type="number" inputmode="decimal" step="0.01" value="${val??''}" placeholder="0"/><span class="sym">${CUR}</span></div></label>`;}
+function textField(id,label,val,ph){return `<label class="field"><div class="lbl">${label}</div>
+  <textarea id="${id}" placeholder="${ph||''}">${val?escapeHtml(val):''}</textarea></label>`;}
+
+/* ================= Shift view (admin fills) ================= */
+async function renderShift(body){
+  const today=todayStr();
+  body.innerHTML=`
+    <div class="section-title">Смена · ${fmtLong(today)} · ${fmtDow(today)}</div>
+    <div class="studios" id="studios">${STUDIOS.map(s=>`
+      <button class="st-btn${s.id===shiftStudio?' on':''}" data-id="${s.id}">
+        <div class="t">${s.name}</div><div class="a">${s.address}</div></button>`).join('')}</div>
+    <div id="shiftbody"></div>`;
+  body.querySelectorAll('.st-btn').forEach(b=>b.onclick=()=>{shiftStudio=b.dataset.id;renderShift(body);});
+  const sb=body.querySelector('#shiftbody');
+  if(!shiftStudio){sb.innerHTML=`<div class="empty">Выберите студию, в которой вы сегодня работаете.</div>`;return;}
+  const existing=await getEntry(shiftStudio,today)||{};
+  const prev=await getEntry(shiftStudio,prevDays(today,1)[0]);
+  const opts={prevCashEnd:(prev&&prev.cashEnd!=null)?prev.cashEnd:null};
+  sb.innerHTML=`<div id="form"></div>
+    <div class="section-title">Предыдущие 3 дня · ${studioName(shiftStudio)}</div>
+    <div id="history"></div>`;
+  renderForm(sb.querySelector('#form'),shiftStudio,today,existing,()=>renderShift(body),opts);
+  renderHistory(sb.querySelector('#history'),shiftStudio,prevDays(today,3));
+}
+
+/* ================= The daily form ================= */
+function renderForm(container,studio,date,data,onSaved,opts){
+  data=data||{}; opts=opts||{};
+  let changes=Array.isArray(data.changes)?data.changes.map(c=>({...c})):[];
+  let newList=Array.isArray(data.newList)?data.newList.map(c=>({...c})):[];
+  let notRenewList=Array.isArray(data.notRenewList)?data.notRenewList.map(c=>({...c})):[];
+
+  container.innerHTML=`
+    <div class="card fade-in">
+      <div class="card-head"><span class="idx">1</span><h2>Финансы · ${studioName(studio)}</h2>
+        ${data.filledBy?`<span class="hint">заполнено: ${escapeHtml(data.filledBy)}</span>`:''}</div>
+      <div class="card-body">
+        <div id="tape" class="tape"></div>
+        ${opts.prevCashEnd!=null?`<button type="button" class="btn btn-sm" id="prefill" style="margin-bottom:14px">↩ Остаток на конец вчера: ${money(opts.prevCashEnd)} — подставить в «начало дня»</button>`:''}
+        <div class="grid g2" style="margin-bottom:14px">
+          ${moneyField('cashStart','Наличные на начало дня','',data.cashStart)}
+          ${moneyField('cashEnd','Наличные на конец дня','',data.cashEnd)}
+        </div>
+        <div class="lbl" style="font-size:12.5px;color:var(--ink-soft);font-weight:600;margin-bottom:8px">
+          Изменения наличных в течение дня <small style="color:var(--ink-faint);font-weight:500"> — выдано / внесено</small></div>
+        <div id="changes"></div>
+        <button class="btn btn-sm add-row" id="addChg" type="button">+ Добавить движение</button>
+        <div class="grid g3" style="margin-top:18px">
+          ${moneyField('cashless','Безналичные','на конец дня',data.cashless)}
+          ${moneyField('allsports','Allsports','на конец дня',data.allsports)}
+          ${moneyField('epos','EPOS','на конец дня',data.epos)}
+        </div>
+      </div>
+    </div>
+
+    <div class="card fade-in">
+      <div class="card-head"><span class="idx">2</span><h2>Клиенты</h2></div>
+      <div class="card-body">
+        <div class="cl-block">
+          <div class="cl-row2">
+            <label class="field"><div class="lbl">Пришло новых клиентов</div>
+              <input id="newCame" type="number" inputmode="numeric" min="0" step="1" value="${data.newCame??''}" placeholder="0"/></label>
+            <span class="cl-badge">Купили абонемент: <b id="boughtCount">0</b> из <span id="cameCount">0</span></span>
+          </div>
+          <div id="newList" class="cl-list"></div>
+        </div>
+        <hr class="cl-sep"/>
+        <div class="cl-block">
+          <div class="cl-row2">
+            <label class="field"><div class="lbl">Закончились абонементы <small>у старых</small></div>
+              <input id="ended" type="number" inputmode="numeric" min="0" step="1" value="${data.ended??''}" placeholder="0"/></label>
+            <label class="field"><div class="lbl">Из них продлили</div>
+              <input id="renewed" type="number" inputmode="numeric" min="0" step="1" value="${data.renewed??''}" placeholder="0"/></label>
+            <span class="cl-badge" id="nrBadge">Не продлили: <b id="notRenewCount">0</b></span>
+          </div>
+          <div id="notRenewList" class="cl-list"></div>
+        </div>
+        <hr class="cl-sep"/>
+        ${textField('comments','Комментарии и другое',data.comments,'Заметки по смене, инциденты, задачи…')}
+      </div>
+    </div>
+
+    <div class="bar"><div class="grow"></div>
+      <button class="btn btn-primary" id="save">${data.filledBy?'Обновить отчёт':'Сохранить отчёт'}</button></div>`;
+
+  if(opts.prevCashEnd!=null){
+    container.querySelector('#prefill').onclick=()=>{container.querySelector('#cashStart').value=opts.prevCashEnd;drawTape();};
+  }
+
+  // changes
+  const changesBox=container.querySelector('#changes');
+  function drawChanges(){
+    changesBox.innerHTML=changes.map((c,i)=>`
+      <div class="chg" data-i="${i}">
+        <select class="ctype"><option value="in"${c.type==='in'?' selected':''}>+ Внесено</option><option value="out"${c.type!=='in'?' selected':''}>− Выдано</option></select>
+        <div class="cur amt"><input class="camt" type="number" inputmode="decimal" step="0.01" value="${c.amount??''}" placeholder="0"/><span class="sym">${CUR}</span></div>
+        <input class="cmt ccmt" value="${c.comment?escapeHtml(c.comment):''}" placeholder="кому / за что (тренеру, руководитель внёс…)"/>
+        <button class="btn btn-ghost btn-sm x" type="button">✕</button>
+      </div>`).join('');
+    changesBox.querySelectorAll('.chg').forEach(row=>{const i=+row.dataset.i;
+      row.querySelector('.ctype').onchange=e=>{changes[i].type=e.target.value;drawTape();};
+      row.querySelector('.camt').oninput=e=>{changes[i].amount=e.target.value;drawTape();};
+      row.querySelector('.ccmt').oninput=e=>{changes[i].comment=e.target.value;};
+      row.querySelector('.x').onclick=()=>{changes.splice(i,1);drawChanges();drawTape();};});
+  }
+  container.querySelector('#addChg').onclick=()=>{changes.push({type:'out',amount:'',comment:''});drawChanges();drawTape();};
+
+  const tape=container.querySelector('#tape');
+  function drawTape(){
+    const start=num(container.querySelector('#cashStart').value);
+    const end=container.querySelector('#cashEnd').value;
+    const inSum=changes.filter(c=>c.type==='in').reduce((s,c)=>s+num(c.amount),0);
+    const outSum=changes.filter(c=>c.type!=='in').reduce((s,c)=>s+num(c.amount),0);
+    const expected=start+inSum-outSum;
+    const hasEnd=end!==''&&!isNaN(parseFloat(end));
+    const diff=hasEnd?(num(end)-expected):null;
+    tape.innerHTML=`
+      <div class="seg"><span class="k">Начало</span><span class="v">${money(start)}</span></div>
+      <div class="op">+</div><div class="seg in"><span class="k">Внесено</span><span class="v">${money(inSum)}</span></div>
+      <div class="op">−</div><div class="seg out"><span class="k">Выдано</span><span class="v">${money(outSum)}</span></div>
+      <div class="seg exp"><span class="k">Ожидаемый остаток</span><span class="v">${money(expected)}</span>
+        ${diff===null?'<span class="diff-chip diff-ok">введите фактический остаток</span>':diff===0?'<span class="diff-chip diff-ok">✓ сходится</span>':`<span class="diff-chip diff-bad">расхождение ${diff>0?'+':''}${money(diff)}</span>`}</div>`;
+  }
+  ['cashStart','cashEnd'].forEach(id=>container.querySelector('#'+id).addEventListener('input',drawTape));
+  drawChanges(); drawTape();
+
+  // new clients
+  const newListBox=container.querySelector('#newList'),cameInput=container.querySelector('#newCame'),
+        boughtEl=container.querySelector('#boughtCount'),cameEl=container.querySelector('#cameCount');
+  function updBought(){boughtEl.textContent=newList.filter(x=>x.bought).length;cameEl.textContent=newList.length;}
+  function drawNewList(){
+    newListBox.innerHTML=newList.map((c,i)=>`
+      <div class="cl-item" data-i="${i}"><span class="ix">${i+1}</span>
+        <input class="cl-note" value="${c.note?escapeHtml(c.note):''}" placeholder="Имя, что купил, откуда узнал…"/>
+        <button type="button" class="cl-toggle${c.bought?' on':''}"><span class="dot"></span>абонемент</button></div>`).join('');
+    newListBox.querySelectorAll('.cl-item').forEach(row=>{const i=+row.dataset.i;
+      row.querySelector('.cl-note').oninput=e=>{newList[i].note=e.target.value;};
+      row.querySelector('.cl-toggle').onclick=ev=>{newList[i].bought=!newList[i].bought;ev.currentTarget.classList.toggle('on',newList[i].bought);updBought();};});
+    updBought();
+  }
+  function syncNew(){const n=Math.max(0,Math.min(60,Math.floor(num(cameInput.value))));
+    while(newList.length<n)newList.push({note:'',bought:false}); if(newList.length>n)newList.length=n; drawNewList();}
+  cameInput.addEventListener('input',syncNew); drawNewList();
+
+  // old clients (non-renewers)
+  const nrBox=container.querySelector('#notRenewList'),endedIn=container.querySelector('#ended'),
+        renewIn=container.querySelector('#renewed'),nrCntEl=container.querySelector('#notRenewCount'),nrBadge=container.querySelector('#nrBadge');
+  function drawNrList(){
+    nrBox.innerHTML=notRenewList.map((c,i)=>`
+      <div class="cl-item" data-i="${i}"><span class="ix">${i+1}</span>
+        <input class="cl-note" value="${c.note?escapeHtml(c.note):''}" placeholder="Кто не продлил — имя, причина, что предложили…"/></div>`).join('');
+    nrBox.querySelectorAll('.cl-item').forEach(row=>{const i=+row.dataset.i;
+      row.querySelector('.cl-note').oninput=e=>{notRenewList[i].note=e.target.value;};});
+  }
+  function syncNr(){const t=Math.max(0,Math.floor(num(endedIn.value))),r=Math.max(0,Math.floor(num(renewIn.value)));
+    const nr=Math.max(0,Math.min(60,t-r));
+    while(notRenewList.length<nr)notRenewList.push({note:''}); if(notRenewList.length>nr)notRenewList.length=nr;
+    nrCntEl.textContent=nr; nrBadge.classList.toggle('warn',nr>0); drawNrList();}
+  endedIn.addEventListener('input',syncNr); renewIn.addEventListener('input',syncNr); syncNr();
+
+  // save
+  container.querySelector('#save').onclick=async()=>{
+    const rec={
+      studioId:studio, date,
+      cashStart:valNum('cashStart'), cashEnd:valNum('cashEnd'),
+      changes:changes.filter(c=>c.amount!==''&&!isNaN(parseFloat(c.amount))).map(c=>({type:c.type,amount:num(c.amount),comment:(c.comment||'').trim()})),
+      cashless:valNum('cashless'), allsports:valNum('allsports'), epos:valNum('epos'),
+      newCame:valNum('newCame'), newBought:newList.filter(x=>x.bought).length,
+      newList:newList.map(x=>({note:(x.note||'').trim(),bought:!!x.bought})),
+      ended:valNum('ended'), renewed:valNum('renewed'),
+      notRenewList:notRenewList.map(x=>({note:(x.note||'').trim()})),
+      comments:valStr('comments'),
+      filledBy:session.name, filledByLogin:session.login, submittedAt:new Date().toISOString()
+    };
+    try{await setEntry(studio,date,rec);toast(data.filledBy?'Отчёт обновлён':'Отчёт сохранён · '+session.name);onSaved&&onSaved();}
+    catch(e){toast('Не удалось сохранить',true);}
+  };
+  function valNum(id){const v=container.querySelector('#'+id).value;return v===''?null:num(v);}
+  function valStr(id){return container.querySelector('#'+id).value.trim();}
+}
+
+/* ================= History (read-only) ================= */
+async function renderHistory(container,studio,dates){
+  const entries=[];
+  for(const d of dates){const e=await getEntry(studio,d);if(e)entries.push(e);}
+  if(!entries.length){container.innerHTML=`<div class="empty">За этот период отчётов по студии нет.</div>`;return;}
+  container.innerHTML=entries.map(e=>dayCard(e)).join('');
+  wireDayCards(container);
+}
+function wireDayCards(container){
+  container.querySelectorAll('.day-head').forEach(h=>h.onclick=()=>h.parentElement.classList.toggle('open'));
+}
+function dayCard(e,open){
+  const inSum=(e.changes||[]).filter(c=>c.type==='in').reduce((s,c)=>s+num(c.amount),0);
+  const outSum=(e.changes||[]).filter(c=>c.type!=='in').reduce((s,c)=>s+num(c.amount),0);
+  const expected=num(e.cashStart)+inSum-outSum;
+  const diff=e.cashEnd==null?null:num(e.cashEnd)-expected;
+  const came=e.newCame??e.newCount??null;
+  const bought=e.newBought!=null?e.newBought:(Array.isArray(e.newList)?e.newList.filter(x=>x.bought).length:null);
+  const endedC=e.ended??null, renewC=e.renewed??e.oldCount??null;
+  const notRen=(endedC!=null&&renewC!=null)?Math.max(0,endedC-renewC):null;
+  const newDetail=(e.newList||[]).map((c,i)=>`<div style="font-size:13px;padding:2px 0">${i+1}. ${escapeHtml(c.note||'—')} ${c.bought?'<b style="color:var(--gold)">· абонемент ✓</b>':'<span style="color:var(--ink-faint)">· без абонемента</span>'}</div>`).join('');
+  const nrDetail=(e.notRenewList||[]).map((c,i)=>`<div style="font-size:13px;padding:2px 0">${i+1}. ${escapeHtml(c.note||'—')}</div>`).join('');
+  const changeList=(e.changes||[]).map(c=>`<div style="font-size:13px;padding:2px 0"><b style="color:${c.type==='in'?'var(--gold)':'var(--clay)'}">${c.type==='in'?'+':'−'} ${money(c.amount)}</b><span style="color:var(--ink-soft)"> — ${escapeHtml(c.comment||'без комментария')}</span></div>`).join('')||'<span style="color:var(--ink-faint);font-size:13px">движений нет</span>';
+  return `<div class="day${open?' open':''}">
+    <div class="day-head"><span class="chev">▸</span>
+      <span class="day-date">${fmtLong(e.date)}<span class="dow"> · ${fmtDow(e.date)}</span></span>
+      <span class="st-tag">${studioAddr(e.studioId)}</span>
+      <span class="day-by">заполнил(а): <b>${escapeHtml(e.filledBy||'—')}</b><br><span style="color:var(--ink-faint)">${fmtTime(e.submittedAt)}</span></span></div>
+    <div class="day-body">
+      <div class="kv">
+        <div class="item"><div class="k">Наличные утром</div><div class="v">${money(e.cashStart)}</div></div>
+        <div class="item"><div class="k">Наличные вечером</div><div class="v">${money(e.cashEnd)}</div></div>
+        <div class="item"><div class="k">Ожидаемо</div><div class="v">${money(expected)}</div></div>
+        <div class="item"><div class="k">Расхождение</div><div class="v" style="color:${diff?'var(--clay)':'var(--accent)'}">${diff===null?'—':(diff>0?'+':'')+money(diff)}</div></div>
+        <div class="item"><div class="k">Безналичные</div><div class="v">${money(e.cashless)}</div></div>
+        <div class="item"><div class="k">Allsports</div><div class="v">${money(e.allsports)}</div></div>
+        <div class="item"><div class="k">EPOS</div><div class="v">${money(e.epos)}</div></div>
+        <div class="item"><div class="k">Пришло новых</div><div class="v">${came??'—'}</div></div>
+        <div class="item"><div class="k">Купили абонемент</div><div class="v">${bought??'—'}</div></div>
+        <div class="item"><div class="k">Абонементы закончились</div><div class="v">${endedC??'—'}</div></div>
+        <div class="item"><div class="k">Продлили</div><div class="v">${renewC??'—'}</div></div>
+        <div class="item"><div class="k">Не продлили</div><div class="v" style="color:${notRen>0?'var(--clay)':'var(--ink)'}">${notRen??'—'}</div></div>
+      </div>
+      <div class="notes"><div class="k">Движения наличных</div>${changeList}</div>
+      ${newDetail?`<div class="notes"><div class="k">Новые клиенты — по каждому</div>${newDetail}</div>`:''}
+      ${nrDetail?`<div class="notes"><div class="k">Не продлили — по каждому</div>${nrDetail}</div>`:''}
+      ${e.comments?`<div class="notes"><div class="k">Комментарии</div>${escapeHtml(e.comments)}</div>`:''}
+    </div></div>`;
+}
+
+/* ================= All reports (owner + senior) ================= */
+async function renderAllReports(body){
+  const all=await listReports();
+  body.innerHTML=`
+    <div class="bar fade-in">
+      <div class="datepick"><span class="lbl">День:</span><input type="date" id="pick" max="${todayStr()}" value="${all[0]?all[0].date:todayStr()}" style="width:auto"/></div>
+      <div class="datepick"><span class="lbl">Студия:</span><select id="stf" style="width:auto"><option value="all">Все студии</option>${STUDIOS.map(s=>`<option value="${s.id}">${s.name} · ${s.address}</option>`).join('')}</select></div>
+      <div class="grow"></div>
+      <button class="btn" id="export">↓ Выгрузить лог в Excel</button>
+    </div>
+    <div id="picked"></div>
+    <div class="section-title">Все отчёты (<span id="cnt">0</span>)</div>
+    <div id="alllist"></div>`;
+  const pick=body.querySelector('#pick'),stf=body.querySelector('#stf'),
+        picked=body.querySelector('#picked'),alllist=body.querySelector('#alllist'),cnt=body.querySelector('#cnt');
+  function refresh(){
+    const f=stf.value, d=pick.value;
+    const pe=all.filter(e=>e.date===d&&(f==='all'||e.studioId===f));
+    picked.innerHTML=pe.length?pe.map(e=>dayCard(e,true)).join(''):`<div class="empty">За ${fmtLong(d)} нет отчётов${f==='all'?'':' по выбранной студии'}.</div>`;
+    wireDayCards(picked);
+    const list=all.filter(e=>f==='all'||e.studioId===f);
+    cnt.textContent=list.length;
+    alllist.innerHTML=list.length?list.map(e=>dayCard(e)).join(''):`<div class="empty">Отчётов пока нет.</div>`;
+    wireDayCards(alllist);
+  }
+  pick.onchange=refresh; stf.onchange=refresh; refresh();
+  body.querySelector('#export').onclick=()=>{const f=stf.value;exportExcel(all.filter(e=>f==='all'||e.studioId===f));};
+}
+
+/* ================= Excel export ================= */
+function exportExcel(entries){
+  if(!entries.length){toast('Нет данных для выгрузки',true);return;}
+  const rows=entries.map(e=>{
+    const inSum=(e.changes||[]).filter(c=>c.type==='in').reduce((s,c)=>s+num(c.amount),0);
+    const outSum=(e.changes||[]).filter(c=>c.type!=='in').reduce((s,c)=>s+num(c.amount),0);
+    const expected=num(e.cashStart)+inSum-outSum;
+    const diff=e.cashEnd==null?'':num(e.cashEnd)-expected;
+    const chgText=(e.changes||[]).map(c=>`${c.type==='in'?'+':'-'}${num(c.amount)} (${c.comment||''})`).join('; ');
+    const came=e.newCame??e.newCount??'';
+    const bought=e.newBought!=null?e.newBought:(Array.isArray(e.newList)?e.newList.filter(x=>x.bought).length:'');
+    const endedC=e.ended??'', renewC=e.renewed??e.oldCount??'';
+    const notRen=(e.ended!=null&&(e.renewed!=null||e.oldCount!=null))?Math.max(0,e.ended-(e.renewed??e.oldCount)):'';
+    const newDet=(e.newList||[]).map((c,i)=>`${i+1}. ${c.note||''}${c.bought?' [абонемент]':''}`).join('; ')||(e.newNotes||'');
+    const nrDet=(e.notRenewList||[]).map((c,i)=>`${i+1}. ${c.note||''}`).join('; ')||(e.oldNotes||'');
+    return {
+      'Дата':e.date,'День недели':fmtDow(e.date),'Студия':studioName(e.studioId),'Адрес':studioAddr(e.studioId),
+      'Заполнил (ФИО)':e.filledBy||'','Логин':e.filledByLogin||'','Время':fmtTime(e.submittedAt),
+      'Наличные начало':e.cashStart??'','Наличные конец':e.cashEnd??'','Внесено':inSum,'Выдано':outSum,
+      'Ожидаемый остаток':expected,'Расхождение':diff,'Движения (детально)':chgText,
+      'Безналичные':e.cashless??'','Allsports':e.allsports??'','EPOS':e.epos??'',
+      'Пришло новых':came,'Купили абонемент':bought,'Абонементы закончились':endedC,'Продлили':renewC,'Не продлили':notRen,
+      'Новые клиенты (детально)':newDet,'Не продлили (детально)':nrDet,'Комментарии':e.comments||''
+    };
+  });
+  rows.sort((a,b)=> a['Дата']<b['Дата']?-1:(a['Дата']>b['Дата']?1:(a['Студия']<b['Студия']?-1:1)));
+  const ws=XLSX.utils.json_to_sheet(rows);
+  ws['!cols']=Object.keys(rows[0]||{}).map(k=>({wch:Math.min(Math.max(k.length+2,10),40)}));
+  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Лог отчётов');
+  XLSX.writeFile(wb,`otchet-studii_${todayStr()}.xlsx`);
+  toast('Excel-лог выгружен');
+}
+
+/* ================= User management (owner only) ================= */
+async function renderUsers(body){
+  const users=(await listUsers()).filter(u=>u.role==='admin').sort((a,b)=>a.name.localeCompare(b.name,'ru'));
+  body.innerHTML=`
+    <div class="bar fade-in"><div class="grow"><div class="section-title" style="margin:0">Администраторы (${users.length})</div></div>
+      <button class="btn btn-primary" id="add">+ Добавить администратора</button></div>
+    <p style="color:var(--ink-soft);font-size:13px;margin:0 0 16px">Включайте и отключайте доступ переключателем. «Старший» — полный доступ ко всем отчётам, как у руководителя. Управлять доступом может только руководитель.</p>
+    <div id="ulist"></div>`;
+  const list=body.querySelector('#ulist');
+  list.innerHTML=users.length?users.map(userRow).join(''):`<div class="empty">Пока нет администраторов. Добавьте первого.</div>`;
+  list.querySelectorAll('.urow').forEach(row=>{
+    const login=row.dataset.login;
+    row.querySelectorAll('[data-act]').forEach(el=>{
+      el.onclick=async()=>{
+        const u=await getUser(login); if(!u)return; const act=el.dataset.act;
+        if(act==='active'){u.active=!u.active;await setUser(u);toast(u.active?'Доступ включён':'Доступ отключён');renderUsers(body);}
+        else if(act==='senior'){u.senior=!u.senior;await setUser(u);toast(u.senior?'Назначен старшим (полный доступ)':'Полный доступ снят');renderUsers(body);}
+        else if(act==='reset'){resetPwModal(u,()=>renderUsers(body));}
+        else if(act==='del'){confirmModal(`Удалить администратора «${u.name}»? Он больше не сможет войти. Его отчёты сохранятся в логе.`,async()=>{await deleteUser(login);toast('Администратор удалён');renderUsers(body);});}
+      };
+    });
+  });
+  body.querySelector('#add').onclick=()=>addAdminModal(()=>renderUsers(body));
+}
+function userRow(u){
+  return `<div class="urow" data-login="${escapeHtml(u.login)}">
+    <div class="u-main"><div class="u-name">${escapeHtml(u.name)} ${u.senior?'<span class="badge-senior">старший</span>':''}</div>
+      <div class="u-login">логин: ${escapeHtml(u.login)}</div></div>
+    <div class="u-ctl">
+      <span class="st-pill ${u.active?'st-on':'st-off'}">${u.active?'доступ включён':'доступ отключён'}</span>
+      <span class="ctl-item">Доступ <button class="sw ${u.active?'on':''}" data-act="active" aria-label="Доступ"></button></span>
+      <span class="ctl-item">Старший <button class="sw ${u.senior?'on':''}" data-act="senior" aria-label="Старший"></button></span>
+      <button class="btn btn-sm" data-act="reset">Сбросить пароль</button>
+      <button class="btn btn-sm btn-ghost" data-act="del">Удалить</button>
+    </div></div>`;
+}
+function addAdminModal(onDone){
+  const el=modal(`<h3>Новый администратор</h3><p>Он войдёт по логину и паролю. Пароль можно позже сбросить.</p>
+    <div class="field"><div class="lbl">ФИО</div><input id="m-name" placeholder="Петрова Анна"/></div>
+    <div class="field"><div class="lbl">Логин</div><input id="m-login" placeholder="anna" autocapitalize="off"/></div>
+    <div class="field"><div class="lbl">Пароль</div><input id="m-pass" placeholder="минимум 4 символа"/></div>
+    <label class="chk" style="margin-top:2px"><input type="checkbox" id="m-senior"/> Старший (полный доступ к отчётам)</label>
+    <div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="m-ok">Создать</button></div>`);
+  el.querySelector('#m-ok').onclick=async()=>{
+    const name=el.querySelector('#m-name').value.trim();
+    const login=el.querySelector('#m-login').value.trim().toLowerCase();
+    const pass=el.querySelector('#m-pass').value;
+    if(!name||!login||!pass){toast('Заполните все поля',true);return;}
+    if(pass.length<4){toast('Пароль слишком короткий',true);return;}
+    if(await getUser(login)){toast('Такой логин уже занят',true);return;}
+    const salt=makeSalt();
+    await setUser({login,name,salt,passHash:await hashPassword(pass,salt),role:'admin',active:true,senior:el.querySelector('#m-senior').checked,createdAt:new Date().toISOString()});
+    closeModal(el); toast('Администратор добавлен'); onDone&&onDone();
+  };
+}
+function resetPwModal(u,onDone){
+  const el=modal(`<h3>Сбросить пароль</h3><p>${escapeHtml(u.name)} · логин ${escapeHtml(u.login)}</p>
+    <div class="field"><div class="lbl">Новый пароль</div><input id="r-pass" placeholder="минимум 4 символа"/></div>
+    <div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="r-ok">Сохранить</button></div>`);
+  el.querySelector('#r-ok').onclick=async()=>{
+    const p=el.querySelector('#r-pass').value; if(p.length<4){toast('Пароль слишком короткий',true);return;}
+    const salt=makeSalt(); u.salt=salt; u.passHash=await hashPassword(p,salt); await setUser(u);
+    closeModal(el); toast('Пароль обновлён'); onDone&&onDone();
+  };
+}
+function confirmModal(msg,onYes){
+  const el=modal(`<h3>Подтвердите</h3><p>${escapeHtml(msg)}</p>
+    <div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="c-ok" style="background:var(--clay);border-color:var(--clay)">Удалить</button></div>`);
+  el.querySelector('#c-ok').onclick=async()=>{closeModal(el);await onYes();};
+}
+
+/* ================= Start ================= */
+boot();
+</script>
