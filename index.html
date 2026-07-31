@@ -124,6 +124,9 @@ textarea{resize:vertical;min-height:52px;line-height:1.45}
 @media (max-width:640px){.cl-item .cl-toggle{padding:8px 10px}.cl-row2 .field{max-width:none}}
 
 /* Morning cash compare + locks */
+.fix-row{display:flex;gap:8px;align-items:stretch}
+.fix-row .cur input{height:100%}
+.fix-btn{flex:0 0 auto;white-space:nowrap}
 .mcmp{font-size:12.5px;color:var(--ink-soft);background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
 .mcmp-k{color:var(--ink-faint)}
 .mcmp .mok{color:var(--accent)} .mcmp .mbad{color:var(--clay)}
@@ -277,6 +280,11 @@ async function getEntry(studio, date){
 async function apiSaveReport(studio, date, payload){
   const r = await rpc('app_save_report', {p_token:TOKEN, p_studio:studio, p_date:date, p_payload:payload});
   REPORTS = null; // при следующем чтении подгрузим свежие
+  return r;
+}
+async function apiDeleteReport(studio, date){
+  const r = await rpc('app_delete_report', {p_token:TOKEN, p_studio:studio, p_date:date});
+  REPORTS = null;
   return r;
 }
 
@@ -464,15 +472,20 @@ function renderForm(container,studio,date,data,onSaved,opts){
         ${data.filledBy?`<span class="hint">заполнено: ${escapeHtml(data.filledBy)}</span>`:''}</div>
       <div class="card-body">
         <div id="tape" class="tape"></div>
-        <div class="grid g2" style="margin-bottom:8px">
-          <label class="field">
-            <div class="lbl">Наличные на начало дня ${morningLocked?'<span class="lockchip">🔒 зафиксировано</span>':''}</div>
-            <div class="cur"><input id="cashStart" type="number" inputmode="decimal" step="0.01" value="${data.cashStart??''}" placeholder="0" ${morningLocked?'readonly':''}/><span class="sym">${CUR}</span></div>
-          </label>
-          ${moneyField('cashEnd','Наличные на конец дня','',data.cashEnd)}
-        </div>
+        <label class="field" style="margin-bottom:8px">
+          <div class="lbl">Наличные на начало дня ${morningFixed?'<span class="lockchip">🔒 зафиксировано</span>':''}</div>
+          <div class="fix-row">
+            <div class="cur" style="flex:1"><input id="cashStart" type="number" inputmode="decimal" step="0.01" value="${data.cashStart??''}" placeholder="0" ${morningLocked?'readonly':''}/><span class="sym">${CUR}</span></div>
+            ${!morningFixed?'<button type="button" class="btn btn-primary fix-btn" id="fixMorning">Зафиксировать</button>':''}
+          </div>
+        </label>
         <div id="morningCmp" class="mcmp"></div>
         ${morningLocked?'<div class="hintline" style="margin-top:6px">Сумма зафиксирована при пересчёте кассы. Изменить может руководитель или старший администратор (если ему разрешено).</div>':''}
+        <div style="height:14px"></div>
+        <label class="field" style="max-width:320px;margin-bottom:4px">
+          <div class="lbl">Наличные на конец дня</div>
+          <div class="cur"><input id="cashEnd" type="number" inputmode="decimal" step="0.01" value="${data.cashEnd??''}" placeholder="0"/><span class="sym">${CUR}</span></div>
+        </label>
         <div style="height:14px"></div>
         <div class="lbl" style="font-size:12.5px;color:var(--ink-soft);font-weight:600;margin-bottom:8px">
           Изменения наличных в течение дня <small style="color:var(--ink-faint);font-weight:500"> — выдано / внесено</small></div>
@@ -602,9 +615,9 @@ function renderForm(container,studio,date,data,onSaved,opts){
     drawNrList();}
   endedIn.addEventListener('input',syncNr); renewIn.addEventListener('input',syncNr); syncNr();
 
-  // save
-  container.querySelector('#save').onclick=async()=>{
-    const rec={
+  // сбор данных формы в объект отчёта
+  function collectRec(){
+    return {
       studioId:studio, date,
       cashStart:valNum('cashStart'), cashEnd:valNum('cashEnd'),
       changes:changes.filter(c=>c.amount!==''&&!isNaN(parseFloat(c.amount))).map(c=>({type:c.type,amount:num(c.amount),comment:(c.comment||'').trim()})),
@@ -617,6 +630,21 @@ function renderForm(container,studio,date,data,onSaved,opts){
       cashStartEditedBy:data.cashStartEditedBy, cashStartEditedAt:data.cashStartEditedAt,
       filledBy:session.name, filledByLogin:session.login, submittedAt:new Date().toISOString()
     };
+  }
+
+  // Зафиксировать наличные на начало дня (сохраняет отчёт и блокирует поле)
+  const fixBtn=container.querySelector('#fixMorning');
+  if(fixBtn){
+    fixBtn.onclick=async()=>{
+      if(valNum('cashStart')==null){ toast('Сначала введите сумму наличных',true); return; }
+      try{ await apiSaveReport(studio,date,collectRec()); toast('Наличные на начало дня зафиксированы'); onSaved&&onSaved(); }
+      catch(e){ handleErr(e); }
+    };
+  }
+
+  // save
+  container.querySelector('#save').onclick=async()=>{
+    const rec=collectRec();
     try{await apiSaveReport(studio,date,rec);toast(data.filledBy?'Отчёт обновлён':'Отчёт сохранён · '+session.name);onSaved&&onSaved();}
     catch(e){toast('Не удалось сохранить',true);}
   };
@@ -638,6 +666,13 @@ function wireDayCards(container,onChange){
     btn.onclick=(ev)=>{ ev.stopPropagation(); const p=btn.dataset.editmorning.split('|');
       const entry=(REPORTS||[]).find(x=>x.studioId===p[0]&&x.date===p[1]);
       if(entry) editMorningModal(entry,onChange); };
+  });
+  container.querySelectorAll('[data-delreport]').forEach(btn=>{
+    btn.onclick=(ev)=>{ ev.stopPropagation(); const p=btn.dataset.delreport.split('|');
+      confirmModal(`Удалить отчёт за ${fmtLong(p[1])} (${studioAddr(p[0])})? Действие необратимо.`, async()=>{
+        try{ await apiDeleteReport(p[0],p[1]); toast('Отчёт удалён'); onChange&&onChange(); }catch(e){ handleErr(e); }
+      });
+    };
   });
 }
 function editMorningModal(entry,onDone){
@@ -684,7 +719,7 @@ function dayCard(e,open){
         <div class="item"><div class="k">Конверсия новых</div><div class="v">${pct(bought,came)}</div></div>
         <div class="item"><div class="k">Конверсия продлений</div><div class="v">${pct(renewC,endedC)}</div></div>
       </div>
-      ${(session&&(session.role==='owner'||session.canEdit))?`<button class="btn btn-sm" data-editmorning="${e.studioId}|${e.date}" style="margin:2px 0 8px">✎ Изменить наличные утром</button>`:''}
+      ${(session&&(session.role==='owner'||session.canEdit))?`<button class="btn btn-sm" data-editmorning="${e.studioId}|${e.date}" style="margin:2px 6px 8px 0">✎ Изменить наличные утром</button>`:''}${(session&&session.role==='owner')?`<button class="btn btn-sm btn-ghost" data-delreport="${e.studioId}|${e.date}" style="margin:2px 0 8px">🗑 Удалить отчёт</button>`:''}
       ${e.cashStartEditedBy?`<div class="hintline" style="margin-bottom:8px">Наличные утром изменены: ${escapeHtml(e.cashStartEditedBy)}${e.cashStartEditedAt?' · '+fmtTime(e.cashStartEditedAt):''}</div>`:''}
       <div class="notes"><div class="k">Движения наличных</div>${changeList}</div>
       ${newDetail?`<div class="notes"><div class="k">Новые клиенты — по каждому</div>${newDetail}</div>`:''}
