@@ -7,7 +7,7 @@
   Валюта: BYN (Br). Записи сохраняются между сессиями, выгрузка лога в Excel.
 -->
 <meta charset="utf-8" />
-<title>Стретч-студии · Дашборд</title>
+<title>Flexico-Admin-Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -123,6 +123,14 @@ textarea{resize:vertical;min-height:52px;line-height:1.45}
 .cl-toggle.on .dot{background:var(--gold)}
 @media (max-width:640px){.cl-item .cl-toggle{padding:8px 10px}.cl-row2 .field{max-width:none}}
 
+/* Morning cash compare + locks */
+.mcmp{font-size:12.5px;color:var(--ink-soft);background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.mcmp-k{color:var(--ink-faint)}
+.mcmp .mok{color:var(--accent)} .mcmp .mbad{color:var(--clay)}
+.lockchip{font-size:11px;font-weight:700;color:var(--gold);background:var(--gold-soft);padding:1px 8px;border-radius:999px;margin-left:4px}
+.hintline{font-size:12px;color:var(--ink-faint)}
+input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
+
 /* History */
 .day{border:1px solid var(--line);border-radius:12px;margin-bottom:12px;overflow:hidden;background:var(--surface)}
 .day-head{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;transition:var(--fx)}
@@ -226,7 +234,7 @@ const CUR = 'Br'; // белорусский рубль (BYN)
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
    Больше в этом файле менять ничего не нужно. */
-const SUPABASE_URL = 'https://llashpaqgeeezacyjppd.supabase.co';       // напр. https://abcdxyz.supabase.co
+const SUPABASE_URL      = 'https://llashpaqgeeezacyjppd.supabase.co';       // напр. https://abcdxyz.supabase.co
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxsYXNocGFxZ2VlZXphY3lqcHBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0ODgyOTksImV4cCI6MjEwMTA2NDI5OX0.mG5cGRIOyTnqcRUJ3OlOIOrxxdCfAByts69KHdj2Ks0';   // длинный публичный ключ "anon"
 
 const CONFIGURED = !/ВСТАВЬТЕ/.test(SUPABASE_URL) && !/ВСТАВЬТЕ/.test(SUPABASE_ANON_KEY);
@@ -246,7 +254,7 @@ function handleErr(e){
 }
 function saveSession(s){
   TOKEN = s.token;
-  session = {login:s.login, name:s.name, role:s.role, senior:s.senior};
+  session = {login:s.login, name:s.name, role:s.role, senior:s.senior, canEdit:!!s.canEdit};
   try{ sessionStorage.setItem('sess', JSON.stringify(s)); }catch(e){}
 }
 async function doLogout(){
@@ -279,6 +287,7 @@ function todayStr(){const d=new Date();const o=d.getTimezoneOffset();return new 
 function fmtLong(iso){const [y,m,dd]=iso.split('-').map(Number);return dd+' '+MON[m-1]+' '+y;}
 function fmtDow(iso){const [y,m,dd]=iso.split('-').map(Number);return DOW[new Date(y,m-1,dd).getDay()];}
 function money(n){if(n===''||n===null||n===undefined||isNaN(n))return '—';return Number(n).toLocaleString('ru-RU')+' '+CUR;}
+function pct(a,b){a=(a===''||a==null)?null:Number(a);b=(b===''||b==null)?null:Number(b);if(b==null||b===0||a==null||isNaN(a)||isNaN(b))return '—';return Math.round(a/b*100)+'%';}
 function num(v){const n=parseFloat(v);return isNaN(n)?0:n;}
 function prevDays(iso,count){const [y,m,dd]=iso.split('-').map(Number);const out=[];
   for(let i=1;i<=count;i++){const d=new Date(y,m-1,dd-i);const o=d.getTimezoneOffset();out.push(new Date(d.getTime()-o*60000).toISOString().slice(0,10));}return out;}
@@ -312,7 +321,7 @@ async function boot(){
   // попытка восстановить сессию после обновления страницы
   let saved=null; try{ saved=JSON.parse(sessionStorage.getItem('sess')); }catch(e){}
   if(saved && saved.token){
-    TOKEN=saved.token; session={login:saved.login,name:saved.name,role:saved.role,senior:saved.senior};
+    TOKEN=saved.token; session={login:saved.login,name:saved.name,role:saved.role,senior:saved.senior,canEdit:!!saved.canEdit};
     try{ await loadReports(true); renderApp(); return; }
     catch(e){ TOKEN=null; session=null; try{sessionStorage.removeItem('sess');}catch(_){} }
   }
@@ -360,7 +369,7 @@ function renderLogin(){
   const root=document.getElementById('root');
   root.innerHTML=`<div class="login-shell"><div class="login fade-in">
     <div class="mark">${LEAF}</div>
-    <h1>Стретч-студии · Минск</h1>
+    <h1>Flexico-Admin-Dashboard</h1>
     <p class="lead">Отчёт смены. Войдите под своей учётной записью.</p>
     <div class="field" style="margin-bottom:12px"><div class="lbl">Логин</div><input id="l-login" placeholder="логин" autocapitalize="off"/></div>
     <div class="field" style="margin-bottom:18px"><div class="lbl">Пароль</div><input id="l-pass" type="password" placeholder="пароль"/></div>
@@ -388,7 +397,7 @@ function header(){
   const pill=full?'<span class="role-pill role-boss">полный доступ</span>':'<span class="role-pill role-admin">смена</span>';
   return `<div class="top fade-in">
     <div class="mark">${LEAF}</div>
-    <div class="brand"><div class="name">Стретч-студии</div><div class="sub">Минск · отчёт смены</div></div>
+    <div class="brand"><div class="name">Flexico-Admin-Dashboard</div></div>
     <div class="spacer"></div>
     <div class="who"><div class="fio">${escapeHtml(session.name)}</div><div class="role">${roleLabel()} ${pill}</div></div>
     <button class="btn btn-ghost btn-sm" id="logout">Выйти</button>
@@ -436,7 +445,7 @@ async function renderShift(body){
     <div class="section-title">Предыдущие 3 дня · ${studioName(shiftStudio)}</div>
     <div id="history"></div>`;
   renderForm(sb.querySelector('#form'),shiftStudio,today,existing,()=>renderShift(body),opts);
-  renderHistory(sb.querySelector('#history'),shiftStudio,prevDays(today,3));
+  renderHistory(sb.querySelector('#history'),shiftStudio,prevDays(today,3),()=>renderShift(body));
 }
 
 /* ================= The daily form ================= */
@@ -445,6 +454,9 @@ function renderForm(container,studio,date,data,onSaved,opts){
   let changes=Array.isArray(data.changes)?data.changes.map(c=>({...c})):[];
   let newList=Array.isArray(data.newList)?data.newList.map(c=>({...c})):[];
   let notRenewList=Array.isArray(data.notRenewList)?data.notRenewList.map(c=>({...c})):[];
+  const morningFixed=data.cashStart!=null;
+  const canEditMorning=(session.role==='owner')||(session.canEdit===true);
+  const morningLocked=morningFixed&&!canEditMorning;
 
   container.innerHTML=`
     <div class="card fade-in">
@@ -452,11 +464,16 @@ function renderForm(container,studio,date,data,onSaved,opts){
         ${data.filledBy?`<span class="hint">заполнено: ${escapeHtml(data.filledBy)}</span>`:''}</div>
       <div class="card-body">
         <div id="tape" class="tape"></div>
-        ${opts.prevCashEnd!=null?`<button type="button" class="btn btn-sm" id="prefill" style="margin-bottom:14px">↩ Остаток на конец вчера: ${money(opts.prevCashEnd)} — подставить в «начало дня»</button>`:''}
-        <div class="grid g2" style="margin-bottom:14px">
-          ${moneyField('cashStart','Наличные на начало дня','',data.cashStart)}
+        <div class="grid g2" style="margin-bottom:8px">
+          <label class="field">
+            <div class="lbl">Наличные на начало дня ${morningLocked?'<span class="lockchip">🔒 зафиксировано</span>':''}</div>
+            <div class="cur"><input id="cashStart" type="number" inputmode="decimal" step="0.01" value="${data.cashStart??''}" placeholder="0" ${morningLocked?'readonly':''}/><span class="sym">${CUR}</span></div>
+          </label>
           ${moneyField('cashEnd','Наличные на конец дня','',data.cashEnd)}
         </div>
+        <div id="morningCmp" class="mcmp"></div>
+        ${morningLocked?'<div class="hintline" style="margin-top:6px">Сумма зафиксирована при пересчёте кассы. Изменить может руководитель или старший администратор (если ему разрешено).</div>':''}
+        <div style="height:14px"></div>
         <div class="lbl" style="font-size:12.5px;color:var(--ink-soft);font-weight:600;margin-bottom:8px">
           Изменения наличных в течение дня <small style="color:var(--ink-faint);font-weight:500"> — выдано / внесено</small></div>
         <div id="changes"></div>
@@ -476,7 +493,7 @@ function renderForm(container,studio,date,data,onSaved,opts){
           <div class="cl-row2">
             <label class="field"><div class="lbl">Пришло новых клиентов</div>
               <input id="newCame" type="number" inputmode="numeric" min="0" step="1" value="${data.newCame??''}" placeholder="0"/></label>
-            <span class="cl-badge">Купили абонемент: <b id="boughtCount">0</b> из <span id="cameCount">0</span></span>
+            <span class="cl-badge">Купили абонемент: <b id="boughtCount">0</b> из <span id="cameCount">0</span> · конверсия <b id="newConvBadge">—</b></span>
           </div>
           <div id="newList" class="cl-list"></div>
         </div>
@@ -488,6 +505,7 @@ function renderForm(container,studio,date,data,onSaved,opts){
             <label class="field"><div class="lbl">Из них продлили</div>
               <input id="renewed" type="number" inputmode="numeric" min="0" step="1" value="${data.renewed??''}" placeholder="0"/></label>
             <span class="cl-badge" id="nrBadge">Не продлили: <b id="notRenewCount">0</b></span>
+            <span class="cl-badge">Конверсия продлений: <b id="renewConvBadge">—</b></span>
           </div>
           <div id="notRenewList" class="cl-list"></div>
         </div>
@@ -499,9 +517,17 @@ function renderForm(container,studio,date,data,onSaved,opts){
     <div class="bar"><div class="grow"></div>
       <button class="btn btn-primary" id="save">${data.filledBy?'Обновить отчёт':'Сохранить отчёт'}</button></div>`;
 
-  if(opts.prevCashEnd!=null){
-    container.querySelector('#prefill').onclick=()=>{container.querySelector('#cashStart').value=opts.prevCashEnd;drawTape();};
+  // сравнение утренних наличных с остатком на конец предыдущего дня (тот же филиал)
+  const morningCmp=container.querySelector('#morningCmp');
+  function updateMorning(){
+    const prev=opts.prevCashEnd;
+    if(prev==null){ morningCmp.innerHTML='<span class="mcmp-k">Остаток на конец вчера:</span> нет данных за вчера по этому филиалу'; return; }
+    const cur=num(container.querySelector('#cashStart').value);
+    const d=cur-prev;
+    morningCmp.innerHTML=`<span class="mcmp-k">Остаток на конец вчера:</span> <b>${money(prev)}</b> &nbsp;·&nbsp; <span class="mcmp-k">разница с внесённым утром:</span> <b class="${d===0?'mok':'mbad'}">${d>0?'+':''}${money(d)}</b>`;
   }
+  container.querySelector('#cashStart').addEventListener('input',updateMorning);
+  updateMorning();
 
   // changes
   const changesBox=container.querySelector('#changes');
@@ -534,7 +560,7 @@ function renderForm(container,studio,date,data,onSaved,opts){
       <div class="seg"><span class="k">Начало</span><span class="v">${money(start)}</span></div>
       <div class="op">+</div><div class="seg in"><span class="k">Внесено</span><span class="v">${money(inSum)}</span></div>
       <div class="op">−</div><div class="seg out"><span class="k">Выдано</span><span class="v">${money(outSum)}</span></div>
-      <div class="seg exp"><span class="k">Ожидаемый остаток</span><span class="v">${money(expected)}</span>
+      <div class="seg exp"><span class="k">Должно быть</span><span class="v">${money(expected)}</span>
         ${diff===null?'<span class="diff-chip diff-ok">введите фактический остаток</span>':diff===0?'<span class="diff-chip diff-ok">✓ сходится</span>':`<span class="diff-chip diff-bad">расхождение ${diff>0?'+':''}${money(diff)}</span>`}</div>`;
   }
   ['cashStart','cashEnd'].forEach(id=>container.querySelector('#'+id).addEventListener('input',drawTape));
@@ -543,7 +569,7 @@ function renderForm(container,studio,date,data,onSaved,opts){
   // new clients
   const newListBox=container.querySelector('#newList'),cameInput=container.querySelector('#newCame'),
         boughtEl=container.querySelector('#boughtCount'),cameEl=container.querySelector('#cameCount');
-  function updBought(){boughtEl.textContent=newList.filter(x=>x.bought).length;cameEl.textContent=newList.length;}
+  function updBought(){const m=newList.filter(x=>x.bought).length;boughtEl.textContent=m;cameEl.textContent=newList.length;const cv=container.querySelector("#newConvBadge");if(cv)cv.textContent=pct(m,newList.length);}
   function drawNewList(){
     newListBox.innerHTML=newList.map((c,i)=>`
       <div class="cl-item" data-i="${i}"><span class="ix">${i+1}</span>
@@ -571,7 +597,9 @@ function renderForm(container,studio,date,data,onSaved,opts){
   function syncNr(){const t=Math.max(0,Math.floor(num(endedIn.value))),r=Math.max(0,Math.floor(num(renewIn.value)));
     const nr=Math.max(0,Math.min(60,t-r));
     while(notRenewList.length<nr)notRenewList.push({note:''}); if(notRenewList.length>nr)notRenewList.length=nr;
-    nrCntEl.textContent=nr; nrBadge.classList.toggle('warn',nr>0); drawNrList();}
+    nrCntEl.textContent=nr; nrBadge.classList.toggle('warn',nr>0);
+    const rc=container.querySelector('#renewConvBadge'); if(rc) rc.textContent=pct(r,t);
+    drawNrList();}
   endedIn.addEventListener('input',syncNr); renewIn.addEventListener('input',syncNr); syncNr();
 
   // save
@@ -586,6 +614,7 @@ function renderForm(container,studio,date,data,onSaved,opts){
       ended:valNum('ended'), renewed:valNum('renewed'),
       notRenewList:notRenewList.map(x=>({note:(x.note||'').trim()})),
       comments:valStr('comments'),
+      cashStartEditedBy:data.cashStartEditedBy, cashStartEditedAt:data.cashStartEditedAt,
       filledBy:session.name, filledByLogin:session.login, submittedAt:new Date().toISOString()
     };
     try{await apiSaveReport(studio,date,rec);toast(data.filledBy?'Отчёт обновлён':'Отчёт сохранён · '+session.name);onSaved&&onSaved();}
@@ -596,15 +625,31 @@ function renderForm(container,studio,date,data,onSaved,opts){
 }
 
 /* ================= History (read-only) ================= */
-async function renderHistory(container,studio,dates){
+async function renderHistory(container,studio,dates,onChange){
   const entries=[];
   for(const d of dates){const e=await getEntry(studio,d);if(e)entries.push(e);}
   if(!entries.length){container.innerHTML=`<div class="empty">За этот период отчётов по студии нет.</div>`;return;}
   container.innerHTML=entries.map(e=>dayCard(e)).join('');
-  wireDayCards(container);
+  wireDayCards(container,onChange);
 }
-function wireDayCards(container){
+function wireDayCards(container,onChange){
   container.querySelectorAll('.day-head').forEach(h=>h.onclick=()=>h.parentElement.classList.toggle('open'));
+  container.querySelectorAll('[data-editmorning]').forEach(btn=>{
+    btn.onclick=(ev)=>{ ev.stopPropagation(); const p=btn.dataset.editmorning.split('|');
+      const entry=(REPORTS||[]).find(x=>x.studioId===p[0]&&x.date===p[1]);
+      if(entry) editMorningModal(entry,onChange); };
+  });
+}
+function editMorningModal(entry,onDone){
+  const el=modal(`<h3>Наличные утром</h3><p>${studioAddr(entry.studioId)} · ${fmtLong(entry.date)}<br>Зафиксировал(а): ${escapeHtml(entry.filledBy||'—')}</p>
+    <div class="field"><div class="lbl">Сумма (${CUR})</div><input id="em" type="number" inputmode="decimal" step="0.01" value="${entry.cashStart??''}"/></div>
+    <div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="em-ok">Сохранить</button></div>`);
+  el.querySelector('#em-ok').onclick=async()=>{
+    const v=el.querySelector('#em').value; const nv=v===''?null:num(v);
+    const upd=Object.assign({},entry,{cashStart:nv,cashStartEditedBy:session.name,cashStartEditedAt:new Date().toISOString()});
+    try{ await apiSaveReport(entry.studioId,entry.date,upd); closeModal(el); toast('Наличные утром обновлены'); onDone&&onDone(); }
+    catch(e){ handleErr(e); }
+  };
 }
 function dayCard(e,open){
   const inSum=(e.changes||[]).filter(c=>c.type==='in').reduce((s,c)=>s+num(c.amount),0);
@@ -627,7 +672,6 @@ function dayCard(e,open){
       <div class="kv">
         <div class="item"><div class="k">Наличные утром</div><div class="v">${money(e.cashStart)}</div></div>
         <div class="item"><div class="k">Наличные вечером</div><div class="v">${money(e.cashEnd)}</div></div>
-        <div class="item"><div class="k">Ожидаемо</div><div class="v">${money(expected)}</div></div>
         <div class="item"><div class="k">Расхождение</div><div class="v" style="color:${diff?'var(--clay)':'var(--accent)'}">${diff===null?'—':(diff>0?'+':'')+money(diff)}</div></div>
         <div class="item"><div class="k">Безналичные</div><div class="v">${money(e.cashless)}</div></div>
         <div class="item"><div class="k">Allsports</div><div class="v">${money(e.allsports)}</div></div>
@@ -637,7 +681,11 @@ function dayCard(e,open){
         <div class="item"><div class="k">Абонементы закончились</div><div class="v">${endedC??'—'}</div></div>
         <div class="item"><div class="k">Продлили</div><div class="v">${renewC??'—'}</div></div>
         <div class="item"><div class="k">Не продлили</div><div class="v" style="color:${notRen>0?'var(--clay)':'var(--ink)'}">${notRen??'—'}</div></div>
+        <div class="item"><div class="k">Конверсия новых</div><div class="v">${pct(bought,came)}</div></div>
+        <div class="item"><div class="k">Конверсия продлений</div><div class="v">${pct(renewC,endedC)}</div></div>
       </div>
+      ${(session&&(session.role==='owner'||session.canEdit))?`<button class="btn btn-sm" data-editmorning="${e.studioId}|${e.date}" style="margin:2px 0 8px">✎ Изменить наличные утром</button>`:''}
+      ${e.cashStartEditedBy?`<div class="hintline" style="margin-bottom:8px">Наличные утром изменены: ${escapeHtml(e.cashStartEditedBy)}${e.cashStartEditedAt?' · '+fmtTime(e.cashStartEditedAt):''}</div>`:''}
       <div class="notes"><div class="k">Движения наличных</div>${changeList}</div>
       ${newDetail?`<div class="notes"><div class="k">Новые клиенты — по каждому</div>${newDetail}</div>`:''}
       ${nrDetail?`<div class="notes"><div class="k">Не продлили — по каждому</div>${nrDetail}</div>`:''}
@@ -664,11 +712,11 @@ async function renderAllReports(body){
     const f=stf.value, d=pick.value;
     const pe=all.filter(e=>e.date===d&&(f==='all'||e.studioId===f));
     picked.innerHTML=pe.length?pe.map(e=>dayCard(e,true)).join(''):`<div class="empty">За ${fmtLong(d)} нет отчётов${f==='all'?'':' по выбранной студии'}.</div>`;
-    wireDayCards(picked);
+    wireDayCards(picked,()=>renderAllReports(body));
     const list=all.filter(e=>f==='all'||e.studioId===f);
     cnt.textContent=list.length;
     alllist.innerHTML=list.length?list.map(e=>dayCard(e)).join(''):`<div class="empty">Отчётов пока нет.</div>`;
-    wireDayCards(alllist);
+    wireDayCards(alllist,()=>renderAllReports(body));
   }
   pick.onchange=refresh; stf.onchange=refresh; refresh();
   body.querySelector('#export').onclick=()=>{const f=stf.value;exportExcel(all.filter(e=>f==='all'||e.studioId===f));};
@@ -693,9 +741,9 @@ function exportExcel(entries){
       'Дата':e.date,'День недели':fmtDow(e.date),'Студия':studioName(e.studioId),'Адрес':studioAddr(e.studioId),
       'Заполнил (ФИО)':e.filledBy||'','Логин':e.filledByLogin||'','Время':fmtTime(e.submittedAt),
       'Наличные начало':e.cashStart??'','Наличные конец':e.cashEnd??'','Внесено':inSum,'Выдано':outSum,
-      'Ожидаемый остаток':expected,'Расхождение':diff,'Движения (детально)':chgText,
+      'Должно быть в кассе':expected,'Расхождение':diff,'Движения (детально)':chgText,
       'Безналичные':e.cashless??'','Allsports':e.allsports??'','EPOS':e.epos??'',
-      'Пришло новых':came,'Купили абонемент':bought,'Абонементы закончились':endedC,'Продлили':renewC,'Не продлили':notRen,
+      'Пришло новых':came,'Купили абонемент':bought,'Конверсия новых':pct(bought,came),'Абонементы закончились':endedC,'Продлили':renewC,'Не продлили':notRen,'Конверсия продлений':pct(renewC,endedC),
       'Новые клиенты (детально)':newDet,'Не продлили (детально)':nrDet,'Комментарии':e.comments||''
     };
   });
@@ -727,8 +775,9 @@ async function renderUsers(body){
       el.onclick=async()=>{
         const act=el.dataset.act;
         try{
-          if(act==='active'){ await rpc('app_update_admin',{p_token:TOKEN,p_login:login,p_active:!u.active,p_senior:u.senior}); toast(!u.active?'Доступ включён':'Доступ отключён'); renderUsers(body); }
-          else if(act==='senior'){ await rpc('app_update_admin',{p_token:TOKEN,p_login:login,p_active:u.active,p_senior:!u.senior}); toast(!u.senior?'Назначен старшим (полный доступ)':'Полный доступ снят'); renderUsers(body); }
+          if(act==='active'){ await rpc('app_update_admin',{p_token:TOKEN,p_login:login,p_active:!u.active,p_senior:u.senior,p_can_edit:u.canEdit}); toast(!u.active?'Доступ включён':'Доступ отключён'); renderUsers(body); }
+          else if(act==='senior'){ await rpc('app_update_admin',{p_token:TOKEN,p_login:login,p_active:u.active,p_senior:!u.senior,p_can_edit:u.canEdit}); toast(!u.senior?'Назначен старшим (полный доступ)':'Полный доступ снят'); renderUsers(body); }
+          else if(act==='canedit'){ await rpc('app_update_admin',{p_token:TOKEN,p_login:login,p_active:u.active,p_senior:u.senior,p_can_edit:!u.canEdit}); toast(!u.canEdit?'Разрешена правка утренних наличных':'Правка утренних наличных запрещена'); renderUsers(body); }
           else if(act==='reset'){ resetPwModal(u,()=>renderUsers(body)); }
           else if(act==='del'){ confirmModal(`Удалить администратора «${u.name}»? Он больше не сможет войти. Его отчёты сохранятся в логе.`, async()=>{ try{ await rpc('app_delete_admin',{p_token:TOKEN,p_login:login}); toast('Администратор удалён'); renderUsers(body); }catch(e){ handleErr(e); } }); }
         }catch(e){ handleErr(e); }
@@ -745,6 +794,7 @@ function userRow(u){
       <span class="st-pill ${u.active?'st-on':'st-off'}">${u.active?'доступ включён':'доступ отключён'}</span>
       <span class="ctl-item">Доступ <button class="sw ${u.active?'on':''}" data-act="active" aria-label="Доступ"></button></span>
       <span class="ctl-item">Старший <button class="sw ${u.senior?'on':''}" data-act="senior" aria-label="Старший"></button></span>
+      <span class="ctl-item">Правка касс. утра <button class="sw ${u.canEdit?'on':''}" data-act="canedit" aria-label="Правка утренних наличных"></button></span>
       <button class="btn btn-sm" data-act="reset">Сбросить пароль</button>
       <button class="btn btn-sm btn-ghost" data-act="del">Удалить</button>
     </div></div>`;
