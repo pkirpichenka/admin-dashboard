@@ -127,6 +127,15 @@ textarea{resize:vertical;min-height:52px;line-height:1.45}
 .fix-row{display:flex;gap:8px;align-items:stretch}
 .fix-row .cur input{height:100%}
 .fix-btn{flex:0 0 auto;white-space:nowrap}
+.banner{background:var(--clay-soft);border:1px solid #E8B7AC;border-radius:12px;padding:12px 14px;margin-bottom:18px}
+.banner .bt{font-weight:700;color:var(--clay);font-size:13.5px;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.banner .bi{display:flex;flex-wrap:wrap;gap:8px}
+.banner .bchip{background:#fff;border:1px solid #E8B7AC;color:var(--ink);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer;transition:var(--fx)}
+.banner .bchip:hover{background:var(--clay);color:#fff;border-color:var(--clay)}
+.closed-badge{font-size:12.5px;font-weight:700;color:var(--accent);background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:6px 12px;align-self:center}
+.stat{font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px}
+.stat-closed{background:var(--surface-2);color:var(--accent)}
+.stat-open{background:var(--clay-soft);color:var(--clay)}
 .mcmp{font-size:12.5px;color:var(--ink-soft);background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
 .mcmp-k{color:var(--ink-faint)}
 .mcmp .mok{color:var(--accent)} .mcmp .mbad{color:var(--clay)}
@@ -438,11 +447,13 @@ function textField(id,label,val,ph){return `<label class="field"><div class="lbl
 async function renderShift(body){
   const today=todayStr();
   body.innerHTML=`
+    <div id="banner"></div>
     <div class="section-title">Смена · ${fmtLong(today)} · ${fmtDow(today)}</div>
     <div class="studios" id="studios">${STUDIOS.map(s=>`
       <button class="st-btn${s.id===shiftStudio?' on':''}" data-id="${s.id}">
         <div class="t">${s.name}</div><div class="a">${s.address}</div></button>`).join('')}</div>
     <div id="shiftbody"></div>`;
+  fillBanner(body.querySelector('#banner'), (s,d)=>openShiftEditor(body,s,d,()=>renderShift(body)));
   body.querySelectorAll('.st-btn').forEach(b=>b.onclick=()=>{shiftStudio=b.dataset.id;renderShift(body);});
   const sb=body.querySelector('#shiftbody');
   if(!shiftStudio){sb.innerHTML=`<div class="empty">Выберите студию, в которой вы сегодня работаете.</div>`;return;}
@@ -527,8 +538,14 @@ function renderForm(container,studio,date,data,onSaved,opts){
       </div>
     </div>
 
-    <div class="bar"><div class="grow"></div>
-      <button class="btn btn-primary" id="save">${data.filledBy?'Обновить отчёт':'Сохранить отчёт'}</button></div>`;
+    <div class="bar">
+      ${data.status==='closed'?`<span class="closed-badge">✓ Смена закрыта${data.closedBy?' · '+escapeHtml(data.closedBy):''}${data.closedAt?' · '+fmtTime(data.closedAt):''}</span>`:''}
+      <div class="grow"></div>
+      <button class="btn" id="save">Сохранить</button>
+      ${data.status==='closed'
+        ? `<button class="btn btn-ghost" id="reopen">Открыть заново</button>`
+        : `<button class="btn btn-primary" id="closeShift">Закрыть смену</button>`}
+    </div>`;
 
   // сравнение утренних наличных с остатком на конец предыдущего дня (тот же филиал)
   const morningCmp=container.querySelector('#morningCmp');
@@ -627,6 +644,7 @@ function renderForm(container,studio,date,data,onSaved,opts){
       ended:valNum('ended'), renewed:valNum('renewed'),
       notRenewList:notRenewList.map(x=>({note:(x.note||'').trim()})),
       comments:valStr('comments'),
+      status:data.status||'open', closedBy:data.closedBy, closedByLogin:data.closedByLogin, closedAt:data.closedAt,
       cashStartEditedBy:data.cashStartEditedBy, cashStartEditedAt:data.cashStartEditedAt,
       filledBy:session.name, filledByLogin:session.login, submittedAt:new Date().toISOString()
     };
@@ -642,14 +660,57 @@ function renderForm(container,studio,date,data,onSaved,opts){
     };
   }
 
-  // save
+  // save (черновик — статус не меняется)
   container.querySelector('#save').onclick=async()=>{
     const rec=collectRec();
     try{await apiSaveReport(studio,date,rec);toast(data.filledBy?'Отчёт обновлён':'Отчёт сохранён · '+session.name);onSaved&&onSaved();}
     catch(e){toast('Не удалось сохранить',true);}
   };
+
+  // Закрыть смену — требует все финансовые поля + клиентов
+  const REQ=[['cashStart','наличные на начало дня'],['cashEnd','наличные на конец дня'],['cashless','безналичные'],['allsports','Allsports'],['epos','EPOS'],['newCame','пришло новых'],['ended','закончились абонементы'],['renewed','продлили']];
+  const closeBtn=container.querySelector('#closeShift');
+  if(closeBtn){
+    closeBtn.onclick=async()=>{
+      const missing=REQ.filter(f=>valNum(f[0])==null).map(f=>f[1]);
+      if(missing.length){ toast('Чтобы закрыть смену, заполните: '+missing.join(', '),true); return; }
+      const rec=collectRec(); rec.status='closed'; rec.closedBy=session.name; rec.closedByLogin=session.login; rec.closedAt=new Date().toISOString();
+      try{ await apiSaveReport(studio,date,rec); toast('Смена закрыта'); onSaved&&onSaved(); }catch(e){ handleErr(e); }
+    };
+  }
+  const reopenBtn=container.querySelector('#reopen');
+  if(reopenBtn){
+    reopenBtn.onclick=async()=>{
+      const rec=collectRec(); rec.status='open'; rec.closedBy=null; rec.closedByLogin=null; rec.closedAt=null;
+      try{ await apiSaveReport(studio,date,rec); toast('Смена открыта заново'); onSaved&&onSaved(); }catch(e){ handleErr(e); }
+    };
+  }
   function valNum(id){const v=container.querySelector('#'+id).value;return v===''?null:num(v);}
   function valStr(id){return container.querySelector('#'+id).value.trim();}
+}
+
+/* ================= Незакрытые смены: баннер + доводка ================= */
+function isReportOpen(e){ return e && e.status!=='closed'; }
+async function fillBanner(el, gotoEditor){
+  let all; try{ all=await loadReports(); }catch(e){ el.innerHTML=''; return; }
+  const t=todayStr();
+  const open=all.filter(e=> e.date<t && e.status!=='closed');
+  if(!open.length){ el.innerHTML=''; return; }
+  el.innerHTML=`<div class="banner fade-in">
+    <div class="bt">⚠ Не закрыты смены (${open.length}) — доделайте отчёт конца дня</div>
+    <div class="bi">${open.map(e=>`<button class="bchip" data-go="${e.studioId}|${e.date}">${fmtLong(e.date)} · ${studioName(e.studioId)}</button>`).join('')}</div>
+  </div>`;
+  el.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{const p=b.dataset.go.split('|');gotoEditor(p[0],p[1]);});
+}
+async function openShiftEditor(body, studio, date, back){
+  let existing={}, prev=null;
+  try{ existing=await getEntry(studio,date)||{}; prev=await getEntry(studio,prevDays(date,1)[0]); }catch(e){}
+  const opts={prevCashEnd:(prev&&prev.cashEnd!=null)?prev.cashEnd:null};
+  body.innerHTML=`<button class="btn btn-sm" id="backBtn" style="margin-bottom:14px">← Назад</button>
+    <div class="section-title">Доделать смену · ${fmtLong(date)} · ${studioName(studio)}</div>
+    <div id="feform"></div>`;
+  body.querySelector('#backBtn').onclick=back;
+  renderForm(body.querySelector('#feform'), studio, date, existing, ()=>back(), opts);
 }
 
 /* ================= History (read-only) ================= */
@@ -702,6 +763,7 @@ function dayCard(e,open){
     <div class="day-head"><span class="chev">▸</span>
       <span class="day-date">${fmtLong(e.date)}<span class="dow"> · ${fmtDow(e.date)}</span></span>
       <span class="st-tag">${studioAddr(e.studioId)}</span>
+      <span class="stat ${e.status==='closed'?'stat-closed':'stat-open'}">${e.status==='closed'?'закрыта':'не закрыта'}</span>
       <span class="day-by">заполнил(а): <b>${escapeHtml(e.filledBy||'—')}</b><br><span style="color:var(--ink-faint)">${fmtTime(e.submittedAt)}</span></span></div>
     <div class="day-body">
       <div class="kv">
@@ -732,6 +794,7 @@ function dayCard(e,open){
 async function renderAllReports(body){
   let all; try{ all=await loadReports(true); }catch(e){ return handleErr(e); }
   body.innerHTML=`
+    <div id="banner"></div>
     <div class="bar fade-in">
       <div class="datepick"><span class="lbl">День:</span><input type="date" id="pick" max="${todayStr()}" value="${all[0]?all[0].date:todayStr()}" style="width:auto"/></div>
       <div class="datepick"><span class="lbl">Студия:</span><select id="stf" style="width:auto"><option value="all">Все студии</option>${STUDIOS.map(s=>`<option value="${s.id}">${s.name} · ${s.address}</option>`).join('')}</select></div>
@@ -741,6 +804,7 @@ async function renderAllReports(body){
     <div id="picked"></div>
     <div class="section-title">Все отчёты (<span id="cnt">0</span>)</div>
     <div id="alllist"></div>`;
+  fillBanner(body.querySelector('#banner'), (s,d)=>openShiftEditor(body,s,d,()=>renderAllReports(body)));
   const pick=body.querySelector('#pick'),stf=body.querySelector('#stf'),
         picked=body.querySelector('#picked'),alllist=body.querySelector('#alllist'),cnt=body.querySelector('#cnt');
   function refresh(){
