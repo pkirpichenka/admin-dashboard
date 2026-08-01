@@ -8,6 +8,7 @@
 -->
 <meta charset="utf-8" />
 <title>Flexico-Admin-Dashboard</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMyRTdENUIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMxRTVDNDEiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjI2IiBmaWxsPSJ1cmwoI2cpIi8+PHJlY3QgeD0iMzYiIHk9IjI3IiB3aWR0aD0iMzMiIGhlaWdodD0iMTAiIHJ4PSIyIiBmaWxsPSIjZmZmIi8+PHJlY3QgeD0iMzYiIHk9IjI3IiB3aWR0aD0iMTAiIGhlaWdodD0iNDYiIHJ4PSIyIiBmaWxsPSIjZmZmIi8+PHJlY3QgeD0iMzYiIHk9IjQ2IiB3aWR0aD0iMjUiIGhlaWdodD0iMTAiIHJ4PSIyIiBmaWxsPSIjZmZmIi8+PC9zdmc+"/>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -142,6 +143,7 @@ textarea{resize:vertical;min-height:52px;line-height:1.45}
 .lockchip{font-size:11px;font-weight:700;color:var(--gold);background:var(--gold-soft);padding:1px 8px;border-radius:999px;margin-left:4px}
 .hintline{font-size:12px;color:var(--ink-faint)}
 .sdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:baseline;flex:0 0 auto}
+.ent{color:var(--ink-faint);font-weight:600;font-size:10.5px}
 input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 
 /* History */
@@ -309,14 +311,16 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 <script>
 /* ================= Studios & currency ================= */
 const STUDIOS = [
-  {id:'masherova',  name:'Машерова',  address:'Машерова, 11', start:'09:30', end:'21:30', color:'#2F6FB5'},
-  {id:'kuibysheva', name:'Куйбышева', address:'Куйбышева, 22', start:'16:30', end:'22:00', color:'#E6A700'},
-  {id:'tolbuhina',  name:'Толбухина', address:'Толбухина, 2',  start:'09:30', end:'21:30', color:'#E2711D'}
+  {id:'masherova',  name:'Машерова',  address:'Машерова, 11', entity:'ООО', start:'09:30', end:'21:30', color:'#2F6FB5'},
+  {id:'kuibysheva', name:'Куйбышева', address:'Куйбышева, 22', entity:'ООО', start:'16:30', end:'22:00', color:'#E6A700'},
+  {id:'tolbuhina',  name:'Толбухина', address:'Толбухина, 2',  entity:'ИП', start:'09:30', end:'21:30', color:'#E2711D'}
 ];
 const SMAP = Object.fromEntries(STUDIOS.map(s=>[s.id,s]));
 const studioName = id => SMAP[id]?SMAP[id].name:(id||'—');
 const studioColor = id => (SMAP[id]&&SMAP[id].color)||'#8A998F';
 const sdot = id => `<span class="sdot" style="background:${studioColor(id)}"></span>`;
+const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
+const studioTag = id => `${sdot(id)}${studioName(id)} <small class="ent">${studioEntity(id)}</small>`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'Br'; // белорусский рубль (BYN)
 
@@ -543,7 +547,7 @@ async function renderShift(body){
     <div class="section-title">Смена · ${fmtLong(today)} · ${fmtDow(today)}</div>
     <div class="studios" id="studios">${STUDIOS.map(s=>`
       <button class="st-btn${s.id===shiftStudio?' on':''}" data-id="${s.id}" style="border-left:4px solid ${s.color}">
-        <div class="t">${s.name}</div><div class="a">${s.address}</div></button>`).join('')}</div>
+        <div class="t">${s.name} <small class="ent">${s.entity}</small></div><div class="a">${s.address}</div></button>`).join('')}</div>
     <div id="shiftbody"></div>`;
   fillBanner(body.querySelector('#banner'), (s,d)=>openShiftEditor(body,s,d,()=>renderShift(body)));
   body.querySelectorAll('.st-btn').forEach(b=>b.onclick=()=>{shiftStudio=b.dataset.id;renderShift(body);});
@@ -572,7 +576,7 @@ function renderForm(container,studio,date,data,onSaved,opts){
 
   container.innerHTML=`
     <div class="card fade-in">
-      <div class="card-head"><span class="idx">1</span><h2>Финансы · ${studioName(studio)}</h2>
+      <div class="card-head"><span class="idx">1</span><h2>Финансы · ${studioName(studio)} <small style="color:var(--ink-faint);font-weight:600;font-size:11px">${studioEntity(studio)}</small></h2>
         ${data.filledBy?`<span class="hint">заполнено: ${escapeHtml(data.filledBy)}</span>`:''}</div>
       <div class="card-body">
         <div id="tape" class="tape"></div>
@@ -881,7 +885,7 @@ function dayCard(e,open){
   return `<div class="day${open?' open':''}">
     <div class="day-head"><span class="chev">▸</span>
       <span class="day-date">${fmtLong(e.date)}<span class="dow"> · ${fmtDow(e.date)}</span></span>
-      <span class="st-tag" style="border-color:${studioColor(e.studioId)}">${sdot(e.studioId)}${studioAddr(e.studioId)}</span>
+      <span class="st-tag" style="border-color:${studioColor(e.studioId)}">${sdot(e.studioId)}${studioAddr(e.studioId)} · ${studioEntity(e.studioId)}</span>
       <span class="stat ${e.status==='closed'?'stat-closed':'stat-open'}">${e.status==='closed'?'закрыта':'не закрыта'}</span>
       <span class="day-by">заполнил(а): <b>${escapeHtml(e.filledBy||'—')}</b><br><span style="color:var(--ink-faint)">${fmtTime(e.submittedAt)}</span></span></div>
     <div class="day-body">
@@ -919,10 +923,18 @@ async function renderAllReports(body){
     <div id="banner"></div>
     <div class="bar fade-in">
       <div class="datepick"><span class="lbl">День:</span><input type="date" id="pick" max="${todayStr()}" value="${all[0]?all[0].date:todayStr()}" style="width:auto"/></div>
-      <div class="datepick"><span class="lbl">Студия:</span><select id="stf" style="width:auto"><option value="all">Все студии</option>${STUDIOS.map(s=>`<option value="${s.id}">${s.name} · ${s.address}</option>`).join('')}</select></div>
+      <div class="datepick"><span class="lbl">Студия:</span><select id="stf" style="width:auto"><option value="all">Все студии</option>${STUDIOS.map(s=>`<option value="${s.id}">${s.name} · ${s.address} · ${s.entity}</option>`).join('')}</select></div>
       <div class="grow"></div>
       <button class="btn" id="export">↓ Выгрузить лог в Excel</button>
     </div>
+    <div class="bar" style="margin-top:-6px">
+      <div class="datepick"><span class="lbl">Период:</span>
+        <input type="date" id="pfrom" max="${todayStr()}" value="${todayStr().slice(0,8)}01" style="width:auto"/>
+        <span class="lbl">—</span>
+        <input type="date" id="pto" max="${todayStr()}" value="${todayStr()}" style="width:auto"/></div>
+      <button class="btn btn-sm" id="pgo">Показать итоги за период</button>
+    </div>
+    <div id="periodsum"></div>
     <div id="picked"></div>
     <div class="section-title">Все отчёты (<span id="cnt">0</span>)</div>
     <div id="alllist"></div>`;
@@ -949,7 +961,20 @@ async function renderAllReports(body){
     alllist.innerHTML=list.length?list.map(e=>dayCard(e)).join(''):`<div class="empty">Отчётов пока нет.</div>`;
     wireDayCards(alllist,()=>renderAllReports(body)); wireEdit(alllist);
   }
-  pick.onchange=refresh; stf.onchange=refresh; refresh();
+  const pfrom=body.querySelector('#pfrom'), pto=body.querySelector('#pto'), periodsum=body.querySelector('#periodsum');
+  function showPeriod(){
+    const f=stf.value, a=pfrom.value, b=pto.value;
+    if(!a||!b){ periodsum.innerHTML=''; return; }
+    const lo=a<=b?a:b, hi=a<=b?b:a;
+    const ent=all.filter(e=>e.date>=lo&&e.date<=hi&&(f==='all'||e.studioId===f));
+    periodsum.innerHTML=periodSummary(ent,lo,hi);
+  }
+  body.querySelector('#pgo').onclick=showPeriod;
+  pick.onchange=refresh;
+  stf.onchange=()=>{ refresh(); if(periodsum.innerHTML) showPeriod(); };
+  pfrom.onchange=()=>{ if(periodsum.innerHTML) showPeriod(); };
+  pto.onchange=()=>{ if(periodsum.innerHTML) showPeriod(); };
+  refresh();
   body.querySelector('#export').onclick=()=>{const f=stf.value;exportExcel(all.filter(e=>f==='all'||e.studioId===f));};
 }
 
@@ -971,18 +996,52 @@ function daySummary(entries){
   rows.forEach(e=>{const st=val(e,'cashStart'),end=val(e,'cashEnd'),c=chgOf(e),cl=val(e,'cashless'),al=val(e,'allsports'),ep=val(e,'epos');
     const day=end-st-c.i+c.o, rev=day+cl+al+ep;
     T.st+=st;T.net+=c.net;T.end+=end;T.day+=day;T.cl+=cl;T.al+=al;T.ep+=ep;T.rev+=rev;
-    finBody+=`<tr><td class="rowh">${sdot(e.studioId)}${studioName(e.studioId)}</td><td>${numf(st)}</td><td>${sgn(c.net)}</td><td>${numf(end)}</td><td>${sgn(day)}</td><td>${numf(cl)}</td><td>${numf(al)}</td><td>${numf(ep)}</td><td><b>${numf(rev)}</b></td></tr>`;});
+    finBody+=`<tr><td class="rowh">${studioTag(e.studioId)}</td><td>${numf(st)}</td><td>${sgn(c.net)}</td><td>${numf(end)}</td><td>${sgn(day)}</td><td>${numf(cl)}</td><td>${numf(al)}</td><td>${numf(ep)}</td><td><b>${numf(rev)}</b></td></tr>`;});
   const finTot=`<tr class="ds-total"><td class="rowh">Итого</td><td>${numf(T.st)}</td><td>${sgn(T.net)}</td><td>${numf(T.end)}</td><td>${sgn(T.day)}</td><td>${numf(T.cl)}</td><td>${numf(T.al)}</td><td>${numf(T.ep)}</td><td><b>${numf(T.rev)}</b></td></tr>`;
   // клиентская таблица
   let clBody='', C={came:0,bought:0,ended:0,renew:0};
   rows.forEach(e=>{const cm=cameOf(e),bo=boughtOf(e),en=endedOf(e),re=renewOf(e),nr=Math.max(0,en-re);
     C.came+=cm;C.bought+=bo;C.ended+=en;C.renew+=re;
-    clBody+=`<tr><td class="rowh">${sdot(e.studioId)}${studioName(e.studioId)}</td><td>${cm}</td><td>${bo}</td><td>${pct(bo,cm)}</td><td>${en}</td><td>${re}</td><td>${nr}</td><td>${pct(re,en)}</td></tr>`;});
+    clBody+=`<tr><td class="rowh">${studioTag(e.studioId)}</td><td>${cm}</td><td>${bo}</td><td>${pct(bo,cm)}</td><td>${en}</td><td>${re}</td><td>${nr}</td><td>${pct(re,en)}</td></tr>`;});
   const clTot=`<tr class="ds-total"><td class="rowh">Итого</td><td>${C.came}</td><td>${C.bought}</td><td>${pct(C.bought,C.came)}</td><td>${C.ended}</td><td>${C.renew}</td><td>${Math.max(0,C.ended-C.renew)}</td><td>${pct(C.renew,C.ended)}</td></tr>`;
   return `<div class="daysum">
     <div class="ds-title">Итоги за день · по филиалам и в целом <small>(суммы в ${CUR})</small></div>
     <div class="sch-scroll"><table class="ds-table"><thead><tr><th>Филиал</th><th>Утро</th><th>Движения</th><th>Вечер</th><th>Нал. за день</th><th>Картой</th><th>QR</th><th>EPOS</th><th>Выручка</th></tr></thead><tbody>${finBody}${rows.length>1?finTot:''}</tbody></table></div>
     <div class="sch-scroll" style="margin-top:8px"><table class="ds-table"><thead><tr><th>Филиал</th><th>Пришло</th><th>Купили</th><th>Конв.</th><th>Законч.</th><th>Продл.</th><th>Не прод.</th><th>Конв.</th></tr></thead><tbody>${clBody}${rows.length>1?clTot:''}</tbody></table></div>
+  </div>`;
+}
+
+/* ================= Итоги за период ================= */
+function periodSummary(entries, from, to){
+  if(!entries.length) return '<div class="empty">За выбранный период отчётов нет.</div>';
+  const numf=n=>(n==null||isNaN(Number(n)))?'0':Number(n).toLocaleString('ru-RU');
+  const sgn=n=>`<span style="color:${n<0?'var(--clay)':(n>0?'var(--accent-deep)':'var(--ink)')}">${n>0?'+':''}${numf(n)}</span>`;
+  const ord=STUDIOS.map(s=>s.id);
+  const groups={}; entries.forEach(e=>{(groups[e.studioId]=groups[e.studioId]||[]).push(e);});
+  const sids=Object.keys(groups).sort((a,b)=>ord.indexOf(a)-ord.indexOf(b));
+  const M=list=>{let days=0,dayCash=0,net=0,inter=0,card=0,qr=0,ep=0,rev=0,came=0,bought=0,ended=0,renew=0;
+    list.forEach(e=>{days++;
+      const i=(e.changes||[]).filter(c=>c.type==='in').reduce((a,c)=>a+(Number(c.amount)||0),0);
+      const o=(e.changes||[]).filter(c=>c.type!=='in').reduce((a,c)=>a+(Number(c.amount)||0),0);
+      net+=i-o; const cl=Number(e.cashless)||0,al=Number(e.allsports)||0,ie=Number(e.epos)||0;
+      card+=cl;qr+=al;ep+=ie;
+      const dc=(e.cashEnd!=null)?(Number(e.cashEnd)-(Number(e.cashStart)||0)-i+o):0; dayCash+=dc; rev+=dc+cl+al+ie;
+      const p=lastCashEndBefore(e.studioId,e.date); if(p&&e.cashStart!=null) inter+=Number(e.cashStart)-p.cashEnd;
+      came+=Number(e.newCame??e.newCount)||0;
+      bought+=Number(e.newBought!=null?e.newBought:(Array.isArray(e.newList)?e.newList.filter(x=>x.bought).length:0))||0;
+      ended+=Number(e.ended)||0; renew+=Number(e.renewed??e.oldCount)||0;});
+    return {days,dayCash,net,inter,card,qr,ep,rev,came,bought,ended,renew};};
+  let finBody='',clBody='';
+  sids.forEach(sid=>{const m=M(groups[sid]);
+    finBody+=`<tr><td class="rowh">${studioTag(sid)}</td><td>${m.days}</td><td>${sgn(m.dayCash)}</td><td>${sgn(m.net)}</td><td>${sgn(m.inter)}</td><td>${numf(m.card)}</td><td>${numf(m.qr)}</td><td>${numf(m.ep)}</td><td><b>${numf(m.rev)}</b></td></tr>`;
+    clBody+=`<tr><td class="rowh">${studioTag(sid)}</td><td>${m.came}</td><td>${m.bought}</td><td>${pct(m.bought,m.came)}</td><td>${m.ended}</td><td>${m.renew}</td><td>${Math.max(0,m.ended-m.renew)}</td><td>${pct(m.renew,m.ended)}</td></tr>`;});
+  const T=M(entries);
+  const finTot=`<tr class="ds-total"><td class="rowh">Итого</td><td>${T.days}</td><td>${sgn(T.dayCash)}</td><td>${sgn(T.net)}</td><td>${sgn(T.inter)}</td><td>${numf(T.card)}</td><td>${numf(T.qr)}</td><td>${numf(T.ep)}</td><td><b>${numf(T.rev)}</b></td></tr>`;
+  const clTot=`<tr class="ds-total"><td class="rowh">Итого</td><td>${T.came}</td><td>${T.bought}</td><td>${pct(T.bought,T.came)}</td><td>${T.ended}</td><td>${T.renew}</td><td>${Math.max(0,T.ended-T.renew)}</td><td>${pct(T.renew,T.ended)}</td></tr>`;
+  return `<div class="daysum">
+    <div class="ds-title">Итоги за период: ${fmtLong(from)} – ${fmtLong(to)} <small>(суммы в ${CUR})</small></div>
+    <div class="sch-scroll"><table class="ds-table"><thead><tr><th>Филиал</th><th>Дней</th><th>Нал. за день</th><th>Движения</th><th>Между сменами</th><th>Картой</th><th>QR</th><th>EPOS</th><th>Выручка</th></tr></thead><tbody>${finBody}${sids.length>1?finTot:''}</tbody></table></div>
+    <div class="sch-scroll" style="margin-top:8px"><table class="ds-table"><thead><tr><th>Филиал</th><th>Пришло</th><th>Купили</th><th>Конв.</th><th>Законч.</th><th>Продл.</th><th>Не прод.</th><th>Конв.</th></tr></thead><tbody>${clBody}${sids.length>1?clTot:''}</tbody></table></div>
   </div>`;
 }
 
