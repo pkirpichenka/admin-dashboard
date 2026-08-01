@@ -320,8 +320,8 @@ const CUR = 'Br'; // белорусский рубль (BYN)
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
    Больше в этом файле менять ничего не нужно. */
-const SUPABASE_URL      = 'https://llashpaqgeeezacyjppd.supabase.co';       // напр. https://abcdxyz.supabase.co
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxsYXNocGFxZ2VlZXphY3lqcHBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0ODgyOTksImV4cCI6MjEwMTA2NDI5OX0.mG5cGRIOyTnqcRUJ3OlOIOrxxdCfAByts69KHdj2Ks0';   // длинный публичный ключ "anon"
+const SUPABASE_URL      = 'https://llashpaqgeeezacyjppd.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxsYXNocGFxZ2VlZXphY3lqcHBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0ODgyOTksImV4cCI6MjEwMTA2NDI5OX0.mG5cGRIOyTnqcRUJ3OlOIOrxxdCfAByts69KHdj2Ks0';
 
 const CONFIGURED = !/ВСТАВЬТЕ/.test(SUPABASE_URL) && !/ВСТАВЬТЕ/.test(SUPABASE_ANON_KEY);
 const sb = (CONFIGURED && window.supabase) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
@@ -661,15 +661,15 @@ function renderForm(container,studio,date,data,onSaved,opts){
     const end=container.querySelector('#cashEnd').value;
     const inSum=changes.filter(c=>c.type==='in').reduce((s,c)=>s+num(c.amount),0);
     const outSum=changes.filter(c=>c.type!=='in').reduce((s,c)=>s+num(c.amount),0);
-    const expected=start+inSum-outSum;
     const hasEnd=end!==''&&!isNaN(parseFloat(end));
-    const diff=hasEnd?(num(end)-expected):null;
+    const dayCash=hasEnd?(num(end)-start-inSum+outSum):null; // выручка наличными за день
     tape.innerHTML=`
-      <div class="seg"><span class="k">Начало</span><span class="v">${money(start)}</span></div>
+      <div class="seg"><span class="k">Утро</span><span class="v">${money(start)}</span></div>
       <div class="op">+</div><div class="seg in"><span class="k">Внесено</span><span class="v">${money(inSum)}</span></div>
-      <div class="op">−</div><div class="seg out"><span class="k">Выдано</span><span class="v">${money(outSum)}</span></div>
-      <div class="seg exp"><span class="k">Должно быть</span><span class="v">${money(expected)}</span>
-        ${diff===null?'<span class="diff-chip diff-ok">введите фактический остаток</span>':diff===0?'<span class="diff-chip diff-ok">✓ сходится</span>':`<span class="diff-chip diff-bad">расхождение ${diff>0?'+':''}${money(diff)}</span>`}</div>`;
+      <div class="op">−</div><div class="seg out"><span class="k">Изъято</span><span class="v">${money(outSum)}</span></div>
+      <div class="op">→</div><div class="seg"><span class="k">Вечер (факт)</span><span class="v">${hasEnd?money(num(end)):'—'}</span></div>
+      <div class="seg exp"><span class="k">Наличными за день</span><span class="v">${dayCash===null?'—':(dayCash>=0?'+':'')+money(dayCash)}</span>
+        ${dayCash===null?'<span class="diff-chip diff-ok">введите остаток на конец дня</span>':dayCash>=0?'<span class="diff-chip diff-ok">пришло за день</span>':'<span class="diff-chip diff-bad">недостача</span>'}</div>`;
   }
   ['cashStart','cashEnd'].forEach(id=>container.querySelector('#'+id).addEventListener('input',drawTape));
   drawChanges(); drawTape();
@@ -858,8 +858,9 @@ function dayCard(e,open){
     <div class="day-body">
       <div class="kv">
         <div class="item"><div class="k">Наличные утром</div><div class="v">${money(e.cashStart)}</div></div>
+        <div class="item"><div class="k">Движения (± касса)</div><div class="v" style="color:${(inSum-outSum)<0?'var(--clay)':(inSum-outSum)>0?'var(--gold)':'var(--ink)'}">${(inSum-outSum)>0?'+':''}${money(inSum-outSum)}</div></div>
         <div class="item"><div class="k">Наличные вечером</div><div class="v">${money(e.cashEnd)}</div></div>
-        <div class="item"><div class="k">Расхождение</div><div class="v" style="color:${diff?'var(--clay)':'var(--accent)'}">${diff===null?'—':(diff>0?'+':'')+money(diff)}</div></div>
+        <div class="item"><div class="k">Наличными за день</div><div class="v" style="color:${diff===null?'var(--ink)':(diff<0?'var(--clay)':'var(--accent)')}">${diff===null?'—':(diff>=0?'+':'')+money(diff)}</div></div>
         <div class="item"><div class="k">Безналичные</div><div class="v">${money(e.cashless)}</div></div>
         <div class="item"><div class="k">Allsports</div><div class="v">${money(e.allsports)}</div></div>
         <div class="item"><div class="k">EPOS</div><div class="v">${money(e.epos)}</div></div>
@@ -932,12 +933,15 @@ function daySummary(entries){
   const renewOf=e=>Number(e.renewed??e.oldCount)||0;
   const ord=STUDIOS.map(s=>s.id);
   const rows=entries.slice().sort((a,b)=>ord.indexOf(a.studioId)-ord.indexOf(b.studioId));
-  // финансовая таблица
-  let finBody='', T={cash:0,cl:0,al:0,ep:0,tot:0};
-  rows.forEach(e=>{const cash=val(e,'cashEnd'),cl=val(e,'cashless'),al=val(e,'allsports'),ep=val(e,'epos'),tot=cash+cl+al+ep;
-    T.cash+=cash;T.cl+=cl;T.al+=al;T.ep+=ep;T.tot+=tot;
-    finBody+=`<tr><td class="rowh">${studioName(e.studioId)}</td><td>${numf(cash)}</td><td>${numf(cl)}</td><td>${numf(al)}</td><td>${numf(ep)}</td><td><b>${numf(tot)}</b></td></tr>`;});
-  const finTot=`<tr class="ds-total"><td class="rowh">Итого</td><td>${numf(T.cash)}</td><td>${numf(T.cl)}</td><td>${numf(T.al)}</td><td>${numf(T.ep)}</td><td><b>${numf(T.tot)}</b></td></tr>`;
+  const chgOf=e=>{const i=(e.changes||[]).filter(c=>c.type==='in').reduce((a,c)=>a+(Number(c.amount)||0),0);const o=(e.changes||[]).filter(c=>c.type!=='in').reduce((a,c)=>a+(Number(c.amount)||0),0);return {i,o,net:i-o};};
+  const sgn=n=>`<span style="color:${n<0?'var(--clay)':(n>0?'var(--accent-deep)':'var(--ink)')}">${n>0?'+':''}${numf(n)}</span>`;
+  // финансовая таблица (движение кассы + выручка)
+  let finBody='', T={st:0,net:0,end:0,day:0,cl:0,al:0,ep:0,rev:0};
+  rows.forEach(e=>{const st=val(e,'cashStart'),end=val(e,'cashEnd'),c=chgOf(e),cl=val(e,'cashless'),al=val(e,'allsports'),ep=val(e,'epos');
+    const day=end-st-c.i+c.o, rev=day+cl+al+ep;
+    T.st+=st;T.net+=c.net;T.end+=end;T.day+=day;T.cl+=cl;T.al+=al;T.ep+=ep;T.rev+=rev;
+    finBody+=`<tr><td class="rowh">${studioName(e.studioId)}</td><td>${numf(st)}</td><td>${sgn(c.net)}</td><td>${numf(end)}</td><td>${sgn(day)}</td><td>${numf(cl)}</td><td>${numf(al)}</td><td>${numf(ep)}</td><td><b>${numf(rev)}</b></td></tr>`;});
+  const finTot=`<tr class="ds-total"><td class="rowh">Итого</td><td>${numf(T.st)}</td><td>${sgn(T.net)}</td><td>${numf(T.end)}</td><td>${sgn(T.day)}</td><td>${numf(T.cl)}</td><td>${numf(T.al)}</td><td>${numf(T.ep)}</td><td><b>${numf(T.rev)}</b></td></tr>`;
   // клиентская таблица
   let clBody='', C={came:0,bought:0,ended:0,renew:0};
   rows.forEach(e=>{const cm=cameOf(e),bo=boughtOf(e),en=endedOf(e),re=renewOf(e),nr=Math.max(0,en-re);
@@ -946,7 +950,7 @@ function daySummary(entries){
   const clTot=`<tr class="ds-total"><td class="rowh">Итого</td><td>${C.came}</td><td>${C.bought}</td><td>${pct(C.bought,C.came)}</td><td>${C.ended}</td><td>${C.renew}</td><td>${Math.max(0,C.ended-C.renew)}</td><td>${pct(C.renew,C.ended)}</td></tr>`;
   return `<div class="daysum">
     <div class="ds-title">Итоги за день · по филиалам и в целом <small>(суммы в ${CUR})</small></div>
-    <div class="sch-scroll"><table class="ds-table"><thead><tr><th>Филиал</th><th>Наличные</th><th>Безнал</th><th>Allsports</th><th>EPOS</th><th>Итого</th></tr></thead><tbody>${finBody}${rows.length>1?finTot:''}</tbody></table></div>
+    <div class="sch-scroll"><table class="ds-table"><thead><tr><th>Филиал</th><th>Утро</th><th>Движения</th><th>Вечер</th><th>Нал. за день</th><th>Безнал</th><th>Allsports</th><th>EPOS</th><th>Выручка</th></tr></thead><tbody>${finBody}${rows.length>1?finTot:''}</tbody></table></div>
     <div class="sch-scroll" style="margin-top:8px"><table class="ds-table"><thead><tr><th>Филиал</th><th>Пришло</th><th>Купили</th><th>Конв.</th><th>Законч.</th><th>Продл.</th><th>Не прод.</th><th>Конв.</th></tr></thead><tbody>${clBody}${rows.length>1?clTot:''}</tbody></table></div>
   </div>`;
 }
@@ -970,8 +974,9 @@ function exportExcel(entries){
       'Дата':e.date,'День недели':fmtDow(e.date),'Студия':studioName(e.studioId),'Адрес':studioAddr(e.studioId),
       'Заполнил (ФИО)':e.filledBy||'','Логин':e.filledByLogin||'','Время':fmtTime(e.submittedAt),
       'Наличные начало':e.cashStart??'','Наличные конец':e.cashEnd??'','Внесено':inSum,'Выдано':outSum,
-      'Должно быть в кассе':expected,'Расхождение':diff,'Движения (детально)':chgText,
+      'Наличными за день':(e.cashEnd==null?'':num(e.cashEnd)-num(e.cashStart)-inSum+outSum),'Движения нетто':inSum-outSum,'Движения (детально)':chgText,
       'Безналичные':e.cashless??'','Allsports':e.allsports??'','EPOS':e.epos??'',
+      'Выручка за день':(e.cashEnd==null?'':(num(e.cashEnd)-num(e.cashStart)-inSum+outSum)+num(e.cashless)+num(e.allsports)+num(e.epos)),
       'Пришло новых':came,'Купили абонемент':bought,'Конверсия новых':pct(bought,came),'Абонементы закончились':endedC,'Продлили':renewC,'Не продлили':notRen,'Конверсия продлений':pct(renewC,endedC),
       'Новые клиенты (детально)':newDet,'Не продлили (детально)':nrDet,'Комментарии':e.comments||''
     };
