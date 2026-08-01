@@ -226,6 +226,62 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 @media (max-width:640px){.g2,.g3{grid-template-columns:1fr}
   .chg{flex-wrap:wrap}.chg select,.chg .amt{width:calc(50% - 4px)}.chg .cmt{width:100%}
   .tape .seg.exp{margin-left:0}}
+
+/* ================= Расписание ================= */
+#schedRoot .sch-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+#schedRoot .sch-month{display:flex;align-items:center;gap:8px;font-family:'Unbounded';font-size:15px}
+#schedRoot .sch-month b{min-width:150px;text-align:center;display:inline-block;text-transform:capitalize}
+#schedRoot .grow{flex:1}
+#schedRoot .sch-status{font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px}
+#schedRoot .sch-status.ap{background:var(--surface-2);color:var(--accent)}
+#schedRoot .sch-status.dr{background:var(--gold-soft);color:var(--gold)}
+#schedRoot .sch-subtabs{display:flex;gap:6px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:4px;width:fit-content;margin-bottom:16px;flex-wrap:wrap}
+#schedRoot .sch-subtab{border:none;background:transparent;padding:7px 14px;border-radius:8px;font-weight:600;font-size:13.5px;color:var(--ink-soft);cursor:pointer}
+#schedRoot .sch-subtab.on{background:#fff;color:var(--accent-deep);box-shadow:var(--shadow)}
+#schedRoot .sch-studios{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+#schedRoot .sch-st{border:1.5px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 14px;font-weight:700;font-size:13px;cursor:pointer;transition:var(--fx)}
+#schedRoot .sch-st span{font-weight:500;color:var(--ink-faint);font-size:12px;margin-left:4px}
+#schedRoot .sch-st.on{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba(46,125,91,.12)}
+#schedRoot .sch-grid-head,#schedRoot .sch-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+#schedRoot .sch-grid-head{margin-bottom:6px}
+#schedRoot .sch-grid-head div{text-align:center;font-size:11px;color:var(--ink-faint);font-weight:700;text-transform:uppercase}
+#schedRoot .sch-cell{min-height:78px;border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:6px;cursor:pointer;transition:var(--fx);overflow:hidden}
+#schedRoot .sch-cell:hover{border-color:var(--accent)}
+#schedRoot .sch-cell.empty{background:transparent;border:none;cursor:default}
+#schedRoot .sch-cell.closed{background:var(--surface-2);cursor:pointer}
+#schedRoot .sch-cell.need{border-color:var(--clay);box-shadow:0 0 0 2px var(--clay-soft) inset}
+#schedRoot .sch-d{font-size:12px;font-weight:700;color:var(--ink-soft);margin-bottom:3px}
+#schedRoot .sch-sh{font-size:11.5px;font-weight:600;line-height:1.25;margin-bottom:2px}
+#schedRoot .sch-sh span{display:block;font-weight:500;color:var(--ink-faint);font-size:10.5px}
+#schedRoot .sch-sh.needrep{color:var(--clay)} #schedRoot .sch-sh.needrep span{color:var(--clay)}
+#schedRoot .sch-empty{color:var(--ink-faint);font-size:12px}
+#schedRoot .sch-closed{font-size:11px;color:var(--ink-faint);font-weight:600}
+#schedRoot .sch-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;margin-bottom:8px}
+#schedRoot table.sch-cov,#schedRoot table.sch-hrs{border-collapse:collapse;font-size:12px;width:100%}
+#schedRoot .sch-cov th,#schedRoot .sch-cov td{border:1px solid var(--line);width:26px;height:26px;text-align:center;padding:0}
+#schedRoot .sch-cov th.we,#schedRoot .sch-cov td.we{background:var(--surface-2)}
+#schedRoot .sch-cov .rowh,#schedRoot .sch-hrs .rowh{width:auto;text-align:left;padding:4px 10px;font-weight:600;white-space:nowrap}
+#schedRoot .cov{font-weight:700;font-size:10px}
+#schedRoot .cov.ok{background:rgba(46,125,91,.14);color:var(--accent-deep)}
+#schedRoot .cov.nd{background:var(--clay-soft);color:var(--clay)}
+#schedRoot .cov.cl{background:var(--surface-2);color:var(--ink-faint)}
+#schedRoot .sch-hrs th,#schedRoot .sch-hrs td{border:1px solid var(--line);padding:7px 12px;text-align:left}
+#schedRoot .sch-hrs th{background:var(--surface-2);font-size:12px}
+#schedRoot .warnpill{background:var(--clay-soft);color:var(--clay);font-weight:700;padding:1px 8px;border-radius:999px;font-size:11px}
+#schedRoot .sch-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:8px}
+#schedRoot .tile{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow)}
+#schedRoot .tile.warn{border-color:var(--clay);background:var(--clay-soft)}
+#schedRoot .tile .tk{font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px}
+#schedRoot .tile .tv{font-size:22px;font-weight:700;font-family:'Unbounded'}
+#schedRoot .tile .tv.sm{font-size:14px;font-family:'Golos Text';font-weight:700}
+#schedRoot .sch-list{display:flex;flex-direction:column;gap:6px}
+#schedRoot .sch-li{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 13px;font-size:13.5px}
+#schedRoot .sch-li span{color:var(--ink-faint);float:right}
+.sch-erow{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.sch-erow .dm-adm{flex:1}
+.sch-erow input[type=time]{width:96px}
+.dim{opacity:.4;pointer-events:none}
+@media(max-width:640px){#schedRoot .sch-cell{min-height:62px}#schedRoot .sch-sh{font-size:10.5px}}
 </style>
 
 <div id="root"></div>
@@ -234,9 +290,9 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 <script>
 /* ================= Studios & currency ================= */
 const STUDIOS = [
-  {id:'masherova',  name:'Машерова',  address:'Машерова, 11'},
-  {id:'kuibysheva', name:'Куйбышева', address:'Куйбышева, 22'},
-  {id:'tolbuhina',  name:'Толбухина', address:'Толбухина, 2'}
+  {id:'masherova',  name:'Машерова',  address:'Машерова, 11', start:'09:30', end:'21:30', color:'#2E7D5B'},
+  {id:'kuibysheva', name:'Куйбышева', address:'Куйбышева, 22', start:'16:30', end:'22:00', color:'#C58A2E'},
+  {id:'tolbuhina',  name:'Толбухина', address:'Толбухина, 2',  start:'09:30', end:'21:30', color:'#3E6DB5'}
 ];
 const SMAP = Object.fromEntries(STUDIOS.map(s=>[s.id,s]));
 const studioName = id => SMAP[id]?SMAP[id].name:(id||'—');
@@ -296,6 +352,10 @@ async function apiDeleteReport(studio, date){
   REPORTS = null;
   return r;
 }
+async function apiListTeam(){ return await rpc('app_list_team',{p_token:TOKEN})||[]; }
+async function apiSetHome(login,home){ return await rpc('app_set_home',{p_token:TOKEN,p_login:login,p_home:home||''}); }
+async function apiGetSchedule(month){ return await rpc('app_get_schedule',{p_token:TOKEN,p_month:month}); }
+async function apiSaveSchedule(month,data){ return await rpc('app_save_schedule',{p_token:TOKEN,p_month:month,p_data:data}); }
 
 /* ================= Format helpers ================= */
 const DOW=['вс','пн','вт','ср','чт','пт','сб'];
@@ -421,9 +481,9 @@ function header(){
   </div>`;
 }
 function renderApp(){
-  if(session.role==='owner') renderRoleUI([{label:'Отчёты',render:renderAllReports},{label:'Администраторы',render:renderUsers}]);
-  else if(session.senior)    renderRoleUI([{label:'Моя смена',render:renderShift},{label:'Все отчёты',render:renderAllReports}]);
-  else                       renderRoleUI([{label:'Смена',render:renderShift}]);
+  if(session.role==='owner') renderRoleUI([{label:'Отчёты',render:renderAllReports},{label:'Расписание',render:renderSchedule},{label:'Администраторы',render:renderUsers}]);
+  else if(session.senior)    renderRoleUI([{label:'Моя смена',render:renderShift},{label:'Расписание',render:renderSchedule},{label:'Все отчёты',render:renderAllReports}]);
+  else                       renderRoleUI([{label:'Смена',render:renderShift},{label:'Расписание',render:renderSchedule}]);
 }
 function renderRoleUI(tabs){
   const root=document.getElementById('root');
@@ -883,6 +943,7 @@ async function renderUsers(body){
       };
     });
   });
+  list.querySelectorAll('select[data-home]').forEach(sel=>{ sel.onchange=async()=>{ try{ await apiSetHome(sel.dataset.home, sel.value); toast('Домашний филиал обновлён'); }catch(e){ handleErr(e); } }; });
   body.querySelector('#add').onclick=()=>addAdminModal(()=>renderUsers(body));
 }
 function userRow(u){
@@ -890,6 +951,7 @@ function userRow(u){
     <div class="u-main"><div class="u-name">${escapeHtml(u.name)} ${u.senior?'<span class="badge-senior">старший</span>':''}</div>
       <div class="u-login">логин: ${escapeHtml(u.login)}</div></div>
     <div class="u-ctl">
+      <select class="home-sel" data-home="${escapeHtml(u.login)}" style="max-width:150px"><option value="">филиал —</option>${STUDIOS.map(s=>`<option value="${s.id}" ${u.home===s.id?'selected':''}>${s.name}</option>`).join('')}</select>
       <span class="st-pill ${u.active?'st-on':'st-off'}">${u.active?'доступ включён':'доступ отключён'}</span>
       <span class="ctl-item">Доступ <button class="sw ${u.active?'on':''}" data-act="active" aria-label="Доступ"></button></span>
       <span class="ctl-item">Старший <button class="sw ${u.senior?'on':''}" data-act="senior" aria-label="Старший"></button></span>
@@ -932,6 +994,246 @@ function confirmModal(msg,onYes){
   const el=modal(`<h3>Подтвердите</h3><p>${escapeHtml(msg)}</p>
     <div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="c-ok" style="background:var(--clay);border-color:var(--clay)">Удалить</button></div>`);
   el.querySelector('#c-ok').onclick=async()=>{closeModal(el);await onYes();};
+}
+
+/* ================= Расписание (модуль) ================= */
+const MON2=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const SCH_DOW=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+let SCH=null, SCHDATA=null, TEAM=[];
+
+function monthKey(y,m){return y+'-'+String(m+1).padStart(2,'0');}
+function schPad(n){return String(n).padStart(2,'0');}
+function schDaysIn(y,m){return new Date(y,m+1,0).getDate();}
+function schIso(y,m,d){return y+'-'+schPad(m+1)+'-'+schPad(d);}
+function schDow(y,m,d){return new Date(y,m,d).getDay();}
+function toMin(t){const p=(t||'0:0').split(':');return (+p[0])*60+(+p[1]);}
+function shiftHours(s,e){let d=toMin(e)-toMin(s);if(d<0)d+=1440;return d/60;}
+function fmtH(x){return (Math.round(x*10)/10).toString().replace('.',',');}
+function uid(){return Math.random().toString(36).slice(2,9);}
+function teamById(id){return TEAM.find(a=>a.login===id);}
+function adminName(id){const a=teamById(id);return a?a.name:id;}
+function initials(name){return String(name||'').trim().split(/\s+/).map(w=>w[0]||'').join('').slice(0,2).toUpperCase();}
+function absName(t){return t==='otpusk'?'Отпуск':t==='bol'?'Больничный':'Отгул';}
+function homeAdmins(sid){return TEAM.filter(a=>a.home===sid);}
+function dayRec(iso,sid){return SCHDATA.assignments[iso+'_'+sid]||null;}
+function setDayRec(iso,sid,rec){const k=iso+'_'+sid; if(rec)SCHDATA.assignments[k]=rec; else delete SCHDATA.assignments[k];}
+function absOn(login,iso){return (SCHDATA.absences||[]).find(a=>a.adminId===login && iso>=a.start && iso<=a.end)||null;}
+function assignedThatDay(login,iso){return STUDIOS.some(s=>{const r=dayRec(iso,s.id);return r&&!r.closed&&(r.shifts||[]).some(sh=>sh.adminId===login);});}
+function isFreeDay(login,iso){return !absOn(login,iso)&&!assignedThatDay(login,iso);}
+function adminMonthShifts(login){const out=[];const n=schDaysIn(SCH.y,SCH.m);
+  for(let d=1;d<=n;d++){const iso=schIso(SCH.y,SCH.m,d);STUDIOS.forEach(s=>{const r=dayRec(iso,s.id);if(r&&!r.closed)(r.shifts||[]).forEach(sh=>{if(sh.adminId===login)out.push({iso,sid:s.id,shift:sh});});});}
+  return out;}
+function adminHours(login){return adminMonthShifts(login).reduce((h,x)=>h+shiftHours(x.shift.start,x.shift.end),0);}
+function consecutiveMax(login){const n=schDaysIn(SCH.y,SCH.m);let best=0,cur=0;
+  for(let d=1;d<=n;d++){const iso=schIso(SCH.y,SCH.m,d);const w=assignedThatDay(login,iso)&&!absOn(login,iso);if(w){cur++;if(cur>best)best=cur;}else cur=0;}
+  return best;}
+
+async function loadMonth(y,m){
+  let d=null; try{ d=await apiGetSchedule(monthKey(y,m)); }catch(e){ d=null; }
+  if(!d) d={assignments:{},absences:[],approved:false,seeded:false};
+  if(!d.assignments)d.assignments={}; if(!d.absences)d.absences=[];
+  return d;
+}
+async function saveMonth(){ await apiSaveSchedule(monthKey(SCH.y,SCH.m), SCHDATA); }
+
+async function renderSchedule(body){
+  const editor = session.role==='owner' || session.senior;
+  if(!SCH){ const now=new Date(); SCH={y:now.getFullYear(), m:now.getMonth(), sid:STUDIOS[0].id, view: editor?'calendar':'overview'}; }
+  try{ TEAM=await apiListTeam(); SCHDATA=await loadMonth(SCH.y,SCH.m); }
+  catch(e){ return handleErr(e); }
+  drawSchedule(body, editor);
+}
+function reflowSchedule(){ if(SCH&&SCH._body) drawSchedule(SCH._body, SCH.editor); }
+
+function drawSchedule(body, editor){
+  SCH._body=body; SCH.editor=editor;
+  const sub = editor ? [['calendar','Календарь'],['overview','Обзор']] : [['overview','Обзор всех филиалов'],['dashboard','Моё расписание']];
+  if(!sub.some(x=>x[0]===SCH.view)) SCH.view=sub[0][0];
+  body.innerHTML=`<div id="schedRoot">
+    <div class="sch-bar">
+      <div class="sch-month"><button class="btn btn-sm" data-mv="-1">‹</button><b>${MON2[SCH.m]} ${SCH.y}</b><button class="btn btn-sm" data-mv="1">›</button></div>
+      <span class="sch-status ${SCHDATA.approved?'ap':'dr'}">${SCHDATA.approved?'✓ утверждён':'черновик'}</span>
+      <div class="grow"></div>
+      ${editor?`<button class="btn btn-sm" data-sact="seed">Заполнить черновик</button>
+        <button class="btn btn-sm" data-sact="absence">Отпуска / больничные</button>
+        <button class="btn btn-sm ${SCHDATA.approved?'':'btn-primary'}" data-sact="approve">${SCHDATA.approved?'Снять утверждение':'Утвердить месяц'}</button>`:''}
+    </div>
+    <div class="sch-subtabs">${sub.map(x=>`<button class="sch-subtab${x[0]===SCH.view?' on':''}" data-sview="${x[0]}">${x[1]}</button>`).join('')}</div>
+    <div id="schSub"></div>
+  </div>`;
+  const root=body.querySelector('#schedRoot');
+  root.querySelectorAll('[data-mv]').forEach(b=>b.onclick=async()=>{
+    let m=SCH.m+(+b.dataset.mv), y=SCH.y; if(m<0){m=11;y--;} if(m>11){m=0;y++;} SCH.y=y; SCH.m=m;
+    try{ SCHDATA=await loadMonth(y,m); }catch(e){ return handleErr(e); } drawSchedule(body,editor);
+  });
+  root.querySelectorAll('[data-sview]').forEach(b=>b.onclick=()=>{ SCH.view=b.dataset.sview; drawSub(root); });
+  if(editor){
+    root.querySelector('[data-sact="seed"]').onclick=()=>seedMonth();
+    root.querySelector('[data-sact="absence"]').onclick=()=>openAbsenceModal();
+    root.querySelector('[data-sact="approve"]').onclick=()=>toggleApprove();
+  }
+  drawSub(root);
+}
+function drawSub(root){
+  const el=root.querySelector('#schSub');
+  if(SCH.view==='calendar') renderSchCalendar(el);
+  else if(SCH.view==='overview') renderSchOverview(el);
+  else renderSchPersonal(el);
+}
+
+function renderSchCalendar(el){
+  const sid=SCH.sid, st=SMAP[sid];
+  el.innerHTML=`
+    <div class="sch-studios">${STUDIOS.map(s=>`<button class="sch-st${s.id===sid?' on':''}" data-ssel="${s.id}">${s.name}<span>${s.start}–${s.end}</span></button>`).join('')}</div>
+    <div class="sch-grid-head">${SCH_DOW.map(d=>`<div>${d}</div>`).join('')}</div>
+    <div class="sch-grid" id="schGrid"></div>`;
+  const grid=el.querySelector('#schGrid'), n=schDaysIn(SCH.y,SCH.m);
+  let fd=(schDow(SCH.y,SCH.m,1)+6)%7, cells='';
+  for(let i=0;i<fd;i++) cells+='<div class="sch-cell empty"></div>';
+  for(let d=1;d<=n;d++){
+    const iso=schIso(SCH.y,SCH.m,d), r=dayRec(iso,sid); let inner='',cls='';
+    if(r&&r.closed){ cls=' closed'; inner='<span class="sch-closed">закрыто</span>'; }
+    else if(r&&r.shifts&&r.shifts.length){
+      inner=r.shifts.map(sh=>{const ab=absOn(sh.adminId,iso);
+        return `<div class="sch-sh${ab?' needrep':''}">${escapeHtml(adminName(sh.adminId))}<span>${sh.start}–${sh.end}${ab?' · нужна замена':''}</span></div>`;}).join('');
+    } else inner='<span class="sch-empty">—</span>';
+    const need=r&&!r.closed&&(r.shifts||[]).some(sh=>absOn(sh.adminId,iso));
+    cells+=`<div class="sch-cell${cls}${need?' need':''}" data-day="${d}"><div class="sch-d">${d}</div>${inner}</div>`;
+  }
+  grid.innerHTML=cells;
+  el.querySelectorAll('[data-ssel]').forEach(b=>b.onclick=()=>{ SCH.sid=b.dataset.ssel; renderSchCalendar(el); });
+  if(session.role==='owner'||session.senior){
+    grid.querySelectorAll('[data-day]').forEach(c=>c.onclick=()=>openDayModal(+c.dataset.day));
+  }
+}
+
+function teamOptions(sel,iso){
+  const home=TEAM.filter(a=>a.home===SCH.sid), others=TEAM.filter(a=>a.home!==SCH.sid);
+  const opt=a=>{const ab=absOn(a.login,iso);const busy=assignedThatDay(a.login,iso)&&a.login!==sel;
+    const stt=ab?'в отпуске':(busy?'занят':'свободен');
+    return `<option value="${a.login}" ${a.login===sel?'selected':''}>${escapeHtml(a.name)} — ${stt}</option>`;};
+  return '<option value="">— выберите —</option>'+
+    (home.length?`<optgroup label="Свои">${home.map(opt).join('')}</optgroup>`:'')+
+    (others.length?`<optgroup label="Замена с других">${others.map(opt).join('')}</optgroup>`:'');
+}
+function splitMid(s,e){let m=Math.round(((toMin(s)+toMin(e))/2)/30)*30;return schPad(Math.floor(m/60))+':'+schPad(m%60);}
+
+function openDayModal(day){
+  const iso=schIso(SCH.y,SCH.m,day), sid=SCH.sid, st=SMAP[sid];
+  const r=dayRec(iso,sid)||{closed:false,shifts:[]};
+  let shifts=(r.shifts||[]).map(s=>({...s})), closed=!!r.closed;
+  const el=modal(`<h3>${st.name} · ${day} ${MON2[SCH.m].toLowerCase()}</h3><div id="dmBody"></div>
+    <div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="dmSave">Сохранить</button></div>`);
+  const dm=el.querySelector('#dmBody');
+  function draw(){
+    dm.innerHTML=`
+      <label class="chk" style="margin-bottom:12px"><input type="checkbox" id="dmClosed" ${closed?'checked':''}/> Студия закрыта в этот день</label>
+      <div id="dmShifts" class="${closed?'dim':''}">
+        ${shifts.length?shifts.map((s,i)=>`<div class="sch-erow" data-i="${i}">
+           <select class="dm-adm">${teamOptions(s.adminId,iso)}</select>
+           <input class="dm-s" type="time" value="${s.start}"/><span>–</span><input class="dm-e" type="time" value="${s.end}"/>
+           <button class="btn btn-ghost btn-sm dm-del">✕</button></div>`).join(''):'<div class="hintline">Смены не назначены</div>'}
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+          <button class="btn btn-sm" id="dmAdd">+ Смена</button>
+          <button class="btn btn-sm" id="dmSplit">Разделить на 2</button>
+        </div>
+      </div>`;
+    dm.querySelector('#dmClosed').onchange=e=>{closed=e.target.checked;draw();};
+    if(!closed){
+      dm.querySelectorAll('.sch-erow').forEach(row=>{const i=+row.dataset.i;
+        row.querySelector('.dm-adm').onchange=e=>shifts[i].adminId=e.target.value;
+        row.querySelector('.dm-s').onchange=e=>shifts[i].start=e.target.value;
+        row.querySelector('.dm-e').onchange=e=>shifts[i].end=e.target.value;
+        row.querySelector('.dm-del').onclick=()=>{shifts.splice(i,1);draw();};});
+      dm.querySelector('#dmAdd').onclick=()=>{const ha=homeAdmins(sid);shifts.push({id:uid(),adminId:(ha[0]||TEAM[0]||{login:''}).login,start:st.start,end:st.end});draw();};
+      dm.querySelector('#dmSplit').onclick=()=>{const mid=splitMid(st.start,st.end),ha=homeAdmins(sid);
+        shifts=[{id:uid(),adminId:(shifts[0]?shifts[0].adminId:(ha[0]||{login:''}).login),start:st.start,end:mid},
+                {id:uid(),adminId:((ha[1]||ha[0]||{login:''}).login),start:mid,end:st.end}];draw();};
+    }
+  }
+  draw();
+  el.querySelector('#dmSave').onclick=async()=>{
+    const rec = closed?{closed:true,shifts:[]}:{closed:false,shifts:shifts.filter(s=>s.adminId)};
+    setDayRec(iso,sid,(!closed && rec.shifts.length===0)?null:rec);
+    try{ await saveMonth(); closeModal(el); toast('Сохранено'); reflowSchedule(); }catch(e){ handleErr(e); }
+  };
+}
+
+function renderSchOverview(el){
+  const n=schDaysIn(SCH.y,SCH.m);
+  let head='<th class="rowh">Филиал</th>';
+  for(let d=1;d<=n;d++){const we=[6,0].includes(schDow(SCH.y,SCH.m,d));head+=`<th class="${we?'we':''}">${d}</th>`;}
+  let rows='';
+  STUDIOS.forEach(s=>{let cells='';
+    for(let d=1;d<=n;d++){const iso=schIso(SCH.y,SCH.m,d),r=dayRec(iso,s.id),we=[6,0].includes(schDow(SCH.y,SCH.m,d));let c=we?'we':'',t='';
+      if(r&&r.closed){c='cl';t='×';}
+      else if(r&&(r.shifts||[]).length){const need=r.shifts.some(sh=>absOn(sh.adminId,iso));c=need?'nd':'ok';t=need?'!':r.shifts.map(sh=>initials(adminName(sh.adminId))).join('/');}
+      cells+=`<td class="cov ${c}" title="${escapeHtml(t)}">${escapeHtml(t)}</td>`;}
+    rows+=`<tr><td class="rowh">${s.name}</td>${cells}</tr>`;});
+  const warns=TEAM.filter(a=>consecutiveMax(a.login)>3);
+  const hrows=TEAM.map(a=>`<tr><td class="rowh">${escapeHtml(a.name)}</td><td>${fmtH(adminHours(a.login))} ч</td><td>${adminMonthShifts(a.login).length}</td><td>${consecutiveMax(a.login)>3?'<span class="warnpill">'+consecutiveMax(a.login)+' подряд</span>':'—'}</td></tr>`).join('');
+  el.innerHTML=`
+    ${warns.length?`<div class="banner" style="background:var(--gold-soft);border-color:#E7CF9F"><div class="bt" style="color:var(--gold)">⚠ Более 3 смен подряд (${warns.length})</div><div class="bi">${warns.map(a=>`<span class="bchip" style="cursor:default;border-color:#E7CF9F">${escapeHtml(a.name)} — ${consecutiveMax(a.login)}</span>`).join('')}</div></div>`:''}
+    <div class="section-title">Покрытие по дням</div>
+    <div class="sch-scroll"><table class="sch-cov"><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table></div>
+    <div class="section-title">Часы за месяц</div>
+    <div class="sch-scroll"><table class="sch-hrs"><thead><tr><th>Администратор</th><th>Часы</th><th>Смен</th><th>Серии</th></tr></thead><tbody>${hrows||'<tr><td colspan="4" style="color:var(--ink-faint)">Нет администраторов. Добавьте их и укажите филиал.</td></tr>'}</tbody></table></div>`;
+}
+
+function renderSchPersonal(el){
+  const me=session.login;
+  const shifts=adminMonthShifts(me).sort((a,b)=>a.iso<b.iso?-1:1);
+  const today=todayStr(), next=shifts.find(x=>x.iso>=today);
+  const myAbs=(SCHDATA.absences||[]).filter(a=>a.adminId===me);
+  const cm=consecutiveMax(me);
+  el.innerHTML=`
+    <div class="sch-tiles">
+      <div class="tile"><div class="tk">Часов за месяц</div><div class="tv">${fmtH(adminHours(me))}</div></div>
+      <div class="tile"><div class="tk">Смен за месяц</div><div class="tv">${shifts.length}</div></div>
+      <div class="tile"><div class="tk">Ближайшая смена</div><div class="tv sm">${next?fmtLong(next.iso)+' · '+studioName(next.sid):'—'}</div></div>
+      <div class="tile ${cm>3?'warn':''}"><div class="tk">Макс. подряд</div><div class="tv">${cm}</div></div>
+    </div>
+    <div class="section-title">Мои смены${SCHDATA.approved?'':' <small style="color:var(--gold);font-family:Golos Text;font-weight:600">(график ещё черновик)</small>'}</div>
+    ${shifts.length?`<div class="sch-list">${shifts.map(x=>`<div class="sch-li"><b>${fmtLong(x.iso)}</b> · ${studioName(x.sid)} · ${x.shift.start}–${x.shift.end} <span>${fmtH(shiftHours(x.shift.start,x.shift.end))} ч</span></div>`).join('')}</div>`:'<div class="empty">Смен в этом месяце пока нет.</div>'}
+    ${myAbs.length?`<div class="section-title">Мои отсутствия</div><div class="sch-list">${myAbs.map(a=>`<div class="sch-li">${absName(a.type)} · ${fmtLong(a.start)} – ${fmtLong(a.end)}</div>`).join('')}</div>`:''}`;
+}
+
+function openAbsenceModal(){
+  let list=(SCHDATA.absences||[]).map(a=>({...a}));
+  const el=modal(`<h3>Отпуска и больничные</h3><div id="abBody"></div>
+    <div class="actions"><button class="btn" data-x>Закрыть</button><button class="btn btn-primary" id="abSave">Сохранить</button></div>`);
+  const ab=el.querySelector('#abBody');
+  function draw(){
+    ab.innerHTML=`
+      <div class="sch-list" style="margin-bottom:12px">${list.length?list.map((a,i)=>`<div class="sch-li"><b>${escapeHtml(adminName(a.adminId))}</b> · ${absName(a.type)} · ${a.start} – ${a.end} <button class="btn btn-ghost btn-sm" data-abdel="${i}" style="float:right;margin-top:-4px">✕</button></div>`).join(''):'<div class="hintline">Пока нет записей</div>'}</div>
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:8px">
+        <select id="abAdm">${TEAM.map(a=>`<option value="${a.login}">${escapeHtml(a.name)}</option>`).join('')}</select>
+        <select id="abType"><option value="otpusk">Отпуск</option><option value="bol">Больничный</option><option value="otgul">Отгул</option></select>
+        <input id="abStart" type="date"/><input id="abEnd" type="date"/>
+      </div>
+      <button class="btn btn-sm" id="abAdd" style="margin-top:8px">+ Добавить</button>`;
+    ab.querySelectorAll('[data-abdel]').forEach(b=>b.onclick=()=>{list.splice(+b.dataset.abdel,1);draw();});
+    ab.querySelector('#abAdd').onclick=()=>{const s=ab.querySelector('#abStart').value,e=ab.querySelector('#abEnd').value;
+      if(!s||!e){toast('Укажите даты',true);return;}
+      list.push({id:uid(),adminId:ab.querySelector('#abAdm').value,type:ab.querySelector('#abType').value,start:s,end:(e<s?s:e)});draw();};
+  }
+  draw();
+  el.querySelector('#abSave').onclick=async()=>{ SCHDATA.absences=list; try{ await saveMonth(); closeModal(el); toast('Сохранено'); reflowSchedule(); }catch(e){ handleErr(e); } };
+}
+
+async function seedMonth(){
+  const n=schDaysIn(SCH.y,SCH.m);
+  STUDIOS.forEach(s=>{const homes=TEAM.filter(a=>a.home===s.id);
+    for(let d=1;d<=n;d++){const iso=schIso(SCH.y,SCH.m,d),k=iso+'_'+s.id;
+      if(SCHDATA.assignments[k])continue;
+      const who=homes.length?homes[(d-1)%homes.length]:null;
+      if(who)SCHDATA.assignments[k]={closed:false,shifts:[{id:uid(),adminId:who.login,start:s.start,end:s.end}]};}});
+  SCHDATA.seeded=true;
+  try{ await saveMonth(); toast('Черновик заполнен ротацией'); reflowSchedule(); }catch(e){ handleErr(e); }
+}
+async function toggleApprove(){
+  SCHDATA.approved=!SCHDATA.approved;
+  try{ await saveMonth(); toast(SCHDATA.approved?'Месяц утверждён':'Утверждение снято'); reflowSchedule(); }catch(e){ handleErr(e); }
 }
 
 /* ================= Start ================= */
