@@ -227,6 +227,17 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
   .chg{flex-wrap:wrap}.chg select,.chg .amt{width:calc(50% - 4px)}.chg .cmt{width:100%}
   .tape .seg.exp{margin-left:0}}
 
+/* Итоги за день */
+.daysum{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:14px 16px;margin-bottom:14px}
+.ds-title{font-family:'Unbounded';font-weight:600;font-size:13px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.3px;margin-bottom:10px}
+.ds-grid{display:flex;flex-wrap:wrap;gap:10px 20px;margin-bottom:8px}
+.ds-grid:last-child{margin-bottom:0}
+.ds-grid > div{display:flex;flex-direction:column;gap:1px}
+.ds-grid span{font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.3px}
+.ds-grid b{font-size:15px;font-variant-numeric:tabular-nums}
+.ds-tot b{color:var(--accent-deep)}
+.miss-row{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 14px}
+
 /* ================= Расписание ================= */
 #schedRoot .sch-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
 #schedRoot .sch-month{display:flex;align-items:center;gap:8px;font-family:'Unbounded';font-size:15px}
@@ -706,7 +717,9 @@ function renderForm(container,studio,date,data,onSaved,opts){
       comments:valStr('comments'),
       status:data.status||'open', closedBy:data.closedBy, closedByLogin:data.closedByLogin, closedAt:data.closedAt,
       cashStartEditedBy:data.cashStartEditedBy, cashStartEditedAt:data.cashStartEditedAt,
-      filledBy:session.name, filledByLogin:session.login, submittedAt:new Date().toISOString()
+      filledBy:data.filledBy||session.name, filledByLogin:data.filledByLogin||session.login,
+      lastEditedBy:session.name, lastEditedAt:new Date().toISOString(),
+      submittedAt:data.submittedAt||new Date().toISOString()
     };
   }
 
@@ -841,7 +854,7 @@ function dayCard(e,open){
         <div class="item"><div class="k">Конверсия новых</div><div class="v">${pct(bought,came)}</div></div>
         <div class="item"><div class="k">Конверсия продлений</div><div class="v">${pct(renewC,endedC)}</div></div>
       </div>
-      ${(session&&(session.role==='owner'||session.canEdit))?`<button class="btn btn-sm" data-editmorning="${e.studioId}|${e.date}" style="margin:2px 6px 8px 0">✎ Изменить наличные утром</button>`:''}${(session&&session.role==='owner')?`<button class="btn btn-sm btn-ghost" data-delreport="${e.studioId}|${e.date}" style="margin:2px 0 8px">🗑 Удалить отчёт</button>`:''}
+      ${(session&&(session.role==='owner'||session.canEdit))?`<button class="btn btn-sm" data-editmorning="${e.studioId}|${e.date}" style="margin:2px 6px 8px 0">✎ Изменить наличные утром</button>`:''}${(session&&session.role==='owner')?`<button class="btn btn-sm" data-editreport="${e.studioId}|${e.date}" style="margin:2px 6px 8px 0">✎ Редактировать отчёт</button>`:''}${(session&&session.role==='owner')?`<button class="btn btn-sm btn-ghost" data-delreport="${e.studioId}|${e.date}" style="margin:2px 0 8px">🗑 Удалить отчёт</button>`:''}
       ${e.cashStartEditedBy?`<div class="hintline" style="margin-bottom:8px">Наличные утром изменены: ${escapeHtml(e.cashStartEditedBy)}${e.cashStartEditedAt?' · '+fmtTime(e.cashStartEditedAt):''}</div>`:''}
       <div class="notes"><div class="k">Движения наличных</div>${changeList}</div>
       ${newDetail?`<div class="notes"><div class="k">Новые клиенты — по каждому</div>${newDetail}</div>`:''}
@@ -867,18 +880,59 @@ async function renderAllReports(body){
   fillBanner(body.querySelector('#banner'), (s,d)=>openShiftEditor(body,s,d,()=>renderAllReports(body)));
   const pick=body.querySelector('#pick'),stf=body.querySelector('#stf'),
         picked=body.querySelector('#picked'),alllist=body.querySelector('#alllist'),cnt=body.querySelector('#cnt');
+  function wireEdit(el){
+    el.querySelectorAll('[data-editreport]').forEach(btn=>{ btn.onclick=(ev)=>{ ev.stopPropagation(); const p=btn.dataset.editreport.split('|'); openShiftEditor(body,p[0],p[1],()=>renderAllReports(body)); }; });
+    el.querySelectorAll('[data-create]').forEach(btn=>{ btn.onclick=()=>{ const p=btn.dataset.create.split('|'); openShiftEditor(body,p[0],p[1],()=>renderAllReports(body)); }; });
+  }
   function refresh(){
     const f=stf.value, d=pick.value;
     const pe=all.filter(e=>e.date===d&&(f==='all'||e.studioId===f));
-    picked.innerHTML=pe.length?pe.map(e=>dayCard(e,true)).join(''):`<div class="empty">За ${fmtLong(d)} нет отчётов${f==='all'?'':' по выбранной студии'}.</div>`;
-    wireDayCards(picked,()=>renderAllReports(body));
+    let extra='';
+    if(session.role==='owner'){
+      const present=new Set(pe.map(e=>e.studioId));
+      const miss=STUDIOS.filter(st=>(f==='all'||st.id===f)&&!present.has(st.id));
+      if(miss.length) extra=`<div class="miss-row">${miss.map(st=>`<button class="btn btn-sm" data-create="${st.id}|${d}">+ Открыть отчёт: ${st.name}</button>`).join('')}</div>`;
+    }
+    picked.innerHTML=daySummary(pe)+(pe.length?pe.map(e=>dayCard(e,true)).join(''):`<div class="empty">За ${fmtLong(d)} нет отчётов${f==='all'?'':' по выбранной студии'}.</div>`)+extra;
+    wireDayCards(picked,()=>renderAllReports(body)); wireEdit(picked);
     const list=all.filter(e=>f==='all'||e.studioId===f);
     cnt.textContent=list.length;
     alllist.innerHTML=list.length?list.map(e=>dayCard(e)).join(''):`<div class="empty">Отчётов пока нет.</div>`;
-    wireDayCards(alllist,()=>renderAllReports(body));
+    wireDayCards(alllist,()=>renderAllReports(body)); wireEdit(alllist);
   }
   pick.onchange=refresh; stf.onchange=refresh; refresh();
   body.querySelector('#export').onclick=()=>{const f=stf.value;exportExcel(all.filter(e=>f==='all'||e.studioId===f));};
+}
+
+/* ================= Итоги за день ================= */
+function daySummary(entries){
+  if(!entries.length) return '';
+  const s=k=>entries.reduce((a,e)=>a+(e[k]!=null&&!isNaN(Number(e[k]))?Number(e[k]):0),0);
+  const cash=s('cashEnd'),cl=s('cashless'),al=s('allsports'),ep=s('epos'),total=cash+cl+al+ep;
+  const came=entries.reduce((a,e)=>a+(Number(e.newCame??e.newCount)||0),0);
+  const bought=entries.reduce((a,e)=>a+(Number(e.newBought!=null?e.newBought:(Array.isArray(e.newList)?e.newList.filter(x=>x.bought).length:0))||0),0);
+  const ended=entries.reduce((a,e)=>a+(Number(e.ended)||0),0);
+  const renew=entries.reduce((a,e)=>a+(Number(e.renewed??e.oldCount)||0),0);
+  const notRen=Math.max(0,ended-renew);
+  return `<div class="daysum">
+    <div class="ds-title">Итоги за день · филиалов: ${entries.length}</div>
+    <div class="ds-grid">
+      <div><span>Наличные</span><b>${money(cash)}</b></div>
+      <div><span>Безналичные</span><b>${money(cl)}</b></div>
+      <div><span>Allsports</span><b>${money(al)}</b></div>
+      <div><span>EPOS</span><b>${money(ep)}</b></div>
+      <div class="ds-tot"><span>Итого</span><b>${money(total)}</b></div>
+    </div>
+    <div class="ds-grid">
+      <div><span>Пришло новых</span><b>${came}</b></div>
+      <div><span>Купили</span><b>${bought}</b></div>
+      <div><span>Конверсия новых</span><b>${pct(bought,came)}</b></div>
+      <div><span>Закончились</span><b>${ended}</b></div>
+      <div><span>Продлили</span><b>${renew}</b></div>
+      <div><span>Не продлили</span><b>${notRen}</b></div>
+      <div><span>Конверсия продл.</span><b>${pct(renew,ended)}</b></div>
+    </div>
+  </div>`;
 }
 
 /* ================= Excel export ================= */
@@ -1055,6 +1109,7 @@ function drawSchedule(body, editor){
       <span class="sch-status ${SCHDATA.approved?'ap':'dr'}">${SCHDATA.approved?'✓ утверждён':'черновик'}</span>
       <div class="grow"></div>
       ${editor?`<button class="btn btn-sm" data-sact="seed">Заполнить черновик</button>
+        <button class="btn btn-sm" data-sact="clear">Очистить</button>
         <button class="btn btn-sm" data-sact="absence">Отпуска / больничные</button>
         <button class="btn btn-sm ${SCHDATA.approved?'':'btn-primary'}" data-sact="approve">${SCHDATA.approved?'Снять утверждение':'Утвердить месяц'}</button>`:''}
     </div>
@@ -1068,7 +1123,8 @@ function drawSchedule(body, editor){
   });
   root.querySelectorAll('[data-sview]').forEach(b=>b.onclick=()=>{ SCH.view=b.dataset.sview; drawSub(root); });
   if(editor){
-    root.querySelector('[data-sact="seed"]').onclick=()=>seedMonth();
+    root.querySelector('[data-sact="seed"]').onclick=()=>openSeedModal();
+    root.querySelector('[data-sact="clear"]').onclick=()=>clearDraft();
     root.querySelector('[data-sact="absence"]').onclick=()=>openAbsenceModal();
     root.querySelector('[data-sact="approve"]').onclick=()=>toggleApprove();
   }
@@ -1221,15 +1277,42 @@ function openAbsenceModal(){
   el.querySelector('#abSave').onclick=async()=>{ SCHDATA.absences=list; try{ await saveMonth(); closeModal(el); toast('Сохранено'); reflowSchedule(); }catch(e){ handleErr(e); } };
 }
 
-async function seedMonth(){
+function currentBlock(){ return (SCHDATA.pattern&&SCHDATA.pattern.block)||1; }
+function openSeedModal(){
+  const cur=currentBlock();
+  const el=modal(`<h3>Заполнить черновик</h3><p>Смены расставляются ротацией между администраторами филиала (у кого указан «домашний филиал»). Уже назначенные дни не меняются.</p>
+    <div class="field"><div class="lbl">Принцип чередования</div>
+      <select id="seedPat">
+        <option value="1" ${cur===1?'selected':''}>Через день (1/1)</option>
+        <option value="2" ${cur===2?'selected':''}>2 через 2</option>
+        <option value="3" ${cur===3?'selected':''}>3 через 3</option>
+        <option value="custom">Своё…</option>
+      </select></div>
+    <div class="field" id="seedCustomWrap" style="display:none"><div class="lbl">По сколько дней подряд на одного</div><input id="seedCustom" type="number" min="1" max="14" value="${cur}"/></div>
+    <div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="seedGo">Заполнить</button></div>`);
+  const sel=el.querySelector('#seedPat'), cw=el.querySelector('#seedCustomWrap');
+  sel.onchange=()=>{ cw.style.display = sel.value==='custom' ? 'block' : 'none'; };
+  el.querySelector('#seedGo').onclick=async()=>{
+    let block = sel.value==='custom' ? Math.max(1,Math.min(14,parseInt(el.querySelector('#seedCustom').value)||1)) : parseInt(sel.value);
+    closeModal(el); await seedMonth(block);
+  };
+}
+async function seedMonth(block){
+  block = block || currentBlock() || 1;
   const n=schDaysIn(SCH.y,SCH.m);
-  STUDIOS.forEach(s=>{const homes=TEAM.filter(a=>a.home===s.id);
+  STUDIOS.forEach(s=>{const homes=TEAM.filter(a=>a.home===s.id); if(!homes.length) return;
     for(let d=1;d<=n;d++){const iso=schIso(SCH.y,SCH.m,d),k=iso+'_'+s.id;
       if(SCHDATA.assignments[k])continue;
-      const who=homes.length?homes[(d-1)%homes.length]:null;
-      if(who)SCHDATA.assignments[k]={closed:false,shifts:[{id:uid(),adminId:who.login,start:s.start,end:s.end}]};}});
-  SCHDATA.seeded=true;
-  try{ await saveMonth(); toast('Черновик заполнен ротацией'); reflowSchedule(); }catch(e){ handleErr(e); }
+      const idx=Math.floor((d-1)/block)%homes.length, who=homes[idx];
+      SCHDATA.assignments[k]={closed:false,shifts:[{id:uid(),adminId:who.login,start:s.start,end:s.end}]};}});
+  SCHDATA.seeded=true; SCHDATA.pattern={block};
+  try{ await saveMonth(); toast('Черновик заполнен ('+(block===1?'через день':block+' через '+block)+')'); reflowSchedule(); }catch(e){ handleErr(e); }
+}
+function clearDraft(){
+  confirmModal('Очистить черновик за '+MON2[SCH.m].toLowerCase()+' '+SCH.y+'? Все назначения смен за месяц удалятся (отпуска сохранятся).', async()=>{
+    SCHDATA.assignments={}; SCHDATA.seeded=false;
+    try{ await saveMonth(); toast('Черновик очищен'); reflowSchedule(); }catch(e){ handleErr(e); }
+  });
 }
 async function toggleApprove(){
   SCHDATA.approved=!SCHDATA.approved;
