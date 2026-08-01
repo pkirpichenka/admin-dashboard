@@ -276,6 +276,8 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 #schedRoot .sch-cell.armed:hover{border-color:var(--accent);box-shadow:0 0 0 2px rgba(46,125,91,.18) inset}
 #schedRoot .sch-cell.drop{border-color:var(--accent);background:rgba(46,125,91,.08);box-shadow:0 0 0 2px var(--accent) inset}
 #schedRoot .sch-sh[draggable=true]{cursor:grab}
+#schedRoot .sch-abs{font-size:11px;font-weight:600;color:var(--ink-soft);margin-bottom:2px;padding-left:6px;border-left:3px dashed var(--line-strong);line-height:1.2}
+#schedRoot .sch-abs span{display:block;font-weight:500;font-size:10px}
 #schedRoot .sch-roster.rost-drop{border-color:var(--clay);background:var(--clay-soft);box-shadow:0 0 0 2px var(--clay) inset}
 #schedRoot .sch-roster.rost-drop::after{content:'Отпустите, чтобы убрать из дня';display:block;margin-top:8px;font-size:12px;font-weight:700;color:var(--clay)}
 #schedRoot .sch-grid-head,#schedRoot .sch-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
@@ -1284,13 +1286,21 @@ function renderSchCalendar(el){
   const grid=el.querySelector('#schGrid'), n=schDaysIn(SCH.y,SCH.m);
   let fd=(schDow(SCH.y,SCH.m,1)+6)%7, cells='';
   for(let i=0;i<fd;i++) cells+='<div class="sch-cell empty"></div>';
+  const absClr=t=>t==='bol'?'var(--clay)':(t==='otgul'?'var(--ink-soft)':'var(--gold)');
   for(let d=1;d<=n;d++){
     const iso=schIso(SCH.y,SCH.m,d), r=dayRec(iso,sid); let inner='',cls='';
     if(r&&r.closed){ cls=' closed'; inner='<span class="sch-closed">закрыто</span>'; }
-    else if(r&&r.shifts&&r.shifts.length){
-      inner=r.shifts.map(sh=>{const ab=absOn(sh.adminId,iso);
+    else {
+      const shifts=(r&&r.shifts)?r.shifts:[];
+      const scheduled=new Set(shifts.map(s=>s.adminId));
+      const shHtml=shifts.map(sh=>{const ab=absOn(sh.adminId,iso);
         return `<div class="sch-sh${ab?' needrep':''}"${editor?` draggable="true" data-shd="${d}" data-shadm="${sh.adminId}"`:''} style="border-left:3px solid ${st.color};padding-left:6px">${escapeHtml(adminName(sh.adminId))}<span>${sh.start}–${sh.end}${ab?' · нужна замена':''}</span></div>`;}).join('');
-    } else inner='<span class="sch-empty">—</span>';
+      // отсутствия «своих» админов, даже если смена ещё не назначена
+      const absHtml=TEAM.filter(a=>a.home===sid && !scheduled.has(a.login))
+        .map(a=>({a,ab:absOn(a.login,iso)})).filter(x=>x.ab)
+        .map(x=>`<div class="sch-abs">${escapeHtml(x.a.name)}<span style="color:${absClr(x.ab.type)}">${absName(x.ab.type)}</span></div>`).join('');
+      inner = (shHtml||absHtml) ? (shHtml+absHtml) : '<span class="sch-empty">—</span>';
+    }
     const need=r&&!r.closed&&(r.shifts||[]).some(sh=>absOn(sh.adminId,iso));
     cells+=`<div class="sch-cell${cls}${need?' need':''}${(SCHsel&&editor)?' armed':''}" data-day="${d}"><div class="sch-d">${d}</div>${inner}</div>`;
   }
