@@ -141,6 +141,7 @@ textarea{resize:vertical;min-height:52px;line-height:1.45}
 .mcmp .mok{color:var(--accent)} .mcmp .mbad{color:var(--clay)}
 .lockchip{font-size:11px;font-weight:700;color:var(--gold);background:var(--gold-soft);padding:1px 8px;border-radius:999px;margin-left:4px}
 .hintline{font-size:12px;color:var(--ink-faint)}
+.sdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:baseline;flex:0 0 auto}
 input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 
 /* History */
@@ -308,12 +309,14 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 <script>
 /* ================= Studios & currency ================= */
 const STUDIOS = [
-  {id:'masherova',  name:'Машерова',  address:'Машерова, 11', start:'09:30', end:'21:30', color:'#2E7D5B'},
-  {id:'kuibysheva', name:'Куйбышева', address:'Куйбышева, 22', start:'16:30', end:'22:00', color:'#C58A2E'},
-  {id:'tolbuhina',  name:'Толбухина', address:'Толбухина, 2',  start:'09:30', end:'21:30', color:'#3E6DB5'}
+  {id:'masherova',  name:'Машерова',  address:'Машерова, 11', start:'09:30', end:'21:30', color:'#2F6FB5'},
+  {id:'kuibysheva', name:'Куйбышева', address:'Куйбышева, 22', start:'16:30', end:'22:00', color:'#E6A700'},
+  {id:'tolbuhina',  name:'Толбухина', address:'Толбухина, 2',  start:'09:30', end:'21:30', color:'#E2711D'}
 ];
 const SMAP = Object.fromEntries(STUDIOS.map(s=>[s.id,s]));
 const studioName = id => SMAP[id]?SMAP[id].name:(id||'—');
+const studioColor = id => (SMAP[id]&&SMAP[id].color)||'#8A998F';
+const sdot = id => `<span class="sdot" style="background:${studioColor(id)}"></span>`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'Br'; // белорусский рубль (BYN)
 
@@ -359,6 +362,12 @@ async function loadReports(force){
 async function getEntry(studio, date){
   const all = await loadReports();
   return all.find(e => e.studioId === studio && e.date === date) || null;
+}
+function lastCashEndBefore(studio, before){
+  const all = REPORTS || [];
+  const c = all.filter(e => e.studioId===studio && e.date < before && e.cashEnd!=null)
+               .sort((a,b)=> a.date<b.date?1:-1);
+  return c.length ? {date:c[0].date, cashEnd:num(c[0].cashEnd)} : null;
 }
 async function apiSaveReport(studio, date, payload){
   const r = await rpc('app_save_report', {p_token:TOKEN, p_studio:studio, p_date:date, p_payload:payload});
@@ -528,7 +537,7 @@ async function renderShift(body){
     <div id="banner"></div>
     <div class="section-title">Смена · ${fmtLong(today)} · ${fmtDow(today)}</div>
     <div class="studios" id="studios">${STUDIOS.map(s=>`
-      <button class="st-btn${s.id===shiftStudio?' on':''}" data-id="${s.id}">
+      <button class="st-btn${s.id===shiftStudio?' on':''}" data-id="${s.id}" style="border-left:4px solid ${s.color}">
         <div class="t">${s.name}</div><div class="a">${s.address}</div></button>`).join('')}</div>
     <div id="shiftbody"></div>`;
   fillBanner(body.querySelector('#banner'), (s,d)=>openShiftEditor(body,s,d,()=>renderShift(body)));
@@ -536,8 +545,9 @@ async function renderShift(body){
   const sb=body.querySelector('#shiftbody');
   if(!shiftStudio){sb.innerHTML=`<div class="empty">Выберите студию, в которой вы сегодня работаете.</div>`;return;}
   const existing=await getEntry(shiftStudio,today)||{};
-  const prev=await getEntry(shiftStudio,prevDays(today,1)[0]);
-  const opts={prevCashEnd:(prev&&prev.cashEnd!=null)?prev.cashEnd:null};
+  await loadReports();
+  const prev=lastCashEndBefore(shiftStudio, today);
+  const opts={prevCashEnd:prev?prev.cashEnd:null, prevDate:prev?prev.date:null};
   sb.innerHTML=`<div id="form"></div>
     <div class="section-title">Предыдущие 3 дня · ${studioName(shiftStudio)}</div>
     <div id="history"></div>`;
@@ -569,6 +579,10 @@ function renderForm(container,studio,date,data,onSaved,opts){
           </div>
         </label>
         <div id="morningCmp" class="mcmp"></div>
+        <div id="interWrap" style="display:none;margin-top:8px">
+          <label class="field"><div class="lbl">Причина расхождения с прошлым остатком <small id="interAmt"></small></div>
+            <input id="interNote" value="${data.interNote?escapeHtml(data.interNote):''}" placeholder="напр.: аренда за сб–вс, инкассация, ошибка пересчёта…"/></label>
+        </div>
         ${morningLocked?'<div class="hintline" style="margin-top:6px">Сумма зафиксирована при пересчёте кассы. Изменить может руководитель или старший администратор (если ему разрешено).</div>':''}
         <div style="height:14px"></div>
         <label class="field" style="max-width:320px;margin-bottom:4px">
@@ -627,12 +641,19 @@ function renderForm(container,studio,date,data,onSaved,opts){
 
   // сравнение утренних наличных с остатком на конец предыдущего дня (тот же филиал)
   const morningCmp=container.querySelector('#morningCmp');
+  const interWrap=container.querySelector('#interWrap'), interAmt=container.querySelector('#interAmt');
   function updateMorning(){
-    const prev=opts.prevCashEnd;
-    if(prev==null){ morningCmp.innerHTML='<span class="mcmp-k">Остаток на конец вчера:</span> нет данных за вчера по этому филиалу'; return; }
-    const cur=num(container.querySelector('#cashStart').value);
-    const d=cur-prev;
-    morningCmp.innerHTML=`<span class="mcmp-k">Остаток на конец вчера:</span> <b>${money(prev)}</b> &nbsp;·&nbsp; <span class="mcmp-k">разница с внесённым утром:</span> <b class="${d===0?'mok':'mbad'}">${d>0?'+':''}${money(d)}</b>`;
+    const prev=opts.prevCashEnd, pdate=opts.prevDate;
+    if(prev==null){ morningCmp.innerHTML='<span class="mcmp-k">Прошлый остаток на конец:</span> нет прежних данных по этому филиалу'; if(interWrap)interWrap.style.display='none'; return; }
+    const sv=container.querySelector('#cashStart').value;
+    const has=sv!==''&&!isNaN(parseFloat(sv));
+    const d=has?(num(sv)-prev):null;
+    morningCmp.innerHTML=`<span class="mcmp-k">Остаток на конец ${pdate?fmtLong(pdate):'прошлого дня'}:</span> <b>${money(prev)}</b>`+
+      (d===null?'':` &nbsp;·&nbsp; <span class="mcmp-k">с прошлого остатка:</span> <b class="${d<0?'mbad':'mok'}">${d>0?'+':''}${money(d)}</b>`);
+    if(interWrap){
+      if(d!==null && d!==0){ interWrap.style.display='block'; if(interAmt)interAmt.innerHTML=`<b style="color:${d>0?'var(--gold)':'var(--clay)'}">${d>0?'+':''}${money(d)}</b>`; }
+      else interWrap.style.display='none';
+    }
   }
   container.querySelector('#cashStart').addEventListener('input',updateMorning);
   updateMorning();
@@ -721,7 +742,7 @@ function renderForm(container,studio,date,data,onSaved,opts){
       newList:newList.map(x=>({note:(x.note||'').trim(),bought:!!x.bought})),
       ended:valNum('ended'), renewed:valNum('renewed'),
       notRenewList:notRenewList.map(x=>({note:(x.note||'').trim()})),
-      comments:valStr('comments'),
+      comments:valStr('comments'), interNote:valStr('interNote'),
       status:data.status||'open', closedBy:data.closedBy, closedByLogin:data.closedByLogin, closedAt:data.closedAt,
       cashStartEditedBy:data.cashStartEditedBy, cashStartEditedAt:data.cashStartEditedAt,
       filledBy:data.filledBy||session.name, filledByLogin:data.filledByLogin||session.login,
@@ -793,9 +814,10 @@ async function fillBanner(el, gotoEditor){
   el.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{const p=b.dataset.go.split('|');gotoEditor(p[0],p[1]);});
 }
 async function openShiftEditor(body, studio, date, back){
-  let existing={}, prev=null;
-  try{ existing=await getEntry(studio,date)||{}; prev=await getEntry(studio,prevDays(date,1)[0]); }catch(e){}
-  const opts={prevCashEnd:(prev&&prev.cashEnd!=null)?prev.cashEnd:null};
+  let existing={};
+  try{ existing=await getEntry(studio,date)||{}; await loadReports(); }catch(e){}
+  const prev=lastCashEndBefore(studio,date);
+  const opts={prevCashEnd:prev?prev.cashEnd:null, prevDate:prev?prev.date:null};
   body.innerHTML=`<button class="btn btn-sm" id="backBtn" style="margin-bottom:14px">← Назад</button>
     <div class="section-title">Доделать смену · ${fmtLong(date)} · ${studioName(studio)}</div>
     <div id="feform"></div>`;
@@ -842,6 +864,8 @@ function dayCard(e,open){
   const outSum=(e.changes||[]).filter(c=>c.type!=='in').reduce((s,c)=>s+num(c.amount),0);
   const expected=num(e.cashStart)+inSum-outSum;
   const diff=e.cashEnd==null?null:num(e.cashEnd)-expected;
+  const prevInfo=lastCashEndBefore(e.studioId,e.date);
+  const inter=(prevInfo&&e.cashStart!=null)?num(e.cashStart)-prevInfo.cashEnd:null;
   const came=e.newCame??e.newCount??null;
   const bought=e.newBought!=null?e.newBought:(Array.isArray(e.newList)?e.newList.filter(x=>x.bought).length:null);
   const endedC=e.ended??null, renewC=e.renewed??e.oldCount??null;
@@ -852,7 +876,7 @@ function dayCard(e,open){
   return `<div class="day${open?' open':''}">
     <div class="day-head"><span class="chev">▸</span>
       <span class="day-date">${fmtLong(e.date)}<span class="dow"> · ${fmtDow(e.date)}</span></span>
-      <span class="st-tag">${studioAddr(e.studioId)}</span>
+      <span class="st-tag" style="border-color:${studioColor(e.studioId)}">${sdot(e.studioId)}${studioAddr(e.studioId)}</span>
       <span class="stat ${e.status==='closed'?'stat-closed':'stat-open'}">${e.status==='closed'?'закрыта':'не закрыта'}</span>
       <span class="day-by">заполнил(а): <b>${escapeHtml(e.filledBy||'—')}</b><br><span style="color:var(--ink-faint)">${fmtTime(e.submittedAt)}</span></span></div>
     <div class="day-body">
@@ -861,6 +885,7 @@ function dayCard(e,open){
         <div class="item"><div class="k">Движения (± касса)</div><div class="v" style="color:${(inSum-outSum)<0?'var(--clay)':(inSum-outSum)>0?'var(--gold)':'var(--ink)'}">${(inSum-outSum)>0?'+':''}${money(inSum-outSum)}</div></div>
         <div class="item"><div class="k">Наличные вечером</div><div class="v">${money(e.cashEnd)}</div></div>
         <div class="item"><div class="k">Наличными за день</div><div class="v" style="color:${diff===null?'var(--ink)':(diff<0?'var(--clay)':'var(--accent)')}">${diff===null?'—':(diff>=0?'+':'')+money(diff)}</div></div>
+        ${inter!=null&&inter!==0?`<div class="item"><div class="k">Между сменами</div><div class="v" style="color:${inter>0?'var(--gold)':'var(--clay)'}">${inter>0?'+':''}${money(inter)}${prevInfo?` <small style="color:var(--ink-faint);font-weight:500">(с ${fmtLong(prevInfo.date)})</small>`:''}</div></div>`:''}
         <div class="item"><div class="k">Безналичные</div><div class="v">${money(e.cashless)}</div></div>
         <div class="item"><div class="k">Allsports</div><div class="v">${money(e.allsports)}</div></div>
         <div class="item"><div class="k">EPOS</div><div class="v">${money(e.epos)}</div></div>
@@ -877,6 +902,7 @@ function dayCard(e,open){
       <div class="notes"><div class="k">Движения наличных</div>${changeList}</div>
       ${newDetail?`<div class="notes"><div class="k">Новые клиенты — по каждому</div>${newDetail}</div>`:''}
       ${nrDetail?`<div class="notes"><div class="k">Не продлили — по каждому</div>${nrDetail}</div>`:''}
+      ${e.interNote?`<div class="notes"><div class="k">Между сменами — причина</div>${escapeHtml(e.interNote)}</div>`:''}
       ${e.comments?`<div class="notes"><div class="k">Комментарии</div>${escapeHtml(e.comments)}</div>`:''}
     </div></div>`;
 }
@@ -909,7 +935,7 @@ async function renderAllReports(body){
     if(session.role==='owner'){
       const present=new Set(pe.map(e=>e.studioId));
       const miss=STUDIOS.filter(st=>(f==='all'||st.id===f)&&!present.has(st.id));
-      if(miss.length) extra=`<div class="miss-row">${miss.map(st=>`<button class="btn btn-sm" data-create="${st.id}|${d}">+ Открыть отчёт: ${st.name}</button>`).join('')}</div>`;
+      if(miss.length) extra=`<div class="miss-row">${miss.map(st=>`<button class="btn btn-sm" data-create="${st.id}|${d}">+ Открыть отчёт: ${sdot(st.id)}${st.name}</button>`).join('')}</div>`;
     }
     picked.innerHTML=daySummary(pe)+(pe.length?pe.map(e=>dayCard(e,true)).join(''):`<div class="empty">За ${fmtLong(d)} нет отчётов${f==='all'?'':' по выбранной студии'}.</div>`)+extra;
     wireDayCards(picked,()=>renderAllReports(body)); wireEdit(picked);
@@ -940,13 +966,13 @@ function daySummary(entries){
   rows.forEach(e=>{const st=val(e,'cashStart'),end=val(e,'cashEnd'),c=chgOf(e),cl=val(e,'cashless'),al=val(e,'allsports'),ep=val(e,'epos');
     const day=end-st-c.i+c.o, rev=day+cl+al+ep;
     T.st+=st;T.net+=c.net;T.end+=end;T.day+=day;T.cl+=cl;T.al+=al;T.ep+=ep;T.rev+=rev;
-    finBody+=`<tr><td class="rowh">${studioName(e.studioId)}</td><td>${numf(st)}</td><td>${sgn(c.net)}</td><td>${numf(end)}</td><td>${sgn(day)}</td><td>${numf(cl)}</td><td>${numf(al)}</td><td>${numf(ep)}</td><td><b>${numf(rev)}</b></td></tr>`;});
+    finBody+=`<tr><td class="rowh">${sdot(e.studioId)}${studioName(e.studioId)}</td><td>${numf(st)}</td><td>${sgn(c.net)}</td><td>${numf(end)}</td><td>${sgn(day)}</td><td>${numf(cl)}</td><td>${numf(al)}</td><td>${numf(ep)}</td><td><b>${numf(rev)}</b></td></tr>`;});
   const finTot=`<tr class="ds-total"><td class="rowh">Итого</td><td>${numf(T.st)}</td><td>${sgn(T.net)}</td><td>${numf(T.end)}</td><td>${sgn(T.day)}</td><td>${numf(T.cl)}</td><td>${numf(T.al)}</td><td>${numf(T.ep)}</td><td><b>${numf(T.rev)}</b></td></tr>`;
   // клиентская таблица
   let clBody='', C={came:0,bought:0,ended:0,renew:0};
   rows.forEach(e=>{const cm=cameOf(e),bo=boughtOf(e),en=endedOf(e),re=renewOf(e),nr=Math.max(0,en-re);
     C.came+=cm;C.bought+=bo;C.ended+=en;C.renew+=re;
-    clBody+=`<tr><td class="rowh">${studioName(e.studioId)}</td><td>${cm}</td><td>${bo}</td><td>${pct(bo,cm)}</td><td>${en}</td><td>${re}</td><td>${nr}</td><td>${pct(re,en)}</td></tr>`;});
+    clBody+=`<tr><td class="rowh">${sdot(e.studioId)}${studioName(e.studioId)}</td><td>${cm}</td><td>${bo}</td><td>${pct(bo,cm)}</td><td>${en}</td><td>${re}</td><td>${nr}</td><td>${pct(re,en)}</td></tr>`;});
   const clTot=`<tr class="ds-total"><td class="rowh">Итого</td><td>${C.came}</td><td>${C.bought}</td><td>${pct(C.bought,C.came)}</td><td>${C.ended}</td><td>${C.renew}</td><td>${Math.max(0,C.ended-C.renew)}</td><td>${pct(C.renew,C.ended)}</td></tr>`;
   return `<div class="daysum">
     <div class="ds-title">Итоги за день · по филиалам и в целом <small>(суммы в ${CUR})</small></div>
@@ -977,6 +1003,7 @@ function exportExcel(entries){
       'Наличными за день':(e.cashEnd==null?'':num(e.cashEnd)-num(e.cashStart)-inSum+outSum),'Движения нетто':inSum-outSum,'Движения (детально)':chgText,
       'Безналичные':e.cashless??'','Allsports':e.allsports??'','EPOS':e.epos??'',
       'Выручка за день':(e.cashEnd==null?'':(num(e.cashEnd)-num(e.cashStart)-inSum+outSum)+num(e.cashless)+num(e.allsports)+num(e.epos)),
+      'Между сменами':(function(){const p=lastCashEndBefore(e.studioId,e.date);return (p&&e.cashStart!=null)?num(e.cashStart)-p.cashEnd:'';})(),'Причина (между сменами)':e.interNote||'',
       'Пришло новых':came,'Купили абонемент':bought,'Конверсия новых':pct(bought,came),'Абонементы закончились':endedC,'Продлили':renewC,'Не продлили':notRen,'Конверсия продлений':pct(renewC,endedC),
       'Новые клиенты (детально)':newDet,'Не продлили (детально)':nrDet,'Комментарии':e.comments||''
     };
@@ -1161,7 +1188,7 @@ function drawSub(root){
 function renderSchCalendar(el){
   const sid=SCH.sid, st=SMAP[sid];
   el.innerHTML=`
-    <div class="sch-studios">${STUDIOS.map(s=>`<button class="sch-st${s.id===sid?' on':''}" data-ssel="${s.id}">${s.name}<span>${s.start}–${s.end}</span></button>`).join('')}</div>
+    <div class="sch-studios">${STUDIOS.map(s=>`<button class="sch-st${s.id===sid?' on':''}" data-ssel="${s.id}" style="border-left:4px solid ${s.color}">${sdot(s.id)}${s.name}<span>${s.start}–${s.end}</span></button>`).join('')}</div>
     <div class="sch-grid-head">${SCH_DOW.map(d=>`<div>${d}</div>`).join('')}</div>
     <div class="sch-grid" id="schGrid"></div>`;
   const grid=el.querySelector('#schGrid'), n=schDaysIn(SCH.y,SCH.m);
@@ -1172,7 +1199,7 @@ function renderSchCalendar(el){
     if(r&&r.closed){ cls=' closed'; inner='<span class="sch-closed">закрыто</span>'; }
     else if(r&&r.shifts&&r.shifts.length){
       inner=r.shifts.map(sh=>{const ab=absOn(sh.adminId,iso);
-        return `<div class="sch-sh${ab?' needrep':''}">${escapeHtml(adminName(sh.adminId))}<span>${sh.start}–${sh.end}${ab?' · нужна замена':''}</span></div>`;}).join('');
+        return `<div class="sch-sh${ab?' needrep':''}" style="border-left:3px solid ${st.color};padding-left:6px">${escapeHtml(adminName(sh.adminId))}<span>${sh.start}–${sh.end}${ab?' · нужна замена':''}</span></div>`;}).join('');
     } else inner='<span class="sch-empty">—</span>';
     const need=r&&!r.closed&&(r.shifts||[]).some(sh=>absOn(sh.adminId,iso));
     cells+=`<div class="sch-cell${cls}${need?' need':''}" data-day="${d}"><div class="sch-d">${d}</div>${inner}</div>`;
@@ -1246,7 +1273,7 @@ function renderSchOverview(el){
       if(r&&r.closed){c='cl';t='×';}
       else if(r&&(r.shifts||[]).length){const need=r.shifts.some(sh=>absOn(sh.adminId,iso));c=need?'nd':'ok';t=need?'!':r.shifts.map(sh=>initials(adminName(sh.adminId))).join('/');}
       cells+=`<td class="cov ${c}" title="${escapeHtml(t)}">${escapeHtml(t)}</td>`;}
-    rows+=`<tr><td class="rowh">${s.name}</td>${cells}</tr>`;});
+    rows+=`<tr><td class="rowh">${sdot(s.id)}${s.name}</td>${cells}</tr>`;});
   const warns=TEAM.filter(a=>consecutiveMax(a.login)>3);
   const hrows=TEAM.map(a=>`<tr><td class="rowh">${escapeHtml(a.name)}</td><td>${fmtH(adminHours(a.login))} ч</td><td>${adminMonthShifts(a.login).length}</td><td>${consecutiveMax(a.login)>3?'<span class="warnpill">'+consecutiveMax(a.login)+' подряд</span>':'—'}</td></tr>`).join('');
   el.innerHTML=`
@@ -1271,7 +1298,7 @@ function renderSchPersonal(el){
       <div class="tile ${cm>3?'warn':''}"><div class="tk">Макс. подряд</div><div class="tv">${cm}</div></div>
     </div>
     <div class="section-title">Мои смены${SCHDATA.approved?'':' <small style="color:var(--gold);font-family:Golos Text;font-weight:600">(график ещё черновик)</small>'}</div>
-    ${shifts.length?`<div class="sch-list">${shifts.map(x=>`<div class="sch-li"><b>${fmtLong(x.iso)}</b> · ${studioName(x.sid)} · ${x.shift.start}–${x.shift.end} <span>${fmtH(shiftHours(x.shift.start,x.shift.end))} ч</span></div>`).join('')}</div>`:'<div class="empty">Смен в этом месяце пока нет.</div>'}
+    ${shifts.length?`<div class="sch-list">${shifts.map(x=>`<div class="sch-li">${sdot(x.sid)}<b>${fmtLong(x.iso)}</b> · ${studioName(x.sid)} · ${x.shift.start}–${x.shift.end} <span>${fmtH(shiftHours(x.shift.start,x.shift.end))} ч</span></div>`).join('')}</div>`:'<div class="empty">Смен в этом месяце пока нет.</div>'}
     ${myAbs.length?`<div class="section-title">Мои отсутствия</div><div class="sch-list">${myAbs.map(a=>`<div class="sch-li">${absName(a.type)} · ${fmtLong(a.start)} – ${fmtLong(a.end)}</div>`).join('')}</div>`:''}`;
 }
 
