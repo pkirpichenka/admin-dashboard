@@ -371,7 +371,12 @@ function lastCashEndBefore(studio, before){
 }
 async function apiSaveReport(studio, date, payload){
   const r = await rpc('app_save_report', {p_token:TOKEN, p_studio:studio, p_date:date, p_payload:payload});
-  REPORTS = null; // при следующем чтении подгрузим свежие
+  // обновляем кэш на месте — значения сразу доступны при перерисовке, без round-trip
+  if(Array.isArray(REPORTS)){
+    const i=REPORTS.findIndex(e=>e.studioId===studio && e.date===date);
+    const copy=JSON.parse(JSON.stringify(payload));
+    if(i>=0) REPORTS[i]=copy; else REPORTS.unshift(copy);
+  }
   return r;
 }
 async function apiDeleteReport(studio, date){
@@ -595,8 +600,8 @@ function renderForm(container,studio,date,data,onSaved,opts){
         <div id="changes"></div>
         <button class="btn btn-sm add-row" id="addChg" type="button">+ Добавить движение</button>
         <div class="grid g3" style="margin-top:18px">
-          ${moneyField('cashless','Безналичные','на конец дня',data.cashless)}
-          ${moneyField('allsports','Allsports','на конец дня',data.allsports)}
+          ${moneyField('cashless','Картой','на конец дня',data.cashless)}
+          ${moneyField('allsports','QR','на конец дня',data.allsports)}
           ${moneyField('epos','EPOS','на конец дня',data.epos)}
         </div>
       </div>
@@ -770,7 +775,7 @@ function renderForm(container,studio,date,data,onSaved,opts){
 
   // Закрыть смену — требует все финансовые поля + клиентов
   // поля, которые при пустом значении можно «считать нулём» одним нажатием
-  const ZEROABLE=[['cashEnd','наличные на конец дня'],['cashless','безналичные'],['allsports','Allsports'],['epos','EPOS'],['newCame','пришло новых'],['ended','закончились абонементы'],['renewed','продлили']];
+  const ZEROABLE=[['cashEnd','наличные на конец дня'],['cashless','картой'],['allsports','QR'],['epos','EPOS'],['newCame','пришло новых'],['ended','закончились абонементы'],['renewed','продлили']];
   async function doClose(){
     const rec=collectRec(); rec.status='closed'; rec.closedBy=session.name; rec.closedByLogin=session.login; rec.closedAt=new Date().toISOString();
     try{ await apiSaveReport(studio,date,rec); toast('Смена закрыта'); onSaved&&onSaved(); }catch(e){ handleErr(e); }
@@ -886,8 +891,8 @@ function dayCard(e,open){
         <div class="item"><div class="k">Наличные вечером</div><div class="v">${money(e.cashEnd)}</div></div>
         <div class="item"><div class="k">Наличными за день</div><div class="v" style="color:${diff===null?'var(--ink)':(diff<0?'var(--clay)':'var(--accent)')}">${diff===null?'—':(diff>=0?'+':'')+money(diff)}</div></div>
         ${inter!=null&&inter!==0?`<div class="item"><div class="k">Между сменами</div><div class="v" style="color:${inter>0?'var(--gold)':'var(--clay)'}">${inter>0?'+':''}${money(inter)}${prevInfo?` <small style="color:var(--ink-faint);font-weight:500">(с ${fmtLong(prevInfo.date)})</small>`:''}</div></div>`:''}
-        <div class="item"><div class="k">Безналичные</div><div class="v">${money(e.cashless)}</div></div>
-        <div class="item"><div class="k">Allsports</div><div class="v">${money(e.allsports)}</div></div>
+        <div class="item"><div class="k">Картой</div><div class="v">${money(e.cashless)}</div></div>
+        <div class="item"><div class="k">QR</div><div class="v">${money(e.allsports)}</div></div>
         <div class="item"><div class="k">EPOS</div><div class="v">${money(e.epos)}</div></div>
         <div class="item"><div class="k">Пришло новых</div><div class="v">${came??'—'}</div></div>
         <div class="item"><div class="k">Купили абонемент</div><div class="v">${bought??'—'}</div></div>
@@ -976,7 +981,7 @@ function daySummary(entries){
   const clTot=`<tr class="ds-total"><td class="rowh">Итого</td><td>${C.came}</td><td>${C.bought}</td><td>${pct(C.bought,C.came)}</td><td>${C.ended}</td><td>${C.renew}</td><td>${Math.max(0,C.ended-C.renew)}</td><td>${pct(C.renew,C.ended)}</td></tr>`;
   return `<div class="daysum">
     <div class="ds-title">Итоги за день · по филиалам и в целом <small>(суммы в ${CUR})</small></div>
-    <div class="sch-scroll"><table class="ds-table"><thead><tr><th>Филиал</th><th>Утро</th><th>Движения</th><th>Вечер</th><th>Нал. за день</th><th>Безнал</th><th>Allsports</th><th>EPOS</th><th>Выручка</th></tr></thead><tbody>${finBody}${rows.length>1?finTot:''}</tbody></table></div>
+    <div class="sch-scroll"><table class="ds-table"><thead><tr><th>Филиал</th><th>Утро</th><th>Движения</th><th>Вечер</th><th>Нал. за день</th><th>Картой</th><th>QR</th><th>EPOS</th><th>Выручка</th></tr></thead><tbody>${finBody}${rows.length>1?finTot:''}</tbody></table></div>
     <div class="sch-scroll" style="margin-top:8px"><table class="ds-table"><thead><tr><th>Филиал</th><th>Пришло</th><th>Купили</th><th>Конв.</th><th>Законч.</th><th>Продл.</th><th>Не прод.</th><th>Конв.</th></tr></thead><tbody>${clBody}${rows.length>1?clTot:''}</tbody></table></div>
   </div>`;
 }
@@ -1001,7 +1006,7 @@ function exportExcel(entries){
       'Заполнил (ФИО)':e.filledBy||'','Логин':e.filledByLogin||'','Время':fmtTime(e.submittedAt),
       'Наличные начало':e.cashStart??'','Наличные конец':e.cashEnd??'','Внесено':inSum,'Выдано':outSum,
       'Наличными за день':(e.cashEnd==null?'':num(e.cashEnd)-num(e.cashStart)-inSum+outSum),'Движения нетто':inSum-outSum,'Движения (детально)':chgText,
-      'Безналичные':e.cashless??'','Allsports':e.allsports??'','EPOS':e.epos??'',
+      'Картой':e.cashless??'','QR':e.allsports??'','EPOS':e.epos??'',
       'Выручка за день':(e.cashEnd==null?'':(num(e.cashEnd)-num(e.cashStart)-inSum+outSum)+num(e.cashless)+num(e.allsports)+num(e.epos)),
       'Между сменами':(function(){const p=lastCashEndBefore(e.studioId,e.date);return (p&&e.cashStart!=null)?num(e.cashStart)-p.cashEnd:'';})(),'Причина (между сменами)':e.interNote||'',
       'Пришло новых':came,'Купили абонемент':bought,'Конверсия новых':pct(bought,came),'Абонементы закончились':endedC,'Продлили':renewC,'Не продлили':notRen,'Конверсия продлений':pct(renewC,endedC),
