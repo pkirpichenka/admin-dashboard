@@ -248,6 +248,10 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 .cn-val{font-family:'Unbounded';font-weight:700;font-size:18px;font-variant-numeric:tabular-nums}
 .cn-note{font-size:10.5px;color:var(--ink-faint);margin-top:2px;line-height:1.3}
 .cn-note.stale{color:var(--gold)}
+.cn-item.cn-shift{border-left:4px solid var(--accent)}
+.cn-line{display:flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;margin-top:5px}
+.cn-line:first-of-type{margin-top:2px}
+.cn-ln.muted{color:var(--ink-faint);font-weight:500}
 .sumcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
 .sumcard{border:1px solid var(--line);border-radius:12px;background:var(--surface-2);padding:12px 14px}
 .sumcard.tot{background:#fff;border-color:var(--accent);box-shadow:0 0 0 2px rgba(46,125,91,.12)}
@@ -438,7 +442,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)} <small class="ent">${studioEntity(id)}</small>`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'Br'; // белорусский рубль (BYN)
-const APP_VERSION = '02.08.2026-c';  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '02.08.2026-d';  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -522,6 +526,7 @@ function prevDays(iso,count){const [y,m,dd]=iso.split('-').map(Number);const out
   for(let i=1;i<=count;i++){const d=new Date(y,m-1,dd-i);const o=d.getTimezoneOffset();out.push(new Date(d.getTime()-o*60000).toISOString().slice(0,10));}return out;}
 function fmtTime(iso){if(!iso)return '';return new Date(iso).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});}
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function shortName(name){const p=String(name||'').trim().split(/\s+/).filter(Boolean); if(p.length<=1) return p[0]||''; return p[0]+' '+p.slice(1).map(w=>w[0]?w[0].toUpperCase()+'.':'').join('');}
 
 /* ================= Toast & modal ================= */
 let toastT;
@@ -693,7 +698,7 @@ function renderForm(container,studio,date,data,onSaved,opts){
   container.innerHTML=`
     <div class="card fade-in">
       <div class="card-head"><span class="idx">1</span><h2>Финансы · ${studioName(studio)} <small style="color:var(--ink-faint);font-weight:600;font-size:11px">${studioEntity(studio)}</small></h2>
-        ${data.filledBy?`<span class="hint">заполнено: ${escapeHtml(data.filledBy)}</span>`:''}</div>
+        ${data.filledBy?`<span class="hint">заполнено: ${escapeHtml(shortName(data.filledBy))}</span>`:''}</div>
       <div class="card-body">
         <div id="tape" class="tape"></div>
         <label class="field" style="margin-bottom:8px">
@@ -756,7 +761,7 @@ function renderForm(container,studio,date,data,onSaved,opts){
     </div>
 
     <div class="bar">
-      ${data.status==='closed'?`<span class="closed-badge">✓ Смена закрыта${data.closedBy?' · '+escapeHtml(data.closedBy):''}${data.closedAt?' · '+fmtTime(data.closedAt):''}</span>`:''}
+      ${data.status==='closed'?`<span class="closed-badge">✓ Смена закрыта${data.closedBy?' · '+escapeHtml(shortName(data.closedBy)):''}${data.closedAt?' · '+fmtTime(data.closedAt):''}</span>`:''}
       <div class="grow"></div>
       <button class="btn" id="save">Сохранить</button>
       ${data.status==='closed'
@@ -974,7 +979,7 @@ function wireDayCards(container,onChange){
   });
 }
 function editMorningModal(entry,onDone){
-  const el=modal(`<h3>Наличные утром</h3><p>${studioAddr(entry.studioId)} · ${fmtLong(entry.date)}<br>Зафиксировал(а): ${escapeHtml(entry.filledBy||'—')}</p>
+  const el=modal(`<h3>Наличные утром</h3><p>${studioAddr(entry.studioId)} · ${fmtLong(entry.date)}<br>Зафиксировал(а): ${escapeHtml(shortName(entry.filledBy||'—'))}</p>
     <div class="field"><div class="lbl">Сумма (${CUR})</div><input id="em" type="number" inputmode="decimal" step="0.01" value="${entry.cashStart??''}"/></div>
     <div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="em-ok">Сохранить</button></div>`);
   el.querySelector('#em-ok').onclick=async()=>{
@@ -1003,7 +1008,7 @@ function dayCard(e,open){
       <span class="day-date">${fmtLong(e.date)}<span class="dow"> · ${fmtDow(e.date)}</span></span>
       <span class="st-tag" style="border-color:${studioColor(e.studioId)}">${sdot(e.studioId)}${studioAddr(e.studioId)} · ${studioEntity(e.studioId)}</span>
       <span class="stat ${e.status==='closed'?'stat-closed':'stat-open'}">${e.status==='closed'?'закрыта':'не закрыта'}</span>
-      <span class="day-by">заполнил(а): <b>${escapeHtml(e.filledBy||'—')}</b><br><span style="color:var(--ink-faint)">${fmtTime(e.submittedAt)}</span></span></div>
+      <span class="day-by">заполнил(а): <b>${escapeHtml(shortName(e.filledBy||'—'))}</b><br><span style="color:var(--ink-faint)">${fmtTime(e.submittedAt)}</span></span></div>
     <div class="day-body">
       <div class="kv">
         <div class="item"><div class="k">Наличные утром</div><div class="v">${money(e.cashStart)}</div></div>
@@ -1023,7 +1028,7 @@ function dayCard(e,open){
         <div class="item"><div class="k">Конверсия продлений</div><div class="v">${pct(renewC,endedC)}</div></div>
       </div>
       ${(session&&(session.role==='owner'||session.canEdit))?`<button class="btn btn-sm" data-editmorning="${e.studioId}|${e.date}" style="margin:2px 6px 8px 0">✎ Изменить наличные утром</button>`:''}${(session&&session.role==='owner')?`<button class="btn btn-sm" data-editreport="${e.studioId}|${e.date}" style="margin:2px 6px 8px 0">✎ Редактировать отчёт</button>`:''}${(session&&session.role==='owner')?`<button class="btn btn-sm btn-ghost" data-delreport="${e.studioId}|${e.date}" style="margin:2px 0 8px">🗑 Удалить отчёт</button>`:''}
-      ${e.cashStartEditedBy?`<div class="hintline" style="margin-bottom:8px">Наличные утром изменены: ${escapeHtml(e.cashStartEditedBy)}${e.cashStartEditedAt?' · '+fmtTime(e.cashStartEditedAt):''}</div>`:''}
+      ${e.cashStartEditedBy?`<div class="hintline" style="margin-bottom:8px">Наличные утром изменены: ${escapeHtml(shortName(e.cashStartEditedBy))}${e.cashStartEditedAt?' · '+fmtTime(e.cashStartEditedAt):''}</div>`:''}
       <div class="notes"><div class="k">Движения наличных</div>${changeList}</div>
       ${newDetail?`<div class="notes"><div class="k">Новые клиенты — по каждому</div>${newDetail}</div>`:''}
       ${nrDetail?`<div class="notes"><div class="k">Не продлили — по каждому</div>${nrDetail}</div>`:''}
@@ -1034,10 +1039,12 @@ function dayCard(e,open){
 
 /* ================= All reports (owner + senior) ================= */
 async function renderAllReports(body){
-  let all; try{ all=await loadReports(true); }catch(e){ return handleErr(e); }
+  let all, sched=null; try{ all=await loadReports(true); }catch(e){ return handleErr(e); }
+  try{ TEAM=await apiListTeam(); }catch(e){}
+  try{ const _d=new Date(); sched=await apiGetSchedule(monthKey(_d.getFullYear(), _d.getMonth())); }catch(e){ sched=null; }
   body.innerHTML=`
     <div id="banner"></div>
-    ${cashNowCard(all)}
+    ${cashNowCard(all, sched)}
     <div class="bar fade-in">
       <div class="datepick"><span class="lbl">День:</span><input type="date" id="pick" max="${todayStr()}" value="${todayStr()}" style="width:auto"/></div>
       <div class="datepick"><span class="lbl">Студия:</span><select id="stf" style="width:auto"><option value="all">Все студии</option>${STUDIOS.map(s=>`<option value="${s.id}">${s.name} · ${s.address} · ${s.entity}</option>`).join('')}</select></div>
@@ -1096,7 +1103,7 @@ async function renderAllReports(body){
 }
 
 /* ================= Наличные в кассе сейчас ================= */
-function cashNowCard(all){
+function cashNowCard(all, sched){
   const t=todayStr();
   const items=STUDIOS.map(s=>{
     const e=(all||[]).find(x=>x.studioId===s.id);   // список отсортирован по дате убыв. -> первый = последний
@@ -1108,14 +1115,21 @@ function cashNowCard(all){
     }
     return {s, val, note, stale: e && e.date<t};
   });
+  const shiftLines=STUDIOS.map(s=>{
+    const rec=(sched&&sched.assignments)?sched.assignments[t+'_'+s.id]:null;
+    let who='—', muted=true;
+    if(rec){ if(rec.closed){who='закрыто';} else if((rec.shifts||[]).length){ who=rec.shifts.map(sh=>adminName(sh.adminId)).join(', '); muted=false; } }
+    return `<div class="cn-line">${sdot(s.id)}<span class="cn-ln${muted?' muted':''}">${escapeHtml(who)}</span></div>`;
+  }).join('');
+  const shiftTile=`<div class="cn-item cn-shift"><div class="cn-name">Сегодня на смене</div>${shiftLines}</div>`;
   return `<div class="cashnow">
-    <div class="cn-title">Наличные в кассе сейчас</div>
+    <div class="cn-title">Наличные в кассе сейчас · смена сегодня</div>
     <div class="cn-grid">${items.map(it=>`
       <div class="cn-item" style="border-left:4px solid ${it.s.color}">
         <div class="cn-name">${sdot(it.s.id)}${it.s.name} <small class="ent">${it.s.entity}</small></div>
         <div class="cn-val">${it.val==null?'—':money(it.val)}</div>
         <div class="cn-note${it.stale?' stale':''}">${it.note}</div>
-      </div>`).join('')}</div>
+      </div>`).join('')}${shiftTile}</div>
   </div>`;
 }
 
@@ -1321,7 +1335,7 @@ function shiftHours(s,e){let d=toMin(e)-toMin(s);if(d<0)d+=1440;return d/60;}
 function fmtH(x){return (Math.round(x*10)/10).toString().replace('.',',');}
 function uid(){return Math.random().toString(36).slice(2,9);}
 function teamById(id){return TEAM.find(a=>a.login===id);}
-function adminName(id){const a=teamById(id);return a?a.name:id;}
+function adminName(id){const a=teamById(id);return a?shortName(a.name):id;}
 function initials(name){return String(name||'').trim().split(/\s+/).map(w=>w[0]||'').join('').slice(0,2).toUpperCase();}
 function absName(t){return t==='otpusk'?'Отпуск':t==='bol'?'Больничный':'Отгул';}
 function homeAdmins(sid){return TEAM.filter(a=>a.home===sid);}
@@ -1410,7 +1424,7 @@ function renderSchCalendar(el){
   const sid=SCH.sid, st=SMAP[sid];
   const editor=session.role==='owner'||session.senior;
   const home=TEAM.filter(a=>a.home===sid), others=TEAM.filter(a=>a.home!==sid);
-  const chip=a=>`<button class="rchip${SCHsel===a.login?' sel':''}" data-adm="${a.login}" draggable="true" style="border-left:4px solid ${studioColor(a.home)}">${escapeHtml(a.name)}</button>`;
+  const chip=a=>`<button class="rchip${SCHsel===a.login?' sel':''}" data-adm="${a.login}" draggable="true" style="border-left:4px solid ${studioColor(a.home)}">${escapeHtml(shortName(a.name))}</button>`;
   const roster = editor ? `
     <div class="sch-roster">
       <div class="rost-hint">${SCHsel?`Выбран: <b>${escapeHtml(adminName(SCHsel))}</b> — нажимайте на дни, чтобы поставить. Ещё раз по имени — снять выбор.`:'Перетащите администратора в день (на компьютере) или выберите его и нажимайте на нужные дни. Чтобы убрать — перетащите смену из дня обратно в этот список.'}</div>
@@ -1571,7 +1585,7 @@ function renderSchOverview(el){
       cells+=`<td class="cov ${c}" title="${escapeHtml(t)}">${escapeHtml(t)}</td>`;}
     rows+=`<tr><td class="rowh">${sdot(s.id)}${s.name}</td>${cells}</tr>`;});
   const warns=TEAM.filter(a=>consecutiveMax(a.login)>3);
-  const hrows=TEAM.map(a=>`<tr><td class="rowh">${escapeHtml(a.name)}</td><td>${fmtH(adminHours(a.login))} ч</td><td>${adminMonthShifts(a.login).length}</td><td>${consecutiveMax(a.login)>3?'<span class="warnpill">'+consecutiveMax(a.login)+' подряд</span>':'—'}</td></tr>`).join('');
+  const hrows=TEAM.map(a=>`<tr><td class="rowh">${escapeHtml(shortName(a.name))}</td><td>${fmtH(adminHours(a.login))} ч</td><td>${adminMonthShifts(a.login).length}</td><td>${consecutiveMax(a.login)>3?'<span class="warnpill">'+consecutiveMax(a.login)+' подряд</span>':'—'}</td></tr>`).join('');
   el.innerHTML=`
     ${warns.length?`<div class="banner" style="background:var(--gold-soft);border-color:#E7CF9F"><div class="bt" style="color:var(--gold)">⚠ Более 3 смен подряд (${warns.length})</div><div class="bi">${warns.map(a=>`<span class="bchip" style="cursor:default;border-color:#E7CF9F">${escapeHtml(a.name)} — ${consecutiveMax(a.login)}</span>`).join('')}</div></div>`:''}
     <div class="section-title">Покрытие по дням</div>
@@ -1607,7 +1621,7 @@ function openAbsenceModal(){
     ab.innerHTML=`
       <div class="sch-list" style="margin-bottom:12px">${list.length?list.map((a,i)=>`<div class="sch-li"><b>${escapeHtml(adminName(a.adminId))}</b> · ${absName(a.type)} · ${a.start} – ${a.end} <button class="btn btn-ghost btn-sm" data-abdel="${i}" style="float:right;margin-top:-4px">✕</button></div>`).join(''):'<div class="hintline">Пока нет записей</div>'}</div>
       <div class="grid" style="grid-template-columns:1fr 1fr;gap:8px">
-        <select id="abAdm">${TEAM.map(a=>`<option value="${a.login}">${escapeHtml(a.name)}</option>`).join('')}</select>
+        <select id="abAdm">${TEAM.map(a=>`<option value="${a.login}">${escapeHtml(shortName(a.name))}</option>`).join('')}</select>
         <select id="abType"><option value="otpusk">Отпуск</option><option value="bol">Больничный</option><option value="otgul">Отгул</option></select>
         <input id="abStart" type="date"/><input id="abEnd" type="date"/>
       </div>
