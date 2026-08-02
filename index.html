@@ -254,6 +254,8 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 .cn-line{display:flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;margin-top:5px}
 .cn-line:first-of-type{margin-top:2px}
 .cn-ln.muted{color:var(--ink-faint);font-weight:500}
+.hire-lbl{font-size:11px;color:var(--ink-faint);display:inline-flex;align-items:center;gap:4px}
+.hire-inp{font-size:12px;padding:4px 6px;max-width:140px}
 .sumcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
 .sumcard{border:1px solid var(--line);border-radius:12px;background:var(--surface-2);padding:12px 14px}
 .sumcard.tot{background:#fff;border-color:var(--accent);box-shadow:0 0 0 2px rgba(46,125,91,.12)}
@@ -456,7 +458,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)} <small class="ent">${studioEntity(id)}</small>`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'Br'; // белорусский рубль (BYN)
-const APP_VERSION = '02.08.2026-h';  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '02.08.2026-j';  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -524,6 +526,7 @@ async function apiDeleteReport(studio, date){
 }
 async function apiListTeam(){ return await rpc('app_list_team',{p_token:TOKEN})||[]; }
 async function apiSetHome(login,home){ return await rpc('app_set_home',{p_token:TOKEN,p_login:login,p_home:home||''}); }
+async function apiSetHire(login,hire){ return await rpc('app_set_hire',{p_token:TOKEN,p_login:login,p_hire:hire||''}); }
 async function apiGetSchedule(month){ return await rpc('app_get_schedule',{p_token:TOKEN,p_month:month}); }
 async function apiAllAbsences(){ return await rpc('app_all_absences',{p_token:TOKEN})||[]; }
 async function apiSaveSchedule(month,data){ return await rpc('app_save_schedule',{p_token:TOKEN,p_month:month,p_data:data}); }
@@ -670,7 +673,7 @@ function renderRoleUI(tabs){
 }
 
 /* ================= Field builders ================= */
-function moneyField(id,label,val,sub){return `<label class="field"><div class="lbl">${label} ${sub?`<small>${sub}</small>`:''}</div>
+function moneyField(id,label,sub,val){return `<label class="field"><div class="lbl">${label} ${sub?`<small>${sub}</small>`:''}</div>
   <div class="cur"><input id="${id}" type="number" inputmode="decimal" step="0.01" value="${val??''}" placeholder="0"/><span class="sym">${CUR}</span></div></label>`;}
 function textField(id,label,val,ph){return `<label class="field"><div class="lbl">${label}</div>
   <textarea id="${id}" placeholder="${ph||''}">${val?escapeHtml(val):''}</textarea></label>`;}
@@ -1286,6 +1289,7 @@ async function renderUsers(body){
     });
   });
   list.querySelectorAll('select[data-home]').forEach(sel=>{ sel.onchange=async()=>{ try{ await apiSetHome(sel.dataset.home, sel.value); toast('Домашний филиал обновлён'); }catch(e){ handleErr(e); } }; });
+  list.querySelectorAll('input[data-hire]').forEach(inp=>{ inp.onchange=async()=>{ try{ await apiSetHire(inp.dataset.hire, inp.value); toast('Дата приёма сохранена'); }catch(e){ handleErr(e); } }; });
   body.querySelector('#add').onclick=()=>addAdminModal(()=>renderUsers(body));
 }
 function userRow(u){
@@ -1294,6 +1298,7 @@ function userRow(u){
       <div class="u-login">логин: ${escapeHtml(u.login)}</div></div>
     <div class="u-ctl">
       <select class="home-sel" data-home="${escapeHtml(u.login)}" style="max-width:150px"><option value="">филиал —</option>${STUDIOS.map(s=>`<option value="${s.id}" ${u.home===s.id?'selected':''}>${s.name}</option>`).join('')}</select>
+      <label class="hire-lbl">приём:<input type="date" class="hire-inp" data-hire="${escapeHtml(u.login)}" value="${u.hire||''}"/></label>
       <span class="st-pill ${u.active?'st-on':'st-off'}">${u.active?'доступ включён':'доступ отключён'}</span>
       <span class="ctl-item">Доступ <button class="sw ${u.active?'on':''}" data-act="active" aria-label="Доступ"></button></span>
       <span class="ctl-item">Старший <button class="sw ${u.senior?'on':''}" data-act="senior" aria-label="Старший"></button></span>
@@ -1341,7 +1346,7 @@ function confirmModal(msg,onYes){
 /* ================= Расписание (модуль) ================= */
 const MON2=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 const SCH_DOW=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
-let SCH=null, SCHDATA=null, TEAM=[], SCHsel=null;
+let SCH=null, SCHDATA=null, TEAM=[], SCHsel=null, ABS_MODE='cal';
 
 function monthKey(y,m){return y+'-'+String(m+1).padStart(2,'0');}
 function schPad(n){return String(n).padStart(2,'0');}
@@ -1663,19 +1668,44 @@ function renderSchOverview(el){
     <div class="sch-scroll"><table class="sch-hrs"><thead><tr><th>Администратор</th><th>Часы</th><th>Смен</th><th>Серии</th></tr></thead><tbody>${hrows||'<tr><td colspan="4" style="color:var(--ink-faint)">Нет администраторов. Добавьте их и укажите филиал.</td></tr>'}</tbody></table></div>
     <div class="section-title">Отсутствия за месяц (дней)</div>
     <div class="sch-scroll"><table class="sch-hrs"><thead><tr><th>Администратор</th><th>Отпуск</th><th>Больн.</th><th>Отгул</th><th>Всего</th></tr></thead><tbody>${TEAM.map(a=>{const o=absDaysInMonth(a.login,'otpusk'),b=absDaysInMonth(a.login,'bol'),g=absDaysInMonth(a.login,'otgul'),t=o+b+g;return `<tr><td class="rowh">${escapeHtml(shortName(a.name))}</td><td>${o||'—'}</td><td>${b||'—'}</td><td>${g||'—'}</td><td><b>${t||'—'}</b></td></tr>`;}).join('')||'<tr><td colspan="5" style="color:var(--ink-faint)">Нет данных</td></tr>'}</tbody></table></div>
-    <div class="section-title">Отсутствия за ${SCH.y} год (дней)</div>
+    <div class="section-title">Отсутствия за год (дней)</div>
+    <div class="sch-viewtoggle" style="margin-bottom:8px">
+      <button class="vt${ABS_MODE!=='work'?' on':''}" data-am="cal">Календарный ${SCH.y}</button>
+      <button class="vt${ABS_MODE==='work'?' on':''}" data-am="work">Рабочий год (от приёма)</button>
+    </div>
     <div id="yearAbs" class="sch-scroll"><div class="hintline" style="padding:10px">Загрузка…</div></div>`;
+  el.querySelectorAll('[data-am]').forEach(b=>b.onclick=()=>{ ABS_MODE=b.dataset.am; el.querySelectorAll('[data-am]').forEach(x=>x.classList.toggle('on',x.dataset.am===ABS_MODE)); fillYearAbsences(el.querySelector('#yearAbs')); });
   fillYearAbsences(el.querySelector('#yearAbs'));
+}
+function dISO(dt){ return dt.getFullYear()+'-'+schPad(dt.getMonth()+1)+'-'+schPad(dt.getDate()); }
+function d2(iso){ const p=(iso||'').split('-'); return p.length===3?p[2]+'.'+p[1]+'.'+p[0]:iso; }
+function workYear(hire, ref){
+  const p=hire.split('-').map(Number), hm=p[1], hd=p[2];
+  const r=new Date(ref+'T00:00:00'); let ay=r.getFullYear();
+  if(new Date(ay, hm-1, hd) > r) ay-=1;
+  const start=new Date(ay, hm-1, hd), end=new Date(ay+1, hm-1, hd); end.setDate(end.getDate()-1);
+  return {start:dISO(start), end:dISO(end)};
 }
 async function fillYearAbsences(box){
   if(!box) return;
   let all; try{ all=await apiAllAbsences(); }catch(e){ box.innerHTML='<div class="hintline" style="padding:10px">Не удалось загрузить</div>'; return; }
   const seen=new Set(), list=[];
   (all||[]).forEach(a=>{ const k=a.id||JSON.stringify([a.adminId,a.type,a.start,a.end]); if(!seen.has(k)){ seen.add(k); list.push(a); } });
-  const y=SCH.y, first=y+'-01-01', last=y+'-12-31';
-  const daysOf=(login,type)=>{ let d=0; list.filter(a=>a.adminId===login && a.type===type).forEach(a=>{ const s=(a.start>first?a.start:first), e=(a.end<last?a.end:last); if(s<=e) d+=isoDiff(s,e)+1; }); return d; };
-  const rows=TEAM.map(a=>{const o=daysOf(a.login,'otpusk'),b=daysOf(a.login,'bol'),g=daysOf(a.login,'otgul'),t=o+b+g;
-    return `<tr><td class="rowh">${escapeHtml(shortName(a.name))}</td><td>${o||'—'}</td><td>${b||'—'}</td><td>${g||'—'}</td><td><b>${t||'—'}</b></td></tr>`;}).join('');
+  const daysIn=(login,type,first,last)=>{ let d=0; list.filter(a=>a.adminId===login && a.type===type).forEach(a=>{ const s=(a.start>first?a.start:first), e=(a.end<last?a.end:last); if(s<=e) d+=isoDiff(s,e)+1; }); return d; };
+  let rows;
+  if(ABS_MODE==='work'){
+    const today=todayStr();
+    rows=TEAM.map(a=>{
+      if(!a.hire) return `<tr><td class="rowh">${escapeHtml(shortName(a.name))}</td><td colspan="4" style="color:var(--ink-faint)">укажите дату приёма в «Администраторы»</td></tr>`;
+      const wy=workYear(a.hire, today);
+      const o=daysIn(a.login,'otpusk',wy.start,wy.end),b=daysIn(a.login,'bol',wy.start,wy.end),g=daysIn(a.login,'otgul',wy.start,wy.end),t=o+b+g;
+      return `<tr><td class="rowh">${escapeHtml(shortName(a.name))}<br><small class="ent">${d2(wy.start)}–${d2(wy.end)}</small></td><td>${o||'—'}</td><td>${b||'—'}</td><td>${g||'—'}</td><td><b>${t||'—'}</b></td></tr>`;
+    }).join('');
+  } else {
+    const y=SCH.y, first=y+'-01-01', last=y+'-12-31';
+    rows=TEAM.map(a=>{const o=daysIn(a.login,'otpusk',first,last),b=daysIn(a.login,'bol',first,last),g=daysIn(a.login,'otgul',first,last),t=o+b+g;
+      return `<tr><td class="rowh">${escapeHtml(shortName(a.name))}</td><td>${o||'—'}</td><td>${b||'—'}</td><td>${g||'—'}</td><td><b>${t||'—'}</b></td></tr>`;}).join('');
+  }
   box.innerHTML=`<table class="sch-hrs"><thead><tr><th>Администратор</th><th>Отпуск</th><th>Больн.</th><th>Отгул</th><th>Всего</th></tr></thead><tbody>${rows||'<tr><td colspan="5" style="color:var(--ink-faint)">Нет данных</td></tr>'}</tbody></table>`;
 }
 
