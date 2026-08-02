@@ -320,6 +320,68 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 .sch-erow input[type=time]{width:96px}
 .dim{opacity:.4;pointer-events:none}
 @media(max-width:640px){#schedRoot .sch-cell{min-height:62px}#schedRoot .sch-sh{font-size:10.5px}}
+
+/* ================= Мобильные улучшения ================= */
+@media (max-width:640px){
+  html,body{overflow-x:hidden}
+  body{-webkit-text-size-adjust:100%}
+  input,select,textarea{font-size:16px}            /* против авто-зума на iOS */
+  .wrap{padding:16px 12px 64px}
+
+  /* Шапка: не даём длинному названию ломать ширину */
+  .top{margin:14px 12px 0;padding:12px 14px;gap:8px}
+  .mark{width:36px;height:36px}
+  .mark svg{width:20px;height:20px}
+  .brand{min-width:0}
+  .brand .name{font-size:13px;line-height:1.1;white-space:normal}
+  .who{min-width:0}
+  .who .fio{max-width:96px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+  .who .role{font-size:11px}
+  .role-pill{display:none}
+
+  /* Вкладки на всю ширину */
+  .tabs{width:100%}
+  .tab{flex:1;text-align:center;padding:9px 6px;font-size:13px}
+
+  /* Карточки/панели */
+  .card-body{padding:14px 14px}
+  .card-head{padding:12px 14px}
+  .card-head h2{font-size:14px}
+  .bar{gap:8px}
+  .bar .datepick{flex-wrap:wrap;gap:6px}
+  .bar input[type=date],.bar select{min-width:0;max-width:100%}
+  .section-title{margin:20px 2px 10px}
+
+  /* Карточка дня */
+  .day-head{flex-wrap:wrap;gap:6px 10px}
+  .day-by{margin-left:0;text-align:left;width:100%}
+  .kv{grid-template-columns:repeat(auto-fit,minmax(118px,1fr))}
+
+  /* Модалки на всю ширину */
+  .modal{max-width:none;padding:20px 18px}
+  .sch-erow{flex-wrap:wrap}
+  .sch-erow .dm-adm{flex:1 1 100%}
+  .sch-erow input[type=time]{flex:1 1 40%}
+
+  /* Итоги: компактные таблицы */
+  .ds-table{font-size:12px}
+  .ds-table th,.ds-table td{padding:5px 7px}
+
+  /* Расписание: календарь скроллится по горизонтали, ячейки читаемые */
+  #schedRoot .sch-cal{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:6px}
+  #schedRoot .sch-grid-head,#schedRoot .sch-grid{min-width:560px}
+  #schedRoot .sch-cell{min-height:74px}
+  #schedRoot .sch-bar{gap:8px}
+  #schedRoot .sch-month b{min-width:120px}
+  #schedRoot .sch-subtabs{width:100%}
+  #schedRoot .sch-subtab{flex:1;text-align:center}
+  #schedRoot .rchip{padding:8px 12px}
+}
+@media (max-width:400px){
+  .tab{font-size:12px;padding:8px 4px}
+  .who .fio{max-width:76px}
+  #schedRoot .sch-grid-head,#schedRoot .sch-grid{min-width:520px}
+}
 </style>
 
 <div id="root"></div>
@@ -1281,8 +1343,10 @@ function renderSchCalendar(el){
   el.innerHTML=`
     <div class="sch-studios">${STUDIOS.map(s=>`<button class="sch-st${s.id===sid?' on':''}" data-ssel="${s.id}" style="border-left:4px solid ${s.color}">${sdot(s.id)}${s.name}<span>${s.start}–${s.end}</span></button>`).join('')}</div>
     ${roster}
-    <div class="sch-grid-head">${SCH_DOW.map(d=>`<div>${d}</div>`).join('')}</div>
-    <div class="sch-grid" id="schGrid"></div>`;
+    <div class="sch-cal">
+      <div class="sch-grid-head">${SCH_DOW.map(d=>`<div>${d}</div>`).join('')}</div>
+      <div class="sch-grid" id="schGrid"></div>
+    </div>`;
   const grid=el.querySelector('#schGrid'), n=schDaysIn(SCH.y,SCH.m);
   let fd=(schDow(SCH.y,SCH.m,1)+6)%7, cells='';
   for(let i=0;i<fd;i++) cells+='<div class="sch-cell empty"></div>';
