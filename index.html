@@ -417,6 +417,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)} <small class="ent">${studioEntity(id)}</small>`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'Br'; // белорусский рубль (BYN)
+const APP_VERSION = '02.08.2026-a';  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -604,7 +605,7 @@ function header(){
   const pill=full?'<span class="role-pill role-boss">полный доступ</span>':'<span class="role-pill role-admin">смена</span>';
   return `<div class="top fade-in">
     <div class="mark">${LEAF}</div>
-    <div class="brand"><div class="name">Flexico-Admin-Dashboard</div></div>
+    <div class="brand"><div class="name">Flexico-Admin-Dashboard</div><div class="sub" style="font-size:10px;color:var(--ink-faint);letter-spacing:.2px">версия ${APP_VERSION}</div></div>
     <div class="spacer"></div>
     <div class="who"><div class="fio">${escapeHtml(session.name)}</div><div class="role">${roleLabel()} ${pill}</div></div>
     <button class="btn btn-ghost btn-sm" id="logout">Выйти</button>
