@@ -178,6 +178,8 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
   cursor:pointer;transition:var(--fx);min-width:150px}
 .st-btn:hover{border-color:var(--line-strong)}
 .st-btn.on{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba(46,125,91,.12)}
+.st-btn.sched-hl{box-shadow:0 0 0 2px rgba(46,125,91,.35)}
+.st-today{font-size:10px;font-weight:700;color:var(--accent-deep);background:var(--surface-2);padding:1px 7px;border-radius:999px;margin-left:4px}
 .st-btn .t{font-weight:700;font-size:13px} .st-btn .a{font-size:12px;color:var(--ink-faint)}
 .bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
 .bar .grow{flex:1}
@@ -283,7 +285,7 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 #schedRoot .sch-status.dr{background:var(--gold-soft);color:var(--gold)}
 #schedRoot .sch-subtabs{display:flex;gap:6px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:4px;width:fit-content;margin-bottom:16px;flex-wrap:wrap}
 #schedRoot .sch-subtab{border:none;background:transparent;padding:7px 14px;border-radius:8px;font-weight:600;font-size:13.5px;color:var(--ink-soft);cursor:pointer}
-#schedRoot .sch-subtab.on{background:#fff;color:var(--accent-deep);box-shadow:var(--shadow)}
+#schedRoot .sch-subtab.on{background:var(--accent);color:#fff}
 #schedRoot .sch-studios{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
 #schedRoot .sch-st{border:1.5px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 14px;font-weight:700;font-size:13px;cursor:pointer;transition:var(--fx)}
 #schedRoot .sch-st span{font-weight:500;color:var(--ink-faint);font-size:12px;margin-left:4px}
@@ -323,8 +325,19 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 #schedRoot .sch-grid-head,#schedRoot .sch-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
 #schedRoot .sch-grid-head{margin-bottom:6px}
 #schedRoot .sch-grid-head div{text-align:center;font-size:11px;color:var(--ink-faint);font-weight:700;text-transform:uppercase}
-#schedRoot .sch-cell{min-height:78px;border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:6px;cursor:pointer;transition:var(--fx);overflow:hidden}
+#schedRoot .sch-cell{min-height:78px;border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:6px;transition:var(--fx);overflow:hidden}
 #schedRoot .sch-cell:hover{border-color:var(--accent)}
+#schedRoot .sch-strips{display:flex;flex-direction:column;gap:3px;margin-top:3px}
+#schedRoot .sch-strip{border-radius:5px;padding:3px 4px 3px 6px;cursor:pointer;transition:var(--fx)}
+#schedRoot .sch-strip.closed{background:var(--surface-2)}
+#schedRoot .sch-strip.need{box-shadow:0 0 0 1px var(--clay) inset}
+#schedRoot .sch-strip.armed{cursor:copy}
+#schedRoot .sch-strip:hover{background:rgba(46,125,91,.06)}
+#schedRoot .sch-strip.drop{background:rgba(46,125,91,.12);box-shadow:0 0 0 2px var(--accent) inset}
+#schedRoot .strip-lbl{font-size:9px;font-weight:800;margin-right:3px}
+#schedRoot .sch-strip .sch-sh,#schedRoot .sch-strip .sch-abs{margin-bottom:0;display:inline-block;width:100%}
+#schedRoot .sch-strip .sch-sh{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#schedRoot .sch-rc .sch-strip{width:100%}
 #schedRoot .sch-cell.empty{background:transparent;border:none;cursor:default}
 #schedRoot .sch-cell.closed{background:var(--surface-2);cursor:pointer}
 #schedRoot .sch-cell.need{border-color:var(--clay);box-shadow:0 0 0 2px var(--clay-soft) inset}
@@ -390,6 +403,7 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
   .bar{gap:8px}
   .bar .datepick{flex-wrap:wrap;gap:6px}
   .bar input[type=date],.bar select{min-width:0;max-width:100%}
+  #export{display:none}
   .section-title{margin:20px 2px 10px}
 
   /* Карточка дня */
@@ -442,7 +456,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)} <small class="ent">${studioEntity(id)}</small>`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'Br'; // белорусский рубль (BYN)
-const APP_VERSION = '02.08.2026-e';  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '02.08.2026-g';  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -467,7 +481,7 @@ function handleErr(e){
 }
 function saveSession(s){
   TOKEN = s.token;
-  session = {login:s.login, name:s.name, role:s.role, senior:s.senior, canEdit:!!s.canEdit};
+  session = {login:s.login, name:s.name, role:s.role, senior:s.senior, canEdit:!!s.canEdit, home:s.home||null};
   try{ sessionStorage.setItem('sess', JSON.stringify(s)); }catch(e){}
 }
 async function doLogout(){
@@ -555,7 +569,7 @@ async function boot(){
   // попытка восстановить сессию после обновления страницы
   let saved=null; try{ saved=JSON.parse(sessionStorage.getItem('sess')); }catch(e){}
   if(saved && saved.token){
-    TOKEN=saved.token; session={login:saved.login,name:saved.name,role:saved.role,senior:saved.senior,canEdit:!!saved.canEdit};
+    TOKEN=saved.token; session={login:saved.login,name:saved.name,role:saved.role,senior:saved.senior,canEdit:!!saved.canEdit,home:saved.home||null};
     try{ await loadReports(true); renderApp(); return; }
     catch(e){ TOKEN=null; session=null; try{sessionStorage.removeItem('sess');}catch(_){} }
   }
@@ -663,12 +677,16 @@ function textField(id,label,val,ph){return `<label class="field"><div class="lbl
 /* ================= Shift view (admin fills) ================= */
 async function renderShift(body){
   const today=todayStr();
+  let sched=null; try{ const _d=new Date(); sched=await apiGetSchedule(monthKey(_d.getFullYear(),_d.getMonth())); }catch(e){}
+  let myToday=null;
+  if(sched&&sched.assignments){ for(const s of STUDIOS){ const r=sched.assignments[today+'_'+s.id]; if(r&&!r.closed&&(r.shifts||[]).some(x=>x.adminId===session.login)){ myToday=s.id; break; } } }
+  if(!shiftStudio && myToday) shiftStudio=myToday;
   body.innerHTML=`
     <div id="banner"></div>
     <div class="section-title">Смена · ${fmtLong(today)} · ${fmtDow(today)}</div>
     <div class="studios" id="studios">${STUDIOS.map(s=>`
-      <button class="st-btn${s.id===shiftStudio?' on':''}" data-id="${s.id}" style="border-left:4px solid ${s.color}">
-        <div class="t">${s.name} <small class="ent">${s.entity}</small></div><div class="a">${s.address}</div></button>`).join('')}</div>
+      <button class="st-btn${s.id===shiftStudio?' on':''}${s.id===myToday?' sched-hl':''}" data-id="${s.id}" style="border-left:4px solid ${s.color}">
+        <div class="t">${s.name} <small class="ent">${s.entity}</small>${s.id===myToday?' <span class="st-today">вы сегодня здесь</span>':''}</div><div class="a">${s.address}</div></button>`).join('')}</div>
     <div id="shiftbody"></div>`;
   fillBanner(body.querySelector('#banner'), (s,d)=>openShiftEditor(body,s,d,()=>renderShift(body)));
   body.querySelectorAll('.st-btn').forEach(b=>b.onclick=()=>{shiftStudio=b.dataset.id;renderShift(body);});
@@ -1123,7 +1141,6 @@ function cashNowCard(all, sched){
   }).join('');
   const shiftTile=`<div class="cn-item cn-shift"><div class="cn-name">Сегодня на смене</div>${shiftLines}</div>`;
   return `<div class="cashnow">
-    <div class="cn-title">Наличные в кассе сейчас · смена сегодня</div>
     <div class="cn-grid">${items.map(it=>`
       <div class="cn-item" style="border-left:4px solid ${it.s.color}">
         <div class="cn-name">${sdot(it.s.id)}${it.s.name} <small class="ent">${it.s.entity}</small></div>
@@ -1362,7 +1379,7 @@ async function saveMonth(){ await apiSaveSchedule(monthKey(SCH.y,SCH.m), SCHDATA
 
 async function renderSchedule(body){
   const editor = session.role==='owner' || session.senior;
-  if(!SCH){ const now=new Date(); SCH={y:now.getFullYear(), m:now.getMonth(), sid:STUDIOS[0].id, view: editor?'calendar':'overview', calView:(typeof window!=='undefined'&&window.innerWidth<640)?'list':'grid'}; }
+  if(!SCH){ const now=new Date(); const defSids = editor ? STUDIOS.map(s=>s.id) : (session.home?[session.home]:STUDIOS.map(s=>s.id)); SCH={y:now.getFullYear(), m:now.getMonth(), sids:defSids, view:'calendar', calView:(typeof window!=='undefined'&&window.innerWidth<640)?'list':'grid'}; }
   try{ TEAM=await apiListTeam(); SCHDATA=await loadMonth(SCH.y,SCH.m); }
   catch(e){ return handleErr(e); }
   drawSchedule(body, editor);
@@ -1371,7 +1388,7 @@ function reflowSchedule(){ if(SCH&&SCH._body) drawSchedule(SCH._body, SCH.editor
 
 function drawSchedule(body, editor){
   SCH._body=body; SCH.editor=editor;
-  const sub = editor ? [['calendar','Календарь'],['overview','Обзор']] : [['overview','Обзор всех филиалов'],['dashboard','Моё расписание']];
+  const sub = editor ? [['calendar','Календарь'],['overview','Обзор']] : [['calendar','Календарь'],['overview','Обзор'],['dashboard','Моё расписание']];
   if(!sub.some(x=>x[0]===SCH.view)) SCH.view=sub[0][0];
   body.innerHTML=`<div id="schedRoot">
     <div class="sch-bar">
@@ -1391,7 +1408,7 @@ function drawSchedule(body, editor){
     let m=SCH.m+(+b.dataset.mv), y=SCH.y; if(m<0){m=11;y--;} if(m>11){m=0;y++;} SCH.y=y; SCH.m=m;
     try{ SCHDATA=await loadMonth(y,m); }catch(e){ return handleErr(e); } drawSchedule(body,editor);
   });
-  root.querySelectorAll('[data-sview]').forEach(b=>b.onclick=()=>{ SCH.view=b.dataset.sview; drawSub(root); });
+  root.querySelectorAll('[data-sview]').forEach(b=>b.onclick=()=>{ SCH.view=b.dataset.sview; root.querySelectorAll('[data-sview]').forEach(x=>x.classList.toggle('on',x.dataset.sview===SCH.view)); drawSub(root); });
   if(editor){
     root.querySelector('[data-sact="seed"]').onclick=()=>openSeedModal();
     root.querySelector('[data-sact="clear"]').onclick=()=>clearDraft();
@@ -1407,84 +1424,96 @@ function drawSub(root){
   else renderSchPersonal(el);
 }
 
-function schCellPieces(d, iso, sid, st, editor){
-  const r=dayRec(iso,sid);
-  if(r&&r.closed) return {closed:true, need:false, html:'<span class="sch-closed">закрыто</span>'};
+function schStrip(d, iso, sid, editor, showLabel){
+  const st=SMAP[sid], r=dayRec(iso,sid);
   const absClr=t=>t==='bol'?'var(--clay)':(t==='otgul'?'var(--ink-soft)':'var(--gold)');
-  const shifts=(r&&r.shifts)?r.shifts:[];
-  const scheduled=new Set(shifts.map(s=>s.adminId));
-  const shHtml=shifts.map(sh=>{const ab=absOn(sh.adminId,iso);
-    return `<div class="sch-sh${ab?' needrep':''}"${editor?` draggable="true" data-shd="${d}" data-shadm="${sh.adminId}"`:''} style="border-left:3px solid ${st.color};padding-left:6px">${escapeHtml(adminName(sh.adminId))}<span>${sh.start}–${sh.end}${ab?' · нужна замена':''}</span></div>`;}).join('');
-  const absHtml=TEAM.filter(a=>a.home===sid && !scheduled.has(a.login))
-    .map(a=>({a,ab:absOn(a.login,iso)})).filter(x=>x.ab)
-    .map(x=>`<div class="sch-abs">${escapeHtml(x.a.name)}<span style="color:${absClr(x.ab.type)}">${absName(x.ab.type)}</span></div>`).join('');
-  return {closed:false, need:shifts.some(sh=>absOn(sh.adminId,iso)), html:(shHtml||absHtml)?(shHtml+absHtml):'<span class="sch-empty">—</span>'};
+  let inner, closed=false, need=false;
+  if(r&&r.closed){ closed=true; inner='<span class="sch-closed">закрыто</span>'; }
+  else {
+    const shifts=(r&&r.shifts)?r.shifts:[];
+    const scheduled=new Set(shifts.map(s=>s.adminId));
+    const shHtml=shifts.map(sh=>{const ab=absOn(sh.adminId,iso); if(ab)need=true;
+      return `<div class="sch-sh${ab?' needrep':''}"${editor?` draggable="true" data-shd="${d}" data-shsid="${sid}" data-shadm="${sh.adminId}"`:''}>${escapeHtml(adminName(sh.adminId))}<span>${sh.start}–${sh.end}${ab?' · замена':''}</span></div>`;}).join('');
+    const absHtml=TEAM.filter(a=>a.home===sid && !scheduled.has(a.login)).map(a=>({a,ab:absOn(a.login,iso)})).filter(x=>x.ab)
+      .map(x=>`<div class="sch-abs">${escapeHtml(shortName(x.a.name))}<span style="color:${absClr(x.ab.type)}">${absName(x.ab.type)}</span></div>`).join('');
+    inner=(shHtml||absHtml)?(shHtml+absHtml):'<span class="sch-empty">—</span>';
+  }
+  const armed=(SCHsel&&editor)?' armed':'';
+  const lbl=showLabel?`<span class="strip-lbl" style="color:${st.color}">${st.name[0]}</span>`:'';
+  return `<div class="sch-strip${closed?' closed':''}${need?' need':''}${armed}" data-day="${d}" data-sid="${sid}" style="border-left:3px solid ${st.color}">${lbl}${inner}</div>`;
 }
 function renderSchCalendar(el){
-  const sid=SCH.sid, st=SMAP[sid];
   const editor=session.role==='owner'||session.senior;
-  const home=TEAM.filter(a=>a.home===sid), others=TEAM.filter(a=>a.home!==sid);
+  let sids=(SCH.sids&&SCH.sids.length)?SCH.sids.filter(id=>SMAP[id]):[];
+  if(!sids.length) sids=[STUDIOS[0].id];
+  sids=STUDIOS.map(s=>s.id).filter(id=>sids.includes(id));
+  const multi=sids.length>1;
+  const home=TEAM.filter(a=>sids.includes(a.home)), others=TEAM.filter(a=>!sids.includes(a.home));
   const chip=a=>`<button class="rchip${SCHsel===a.login?' sel':''}" data-adm="${a.login}" draggable="true" style="border-left:4px solid ${studioColor(a.home)}">${escapeHtml(shortName(a.name))}</button>`;
   const roster = editor ? `
     <div class="sch-roster">
-      <div class="rost-hint">${SCHsel?`Выбран: <b>${escapeHtml(adminName(SCHsel))}</b> — нажимайте на дни, чтобы поставить. Ещё раз по имени — снять выбор.`:'Перетащите администратора в день (на компьютере) или выберите его и нажимайте на нужные дни. Чтобы убрать — перетащите смену из дня обратно в этот список.'}</div>
+      ${SCHsel?`<div class="rost-hint">Выбран: <b>${escapeHtml(adminName(SCHsel))}</b> — нажимайте на нужный филиал в дне. Ещё раз по имени — снять выбор.</div>`:''}
       ${home.length?`<div class="rost-group"><span class="rost-lbl">Свои</span>${home.map(chip).join('')}</div>`:''}
       ${others.length?`<div class="rost-group"><span class="rost-lbl">Другие</span>${others.map(chip).join('')}</div>`:''}
       ${(!home.length&&!others.length)?'<div class="hintline">Нет администраторов. Добавьте их и укажите филиал во вкладке «Администраторы».</div>':''}
     </div>` : '';
   const n=schDaysIn(SCH.y,SCH.m), list=SCH.calView==='list';
+  const strips=(d,iso)=>sids.map(sid=>schStrip(d,iso,sid,editor,multi)).join('');
   let body='';
   if(list){
     let rows='';
     for(let d=1;d<=n;d++){
       const iso=schIso(SCH.y,SCH.m,d), dw=schDow(SCH.y,SCH.m,d), we=(dw===0||dw===6), today=(iso===todayStr());
-      const p=schCellPieces(d,iso,sid,st,editor);
-      rows+=`<div class="sch-row${p.closed?' closed':''}${p.need?' need':''}${we?' we':''}${today?' today':''}${(SCHsel&&editor)?' armed':''}" data-day="${d}">
+      rows+=`<div class="sch-row${we?' we':''}${today?' today':''}">
         <div class="sch-rd"><b>${d}</b><span>${SCH_DOW[(dw+6)%7]}</span></div>
-        <div class="sch-rc">${p.html}</div></div>`;
+        <div class="sch-rc">${strips(d,iso)}</div></div>`;
     }
     body=`<div class="sch-list-cal">${rows}</div>`;
   } else {
     let fd=(schDow(SCH.y,SCH.m,1)+6)%7, cells='';
     for(let i=0;i<fd;i++) cells+='<div class="sch-cell empty"></div>';
     for(let d=1;d<=n;d++){
-      const iso=schIso(SCH.y,SCH.m,d), p=schCellPieces(d,iso,sid,st,editor);
-      cells+=`<div class="sch-cell${p.closed?' closed':''}${p.need?' need':''}${(SCHsel&&editor)?' armed':''}" data-day="${d}"><div class="sch-d">${d}</div>${p.html}</div>`;
+      const iso=schIso(SCH.y,SCH.m,d);
+      cells+=`<div class="sch-cell"><div class="sch-d">${d}</div><div class="sch-strips">${strips(d,iso)}</div></div>`;
     }
     body=`<div class="sch-cal"><div class="sch-grid-head">${SCH_DOW.map(x=>`<div>${x}</div>`).join('')}</div><div class="sch-grid">${cells}</div></div>`;
   }
   el.innerHTML=`
-    <div class="sch-studios">${STUDIOS.map(s=>`<button class="sch-st${s.id===sid?' on':''}" data-ssel="${s.id}" style="border-left:4px solid ${s.color}">${sdot(s.id)}${s.name}<span>${s.start}–${s.end}</span></button>`).join('')}</div>
+    <div class="sch-studios">${STUDIOS.map(s=>`<button class="sch-st${sids.includes(s.id)?' on':''}" data-ssel="${s.id}" style="border-left:4px solid ${s.color}">${sdot(s.id)}${s.name}<span>${s.start}–${s.end}</span></button>`).join('')}</div>
     <div class="sch-viewtoggle"><button class="vt${list?'':' on'}" data-cv="grid">▦ Сетка</button><button class="vt${list?' on':''}" data-cv="list">☰ Список</button></div>
     ${roster}
     ${body}`;
-  el.querySelectorAll('[data-ssel]').forEach(b=>b.onclick=()=>{ SCH.sid=b.dataset.ssel; renderSchCalendar(el); });
+  el.querySelectorAll('[data-ssel]').forEach(b=>b.onclick=()=>{
+    const id=b.dataset.ssel; let arr=(SCH.sids||[]).slice();
+    if(arr.includes(id)){ if(arr.length>1) arr=arr.filter(x=>x!==id); } else arr.push(id);
+    SCH.sids=arr; renderSchCalendar(el);
+  });
   el.querySelectorAll('[data-cv]').forEach(b=>b.onclick=()=>{ SCH.calView=b.dataset.cv; renderSchCalendar(el); });
   if(editor){
     el.querySelectorAll('.rchip').forEach(c=>{
       c.onclick=()=>{ SCHsel=(SCHsel===c.dataset.adm)?null:c.dataset.adm; renderSchCalendar(el); };
       c.addEventListener('dragstart',e=>{ e.dataTransfer.setData('text/plain','ADD:'+c.dataset.adm); e.dataTransfer.effectAllowed='copy'; });
     });
-    el.querySelectorAll('[data-day]').forEach(node=>{
-      const day=+node.dataset.day;
-      node.onclick=()=>{ if(SCHsel) schPlace(day, SCHsel); else openDayModal(day); };
+    el.querySelectorAll('.sch-strip[data-sid]').forEach(node=>{
+      const day=+node.dataset.day, sid=node.dataset.sid;
+      node.onclick=(ev)=>{ ev.stopPropagation(); if(SCHsel) schPlace(day, sid, SCHsel); else openDayModal(day, sid); };
       node.addEventListener('dragover',e=>{ e.preventDefault(); node.classList.add('drop'); });
       node.addEventListener('dragleave',()=>node.classList.remove('drop'));
-      node.addEventListener('drop',e=>{ e.preventDefault(); node.classList.remove('drop'); const dt=e.dataTransfer.getData('text/plain'); if(dt&&dt.indexOf('ADD:')===0) schPlace(day, dt.slice(4)); });
+      node.addEventListener('drop',e=>{ e.preventDefault(); node.classList.remove('drop'); const dt=e.dataTransfer.getData('text/plain'); if(dt&&dt.indexOf('ADD:')===0) schPlace(day, sid, dt.slice(4)); });
     });
     el.querySelectorAll('.sch-sh[data-shadm]').forEach(shel=>{
-      shel.addEventListener('dragstart',e=>{ e.stopPropagation(); e.dataTransfer.setData('text/plain','DEL:'+shel.dataset.shd+':'+shel.dataset.shadm); e.dataTransfer.effectAllowed='move'; });
+      shel.addEventListener('dragstart',e=>{ e.stopPropagation(); e.dataTransfer.setData('text/plain','DEL:'+shel.dataset.shd+':'+shel.dataset.shsid+':'+shel.dataset.shadm); e.dataTransfer.effectAllowed='move'; });
     });
     const rost=el.querySelector('.sch-roster');
     if(rost){
       rost.addEventListener('dragover',e=>{ e.preventDefault(); rost.classList.add('rost-drop'); });
       rost.addEventListener('dragleave',e=>{ if(!rost.contains(e.relatedTarget)) rost.classList.remove('rost-drop'); });
-      rost.addEventListener('drop',e=>{ e.preventDefault(); rost.classList.remove('rost-drop'); const dt=e.dataTransfer.getData('text/plain'); if(dt&&dt.indexOf('DEL:')===0){ const p=dt.split(':'); schRemoveShift(+p[1], p[2]); } });
+      rost.addEventListener('drop',e=>{ e.preventDefault(); rost.classList.remove('rost-drop'); const dt=e.dataTransfer.getData('text/plain'); if(dt&&dt.indexOf('DEL:')===0){ const p=dt.split(':'); schRemoveShift(+p[1], p[2], p[3]); } });
     }
   }
 }
-async function schRemoveShift(day, login){
-  const iso=schIso(SCH.y,SCH.m,day), sid=SCH.sid, r=dayRec(iso,sid);
+async function schRemoveShift(day, sid, login){
+  const iso=schIso(SCH.y,SCH.m,day), r=dayRec(iso,sid);
   if(!r) return;
   r.shifts=(r.shifts||[]).filter(s=>s.adminId!==login);
   setDayRec(iso,sid,(r.shifts.length||r.closed)?r:null);
@@ -1510,8 +1539,8 @@ function moveConfirm(msg,onYes){
     <div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="mvYes">Перенести сюда</button></div>`);
   el.querySelector('#mvYes').onclick=async()=>{ closeModal(el); await onYes(); };
 }
-function schPlace(day, login){
-  const iso=schIso(SCH.y,SCH.m,day), sid=SCH.sid, st=SMAP[sid];
+function schPlace(day, sid, login){
+  const iso=schIso(SCH.y,SCH.m,day), st=SMAP[sid];
   const cur=dayRec(iso,sid);
   if(cur&&!cur.closed&&(cur.shifts||[]).some(s=>s.adminId===login)){ toast(adminName(login)+' уже стоит в этом дне', true); return; }
   const conf=adminTimeConflicts(iso, sid, login, st.start, st.end);
@@ -1538,11 +1567,11 @@ function schConflict(login, iso, curSid, otherSid, day){
     const st=SMAP[curSid], cur=dayRec(iso,curSid)||{closed:false,shifts:[]}; cur.closed=false; (cur.shifts=cur.shifts||[]).push({id:uid(),adminId:login,start:st.start,end:st.end}); setDayRec(iso,curSid,cur);
     try{ await saveMonth(); closeModal(el); toast('Перенесено на «'+studioName(curSid)+'»'); reflowSchedule(); }catch(e){ handleErr(e); }
   };
-  el.querySelector('#cfOther').onclick=()=>{ closeModal(el); openDayModal(day); };
+  el.querySelector('#cfOther').onclick=()=>{ closeModal(el); openDayModal(day, curSid); };
 }
 
-function teamOptions(sel,iso){
-  const home=TEAM.filter(a=>a.home===SCH.sid), others=TEAM.filter(a=>a.home!==SCH.sid);
+function teamOptions(sel,iso,sid){
+  const home=TEAM.filter(a=>a.home===sid), others=TEAM.filter(a=>a.home!==sid);
   const opt=a=>{const ab=absOn(a.login,iso);const busy=assignedThatDay(a.login,iso)&&a.login!==sel;
     const stt=ab?'в отпуске':(busy?'занят':'свободен');
     return `<option value="${a.login}" ${a.login===sel?'selected':''}>${escapeHtml(a.name)} — ${stt}</option>`;};
@@ -1552,8 +1581,8 @@ function teamOptions(sel,iso){
 }
 function splitMid(s,e){let m=Math.round(((toMin(s)+toMin(e))/2)/30)*30;return schPad(Math.floor(m/60))+':'+schPad(m%60);}
 
-function openDayModal(day){
-  const iso=schIso(SCH.y,SCH.m,day), sid=SCH.sid, st=SMAP[sid];
+function openDayModal(day, sid){
+  const iso=schIso(SCH.y,SCH.m,day), st=SMAP[sid];
   const r=dayRec(iso,sid)||{closed:false,shifts:[]};
   let shifts=(r.shifts||[]).map(s=>({...s})), closed=!!r.closed;
   const el=modal(`<h3>${st.name} · ${day} ${MON2[SCH.m].toLowerCase()}</h3><div id="dmBody"></div>
@@ -1564,7 +1593,7 @@ function openDayModal(day){
       <label class="chk" style="margin-bottom:12px"><input type="checkbox" id="dmClosed" ${closed?'checked':''}/> Студия закрыта в этот день</label>
       <div id="dmShifts" class="${closed?'dim':''}">
         ${shifts.length?shifts.map((s,i)=>`<div class="sch-erow" data-i="${i}">
-           <select class="dm-adm">${teamOptions(s.adminId,iso)}</select>
+           <select class="dm-adm">${teamOptions(s.adminId,iso,sid)}</select>
            <input class="dm-s" type="time" value="${s.start}"/><span>–</span><input class="dm-e" type="time" value="${s.end}"/>
            <button class="btn btn-ghost btn-sm dm-del">✕</button></div>`).join(''):'<div class="hintline">Смены не назначены</div>'}
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
@@ -1602,6 +1631,16 @@ function openDayModal(day){
   };
 }
 
+function isoDiff(a,b){ return Math.round((Date.parse(b)-Date.parse(a))/86400000); }
+function absDaysInMonth(login, type){
+  const first=schIso(SCH.y,SCH.m,1), last=schIso(SCH.y,SCH.m,schDaysIn(SCH.y,SCH.m));
+  let days=0;
+  (SCHDATA.absences||[]).filter(a=>a.adminId===login && (!type||a.type===type)).forEach(a=>{
+    const s=a.start>first?a.start:first, e=a.end<last?a.end:last;
+    if(s>e) return; days += isoDiff(s,e)+1;
+  });
+  return days;
+}
 function renderSchOverview(el){
   const n=schDaysIn(SCH.y,SCH.m);
   let head='<th class="rowh">Филиал</th>';
@@ -1616,11 +1655,13 @@ function renderSchOverview(el){
   const warns=TEAM.filter(a=>consecutiveMax(a.login)>3);
   const hrows=TEAM.map(a=>`<tr><td class="rowh">${escapeHtml(shortName(a.name))}</td><td>${fmtH(adminHours(a.login))} ч</td><td>${adminMonthShifts(a.login).length}</td><td>${consecutiveMax(a.login)>3?'<span class="warnpill">'+consecutiveMax(a.login)+' подряд</span>':'—'}</td></tr>`).join('');
   el.innerHTML=`
-    ${warns.length?`<div class="banner" style="background:var(--gold-soft);border-color:#E7CF9F"><div class="bt" style="color:var(--gold)">⚠ Более 3 смен подряд (${warns.length})</div><div class="bi">${warns.map(a=>`<span class="bchip" style="cursor:default;border-color:#E7CF9F">${escapeHtml(a.name)} — ${consecutiveMax(a.login)}</span>`).join('')}</div></div>`:''}
+    ${warns.length?`<div class="banner" style="background:var(--gold-soft);border-color:#E7CF9F"><div class="bt" style="color:var(--gold)">⚠ Более 3 смен подряд (${warns.length})</div><div class="bi">${warns.map(a=>`<span class="bchip" style="cursor:default;border-color:#E7CF9F">${escapeHtml(shortName(a.name))} — ${consecutiveMax(a.login)}</span>`).join('')}</div></div>`:''}
     <div class="section-title">Покрытие по дням</div>
     <div class="sch-scroll"><table class="sch-cov"><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table></div>
     <div class="section-title">Часы за месяц</div>
-    <div class="sch-scroll"><table class="sch-hrs"><thead><tr><th>Администратор</th><th>Часы</th><th>Смен</th><th>Серии</th></tr></thead><tbody>${hrows||'<tr><td colspan="4" style="color:var(--ink-faint)">Нет администраторов. Добавьте их и укажите филиал.</td></tr>'}</tbody></table></div>`;
+    <div class="sch-scroll"><table class="sch-hrs"><thead><tr><th>Администратор</th><th>Часы</th><th>Смен</th><th>Серии</th></tr></thead><tbody>${hrows||'<tr><td colspan="4" style="color:var(--ink-faint)">Нет администраторов. Добавьте их и укажите филиал.</td></tr>'}</tbody></table></div>
+    <div class="section-title">Отсутствия за месяц (дней)</div>
+    <div class="sch-scroll"><table class="sch-hrs"><thead><tr><th>Администратор</th><th>Отпуск</th><th>Больн.</th><th>Отгул</th><th>Всего</th></tr></thead><tbody>${TEAM.map(a=>{const o=absDaysInMonth(a.login,'otpusk'),b=absDaysInMonth(a.login,'bol'),g=absDaysInMonth(a.login,'otgul'),t=o+b+g;return `<tr><td class="rowh">${escapeHtml(shortName(a.name))}</td><td>${o||'—'}</td><td>${b||'—'}</td><td>${g||'—'}</td><td><b>${t||'—'}</b></td></tr>`;}).join('')||'<tr><td colspan="5" style="color:var(--ink-faint)">Нет данных</td></tr>'}</tbody></table></div>`;
 }
 
 function renderSchPersonal(el){
