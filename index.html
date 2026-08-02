@@ -442,7 +442,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)} <small class="ent">${studioEntity(id)}</small>`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'Br'; // белорусский рубль (BYN)
-const APP_VERSION = '02.08.2026-d';  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '02.08.2026-e';  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -1490,12 +1490,32 @@ async function schRemoveShift(day, login){
   setDayRec(iso,sid,(r.shifts.length||r.closed)?r:null);
   try{ await saveMonth(); toast(adminName(login)+' убран из '+fmtLong(iso)); reflowSchedule(); }catch(e){ handleErr(e); }
 }
+function overlaps(s1,e1,s2,e2){ return toMin(s1)<toMin(e2) && toMin(s2)<toMin(e1); }
+function adminTimeConflicts(iso, excludeSid, login, start, end){
+  const out=[];
+  STUDIOS.forEach(os=>{ if(os.id===excludeSid) return;
+    const r=dayRec(iso,os.id); if(!r||r.closed) return;
+    (r.shifts||[]).forEach(x=>{ if(x.adminId===login && overlaps(start,end,x.start,x.end)) out.push({otherSid:os.id, shift:x}); });
+  });
+  return out;
+}
+function findCrossConflicts(iso, sid, shifts){
+  const out=[];
+  (shifts||[]).forEach(s=>{ if(!s.adminId) return;
+    adminTimeConflicts(iso, sid, s.adminId, s.start, s.end).forEach(c=>out.push({login:s.adminId, otherSid:c.otherSid})); });
+  return out;
+}
+function moveConfirm(msg,onYes){
+  const el=modal(`<h3>Администратор занят в это время</h3><p>${escapeHtml(msg)}</p>
+    <div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="mvYes">Перенести сюда</button></div>`);
+  el.querySelector('#mvYes').onclick=async()=>{ closeModal(el); await onYes(); };
+}
 function schPlace(day, login){
-  const iso=schIso(SCH.y,SCH.m,day), sid=SCH.sid;
+  const iso=schIso(SCH.y,SCH.m,day), sid=SCH.sid, st=SMAP[sid];
   const cur=dayRec(iso,sid);
   if(cur&&!cur.closed&&(cur.shifts||[]).some(s=>s.adminId===login)){ toast(adminName(login)+' уже стоит в этом дне', true); return; }
-  const conf=STUDIOS.filter(s=>s.id!==sid).filter(s=>{const r=dayRec(iso,s.id);return r&&!r.closed&&(r.shifts||[]).some(x=>x.adminId===login);});
-  if(conf.length){ schConflict(login, iso, sid, conf[0].id, day); return; }
+  const conf=adminTimeConflicts(iso, sid, login, st.start, st.end);
+  if(conf.length){ schConflict(login, iso, sid, conf[0].otherSid, day); return; }
   schDoAssign(iso, sid, login);
 }
 async function schDoAssign(iso, sid, login){
@@ -1566,10 +1586,19 @@ function openDayModal(day){
     }
   }
   draw();
-  el.querySelector('#dmSave').onclick=async()=>{
+  el.querySelector('#dmSave').onclick=()=>{
     const rec = closed?{closed:true,shifts:[]}:{closed:false,shifts:shifts.filter(s=>s.adminId)};
-    setDayRec(iso,sid,(!closed && rec.shifts.length===0)?null:rec);
-    try{ await saveMonth(); closeModal(el); toast('Сохранено'); reflowSchedule(); }catch(e){ handleErr(e); }
+    const conflicts = closed ? [] : findCrossConflicts(iso, sid, rec.shifts);
+    const finalize = async ()=>{
+      const pairs=[...new Set(conflicts.map(c=>c.login+'|'+c.otherSid))];
+      pairs.forEach(k=>{ const p=k.split('|'), os=p[1]; const r=dayRec(iso,os); if(r){ r.shifts=(r.shifts||[]).filter(x=>x.adminId!==p[0]); setDayRec(iso,os, r.shifts.length?r:null); } });
+      setDayRec(iso,sid,(!closed && rec.shifts.length===0)?null:rec);
+      try{ await saveMonth(); closeModal(el); toast(conflicts.length?'Сохранено · перенесено с других филиалов':'Сохранено'); reflowSchedule(); }catch(e){ handleErr(e); }
+    };
+    if(conflicts.length){
+      const names=[...new Set(conflicts.map(c=>adminName(c.login)+' — уже на «'+studioName(c.otherSid)+'»'))].join('; ');
+      moveConfirm(names+'. Перенести сюда (убрать с других филиалов)?', finalize);
+    } else finalize();
   };
 }
 
@@ -1662,6 +1691,7 @@ async function seedMonth(block){
     for(let d=1;d<=n;d++){const iso=schIso(SCH.y,SCH.m,d),k=iso+'_'+s.id;
       if(SCHDATA.assignments[k])continue;
       const idx=Math.floor((d-1)/block)%homes.length, who=homes[idx];
+      if(adminTimeConflicts(iso, s.id, who.login, s.start, s.end).length) continue; // не двоим админа
       SCHDATA.assignments[k]={closed:false,shifts:[{id:uid(),adminId:who.login,start:s.start,end:s.end}]};}});
   SCHDATA.seeded=true; SCHDATA.pattern={block};
   try{ await saveMonth(); toast('Черновик заполнен ('+(block===1?'через день':block+' через '+block)+')'); reflowSchedule(); }catch(e){ handleErr(e); }
