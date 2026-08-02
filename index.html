@@ -240,6 +240,19 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 .ds-grid b{font-size:15px;font-variant-numeric:tabular-nums}
 .ds-tot b{color:var(--accent-deep)}
 .miss-row{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 14px}
+.sumcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.sumcard{border:1px solid var(--line);border-radius:12px;background:var(--surface-2);padding:12px 14px}
+.sumcard.tot{background:#fff;border-color:var(--accent);box-shadow:0 0 0 2px rgba(46,125,91,.12)}
+.sumcard-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.sc-name{font-weight:700;font-size:14px}
+.sc-rev{font-size:10px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.3px;text-align:right}
+.sc-rev b{display:block;font-size:16px;color:var(--accent-deep);font-family:'Unbounded';font-weight:600;letter-spacing:0}
+.sumcard-g{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin-bottom:10px}
+.sumcard-g > div{display:flex;flex-direction:column;min-width:0}
+.sumcard-g span{font-size:10px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.2px}
+.sumcard-g b{font-size:14px;font-variant-numeric:tabular-nums}
+.sumcard-cl{font-size:12px;color:var(--ink-soft);line-height:1.55;border-top:1px solid var(--line);padding-top:8px}
+.sumcard-cl b{color:var(--ink);font-variant-numeric:tabular-nums}
 .ds-title small{font-family:'Golos Text';font-weight:500;color:var(--ink-faint);text-transform:none;letter-spacing:0}
 .ds-table{border-collapse:collapse;width:100%;font-size:12.5px;font-variant-numeric:tabular-nums}
 .ds-table th,.ds-table td{border:1px solid var(--line);padding:6px 10px;text-align:right;white-space:nowrap}
@@ -417,7 +430,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)} <small class="ent">${studioEntity(id)}</small>`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'Br'; // белорусский рубль (BYN)
-const APP_VERSION = '02.08.2026-a';  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '02.08.2026-b';  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -1017,7 +1030,7 @@ async function renderAllReports(body){
   body.innerHTML=`
     <div id="banner"></div>
     <div class="bar fade-in">
-      <div class="datepick"><span class="lbl">День:</span><input type="date" id="pick" max="${todayStr()}" value="${all[0]?all[0].date:todayStr()}" style="width:auto"/></div>
+      <div class="datepick"><span class="lbl">День:</span><input type="date" id="pick" max="${todayStr()}" value="${todayStr()}" style="width:auto"/></div>
       <div class="datepick"><span class="lbl">Студия:</span><select id="stf" style="width:auto"><option value="all">Все студии</option>${STUDIOS.map(s=>`<option value="${s.id}">${s.name} · ${s.address} · ${s.entity}</option>`).join('')}</select></div>
       <div class="grow"></div>
       <button class="btn" id="export">↓ Выгрузить лог в Excel</button>
@@ -1073,71 +1086,74 @@ async function renderAllReports(body){
   body.querySelector('#export').onclick=()=>{const f=stf.value;exportExcel(all.filter(e=>f==='all'||e.studioId===f));};
 }
 
-/* ================= Итоги за день ================= */
+/* ================= Итоги: карточки по филиалам ================= */
+function _numf(n){ return (n==null||isNaN(Number(n)))?'0':Number(n).toLocaleString('ru-RU'); }
+function _sgn(n){ return `<b style="color:${n<0?'var(--clay)':(n>0?'var(--accent-deep)':'var(--ink)')}">${n>0?'+':''}${_numf(n)}</b>`; }
+function entryMetrics(e){
+  const i=(e.changes||[]).filter(c=>c.type==='in').reduce((a,c)=>a+(Number(c.amount)||0),0);
+  const o=(e.changes||[]).filter(c=>c.type!=='in').reduce((a,c)=>a+(Number(c.amount)||0),0);
+  const st=Number(e.cashStart)||0, end=(e.cashEnd!=null)?Number(e.cashEnd):0;
+  const day=(e.cashEnd!=null)?(end-st-i+o):0;
+  const card=Number(e.cashless)||0, qr=Number(e.allsports)||0, ep=Number(e.epos)||0;
+  const came=Number(e.newCame??e.newCount)||0;
+  const bought=Number(e.newBought!=null?e.newBought:(Array.isArray(e.newList)?e.newList.filter(x=>x.bought).length:0))||0;
+  const ended=Number(e.ended)||0, renew=Number(e.renewed??e.oldCount)||0;
+  return {st, net:i-o, end, day, card, qr, ep, rev:day+card+qr+ep, inter:0, came, bought, ended, renew, days:1};
+}
+function sumCard(label, dotId, entity, m, period, total){
+  const cell=(k,v)=>`<div><span>${k}</span>${v}</div>`;
+  const grid=[
+    cell('Нал. за день', _sgn(m.day)),
+    cell('Движения', _sgn(m.net)),
+    period?cell('Между сменами', _sgn(m.inter||0)):cell('Утро', `<b>${_numf(m.st)}</b>`),
+    period?cell('Дней', `<b>${m.days}</b>`):cell('Вечер', `<b>${_numf(m.end)}</b>`),
+    cell('Картой', `<b>${_numf(m.card)}</b>`),
+    cell('QR', `<b>${_numf(m.qr)}</b>`),
+    cell('EPOS', `<b>${_numf(m.ep)}</b>`)
+  ].join('');
+  const clients=`Пришло <b>${m.came}</b> · купили <b>${m.bought}</b> (${pct(m.bought,m.came)}) · законч. <b>${m.ended}</b> · продлили <b>${m.renew}</b> (${pct(m.renew,m.ended)}) · не прод. <b>${Math.max(0,m.ended-m.renew)}</b>`;
+  const head = total
+    ? '<span class="sc-name">Итого по всем</span>'
+    : `<span class="sc-name">${dotId?sdot(dotId):''}${label}${entity?` <small class="ent">${entity}</small>`:''}</span>`;
+  return `<div class="sumcard${total?' tot':''}">
+    <div class="sumcard-h">${head}<span class="sc-rev">Выручка<b>${_numf(m.rev)} ${CUR}</b></span></div>
+    <div class="sumcard-g">${grid}</div>
+    <div class="sumcard-cl">${clients}</div>
+  </div>`;
+}
 function daySummary(entries){
   if(!entries.length) return '';
-  const numf=n=>(n==null||isNaN(Number(n)))?'0':Number(n).toLocaleString('ru-RU');
-  const val=(e,k)=>{const v=e[k];return v!=null&&!isNaN(Number(v))?Number(v):0;};
-  const boughtOf=e=>Number(e.newBought!=null?e.newBought:(Array.isArray(e.newList)?e.newList.filter(x=>x.bought).length:0))||0;
-  const cameOf=e=>Number(e.newCame??e.newCount)||0;
-  const endedOf=e=>Number(e.ended)||0;
-  const renewOf=e=>Number(e.renewed??e.oldCount)||0;
   const ord=STUDIOS.map(s=>s.id);
   const rows=entries.slice().sort((a,b)=>ord.indexOf(a.studioId)-ord.indexOf(b.studioId));
-  const chgOf=e=>{const i=(e.changes||[]).filter(c=>c.type==='in').reduce((a,c)=>a+(Number(c.amount)||0),0);const o=(e.changes||[]).filter(c=>c.type!=='in').reduce((a,c)=>a+(Number(c.amount)||0),0);return {i,o,net:i-o};};
-  const sgn=n=>`<span style="color:${n<0?'var(--clay)':(n>0?'var(--accent-deep)':'var(--ink)')}">${n>0?'+':''}${numf(n)}</span>`;
-  // финансовая таблица (движение кассы + выручка)
-  let finBody='', T={st:0,net:0,end:0,day:0,cl:0,al:0,ep:0,rev:0};
-  rows.forEach(e=>{const st=val(e,'cashStart'),end=val(e,'cashEnd'),c=chgOf(e),cl=val(e,'cashless'),al=val(e,'allsports'),ep=val(e,'epos');
-    const day=end-st-c.i+c.o, rev=day+cl+al+ep;
-    T.st+=st;T.net+=c.net;T.end+=end;T.day+=day;T.cl+=cl;T.al+=al;T.ep+=ep;T.rev+=rev;
-    finBody+=`<tr><td class="rowh">${studioTag(e.studioId)}</td><td>${numf(st)}</td><td>${sgn(c.net)}</td><td>${numf(end)}</td><td>${sgn(day)}</td><td>${numf(cl)}</td><td>${numf(al)}</td><td>${numf(ep)}</td><td><b>${numf(rev)}</b></td></tr>`;});
-  const finTot=`<tr class="ds-total"><td class="rowh">Итого</td><td>${numf(T.st)}</td><td>${sgn(T.net)}</td><td>${numf(T.end)}</td><td>${sgn(T.day)}</td><td>${numf(T.cl)}</td><td>${numf(T.al)}</td><td>${numf(T.ep)}</td><td><b>${numf(T.rev)}</b></td></tr>`;
-  // клиентская таблица
-  let clBody='', C={came:0,bought:0,ended:0,renew:0};
-  rows.forEach(e=>{const cm=cameOf(e),bo=boughtOf(e),en=endedOf(e),re=renewOf(e),nr=Math.max(0,en-re);
-    C.came+=cm;C.bought+=bo;C.ended+=en;C.renew+=re;
-    clBody+=`<tr><td class="rowh">${studioTag(e.studioId)}</td><td>${cm}</td><td>${bo}</td><td>${pct(bo,cm)}</td><td>${en}</td><td>${re}</td><td>${nr}</td><td>${pct(re,en)}</td></tr>`;});
-  const clTot=`<tr class="ds-total"><td class="rowh">Итого</td><td>${C.came}</td><td>${C.bought}</td><td>${pct(C.bought,C.came)}</td><td>${C.ended}</td><td>${C.renew}</td><td>${Math.max(0,C.ended-C.renew)}</td><td>${pct(C.renew,C.ended)}</td></tr>`;
-  return `<div class="daysum">
-    <div class="ds-title">Итоги за день · по филиалам и в целом <small>(суммы в ${CUR})</small></div>
-    <div class="sch-scroll"><table class="ds-table"><thead><tr><th>Филиал</th><th>Утро</th><th>Движения</th><th>Вечер</th><th>Нал. за день</th><th>Картой</th><th>QR</th><th>EPOS</th><th>Выручка</th></tr></thead><tbody>${finBody}${rows.length>1?finTot:''}</tbody></table></div>
-    <div class="sch-scroll" style="margin-top:8px"><table class="ds-table"><thead><tr><th>Филиал</th><th>Пришло</th><th>Купили</th><th>Конв.</th><th>Законч.</th><th>Продл.</th><th>Не прод.</th><th>Конв.</th></tr></thead><tbody>${clBody}${rows.length>1?clTot:''}</tbody></table></div>
-  </div>`;
+  const T={st:0,net:0,end:0,day:0,card:0,qr:0,ep:0,rev:0,came:0,bought:0,ended:0,renew:0,inter:0,days:0};
+  const cards=rows.map(e=>{const m=entryMetrics(e);
+    ['st','net','end','day','card','qr','ep','rev','came','bought','ended','renew'].forEach(k=>T[k]+=m[k]);
+    return sumCard(studioName(e.studioId), e.studioId, studioEntity(e.studioId), m, false, false);}).join('');
+  const tot=rows.length>1?sumCard('','','',T,false,true):'';
+  return `<div class="daysum"><div class="ds-title">Итоги за день <small>(суммы в ${CUR})</small></div><div class="sumcards">${cards}${tot}</div></div>`;
 }
 
 /* ================= Итоги за период ================= */
 function periodSummary(entries, from, to){
   if(!entries.length) return '<div class="empty">За выбранный период отчётов нет.</div>';
-  const numf=n=>(n==null||isNaN(Number(n)))?'0':Number(n).toLocaleString('ru-RU');
-  const sgn=n=>`<span style="color:${n<0?'var(--clay)':(n>0?'var(--accent-deep)':'var(--ink)')}">${n>0?'+':''}${numf(n)}</span>`;
   const ord=STUDIOS.map(s=>s.id);
   const groups={}; entries.forEach(e=>{(groups[e.studioId]=groups[e.studioId]||[]).push(e);});
   const sids=Object.keys(groups).sort((a,b)=>ord.indexOf(a)-ord.indexOf(b));
-  const M=list=>{let days=0,dayCash=0,net=0,inter=0,card=0,qr=0,ep=0,rev=0,came=0,bought=0,ended=0,renew=0;
+  const M=list=>{let days=0,day=0,net=0,inter=0,card=0,qr=0,ep=0,rev=0,came=0,bought=0,ended=0,renew=0;
     list.forEach(e=>{days++;
       const i=(e.changes||[]).filter(c=>c.type==='in').reduce((a,c)=>a+(Number(c.amount)||0),0);
       const o=(e.changes||[]).filter(c=>c.type!=='in').reduce((a,c)=>a+(Number(c.amount)||0),0);
       net+=i-o; const cl=Number(e.cashless)||0,al=Number(e.allsports)||0,ie=Number(e.epos)||0;
       card+=cl;qr+=al;ep+=ie;
-      const dc=(e.cashEnd!=null)?(Number(e.cashEnd)-(Number(e.cashStart)||0)-i+o):0; dayCash+=dc; rev+=dc+cl+al+ie;
+      const dc=(e.cashEnd!=null)?(Number(e.cashEnd)-(Number(e.cashStart)||0)-i+o):0; day+=dc; rev+=dc+cl+al+ie;
       const p=lastCashEndBefore(e.studioId,e.date); if(p&&e.cashStart!=null) inter+=Number(e.cashStart)-p.cashEnd;
       came+=Number(e.newCame??e.newCount)||0;
       bought+=Number(e.newBought!=null?e.newBought:(Array.isArray(e.newList)?e.newList.filter(x=>x.bought).length:0))||0;
       ended+=Number(e.ended)||0; renew+=Number(e.renewed??e.oldCount)||0;});
-    return {days,dayCash,net,inter,card,qr,ep,rev,came,bought,ended,renew};};
-  let finBody='',clBody='';
-  sids.forEach(sid=>{const m=M(groups[sid]);
-    finBody+=`<tr><td class="rowh">${studioTag(sid)}</td><td>${m.days}</td><td>${sgn(m.dayCash)}</td><td>${sgn(m.net)}</td><td>${sgn(m.inter)}</td><td>${numf(m.card)}</td><td>${numf(m.qr)}</td><td>${numf(m.ep)}</td><td><b>${numf(m.rev)}</b></td></tr>`;
-    clBody+=`<tr><td class="rowh">${studioTag(sid)}</td><td>${m.came}</td><td>${m.bought}</td><td>${pct(m.bought,m.came)}</td><td>${m.ended}</td><td>${m.renew}</td><td>${Math.max(0,m.ended-m.renew)}</td><td>${pct(m.renew,m.ended)}</td></tr>`;});
-  const T=M(entries);
-  const finTot=`<tr class="ds-total"><td class="rowh">Итого</td><td>${T.days}</td><td>${sgn(T.dayCash)}</td><td>${sgn(T.net)}</td><td>${sgn(T.inter)}</td><td>${numf(T.card)}</td><td>${numf(T.qr)}</td><td>${numf(T.ep)}</td><td><b>${numf(T.rev)}</b></td></tr>`;
-  const clTot=`<tr class="ds-total"><td class="rowh">Итого</td><td>${T.came}</td><td>${T.bought}</td><td>${pct(T.bought,T.came)}</td><td>${T.ended}</td><td>${T.renew}</td><td>${Math.max(0,T.ended-T.renew)}</td><td>${pct(T.renew,T.ended)}</td></tr>`;
-  return `<div class="daysum">
-    <div class="ds-title">Итоги за период: ${fmtLong(from)} – ${fmtLong(to)} <small>(суммы в ${CUR})</small></div>
-    <div class="sch-scroll"><table class="ds-table"><thead><tr><th>Филиал</th><th>Дней</th><th>Нал. за день</th><th>Движения</th><th>Между сменами</th><th>Картой</th><th>QR</th><th>EPOS</th><th>Выручка</th></tr></thead><tbody>${finBody}${sids.length>1?finTot:''}</tbody></table></div>
-    <div class="sch-scroll" style="margin-top:8px"><table class="ds-table"><thead><tr><th>Филиал</th><th>Пришло</th><th>Купили</th><th>Конв.</th><th>Законч.</th><th>Продл.</th><th>Не прод.</th><th>Конв.</th></tr></thead><tbody>${clBody}${sids.length>1?clTot:''}</tbody></table></div>
-  </div>`;
+    return {days,day,net,inter,card,qr,ep,rev,came,bought,ended,renew,st:0,end:0};};
+  const cards=sids.map(sid=>sumCard(studioName(sid), sid, studioEntity(sid), M(groups[sid]), true, false)).join('');
+  const tot=sids.length>1?sumCard('','','',M(entries),true,true):'';
+  return `<div class="daysum"><div class="ds-title">Итоги за период: ${fmtLong(from)} – ${fmtLong(to)} <small>(суммы в ${CUR})</small></div><div class="sumcards">${cards}${tot}</div></div>`;
 }
 
 /* ================= Excel export ================= */
