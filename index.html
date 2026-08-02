@@ -280,6 +280,21 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 #schedRoot .sch-abs span{display:block;font-weight:500;font-size:10px}
 #schedRoot .sch-roster.rost-drop{border-color:var(--clay);background:var(--clay-soft);box-shadow:0 0 0 2px var(--clay) inset}
 #schedRoot .sch-roster.rost-drop::after{content:'Отпустите, чтобы убрать из дня';display:block;margin-top:8px;font-size:12px;font-weight:700;color:var(--clay)}
+#schedRoot .sch-viewtoggle{display:inline-flex;gap:4px;background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:3px;margin-bottom:14px}
+#schedRoot .vt{border:none;background:transparent;padding:6px 13px;border-radius:7px;font-size:12.5px;font-weight:600;color:var(--ink-soft);cursor:pointer}
+#schedRoot .vt.on{background:#fff;color:var(--accent-deep);box-shadow:var(--shadow)}
+#schedRoot .sch-list-cal{display:flex;flex-direction:column;gap:6px}
+#schedRoot .sch-row{display:flex;gap:12px;align-items:stretch;border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:8px 12px;cursor:pointer;transition:var(--fx)}
+#schedRoot .sch-row:hover{border-color:var(--accent)}
+#schedRoot .sch-row.we{background:var(--surface-2)}
+#schedRoot .sch-row.need{border-color:var(--clay);box-shadow:0 0 0 2px var(--clay-soft) inset}
+#schedRoot .sch-row.today{border-color:var(--accent);box-shadow:0 0 0 2px rgba(46,125,91,.15) inset}
+#schedRoot .sch-row.drop{border-color:var(--accent);background:rgba(46,125,91,.08);box-shadow:0 0 0 2px var(--accent) inset}
+#schedRoot .sch-rd{flex:0 0 46px;text-align:center;display:flex;flex-direction:column;justify-content:center;border-right:1px solid var(--line);padding-right:10px}
+#schedRoot .sch-rd b{font-size:18px;font-weight:700;line-height:1}
+#schedRoot .sch-rd span{font-size:11px;color:var(--ink-faint);text-transform:uppercase}
+#schedRoot .sch-rc{flex:1;display:flex;flex-direction:column;justify-content:center;gap:2px;min-width:0}
+#schedRoot .sch-row .sch-sh,#schedRoot .sch-row .sch-abs{margin-bottom:0}
 #schedRoot .sch-grid-head,#schedRoot .sch-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
 #schedRoot .sch-grid-head{margin-bottom:6px}
 #schedRoot .sch-grid-head div{text-align:center;font-size:11px;color:var(--ink-faint);font-weight:700;text-transform:uppercase}
@@ -1283,7 +1298,7 @@ async function saveMonth(){ await apiSaveSchedule(monthKey(SCH.y,SCH.m), SCHDATA
 
 async function renderSchedule(body){
   const editor = session.role==='owner' || session.senior;
-  if(!SCH){ const now=new Date(); SCH={y:now.getFullYear(), m:now.getMonth(), sid:STUDIOS[0].id, view: editor?'calendar':'overview'}; }
+  if(!SCH){ const now=new Date(); SCH={y:now.getFullYear(), m:now.getMonth(), sid:STUDIOS[0].id, view: editor?'calendar':'overview', calView:(typeof window!=='undefined'&&window.innerWidth<640)?'list':'grid'}; }
   try{ TEAM=await apiListTeam(); SCHDATA=await loadMonth(SCH.y,SCH.m); }
   catch(e){ return handleErr(e); }
   drawSchedule(body, editor);
@@ -1328,6 +1343,19 @@ function drawSub(root){
   else renderSchPersonal(el);
 }
 
+function schCellPieces(d, iso, sid, st, editor){
+  const r=dayRec(iso,sid);
+  if(r&&r.closed) return {closed:true, need:false, html:'<span class="sch-closed">закрыто</span>'};
+  const absClr=t=>t==='bol'?'var(--clay)':(t==='otgul'?'var(--ink-soft)':'var(--gold)');
+  const shifts=(r&&r.shifts)?r.shifts:[];
+  const scheduled=new Set(shifts.map(s=>s.adminId));
+  const shHtml=shifts.map(sh=>{const ab=absOn(sh.adminId,iso);
+    return `<div class="sch-sh${ab?' needrep':''}"${editor?` draggable="true" data-shd="${d}" data-shadm="${sh.adminId}"`:''} style="border-left:3px solid ${st.color};padding-left:6px">${escapeHtml(adminName(sh.adminId))}<span>${sh.start}–${sh.end}${ab?' · нужна замена':''}</span></div>`;}).join('');
+  const absHtml=TEAM.filter(a=>a.home===sid && !scheduled.has(a.login))
+    .map(a=>({a,ab:absOn(a.login,iso)})).filter(x=>x.ab)
+    .map(x=>`<div class="sch-abs">${escapeHtml(x.a.name)}<span style="color:${absClr(x.ab.type)}">${absName(x.ab.type)}</span></div>`).join('');
+  return {closed:false, need:shifts.some(sh=>absOn(sh.adminId,iso)), html:(shHtml||absHtml)?(shHtml+absHtml):'<span class="sch-empty">—</span>'};
+}
 function renderSchCalendar(el){
   const sid=SCH.sid, st=SMAP[sid];
   const editor=session.role==='owner'||session.senior;
@@ -1340,53 +1368,49 @@ function renderSchCalendar(el){
       ${others.length?`<div class="rost-group"><span class="rost-lbl">Другие</span>${others.map(chip).join('')}</div>`:''}
       ${(!home.length&&!others.length)?'<div class="hintline">Нет администраторов. Добавьте их и укажите филиал во вкладке «Администраторы».</div>':''}
     </div>` : '';
+  const n=schDaysIn(SCH.y,SCH.m), list=SCH.calView==='list';
+  let body='';
+  if(list){
+    let rows='';
+    for(let d=1;d<=n;d++){
+      const iso=schIso(SCH.y,SCH.m,d), dw=schDow(SCH.y,SCH.m,d), we=(dw===0||dw===6), today=(iso===todayStr());
+      const p=schCellPieces(d,iso,sid,st,editor);
+      rows+=`<div class="sch-row${p.closed?' closed':''}${p.need?' need':''}${we?' we':''}${today?' today':''}${(SCHsel&&editor)?' armed':''}" data-day="${d}">
+        <div class="sch-rd"><b>${d}</b><span>${SCH_DOW[(dw+6)%7]}</span></div>
+        <div class="sch-rc">${p.html}</div></div>`;
+    }
+    body=`<div class="sch-list-cal">${rows}</div>`;
+  } else {
+    let fd=(schDow(SCH.y,SCH.m,1)+6)%7, cells='';
+    for(let i=0;i<fd;i++) cells+='<div class="sch-cell empty"></div>';
+    for(let d=1;d<=n;d++){
+      const iso=schIso(SCH.y,SCH.m,d), p=schCellPieces(d,iso,sid,st,editor);
+      cells+=`<div class="sch-cell${p.closed?' closed':''}${p.need?' need':''}${(SCHsel&&editor)?' armed':''}" data-day="${d}"><div class="sch-d">${d}</div>${p.html}</div>`;
+    }
+    body=`<div class="sch-cal"><div class="sch-grid-head">${SCH_DOW.map(x=>`<div>${x}</div>`).join('')}</div><div class="sch-grid">${cells}</div></div>`;
+  }
   el.innerHTML=`
     <div class="sch-studios">${STUDIOS.map(s=>`<button class="sch-st${s.id===sid?' on':''}" data-ssel="${s.id}" style="border-left:4px solid ${s.color}">${sdot(s.id)}${s.name}<span>${s.start}–${s.end}</span></button>`).join('')}</div>
+    <div class="sch-viewtoggle"><button class="vt${list?'':' on'}" data-cv="grid">▦ Сетка</button><button class="vt${list?' on':''}" data-cv="list">☰ Список</button></div>
     ${roster}
-    <div class="sch-cal">
-      <div class="sch-grid-head">${SCH_DOW.map(d=>`<div>${d}</div>`).join('')}</div>
-      <div class="sch-grid" id="schGrid"></div>
-    </div>`;
-  const grid=el.querySelector('#schGrid'), n=schDaysIn(SCH.y,SCH.m);
-  let fd=(schDow(SCH.y,SCH.m,1)+6)%7, cells='';
-  for(let i=0;i<fd;i++) cells+='<div class="sch-cell empty"></div>';
-  const absClr=t=>t==='bol'?'var(--clay)':(t==='otgul'?'var(--ink-soft)':'var(--gold)');
-  for(let d=1;d<=n;d++){
-    const iso=schIso(SCH.y,SCH.m,d), r=dayRec(iso,sid); let inner='',cls='';
-    if(r&&r.closed){ cls=' closed'; inner='<span class="sch-closed">закрыто</span>'; }
-    else {
-      const shifts=(r&&r.shifts)?r.shifts:[];
-      const scheduled=new Set(shifts.map(s=>s.adminId));
-      const shHtml=shifts.map(sh=>{const ab=absOn(sh.adminId,iso);
-        return `<div class="sch-sh${ab?' needrep':''}"${editor?` draggable="true" data-shd="${d}" data-shadm="${sh.adminId}"`:''} style="border-left:3px solid ${st.color};padding-left:6px">${escapeHtml(adminName(sh.adminId))}<span>${sh.start}–${sh.end}${ab?' · нужна замена':''}</span></div>`;}).join('');
-      // отсутствия «своих» админов, даже если смена ещё не назначена
-      const absHtml=TEAM.filter(a=>a.home===sid && !scheduled.has(a.login))
-        .map(a=>({a,ab:absOn(a.login,iso)})).filter(x=>x.ab)
-        .map(x=>`<div class="sch-abs">${escapeHtml(x.a.name)}<span style="color:${absClr(x.ab.type)}">${absName(x.ab.type)}</span></div>`).join('');
-      inner = (shHtml||absHtml) ? (shHtml+absHtml) : '<span class="sch-empty">—</span>';
-    }
-    const need=r&&!r.closed&&(r.shifts||[]).some(sh=>absOn(sh.adminId,iso));
-    cells+=`<div class="sch-cell${cls}${need?' need':''}${(SCHsel&&editor)?' armed':''}" data-day="${d}"><div class="sch-d">${d}</div>${inner}</div>`;
-  }
-  grid.innerHTML=cells;
+    ${body}`;
   el.querySelectorAll('[data-ssel]').forEach(b=>b.onclick=()=>{ SCH.sid=b.dataset.ssel; renderSchCalendar(el); });
+  el.querySelectorAll('[data-cv]').forEach(b=>b.onclick=()=>{ SCH.calView=b.dataset.cv; renderSchCalendar(el); });
   if(editor){
     el.querySelectorAll('.rchip').forEach(c=>{
       c.onclick=()=>{ SCHsel=(SCHsel===c.dataset.adm)?null:c.dataset.adm; renderSchCalendar(el); };
       c.addEventListener('dragstart',e=>{ e.dataTransfer.setData('text/plain','ADD:'+c.dataset.adm); e.dataTransfer.effectAllowed='copy'; });
     });
-    grid.querySelectorAll('[data-day]').forEach(cell=>{
-      const day=+cell.dataset.day;
-      cell.onclick=()=>{ if(SCHsel) schPlace(day, SCHsel); else openDayModal(day); };
-      cell.addEventListener('dragover',e=>{ e.preventDefault(); cell.classList.add('drop'); });
-      cell.addEventListener('dragleave',()=>cell.classList.remove('drop'));
-      cell.addEventListener('drop',e=>{ e.preventDefault(); cell.classList.remove('drop'); const dt=e.dataTransfer.getData('text/plain'); if(dt&&dt.indexOf('ADD:')===0) schPlace(day, dt.slice(4)); });
+    el.querySelectorAll('[data-day]').forEach(node=>{
+      const day=+node.dataset.day;
+      node.onclick=()=>{ if(SCHsel) schPlace(day, SCHsel); else openDayModal(day); };
+      node.addEventListener('dragover',e=>{ e.preventDefault(); node.classList.add('drop'); });
+      node.addEventListener('dragleave',()=>node.classList.remove('drop'));
+      node.addEventListener('drop',e=>{ e.preventDefault(); node.classList.remove('drop'); const dt=e.dataTransfer.getData('text/plain'); if(dt&&dt.indexOf('ADD:')===0) schPlace(day, dt.slice(4)); });
     });
-    // смены в календаре можно тащить...
-    grid.querySelectorAll('.sch-sh[data-shadm]').forEach(shel=>{
+    el.querySelectorAll('.sch-sh[data-shadm]').forEach(shel=>{
       shel.addEventListener('dragstart',e=>{ e.stopPropagation(); e.dataTransfer.setData('text/plain','DEL:'+shel.dataset.shd+':'+shel.dataset.shadm); e.dataTransfer.effectAllowed='move'; });
     });
-    // ...и бросить обратно в список — убрать из этого дня
     const rost=el.querySelector('.sch-roster');
     if(rost){
       rost.addEventListener('dragover',e=>{ e.preventDefault(); rost.classList.add('rost-drop'); });
