@@ -456,7 +456,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)} <small class="ent">${studioEntity(id)}</small>`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'Br'; // белорусский рубль (BYN)
-const APP_VERSION = '02.08.2026-g';  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '02.08.2026-h';  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -525,6 +525,7 @@ async function apiDeleteReport(studio, date){
 async function apiListTeam(){ return await rpc('app_list_team',{p_token:TOKEN})||[]; }
 async function apiSetHome(login,home){ return await rpc('app_set_home',{p_token:TOKEN,p_login:login,p_home:home||''}); }
 async function apiGetSchedule(month){ return await rpc('app_get_schedule',{p_token:TOKEN,p_month:month}); }
+async function apiAllAbsences(){ return await rpc('app_all_absences',{p_token:TOKEN})||[]; }
 async function apiSaveSchedule(month,data){ return await rpc('app_save_schedule',{p_token:TOKEN,p_month:month,p_data:data}); }
 
 /* ================= Format helpers ================= */
@@ -1661,7 +1662,21 @@ function renderSchOverview(el){
     <div class="section-title">Часы за месяц</div>
     <div class="sch-scroll"><table class="sch-hrs"><thead><tr><th>Администратор</th><th>Часы</th><th>Смен</th><th>Серии</th></tr></thead><tbody>${hrows||'<tr><td colspan="4" style="color:var(--ink-faint)">Нет администраторов. Добавьте их и укажите филиал.</td></tr>'}</tbody></table></div>
     <div class="section-title">Отсутствия за месяц (дней)</div>
-    <div class="sch-scroll"><table class="sch-hrs"><thead><tr><th>Администратор</th><th>Отпуск</th><th>Больн.</th><th>Отгул</th><th>Всего</th></tr></thead><tbody>${TEAM.map(a=>{const o=absDaysInMonth(a.login,'otpusk'),b=absDaysInMonth(a.login,'bol'),g=absDaysInMonth(a.login,'otgul'),t=o+b+g;return `<tr><td class="rowh">${escapeHtml(shortName(a.name))}</td><td>${o||'—'}</td><td>${b||'—'}</td><td>${g||'—'}</td><td><b>${t||'—'}</b></td></tr>`;}).join('')||'<tr><td colspan="5" style="color:var(--ink-faint)">Нет данных</td></tr>'}</tbody></table></div>`;
+    <div class="sch-scroll"><table class="sch-hrs"><thead><tr><th>Администратор</th><th>Отпуск</th><th>Больн.</th><th>Отгул</th><th>Всего</th></tr></thead><tbody>${TEAM.map(a=>{const o=absDaysInMonth(a.login,'otpusk'),b=absDaysInMonth(a.login,'bol'),g=absDaysInMonth(a.login,'otgul'),t=o+b+g;return `<tr><td class="rowh">${escapeHtml(shortName(a.name))}</td><td>${o||'—'}</td><td>${b||'—'}</td><td>${g||'—'}</td><td><b>${t||'—'}</b></td></tr>`;}).join('')||'<tr><td colspan="5" style="color:var(--ink-faint)">Нет данных</td></tr>'}</tbody></table></div>
+    <div class="section-title">Отсутствия за ${SCH.y} год (дней)</div>
+    <div id="yearAbs" class="sch-scroll"><div class="hintline" style="padding:10px">Загрузка…</div></div>`;
+  fillYearAbsences(el.querySelector('#yearAbs'));
+}
+async function fillYearAbsences(box){
+  if(!box) return;
+  let all; try{ all=await apiAllAbsences(); }catch(e){ box.innerHTML='<div class="hintline" style="padding:10px">Не удалось загрузить</div>'; return; }
+  const seen=new Set(), list=[];
+  (all||[]).forEach(a=>{ const k=a.id||JSON.stringify([a.adminId,a.type,a.start,a.end]); if(!seen.has(k)){ seen.add(k); list.push(a); } });
+  const y=SCH.y, first=y+'-01-01', last=y+'-12-31';
+  const daysOf=(login,type)=>{ let d=0; list.filter(a=>a.adminId===login && a.type===type).forEach(a=>{ const s=(a.start>first?a.start:first), e=(a.end<last?a.end:last); if(s<=e) d+=isoDiff(s,e)+1; }); return d; };
+  const rows=TEAM.map(a=>{const o=daysOf(a.login,'otpusk'),b=daysOf(a.login,'bol'),g=daysOf(a.login,'otgul'),t=o+b+g;
+    return `<tr><td class="rowh">${escapeHtml(shortName(a.name))}</td><td>${o||'—'}</td><td>${b||'—'}</td><td>${g||'—'}</td><td><b>${t||'—'}</b></td></tr>`;}).join('');
+  box.innerHTML=`<table class="sch-hrs"><thead><tr><th>Администратор</th><th>Отпуск</th><th>Больн.</th><th>Отгул</th><th>Всего</th></tr></thead><tbody>${rows||'<tr><td colspan="5" style="color:var(--ink-faint)">Нет данных</td></tr>'}</tbody></table>`;
 }
 
 function renderSchPersonal(el){
