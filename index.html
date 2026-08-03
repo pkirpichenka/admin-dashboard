@@ -255,6 +255,10 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 .cn-line:first-of-type{margin-top:2px}
 .cn-ln.muted{color:var(--ink-faint);font-weight:500}
 .hire-lbl{font-size:11px;color:var(--ink-faint);display:inline-flex;align-items:center;gap:4px}
+.chk.zrep{margin-top:14px;font-weight:600}
+.zbadge{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;margin-left:6px;vertical-align:middle}
+.zbadge.zok{background:var(--surface-2);color:var(--accent-deep)}
+.zbadge.zno{background:var(--clay-soft);color:var(--clay)}
 .hire-inp{font-size:12px;padding:4px 6px;max-width:140px}
 .sumcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
 .sumcard{border:1px solid var(--line);border-radius:12px;background:var(--surface-2);padding:12px 14px}
@@ -458,7 +462,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)} <small class="ent">${studioEntity(id)}</small>`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'Br'; // белорусский рубль (BYN)
-const APP_VERSION = '02.08.2026-j';  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '02.08.2026-k';  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -751,6 +755,7 @@ function renderForm(container,studio,date,data,onSaved,opts){
           ${moneyField('allsports','QR','на конец дня',data.allsports)}
           ${moneyField('epos','EPOS','на конец дня',data.epos)}
         </div>
+        <label class="chk zrep"><input type="checkbox" id="zReport" ${data.zReport?'checked':''}/> Z-отчёт распечатан, касса закрыта</label>
       </div>
     </div>
 
@@ -783,7 +788,7 @@ function renderForm(container,studio,date,data,onSaved,opts){
     </div>
 
     <div class="bar">
-      ${data.status==='closed'?`<span class="closed-badge">✓ Смена закрыта${data.closedBy?' · '+escapeHtml(shortName(data.closedBy)):''}${data.closedAt?' · '+fmtTime(data.closedAt):''}</span>`:''}
+      ${data.status==='closed'?`<span class="closed-badge">✓ Смена закрыта${data.closedBy?' · '+escapeHtml(shortName(data.closedBy)):''}${(data.status==='closed'&&!data.zReport)?' · Z-отчёт не отмечен':''}${data.closedAt?' · '+fmtTime(data.closedAt):''}</span>`:''}
       <div class="grow"></div>
       <button class="btn" id="save">Сохранить</button>
       ${data.status==='closed'
@@ -894,7 +899,7 @@ function renderForm(container,studio,date,data,onSaved,opts){
       newList:newList.map(x=>({note:(x.note||'').trim(),bought:!!x.bought})),
       ended:valNum('ended'), renewed:valNum('renewed'),
       notRenewList:notRenewList.map(x=>({note:(x.note||'').trim()})),
-      comments:valStr('comments'), interNote:valStr('interNote'),
+      comments:valStr('comments'), interNote:valStr('interNote'), zReport:!!(container.querySelector('#zReport')&&container.querySelector('#zReport').checked),
       status:data.status||'open', closedBy:data.closedBy, closedByLogin:data.closedByLogin, closedAt:data.closedAt,
       cashStartEditedBy:data.cashStartEditedBy, cashStartEditedAt:data.cashStartEditedAt,
       filledBy:data.filledBy||session.name, filledByLogin:data.filledByLogin||session.login,
@@ -927,18 +932,30 @@ function renderForm(container,studio,date,data,onSaved,opts){
     const rec=collectRec(); rec.status='closed'; rec.closedBy=session.name; rec.closedByLogin=session.login; rec.closedAt=new Date().toISOString();
     try{ await apiSaveReport(studio,date,rec); toast('Смена закрыта'); onSaved&&onSaved(); }catch(e){ handleErr(e); }
   }
+  function proceedClose(){
+    const empties=ZEROABLE.filter(f=>valNum(f[0])==null);
+    if(empties.length){
+      const el=modal(`<h3>Закрыть смену</h3><p>Не заполнены поля: <b>${empties.map(f=>f[1]).join(', ')}</b>.<br>Если по ним данных нет — их можно считать нулём.</p>
+        <div class="actions"><button class="btn" data-x>Заполнить вручную</button><button class="btn btn-primary" id="zc">Считать нулём и закрыть</button></div>`);
+      el.querySelector('#zc').onclick=async()=>{ empties.forEach(f=>{const inp=container.querySelector('#'+f[0]); if(inp) inp.value='0';}); closeModal(el); await doClose(); };
+      return;
+    }
+    doClose();
+  }
   const closeBtn=container.querySelector('#closeShift');
   if(closeBtn){
-    closeBtn.onclick=async()=>{
+    closeBtn.onclick=()=>{
       if(valNum('cashStart')==null){ toast('Сначала зафиксируйте наличные на начало дня',true); return; }
-      const empties=ZEROABLE.filter(f=>valNum(f[0])==null);
-      if(empties.length){
-        const el=modal(`<h3>Закрыть смену</h3><p>Не заполнены поля: <b>${empties.map(f=>f[1]).join(', ')}</b>.<br>Если по ним данных нет — их можно считать нулём.</p>
-          <div class="actions"><button class="btn" data-x>Заполнить вручную</button><button class="btn btn-primary" id="zc">Считать нулём и закрыть</button></div>`);
-        el.querySelector('#zc').onclick=async()=>{ empties.forEach(f=>{const inp=container.querySelector('#'+f[0]); if(inp) inp.value='0';}); closeModal(el); await doClose(); };
+      const zEl=container.querySelector('#zReport');
+      if(zEl && !zEl.checked){
+        const el=modal(`<h3>Z-отчёт</h3><p>Не отмечено, что <b>Z-отчёт распечатан и касса закрыта</b>. Пожалуйста, закройте смену на кассе и распечатайте Z-отчёт.</p>
+          <div class="actions" style="flex-direction:column;align-items:stretch;gap:8px">
+            <button class="btn btn-primary" id="zRepYes">Z-отчёт распечатан — продолжить</button>
+            <button class="btn" data-x>Отмена</button></div>`);
+        el.querySelector('#zRepYes').onclick=()=>{ zEl.checked=true; closeModal(el); proceedClose(); };
         return;
       }
-      await doClose();
+      proceedClose();
     };
   }
   const reopenBtn=container.querySelector('#reopen');
@@ -1029,7 +1046,7 @@ function dayCard(e,open){
     <div class="day-head"><span class="chev">▸</span>
       <span class="day-date">${fmtLong(e.date)}<span class="dow"> · ${fmtDow(e.date)}</span></span>
       <span class="st-tag" style="border-color:${studioColor(e.studioId)}">${sdot(e.studioId)}${studioAddr(e.studioId)} · ${studioEntity(e.studioId)}</span>
-      <span class="stat ${e.status==='closed'?'stat-closed':'stat-open'}">${e.status==='closed'?'закрыта':'не закрыта'}</span>
+      <span class="stat ${e.status==='closed'?'stat-closed':'stat-open'}">${e.status==='closed'?'закрыта':'не закрыта'}</span>${e.status==='closed'?(e.zReport?'<span class="zbadge zok">Z-отчёт ✓</span>':'<span class="zbadge zno">Z-отчёт ✗</span>'):''}
       <span class="day-by">заполнил(а): <b>${escapeHtml(shortName(e.filledBy||'—'))}</b><br><span style="color:var(--ink-faint)">${fmtTime(e.submittedAt)}</span></span></div>
     <div class="day-body">
       <div class="kv">
@@ -1246,7 +1263,7 @@ function exportExcel(entries){
       'Наличными за день':(e.cashEnd==null?'':num(e.cashEnd)-num(e.cashStart)-inSum+outSum),'Движения нетто':inSum-outSum,'Движения (детально)':chgText,
       'Картой':e.cashless??'','QR':e.allsports??'','EPOS':e.epos??'',
       'Выручка за день':(e.cashEnd==null?'':(num(e.cashEnd)-num(e.cashStart)-inSum+outSum)+num(e.cashless)+num(e.allsports)+num(e.epos)),
-      'Между сменами':(function(){const p=lastCashEndBefore(e.studioId,e.date);return (p&&e.cashStart!=null)?num(e.cashStart)-p.cashEnd:'';})(),'Причина (между сменами)':e.interNote||'',
+      'Между сменами':(function(){const p=lastCashEndBefore(e.studioId,e.date);return (p&&e.cashStart!=null)?num(e.cashStart)-p.cashEnd:'';})(),'Причина (между сменами)':e.interNote||'','Z-отчёт':e.zReport?'да':(e.status==='closed'?'нет':''),
       'Пришло новых':came,'Купили абонемент':bought,'Конверсия новых':pct(bought,came),'Абонементы закончились':endedC,'Продлили':renewC,'Не продлили':notRen,'Конверсия продлений':pct(renewC,endedC),
       'Новые клиенты (детально)':newDet,'Не продлили (детально)':nrDet,'Комментарии':e.comments||''
     };
