@@ -255,6 +255,9 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 .cn-line:first-of-type{margin-top:2px}
 .cn-ln.muted{color:var(--ink-faint);font-weight:500}
 .hire-lbl{font-size:11px;color:var(--ink-faint);display:inline-flex;align-items:center;gap:4px}
+.icon-btn{width:34px;height:34px;flex:0 0 auto;border:1px solid var(--line);background:var(--surface);border-radius:50%;font-size:17px;line-height:1;color:var(--ink-soft);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:var(--fx)}
+.icon-btn:hover{border-color:var(--accent);color:var(--accent-deep);transform:rotate(90deg)}
+.icon-btn:active{transform:rotate(180deg)}
 .chk.zrep{margin-top:14px;font-weight:600}
 .zbadge{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;margin-left:6px;vertical-align:middle}
 .zbadge.zok{background:var(--surface-2);color:var(--accent-deep)}
@@ -462,7 +465,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)} <small class="ent">${studioEntity(id)}</small>`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'Br'; // белорусский рубль (BYN)
-const APP_VERSION = '02.08.2026-k';  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '02.08.2026-l';  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -656,6 +659,7 @@ function header(){
     <div class="brand"><div class="name">Flexico-Admin-Dashboard</div><div class="sub" style="font-size:10px;color:var(--ink-faint);letter-spacing:.2px">версия ${APP_VERSION}</div></div>
     <div class="spacer"></div>
     <div class="who"><div class="fio">${escapeHtml(session.name)}</div><div class="role">${roleLabel()} ${pill}</div></div>
+    <button class="icon-btn" id="refreshBtn" title="Обновить" aria-label="Обновить">↻</button>
     <button class="btn btn-ghost btn-sm" id="logout">Выйти</button>
   </div>`;
 }
@@ -670,6 +674,7 @@ function renderRoleUI(tabs){
     ${tabs.length>1?`<div class="tabs">${tabs.map((t,i)=>`<button class="tab${i===0?' on':''}" data-i="${i}">${t.label}</button>`).join('')}</div>`:''}
     <div id="tabbody"></div></div>`;
   root.querySelector('#logout').onclick=()=>doLogout();
+  const _rb=root.querySelector('#refreshBtn'); if(_rb) _rb.onclick=()=>location.reload();
   const body=root.querySelector('#tabbody');
   function show(i){root.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',+b.dataset.i===i));tabs[i].render(body);}
   root.querySelectorAll('.tab').forEach(b=>b.onclick=()=>show(+b.dataset.i));
