@@ -255,6 +255,7 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 .cn-line:first-of-type{margin-top:2px}
 .cn-ln.muted{color:var(--ink-faint);font-weight:500}
 .hire-lbl{font-size:11px;color:var(--ink-faint);display:inline-flex;align-items:center;gap:4px}
+.btn.icon-only{padding:6px 10px;line-height:0}
 .icon-btn{width:36px;height:36px;flex:0 0 auto;border:1px solid var(--line);background:var(--surface);border-radius:10px;color:var(--ink-soft);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:var(--fx);padding:0}
 .icon-btn:hover{border-color:var(--accent);color:var(--accent-deep);background:var(--surface-2)}
 .icon-btn:active{transform:scale(.94)}
@@ -336,6 +337,8 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 #schedRoot .sch-grid-head div{text-align:center;font-size:11px;color:var(--ink-faint);font-weight:700;text-transform:uppercase}
 #schedRoot .sch-cell{min-height:78px;border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:6px;transition:var(--fx);overflow:hidden}
 #schedRoot .sch-cell:hover{border-color:var(--accent)}
+#schedRoot .sch-cell.past,#schedRoot .sch-row.past{opacity:.5}
+#schedRoot .sch-cell.past .sch-d{color:var(--ink-faint)}
 #schedRoot .sch-strips{display:flex;flex-direction:column;gap:3px;margin-top:3px}
 #schedRoot .sch-strip{border-radius:5px;padding:3px 4px 3px 6px;cursor:pointer;transition:var(--fx)}
 #schedRoot .sch-strip.closed{background:var(--surface-2)}
@@ -462,10 +465,10 @@ const studioName = id => SMAP[id]?SMAP[id].name:(id||'—');
 const studioColor = id => (SMAP[id]&&SMAP[id].color)||'#8A998F';
 const sdot = id => `<span class="sdot" style="background:${studioColor(id)}"></span>`;
 const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
-const studioTag = id => `${sdot(id)}${studioName(id)} <small class="ent">${studioEntity(id)}</small>`;
+const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
-const CUR = 'Br'; // белорусский рубль (BYN)
-const APP_VERSION = '02.08.2026-n'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const CUR = 'BYN'; // белорусский рубль
+const APP_VERSION = '02.08.2026-o'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -699,7 +702,7 @@ async function renderShift(body){
     <div class="section-title">Смена · ${fmtLong(today)} · ${fmtDow(today)}</div>
     <div class="studios" id="studios">${STUDIOS.map(s=>`
       <button class="st-btn${s.id===shiftStudio?' on':''}${s.id===myToday?' sched-hl':''}" data-id="${s.id}" style="border-left:4px solid ${s.color}">
-        <div class="t">${s.name} <small class="ent">${s.entity}</small>${s.id===myToday?' <span class="st-today">вы сегодня здесь</span>':''}</div><div class="a">${s.address}</div></button>`).join('')}</div>
+        <div class="t">${s.name}${s.id===myToday?' <span class="st-today">вы сегодня здесь</span>':''}</div><div class="a">${s.address}</div></button>`).join('')}</div>
     <div id="shiftbody"></div>`;
   fillBanner(body.querySelector('#banner'), (s,d)=>openShiftEditor(body,s,d,()=>renderShift(body)));
   body.querySelectorAll('.st-btn').forEach(b=>b.onclick=()=>{shiftStudio=b.dataset.id;renderShift(body);});
@@ -728,7 +731,7 @@ function renderForm(container,studio,date,data,onSaved,opts){
 
   container.innerHTML=`
     <div class="card fade-in">
-      <div class="card-head"><span class="idx">1</span><h2>Финансы · ${studioName(studio)} <small style="color:var(--ink-faint);font-weight:600;font-size:11px">${studioEntity(studio)}</small></h2>
+      <div class="card-head"><span class="idx">1</span><h2>Финансы · ${studioName(studio)}</h2>
         ${data.filledBy?`<span class="hint">заполнено: ${escapeHtml(shortName(data.filledBy))}</span>`:''}</div>
       <div class="card-body">
         <div id="tape" class="tape"></div>
@@ -1050,7 +1053,7 @@ function dayCard(e,open){
   return `<div class="day${open?' open':''}">
     <div class="day-head"><span class="chev">▸</span>
       <span class="day-date">${fmtLong(e.date)}<span class="dow"> · ${fmtDow(e.date)}</span></span>
-      <span class="st-tag" style="border-color:${studioColor(e.studioId)}">${sdot(e.studioId)}${studioAddr(e.studioId)} · ${studioEntity(e.studioId)}</span>
+      <span class="st-tag" style="border-color:${studioColor(e.studioId)}">${sdot(e.studioId)}${studioAddr(e.studioId)}</span>
       <span class="stat ${e.status==='closed'?'stat-closed':'stat-open'}">${e.status==='closed'?'закрыта':'не закрыта'}</span>${e.status==='closed'?(e.zReport?'<span class="zbadge zok">Z-отчёт ✓</span>':'<span class="zbadge zno">Z-отчёт ✗</span>'):''}
       <span class="day-by">заполнил(а): <b>${escapeHtml(shortName(e.filledBy||'—'))}</b><br><span style="color:var(--ink-faint)">${fmtTime(e.submittedAt)}</span></span></div>
     <div class="day-body">
@@ -1091,9 +1094,9 @@ async function renderAllReports(body){
     ${cashNowCard(all, sched)}
     <div class="bar fade-in">
       <div class="datepick"><span class="lbl">День:</span><input type="date" id="pick" max="${todayStr()}" value="${todayStr()}" style="width:auto"/></div>
-      <div class="datepick"><span class="lbl">Студия:</span><select id="stf" style="width:auto"><option value="all">Все студии</option>${STUDIOS.map(s=>`<option value="${s.id}">${s.name} · ${s.address} · ${s.entity}</option>`).join('')}</select></div>
+      <div class="datepick"><span class="lbl">Студия:</span><select id="stf" style="width:auto"><option value="all">Все студии</option>${STUDIOS.map(s=>`<option value="${s.id}">${s.name} · ${s.address}</option>`).join('')}</select></div>
       <div class="grow"></div>
-      <button class="btn" id="export">↓ Выгрузить лог в Excel</button>
+      <button class="btn icon-only" id="export" title="Выгрузить в Excel" aria-label="Выгрузить в Excel"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" fill="#217346"/><path d="M8.7 8l2.6 4-2.6 4M15.3 8l-2.6 4 2.6 4" stroke="#fff" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     </div>
     <div class="bar" style="margin-top:-6px">
       <div class="datepick"><span class="lbl">Период:</span>
@@ -1169,7 +1172,7 @@ function cashNowCard(all, sched){
   return `<div class="cashnow">
     <div class="cn-grid">${items.map(it=>`
       <div class="cn-item" style="border-left:4px solid ${it.s.color}">
-        <div class="cn-name">${sdot(it.s.id)}${it.s.name} <small class="ent">${it.s.entity}</small></div>
+        <div class="cn-name">${sdot(it.s.id)}${it.s.name}</div>
         <div class="cn-val">${it.val==null?'—':money(it.val)}</div>
         <div class="cn-note${it.stale?' stale':''}">${it.note}</div>
       </div>`).join('')}${shiftTile}</div>
@@ -1204,7 +1207,7 @@ function sumCard(label, dotId, entity, m, period, total){
   const clients=`Пришло <b>${m.came}</b> · купили <b>${m.bought}</b> (${pct(m.bought,m.came)}) · законч. <b>${m.ended}</b> · продлили <b>${m.renew}</b> (${pct(m.renew,m.ended)}) · не прод. <b>${Math.max(0,m.ended-m.renew)}</b>`;
   const head = total
     ? '<span class="sc-name">Итого по всем</span>'
-    : `<span class="sc-name">${dotId?sdot(dotId):''}${label}${entity?` <small class="ent">${entity}</small>`:''}</span>`;
+    : `<span class="sc-name">${dotId?sdot(dotId):''}${label}</span>`;
   return `<div class="sumcard${total?' tot':''}">
     <div class="sumcard-h">${head}<span class="sc-rev">Выручка<b>${_numf(m.rev)} ${CUR}</b></span></div>
     <div class="sumcard-g">${grid}</div>
@@ -1492,7 +1495,7 @@ function renderSchCalendar(el){
     let rows='';
     for(let d=1;d<=n;d++){
       const iso=schIso(SCH.y,SCH.m,d), dw=schDow(SCH.y,SCH.m,d), we=(dw===0||dw===6), today=(iso===todayStr());
-      rows+=`<div class="sch-row${we?' we':''}${today?' today':''}">
+      rows+=`<div class="sch-row${we?' we':''}${today?' today':''}${iso<todayStr()?' past':''}">
         <div class="sch-rd"><b>${d}</b><span>${SCH_DOW[(dw+6)%7]}</span></div>
         <div class="sch-rc">${strips(d,iso)}</div></div>`;
     }
@@ -1502,7 +1505,7 @@ function renderSchCalendar(el){
     for(let i=0;i<fd;i++) cells+='<div class="sch-cell empty"></div>';
     for(let d=1;d<=n;d++){
       const iso=schIso(SCH.y,SCH.m,d);
-      cells+=`<div class="sch-cell"><div class="sch-d">${d}</div><div class="sch-strips">${strips(d,iso)}</div></div>`;
+      cells+=`<div class="sch-cell${iso<todayStr()?' past':''}"><div class="sch-d">${d}</div><div class="sch-strips">${strips(d,iso)}</div></div>`;
     }
     body=`<div class="sch-cal"><div class="sch-grid-head">${SCH_DOW.map(x=>`<div>${x}</div>`).join('')}</div><div class="sch-grid">${cells}</div></div>`;
   }
@@ -1583,7 +1586,7 @@ async function schDoAssign(iso, sid, login){
 }
 function schConflict(login, iso, curSid, otherSid, day){
   const el=modal(`<h3>Администратор занят</h3>
-    <p><b>${escapeHtml(adminName(login))}</b> уже в смене ${fmtLong(iso)} — ${studioName(otherSid)} (${studioEntity(otherSid)}).</p>
+    <p><b>${escapeHtml(adminName(login))}</b> уже в смене ${fmtLong(iso)} — ${studioName(otherSid)}.</p>
     <div class="actions" style="flex-direction:column;align-items:stretch;gap:8px">
       <button class="btn btn-primary" id="cfMove">Перенести сюда · убрать с «${studioName(otherSid)}»</button>
       <button class="btn" id="cfOther">Выбрать другого администратора</button>
