@@ -172,6 +172,10 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 .tabs{display:flex;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:5px;
   margin-bottom:22px;box-shadow:var(--shadow);width:fit-content;max-width:100%;flex-wrap:wrap}
 .tab{border:none;background:transparent;padding:9px 16px;border-radius:8px;font-weight:600;font-size:14px;color:var(--ink-soft);transition:var(--fx)}
+.topbar{position:sticky;top:0;z-index:40;background:var(--bg);box-shadow:0 10px 20px -16px rgba(31,42,36,.4)}
+.topbar .top{margin-top:14px}
+.tabsrow{max-width:1000px;margin:14px auto 0;padding:0 20px 14px}
+.tabsrow .tabs{margin-bottom:0}
 .tab:hover{color:var(--ink)} .tab.on{background:var(--accent);color:#fff}
 .studios{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
 .st-btn{border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 16px;text-align:left;
@@ -406,6 +410,8 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 
   /* Вкладки на всю ширину */
   .tabs{width:100%}
+  .topbar .top{margin:12px 12px 0}
+  .tabsrow{margin-top:12px;padding:0 12px 12px}
   .tab{flex:1;text-align:center;padding:9px 6px;font-size:13px}
 
   /* Карточки/панели */
@@ -468,7 +474,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '02.08.2026-o'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '02.08.2026-p'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -673,9 +679,7 @@ function renderApp(){
 }
 function renderRoleUI(tabs){
   const root=document.getElementById('root');
-  root.innerHTML=header()+`<div class="wrap">
-    ${tabs.length>1?`<div class="tabs">${tabs.map((t,i)=>`<button class="tab${i===0?' on':''}" data-i="${i}">${t.label}</button>`).join('')}</div>`:''}
-    <div id="tabbody"></div></div>`;
+  root.innerHTML=`<div class="topbar">${header()}${tabs.length>1?`<div class="tabsrow"><div class="tabs">${tabs.map((t,i)=>`<button class="tab${i===0?' on':''}" data-i="${i}">${t.label}</button>`).join('')}</div></div>`:''}</div><div class="wrap"><div id="tabbody"></div></div>`;
   root.querySelector('#logout').onclick=()=>doLogout();
   const _rb=root.querySelector('#refreshBtn'); if(_rb) _rb.onclick=()=>location.reload();
   const body=root.querySelector('#tabbody');
@@ -1095,15 +1099,9 @@ async function renderAllReports(body){
     <div class="bar fade-in">
       <div class="datepick"><span class="lbl">День:</span><input type="date" id="pick" max="${todayStr()}" value="${todayStr()}" style="width:auto"/></div>
       <div class="datepick"><span class="lbl">Студия:</span><select id="stf" style="width:auto"><option value="all">Все студии</option>${STUDIOS.map(s=>`<option value="${s.id}">${s.name} · ${s.address}</option>`).join('')}</select></div>
+      <div class="datepick"><span class="lbl">Период:</span><input type="date" id="pfrom" max="${todayStr()}" value="${todayStr().slice(0,8)}01" style="width:auto"/><span class="lbl">—</span><input type="date" id="pto" max="${todayStr()}" value="${todayStr()}" style="width:auto"/></div>
       <div class="grow"></div>
       <button class="btn icon-only" id="export" title="Выгрузить в Excel" aria-label="Выгрузить в Excel"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" fill="#217346"/><path d="M8.7 8l2.6 4-2.6 4M15.3 8l-2.6 4 2.6 4" stroke="#fff" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-    </div>
-    <div class="bar" style="margin-top:-6px">
-      <div class="datepick"><span class="lbl">Период:</span>
-        <input type="date" id="pfrom" max="${todayStr()}" value="${todayStr().slice(0,8)}01" style="width:auto"/>
-        <span class="lbl">—</span>
-        <input type="date" id="pto" max="${todayStr()}" value="${todayStr()}" style="width:auto"/></div>
-      <button class="btn btn-sm" id="pgo">Показать итоги за период</button>
     </div>
     <div id="periodsum"></div>
     <div id="picked"></div>
@@ -1140,12 +1138,11 @@ async function renderAllReports(body){
     const ent=all.filter(e=>e.date>=lo&&e.date<=hi&&(f==='all'||e.studioId===f));
     periodsum.innerHTML=periodSummary(ent,lo,hi);
   }
-  body.querySelector('#pgo').onclick=showPeriod;
   pick.onchange=refresh;
-  stf.onchange=()=>{ refresh(); if(periodsum.innerHTML) showPeriod(); };
-  pfrom.onchange=()=>{ if(periodsum.innerHTML) showPeriod(); };
-  pto.onchange=()=>{ if(periodsum.innerHTML) showPeriod(); };
-  refresh();
+  stf.onchange=()=>{ refresh(); showPeriod(); };
+  pfrom.onchange=showPeriod;
+  pto.onchange=showPeriod;
+  refresh(); showPeriod();
   body.querySelector('#export').onclick=()=>{const f=stf.value;exportExcel(all.filter(e=>f==='all'||e.studioId===f));};
 }
 
