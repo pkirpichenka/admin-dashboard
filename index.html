@@ -361,6 +361,9 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 #schedRoot .sch-strip:hover{background:rgba(46,125,91,.06)}
 #schedRoot .sch-strip.drop{background:rgba(46,125,91,.12);box-shadow:0 0 0 2px var(--accent) inset}
 #schedRoot .strip-lbl{font-size:9px;font-weight:800;margin-right:3px}
+#schedRoot .sch-needrep{font-size:11px;font-weight:800;color:var(--clay);margin-top:1px}
+#schedRoot .sch-sh.absent{opacity:.75}
+.cn-ln.need{color:var(--clay);font-weight:700}
 #schedRoot .sch-strip .sch-sh,#schedRoot .sch-strip .sch-abs{margin-bottom:0;display:inline-block;width:100%}
 #schedRoot .sch-strip .sch-sh{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #schedRoot .sch-rc .sch-strip{width:100%}
@@ -484,7 +487,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '02.08.2026-r'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '02.08.2026-s'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -1155,11 +1158,17 @@ async function renderAllReports(body){
     if(!(mk in schedCache)){ try{ schedCache[mk]=await apiGetSchedule(mk); }catch(e){ schedCache[mk]=null; } }
     const sc=schedCache[mk], isToday=dateIso===todayStr();
     const title=(isToday?'Сегодня':fmtDM(dateIso))+' на смене';
+    const absIn=(login)=>((sc&&sc.absences)||[]).find(a=>a.adminId===login && dateIso>=a.start && dateIso<=a.end);
     const lines=STUDIOS.map(s=>{
       const rec=(sc&&sc.assignments)?sc.assignments[dateIso+'_'+s.id]:null;
-      let who='—', muted=true;
-      if(rec){ if(rec.closed){who='закрыто';} else if((rec.shifts||[]).length){ who=rec.shifts.map(sh=>adminName(sh.adminId)).join(', '); muted=false; } }
-      return `<div class="cn-line">${sdot(s.id)}<span class="cn-ln${muted?' muted':''}">${escapeHtml(who)}</span></div>`;
+      let who='—', cls='muted';
+      if(rec){
+        if(rec.closed){ who='закрыто'; }
+        else { const shifts=rec.shifts||[]; const present=shifts.filter(sh=>!absIn(sh.adminId)); const absent=shifts.filter(sh=>absIn(sh.adminId));
+          if(present.length){ who=present.map(sh=>adminName(sh.adminId)).join(', '); cls=''; }
+          else if(absent.length){ who='нужна замена'; cls='need'; } }
+      }
+      return `<div class="cn-line">${sdot(s.id)}<span class="cn-ln ${cls}">${escapeHtml(who)}</span></div>`;
     }).join('');
     box.innerHTML=`<div class="cn-name">${title}</div>${lines}`;
   }
@@ -1509,11 +1518,18 @@ function schStrip(d, iso, sid, editor, showLabel){
   else {
     const shifts=(r&&r.shifts)?r.shifts:[];
     const scheduled=new Set(shifts.map(s=>s.adminId));
-    const shHtml=shifts.map(sh=>{const ab=absOn(sh.adminId,iso); if(ab)need=true;
-      return `<div class="sch-sh${ab?' needrep':''}"${editor?` draggable="true" data-shd="${d}" data-shsid="${sid}" data-shadm="${sh.adminId}"`:''}>${escapeHtml(adminName(sh.adminId))}<span>${sh.start}–${sh.end}${ab?' · замена':''}</span></div>`;}).join('');
+    const present=shifts.filter(sh=>!absOn(sh.adminId,iso));
+    const absent=shifts.filter(sh=>absOn(sh.adminId,iso));
+    const shHtml=shifts.map(sh=>{const ab=absOn(sh.adminId,iso);
+      const dr=editor?` draggable="true" data-shd="${d}" data-shsid="${sid}" data-shadm="${sh.adminId}"`:'';
+      if(ab) return `<div class="sch-sh absent"${dr}>${escapeHtml(adminName(sh.adminId))}<span style="color:${absClr(ab.type)}">${absName(ab.type)}</span></div>`;
+      return `<div class="sch-sh"${dr}>${escapeHtml(adminName(sh.adminId))}<span>${sh.start}–${sh.end}</span></div>`;
+    }).join('');
+    if(absent.length>0 && present.length===0) need=true;
+    const needHtml = need ? '<div class="sch-needrep">нужна замена</div>' : '';
     const absHtml=TEAM.filter(a=>a.home===sid && !scheduled.has(a.login)).map(a=>({a,ab:absOn(a.login,iso)})).filter(x=>x.ab)
       .map(x=>`<div class="sch-abs">${escapeHtml(shortName(x.a.name))}<span style="color:${absClr(x.ab.type)}">${absName(x.ab.type)}</span></div>`).join('');
-    inner=(shHtml||absHtml)?(shHtml+absHtml):'<span class="sch-empty">—</span>';
+    inner=(shHtml+needHtml+absHtml)||'<span class="sch-empty">—</span>';
   }
   const armed=(SCHsel&&editor)?' armed':'';
   const lbl=showLabel?`<span class="strip-lbl" style="color:${st.color}">${st.name[0]}</span>`:'';
