@@ -281,6 +281,16 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 .sumcard-g b{font-size:14px;font-variant-numeric:tabular-nums}
 .sumcard-cl{font-size:12px;color:var(--ink-soft);line-height:1.55;border-top:1px solid var(--line);padding-top:8px}
 .sumcard-cl b{color:var(--ink);font-variant-numeric:tabular-nums}
+.sumcard-rows{display:grid;grid-template-columns:1fr 1fr;gap:5px 16px;margin-bottom:10px}
+.sr{display:flex;align-items:baseline;justify-content:space-between;gap:8px;font-size:13px;min-width:0}
+.sr>span{color:var(--ink-faint);font-size:10.5px;text-transform:uppercase;letter-spacing:.2px;white-space:nowrap}
+.sr b{font-variant-numeric:tabular-nums;white-space:nowrap}
+.sr.sr-wide{grid-column:1/-1;border-top:1px dashed var(--line);padding-top:6px;margin-top:1px}
+.sumcard.legal{background:var(--surface-2);border-color:var(--accent)}
+.legal-rows{display:flex;flex-direction:column;gap:8px}
+.lr{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.lr>span{color:var(--ink-soft);font-weight:600;font-size:13px}
+.lr b{font-size:15px;font-variant-numeric:tabular-nums}
 .ds-title small{font-family:'Golos Text';font-weight:500;color:var(--ink-faint);text-transform:none;letter-spacing:0}
 .ds-table{border-collapse:collapse;width:100%;font-size:12.5px;font-variant-numeric:tabular-nums}
 .ds-table th,.ds-table td{border:1px solid var(--line);padding:6px 10px;text-align:right;white-space:nowrap}
@@ -474,7 +484,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '02.08.2026-p'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '02.08.2026-q'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -1188,39 +1198,68 @@ function entryMetrics(e){
   const came=Number(e.newCame??e.newCount)||0;
   const bought=Number(e.newBought!=null?e.newBought:(Array.isArray(e.newList)?e.newList.filter(x=>x.bought).length:0))||0;
   const ended=Number(e.ended)||0, renew=Number(e.renewed??e.oldCount)||0;
-  return {st, net:i-o, end, day, card, qr, ep, rev:day+card+qr+ep, inter:0, came, bought, ended, renew, days:1};
+  return {st, net:i-o, mIn:i, mOut:o, end, day, card, qr, ep, rev:day+card+qr+ep, inter:0, came, bought, ended, renew, days:1};
+}
+function movFormula(m){
+  const net=m.net||0, mi=m.mIn||0, mo=m.mOut||0;
+  const col=net<0?'var(--clay)':(net>0?'var(--accent-deep)':'var(--ink)');
+  let s=(net>0?'+':'')+_numf(net);
+  if(mi>0 && mo>0) s+=' = +'+_numf(mi)+' −'+_numf(mo);
+  return `<b style="color:${col}">${s}</b>`;
 }
 function sumCard(label, dotId, entity, m, period, total){
-  const cell=(k,v)=>`<div><span>${k}</span>${v}</div>`;
-  const grid=[
-    cell('Нал. за день', _sgn(m.day)),
-    cell('Движения', _sgn(m.net)),
-    period?cell('Между сменами', _sgn(m.inter||0)):cell('Утро', `<b>${_numf(m.st)}</b>`),
-    period?cell('Дней', `<b>${m.days}</b>`):cell('Вечер', `<b>${_numf(m.end)}</b>`),
-    cell('Картой', `<b>${_numf(m.card)}</b>`),
-    cell('QR', `<b>${_numf(m.qr)}</b>`),
-    cell('EPOS', `<b>${_numf(m.ep)}</b>`)
-  ].join('');
+  const row=(k,v)=>`<div class="sr"><span>${k}</span>${v}</div>`;
+  const b=v=>`<b>${_numf(v)}</b>`;
+  let rows;
+  if(period){
+    rows = row('Нал. за день',_sgn(m.day)) + row('Между сменами',_sgn(m.inter||0))
+         + row('Картой',b(m.card)) + row('QR',b(m.qr))
+         + row('EPOS',b(m.ep)) + row('Дней',`<b>${m.days}</b>`)
+         + `<div class="sr sr-wide"><span>Движения</span>${movFormula(m)}</div>`;
+  } else {
+    rows = row('Утро',b(m.st)) + row('Вечер',b(m.end))
+         + row('Нал. за день',_sgn(m.day)) + row('Картой',b(m.card))
+         + row('EPOS',b(m.ep)) + row('QR',b(m.qr))
+         + `<div class="sr sr-wide"><span>Движения</span>${movFormula(m)}</div>`;
+  }
   const clients=`Пришло <b>${m.came}</b> · купили <b>${m.bought}</b> (${pct(m.bought,m.came)}) · законч. <b>${m.ended}</b> · продлили <b>${m.renew}</b> (${pct(m.renew,m.ended)}) · не прод. <b>${Math.max(0,m.ended-m.renew)}</b>`;
   const head = total
     ? '<span class="sc-name">Итого по всем</span>'
     : `<span class="sc-name">${dotId?sdot(dotId):''}${label}</span>`;
   return `<div class="sumcard${total?' tot':''}">
     <div class="sumcard-h">${head}<span class="sc-rev">Выручка<b>${_numf(m.rev)} ${CUR}</b></span></div>
-    <div class="sumcard-g">${grid}</div>
+    <div class="sumcard-rows">${rows}</div>
     <div class="sumcard-cl">${clients}</div>
   </div>`;
+}
+function legalTotals(entries){
+  const sum=(sid,k)=>entries.filter(e=>e.studioId===sid).reduce((a,e)=>a+(Number(e[k])||0),0);
+  const cash=entries.reduce((a,e)=>{const i=(e.changes||[]).filter(c=>c.type==='in').reduce((x,c)=>x+(Number(c.amount)||0),0);const o=(e.changes||[]).filter(c=>c.type!=='in').reduce((x,c)=>x+(Number(c.amount)||0),0);return a+((e.cashEnd!=null)?(Number(e.cashEnd)-(Number(e.cashStart)||0)-i+o):0);},0);
+  const epos=sum('masherova','epos')+sum('kuibysheva','epos')+sum('tolbuhina','epos');
+  const ip=epos+sum('tolbuhina','cashless')+sum('kuibysheva','allsports')+sum('tolbuhina','allsports');
+  const ooo=sum('masherova','cashless')+sum('kuibysheva','cashless')+sum('masherova','allsports');
+  return {cash,ip,ooo};
+}
+function legalCard(entries){
+  const t=legalTotals(entries);
+  return `<div class="sumcard legal">
+    <div class="sumcard-h"><span class="sc-name">Итого по юрлицам</span></div>
+    <div class="legal-rows">
+      <div class="lr"><span>Наличные</span><b>${_numf(t.cash)} ${CUR}</b></div>
+      <div class="lr"><span>ИП</span><b>${_numf(t.ip)} ${CUR}</b></div>
+      <div class="lr"><span>ООО</span><b>${_numf(t.ooo)} ${CUR}</b></div>
+    </div></div>`;
 }
 function daySummary(entries){
   if(!entries.length) return '';
   const ord=STUDIOS.map(s=>s.id);
   const rows=entries.slice().sort((a,b)=>ord.indexOf(a.studioId)-ord.indexOf(b.studioId));
-  const T={st:0,net:0,end:0,day:0,card:0,qr:0,ep:0,rev:0,came:0,bought:0,ended:0,renew:0,inter:0,days:0};
+  const T={st:0,net:0,mIn:0,mOut:0,end:0,day:0,card:0,qr:0,ep:0,rev:0,came:0,bought:0,ended:0,renew:0,inter:0,days:0};
   const cards=rows.map(e=>{const m=entryMetrics(e);
-    ['st','net','end','day','card','qr','ep','rev','came','bought','ended','renew'].forEach(k=>T[k]+=m[k]);
+    ['st','net','mIn','mOut','end','day','card','qr','ep','rev','came','bought','ended','renew'].forEach(k=>T[k]+=m[k]);
     return sumCard(studioName(e.studioId), e.studioId, studioEntity(e.studioId), m, false, false);}).join('');
   const tot=rows.length>1?sumCard('','','',T,false,true):'';
-  return `<div class="daysum"><div class="ds-title">Итоги за день <small>(суммы в ${CUR})</small></div><div class="sumcards">${cards}${tot}</div></div>`;
+  return `<div class="daysum"><div class="ds-title">Итоги за день <small>(суммы в ${CUR})</small></div><div class="sumcards">${cards}${tot}${legalCard(rows)}</div></div>`;
 }
 
 /* ================= Итоги за период ================= */
@@ -1229,21 +1268,21 @@ function periodSummary(entries, from, to){
   const ord=STUDIOS.map(s=>s.id);
   const groups={}; entries.forEach(e=>{(groups[e.studioId]=groups[e.studioId]||[]).push(e);});
   const sids=Object.keys(groups).sort((a,b)=>ord.indexOf(a)-ord.indexOf(b));
-  const M=list=>{let days=0,day=0,net=0,inter=0,card=0,qr=0,ep=0,rev=0,came=0,bought=0,ended=0,renew=0;
+  const M=list=>{let days=0,day=0,net=0,mIn=0,mOut=0,inter=0,card=0,qr=0,ep=0,rev=0,came=0,bought=0,ended=0,renew=0;
     list.forEach(e=>{days++;
       const i=(e.changes||[]).filter(c=>c.type==='in').reduce((a,c)=>a+(Number(c.amount)||0),0);
       const o=(e.changes||[]).filter(c=>c.type!=='in').reduce((a,c)=>a+(Number(c.amount)||0),0);
-      net+=i-o; const cl=Number(e.cashless)||0,al=Number(e.allsports)||0,ie=Number(e.epos)||0;
+      net+=i-o; mIn+=i; mOut+=o; const cl=Number(e.cashless)||0,al=Number(e.allsports)||0,ie=Number(e.epos)||0;
       card+=cl;qr+=al;ep+=ie;
       const dc=(e.cashEnd!=null)?(Number(e.cashEnd)-(Number(e.cashStart)||0)-i+o):0; day+=dc; rev+=dc+cl+al+ie;
       const p=lastCashEndBefore(e.studioId,e.date); if(p&&e.cashStart!=null) inter+=Number(e.cashStart)-p.cashEnd;
       came+=Number(e.newCame??e.newCount)||0;
       bought+=Number(e.newBought!=null?e.newBought:(Array.isArray(e.newList)?e.newList.filter(x=>x.bought).length:0))||0;
       ended+=Number(e.ended)||0; renew+=Number(e.renewed??e.oldCount)||0;});
-    return {days,day,net,inter,card,qr,ep,rev,came,bought,ended,renew,st:0,end:0};};
+    return {days,day,net,mIn,mOut,inter,card,qr,ep,rev,came,bought,ended,renew,st:0,end:0};};
   const cards=sids.map(sid=>sumCard(studioName(sid), sid, studioEntity(sid), M(groups[sid]), true, false)).join('');
   const tot=sids.length>1?sumCard('','','',M(entries),true,true):'';
-  return `<div class="daysum"><div class="ds-title">Итоги за период: ${fmtLong(from)} – ${fmtLong(to)} <small>(суммы в ${CUR})</small></div><div class="sumcards">${cards}${tot}</div></div>`;
+  return `<div class="daysum"><div class="ds-title">Итоги за период: ${fmtLong(from)} – ${fmtLong(to)} <small>(суммы в ${CUR})</small></div><div class="sumcards">${cards}${tot}${legalCard(entries)}</div></div>`;
 }
 
 /* ================= Excel export ================= */
