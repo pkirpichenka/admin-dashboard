@@ -363,6 +363,23 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 #schedRoot .strip-lbl{font-size:9px;font-weight:800;margin-right:3px}
 #schedRoot .sch-needrep{font-size:11px;font-weight:800;color:var(--clay);margin-top:1px}
 #schedRoot .sch-fill{font-size:11px;font-weight:800;color:var(--gold);margin-top:1px}
+#schedRoot .abs-legend{display:flex;align-items:center;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--ink-soft);margin-bottom:10px}
+#schedRoot .abs-legend>span{display:flex;align-items:center;gap:5px}
+#schedRoot .abs-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+#schedRoot .abs-grid{display:grid;gap:2px;align-items:center;min-width:640px}
+#schedRoot .abs-dh{text-align:center;font-size:10px;color:var(--ink-faint)}
+#schedRoot .abs-dh.we{color:var(--gold)}
+#schedRoot .abs-name{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#schedRoot .abs-cell{height:20px;border-radius:4px;background:var(--surface);border:1px solid var(--line)}
+#schedRoot .abs-cell.we{background:var(--surface-2)}
+#schedRoot .abs-tot{text-align:center;font-size:12px;font-weight:700}
+#schedRoot .norm-edit{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:12.5px;color:var(--ink-soft)}
+#schedRoot .norm-edit label{display:inline-flex;align-items:center;gap:5px}
+#schedRoot .norm-edit input{width:64px}
+#schedRoot .bal-wrap{display:flex;align-items:center;gap:8px}
+#schedRoot .bal-bar{flex:1;min-width:70px;height:8px;background:var(--surface-2);border-radius:999px;overflow:hidden}
+#schedRoot .bal-fill{height:100%;background:#EF9F27;border-radius:999px}
+#schedRoot .bal-num{font-size:11.5px;white-space:nowrap}
 #schedRoot .sch-strip.fill{box-shadow:0 0 0 1px var(--gold) inset}
 #schedRoot .sch-sh.absent{opacity:.75}
 .cn-ln.need{color:var(--clay);font-weight:700}
@@ -492,7 +509,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '02.08.2026-u'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '02.08.2026-w'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -563,6 +580,8 @@ async function apiSetHome(login,home){ return await rpc('app_set_home',{p_token:
 async function apiSetHire(login,hire){ return await rpc('app_set_hire',{p_token:TOKEN,p_login:login,p_hire:hire||''}); }
 async function apiGetSchedule(month){ return await rpc('app_get_schedule',{p_token:TOKEN,p_month:month}); }
 async function apiAllAbsences(){ return await rpc('app_all_absences',{p_token:TOKEN})||[]; }
+async function apiGetSettings(){ try{ return await rpc('app_get_settings',{p_token:TOKEN})||{}; }catch(e){ return {}; } }
+async function apiSaveSettings(data){ return await rpc('app_save_settings',{p_token:TOKEN,p_data:data}); }
 async function apiSaveSchedule(month,data){ return await rpc('app_save_schedule',{p_token:TOKEN,p_month:month,p_data:data}); }
 
 /* ================= Format helpers ================= */
@@ -1494,7 +1513,7 @@ function reflowSchedule(){ if(SCH&&SCH._body) drawSchedule(SCH._body, SCH.editor
 
 function drawSchedule(body, editor){
   SCH._body=body; SCH.editor=editor;
-  const sub = editor ? [['calendar','Календарь'],['overview','Обзор']] : [['calendar','Календарь'],['overview','Обзор'],['dashboard','Моё расписание']];
+  const sub = editor ? [['calendar','Календарь'],['overview','Обзор'],['absences','Отсутствия']] : [['calendar','Календарь'],['overview','Обзор'],['dashboard','Моё расписание']];
   if(!sub.some(x=>x[0]===SCH.view)) SCH.view=sub[0][0];
   body.innerHTML=`<div id="schedRoot">
     <div class="sch-bar">
@@ -1527,7 +1546,82 @@ function drawSub(root){
   const el=root.querySelector('#schSub');
   if(SCH.view==='calendar') renderSchCalendar(el);
   else if(SCH.view==='overview') renderSchOverview(el);
+  else if(SCH.view==='absences') renderSchAbsences(el);
   else renderSchPersonal(el);
+}
+const ABS_CLR={otpusk:'#FAC775',bol:'#F09595',otgul:'#B4B2A9'};
+async function renderSchAbsences(el){
+  const owner=session.role==='owner';
+  el.innerHTML=`
+    <div class="section-title">Отсутствия · ${MON2[SCH.m]} ${SCH.y}</div>
+    <div class="abs-legend">
+      <span><i style="background:#FAC775"></i>отпуск</span>
+      <span><i style="background:#F09595"></i>больничный</span>
+      <span><i style="background:#B4B2A9"></i>отгул</span>
+      <button class="btn btn-sm" id="absEdit" style="margin-left:auto">Добавить / изменить</button>
+    </div>
+    <div id="absTimeline" class="sch-scroll"><div class="hintline" style="padding:10px">Загрузка…</div></div>
+    <div id="absBalance" style="margin-top:16px"></div>`;
+  const eb=el.querySelector('#absEdit'); if(eb) eb.onclick=()=>openAbsenceModal();
+  let all=[], settings={};
+  try{ all=await apiAllAbsences(); }catch(e){}
+  try{ settings=await apiGetSettings(); }catch(e){}
+  const seen=new Set(), list=[];
+  (all||[]).forEach(a=>{ const k=a.id||JSON.stringify([a.adminId,a.type,a.start,a.end]); if(!seen.has(k)){ seen.add(k); list.push(a); } });
+  fillAbsTimeline(el.querySelector('#absTimeline'), list);
+  fillAbsBalance(el.querySelector('#absBalance'), list, settings, owner);
+}
+function fillAbsTimeline(box, list){
+  if(!box) return;
+  const y=SCH.y,m=SCH.m,n=schDaysIn(y,m),first=schIso(y,m,1),last=schIso(y,m,n);
+  if(!TEAM.length){ box.innerHTML='<div class="hintline" style="padding:10px">Нет администраторов.</div>'; return; }
+  let html=`<div class="abs-grid" style="grid-template-columns:132px repeat(${n},1fr) 46px"><div></div>`;
+  for(let d=1;d<=n;d++){ const we=[0,6].includes(schDow(y,m,d)); html+=`<div class="abs-dh${we?' we':''}">${d}</div>`; }
+  html+='<div class="abs-dh">дн.</div>';
+  TEAM.forEach(a=>{
+    const fill=new Array(n+1).fill(null); let tot=0;
+    list.filter(x=>x.adminId===a.login).forEach(x=>{
+      const s=x.start>first?x.start:first, e=x.end<last?x.end:last;
+      if(s>e) return;
+      const sd=+s.slice(8,10), ed=+e.slice(8,10);
+      for(let d=sd; d<=ed; d++){ fill[d]=ABS_CLR[x.type]||'#B4B2A9'; tot++; }
+    });
+    html+=`<div class="abs-name">${escapeHtml(shortName(a.name))}</div>`;
+    for(let d=1;d<=n;d++){ const we=[0,6].includes(schDow(y,m,d)); html+=`<div class="abs-cell${we?' we':''}"${fill[d]?` style="background:${fill[d]};border-color:${fill[d]}"`:''}></div>`; }
+    html+=`<div class="abs-tot">${tot||'—'}</div>`;
+  });
+  html+='</div>';
+  box.innerHTML=html;
+}
+function fillAbsBalance(box, list, settings, owner){
+  if(!box) return;
+  const norms=(settings&&settings.leaveNorms)||{otpusk:24,bol:0,otgul:0};
+  const nO=+norms.otpusk||0, nB=+norms.bol||0, nG=+norms.otgul||0;
+  const today=todayStr();
+  const daysIn=(login,type,first,last)=>{ let d=0; list.filter(a=>a.adminId===login&&a.type===type).forEach(a=>{ const s=a.start>first?a.start:first, e=a.end<last?a.end:last; if(s<=e) d+=isoDiff(s,e)+1; }); return d; };
+  const rows=TEAM.map(a=>{
+    let first,last,period;
+    if(a.hire){ const wy=workYear(a.hire,today); first=wy.start; last=wy.end; period='раб. год ' + d2(wy.start)+' – '+d2(wy.end); }
+    else { first=SCH.y+'-01-01'; last=SCH.y+'-12-31'; period=SCH.y+' год (нет даты приёма)'; }
+    const o=daysIn(a.login,'otpusk',first,last), b=daysIn(a.login,'bol',first,last), g=daysIn(a.login,'otgul',first,last);
+    const pct=nO>0?Math.min(100,Math.round(o/nO*100)):0;
+    const otp = nO>0
+      ? `<div class="bal-wrap"><div class="bal-bar"><div class="bal-fill" style="width:${pct}%"></div></div><span class="bal-num">${o}/${nO} · ост. <b>${Math.max(0,nO-o)}</b></span></div>`
+      : `<b>${o}</b>`;
+    return `<tr><td class="rowh">${escapeHtml(shortName(a.name))}<br><small class="ent">${period}</small></td><td style="min-width:170px">${otp}</td><td>${b}${nB?(' / '+nB):''}</td><td>${g}${nG?(' / '+nG):''}</td></tr>`;
+  }).join('');
+  const editor = owner ? `<div class="norm-edit">Нормы дней в год:
+      <label>Отпуск <input id="nOtp" type="number" min="0" value="${nO}"/></label>
+      <label>Больн. <input id="nBol" type="number" min="0" value="${nB}"/></label>
+      <label>Отгул <input id="nOtg" type="number" min="0" value="${nG}"/></label>
+      <button class="btn btn-sm" id="nSave">Сохранить нормы</button></div>` : '';
+  box.innerHTML=`<div class="section-title">Баланс за год</div>${editor}
+    <div class="sch-scroll"><table class="sch-hrs"><thead><tr><th>Администратор</th><th>Отпуск</th><th>Больн.</th><th>Отгул</th></tr></thead><tbody>${rows||'<tr><td colspan="4" style="color:var(--ink-faint)">Нет данных</td></tr>'}</tbody></table></div>`;
+  const ns=box.querySelector('#nSave');
+  if(ns) ns.onclick=async()=>{
+    const data=Object.assign({}, settings||{}, {leaveNorms:{otpusk:+box.querySelector('#nOtp').value||0, bol:+box.querySelector('#nBol').value||0, otgul:+box.querySelector('#nOtg').value||0}});
+    try{ await apiSaveSettings(data); toast('Нормы сохранены'); reflowSchedule(); }catch(e){ handleErr(e); }
+  };
 }
 
 function schStrip(d, iso, sid, editor, showLabel){
