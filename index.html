@@ -259,6 +259,9 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 .cn-line:first-of-type{margin-top:2px}
 .cn-ln.muted{color:var(--ink-faint);font-weight:500}
 .hire-lbl{font-size:11px;color:var(--ink-faint);display:inline-flex;align-items:center;gap:4px}
+.seed-strow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;font-size:13px}
+.seed-strow select{max-width:170px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
 .btn.icon-only{padding:6px 10px;line-height:0}
 .icon-btn{width:36px;height:36px;flex:0 0 auto;border:1px solid var(--line);background:var(--surface);border-radius:10px;color:var(--ink-soft);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:var(--fx);padding:0}
 .icon-btn:hover{border-color:var(--accent);color:var(--accent-deep);background:var(--surface-2)}
@@ -513,7 +516,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '03.08.2026-a'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '03.08.2026-b'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -1524,8 +1527,8 @@ function drawSchedule(body, editor){
       <div class="sch-month"><button class="btn btn-sm" data-mv="-1">‹</button><b>${MON2[SCH.m]} ${SCH.y}</b><button class="btn btn-sm" data-mv="1">›</button></div>
       <span class="sch-status ${SCHDATA.approved?'ap':'dr'}">${SCHDATA.approved?'✓ утверждён':'черновик'}</span>
       <div class="grow"></div>
-      ${editor?`<button class="btn btn-sm" data-sact="seed">Заполнить черновик</button>
-        <button class="btn btn-sm" data-sact="clear">Очистить</button>
+      ${editor?`<button class="btn btn-sm" data-sact="seed" ${SCHDATA.approved?'disabled title="Снимите утверждение, чтобы менять"':''}>Заполнить черновик</button>
+        <button class="btn btn-sm" data-sact="clear" ${SCHDATA.approved?'disabled':''}>Очистить</button>
         <button class="btn btn-sm" data-sact="absence">Отпуска / больничные</button>
         <button class="btn btn-sm ${SCHDATA.approved?'':'btn-primary'}" data-sact="approve">${SCHDATA.approved?'Снять утверждение':'Утвердить месяц'}</button>`:''}
     </div>
@@ -2000,7 +2003,10 @@ function openAbsenceModal(){
 
 function currentBlock(){ return (SCHDATA.pattern&&SCHDATA.pattern.block)||1; }
 function openSeedModal(){
+  if(SCHDATA.approved){ toast('Месяц утверждён. Снимите утверждение, чтобы менять расписание.', true); return; }
   const cur=currentBlock();
+  const strows=STUDIOS.map(s=>{ const homes=TEAM.filter(a=>a.home===s.id); if(homes.length<2) return '';
+    return `<div class="seed-strow"><span>${sdot(s.id)}${s.name}</span><select data-seedstart="${s.id}">${homes.map(a=>`<option value="${a.login}">${escapeHtml(shortName(a.name))}</option>`).join('')}</select></div>`; }).join('');
   const el=modal(`<h3>Заполнить черновик</h3><p>Смены расставляются ротацией между администраторами филиала (у кого указан «домашний филиал»). Уже назначенные дни не меняются.</p>
     <div class="field"><div class="lbl">Принцип чередования</div>
       <select id="seedPat">
@@ -2010,18 +2016,22 @@ function openSeedModal(){
         <option value="custom">Своё…</option>
       </select></div>
     <div class="field" id="seedCustomWrap" style="display:none"><div class="lbl">По сколько дней подряд на одного</div><input id="seedCustom" type="number" min="1" max="14" value="${cur}"/></div>
+    ${strows?`<div class="field"><div class="lbl">С кого начинать (по филиалам)</div>${strows}</div>`:''}
     <div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="seedGo">Заполнить</button></div>`);
   const sel=el.querySelector('#seedPat'), cw=el.querySelector('#seedCustomWrap');
   sel.onchange=()=>{ cw.style.display = sel.value==='custom' ? 'block' : 'none'; };
   el.querySelector('#seedGo').onclick=async()=>{
     let block = sel.value==='custom' ? Math.max(1,Math.min(14,parseInt(el.querySelector('#seedCustom').value)||1)) : parseInt(sel.value);
-    closeModal(el); await seedMonth(block);
+    const starts={}; el.querySelectorAll('[data-seedstart]').forEach(sl=>{ starts[sl.dataset.seedstart]=sl.value; });
+    closeModal(el); await seedMonth(block, starts);
   };
 }
-async function seedMonth(block){
-  block = block || currentBlock() || 1;
+async function seedMonth(block, starts){
+  if(SCHDATA.approved){ toast('Месяц утверждён. Снимите утверждение, чтобы менять расписание.', true); return; }
+  block = block || currentBlock() || 1; starts = starts || {};
   const n=schDaysIn(SCH.y,SCH.m);
-  STUDIOS.forEach(s=>{const homes=TEAM.filter(a=>a.home===s.id); if(!homes.length) return;
+  STUDIOS.forEach(s=>{let homes=TEAM.filter(a=>a.home===s.id); if(!homes.length) return;
+    const st=starts[s.id]; if(st){ const i=homes.findIndex(a=>a.login===st); if(i>0) homes=homes.slice(i).concat(homes.slice(0,i)); }
     for(let d=1;d<=n;d++){const iso=schIso(SCH.y,SCH.m,d),k=iso+'_'+s.id;
       if(SCHDATA.assignments[k])continue;
       const idx=Math.floor((d-1)/block)%homes.length, who=homes[idx];
@@ -2031,6 +2041,7 @@ async function seedMonth(block){
   try{ await saveMonth(); toast('Черновик заполнен ('+(block===1?'через день':block+' через '+block)+')'); reflowSchedule(); }catch(e){ handleErr(e); }
 }
 function clearDraft(){
+  if(SCHDATA.approved){ toast('Месяц утверждён. Снимите утверждение, чтобы очистить.', true); return; }
   confirmModal('Очистить черновик за '+MON2[SCH.m].toLowerCase()+' '+SCH.y+'? Все назначения смен за месяц удалятся (отпуска сохранятся).', async()=>{
     SCHDATA.assignments={}; SCHDATA.seeded=false;
     try{ await saveMonth(); toast('Черновик очищен'); reflowSchedule(); }catch(e){ handleErr(e); }
