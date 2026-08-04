@@ -366,6 +366,9 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 #schedRoot .sch-strip.fill{box-shadow:0 0 0 1px var(--gold) inset}
 #schedRoot .sch-sh.absent{opacity:.75}
 .cn-ln.need{color:var(--clay);font-weight:700}
+.dayplan{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:12px 16px;margin-bottom:14px}
+.dayplan .cn-line{display:flex;align-items:center;gap:5px;font-size:13px;font-weight:600;margin-top:5px}
+.dayplan .cn-line:first-of-type{margin-top:2px}
 #schedRoot .sch-strip .sch-sh,#schedRoot .sch-strip .sch-abs{margin-bottom:0;display:inline-block;width:100%}
 #schedRoot .sch-strip .sch-sh{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #schedRoot .sch-rc .sch-strip{width:100%}
@@ -489,7 +492,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '02.08.2026-t'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '02.08.2026-u'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -1112,7 +1115,7 @@ async function renderAllReports(body){
     <div id="banner"></div>
     ${cashNowCard(all)}
     <div class="bar fade-in">
-      <div class="datepick"><span class="lbl">День:</span><input type="date" id="pick" max="${todayStr()}" value="${todayStr()}" style="width:auto"/></div>
+      <div class="datepick"><span class="lbl">День:</span><input type="date" id="pick" value="${todayStr()}" style="width:auto"/></div>
       <div class="datepick"><span class="lbl">Студия:</span><select id="stf" style="width:auto"><option value="all">Все студии</option>${STUDIOS.map(s=>`<option value="${s.id}">${s.name} · ${s.address}</option>`).join('')}</select></div>
       <div class="datepick"><span class="lbl">Период:</span><input type="date" id="pfrom" max="${todayStr()}" value="${todayStr().slice(0,8)}01" style="width:auto"/><span class="lbl">—</span><input type="date" id="pto" max="${todayStr()}" value="${todayStr()}" style="width:auto"/></div>
       <div class="grow"></div>
@@ -1129,6 +1132,21 @@ async function renderAllReports(body){
     el.querySelectorAll('[data-editreport]').forEach(btn=>{ btn.onclick=(ev)=>{ ev.stopPropagation(); const p=btn.dataset.editreport.split('|'); openShiftEditor(body,p[0],p[1],()=>renderAllReports(body)); }; });
     el.querySelectorAll('[data-create]').forEach(btn=>{ btn.onclick=()=>{ const p=btn.dataset.create.split('|'); openShiftEditor(body,p[0],p[1],()=>renderAllReports(body)); }; });
   }
+  function dayScheduleHtml(dateIso){
+    const sc=schedCache[dateIso.slice(0,7)];
+    if(!sc || !sc.assignments) return '';
+    const absIn=(login)=>((sc.absences)||[]).find(a=>a.adminId===login && dateIso>=a.start && dateIso<=a.end);
+    const lines=STUDIOS.map(s=>{
+      const rec=sc.assignments[dateIso+'_'+s.id]; let who='—', cls='muted';
+      if(rec){ if(rec.closed){ who='закрыто'; }
+        else { const sh=rec.shifts||[]; const pres=sh.filter(x=>!absIn(x.adminId)); const abs=sh.filter(x=>absIn(x.adminId));
+          if(pres.length){ who=pres.map(x=>adminName(x.adminId)+' · '+x.start+'–'+x.end).join(', '); cls=''; }
+          else if(abs.length){ who='нужна замена'; cls='need'; } } }
+      return `<div class="cn-line">${sdot(s.id)}<span class="cn-ln ${cls}">${escapeHtml(who)}</span></div>`;
+    }).join('');
+    const isToday=dateIso===todayStr();
+    return `<div class="dayplan"><div class="cn-name">На смене · ${isToday?'сегодня':fmtDM(dateIso)}</div>${lines}</div>`;
+  }
   function refresh(){
     const f=stf.value, d=pick.value;
     const pe=all.filter(e=>e.date===d&&(f==='all'||e.studioId===f));
@@ -1138,7 +1156,7 @@ async function renderAllReports(body){
       const miss=STUDIOS.filter(st=>(f==='all'||st.id===f)&&!present.has(st.id));
       if(miss.length) extra=`<div class="miss-row">${miss.map(st=>`<button class="btn btn-sm" data-create="${st.id}|${d}">+ Открыть отчёт: ${sdot(st.id)}${st.name}</button>`).join('')}</div>`;
     }
-    picked.innerHTML=daySummary(pe)+(pe.length?pe.map(e=>dayCard(e,true)).join(''):`<div class="empty">За ${fmtLong(d)} нет отчётов${f==='all'?'':' по выбранной студии'}.</div>`)+extra;
+    picked.innerHTML=dayScheduleHtml(d)+daySummary(pe)+(pe.length?pe.map(e=>dayCard(e,true)).join(''):`<div class="empty">За ${fmtLong(d)} нет отчётов${f==='all'?'':' по выбранной студии'}.</div>`)+extra;
     wireDayCards(picked,()=>renderAllReports(body)); wireEdit(picked);
     const list=all.filter(e=>f==='all'||e.studioId===f);
     cnt.textContent=list.length;
@@ -1174,11 +1192,11 @@ async function renderAllReports(body){
     }).join('');
     box.innerHTML=`<div class="cn-name">${title}</div>${lines}`;
   }
-  pick.onchange=()=>{ refresh(); updateShiftTile(pick.value); };
+  pick.onchange=async()=>{ await updateShiftTile(pick.value); refresh(); };
   stf.onchange=()=>{ refresh(); showPeriod(); };
   pfrom.onchange=showPeriod;
   pto.onchange=showPeriod;
-  refresh(); showPeriod(); updateShiftTile(pick.value);
+  showPeriod(); await updateShiftTile(pick.value); refresh();
   body.querySelector('#export').onclick=()=>{const f=stf.value;exportExcel(all.filter(e=>f==='all'||e.studioId===f));};
 }
 
