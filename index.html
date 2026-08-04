@@ -370,7 +370,8 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 #schedRoot .abs-dh{text-align:center;font-size:10px;color:var(--ink-faint)}
 #schedRoot .abs-dh.we{color:var(--gold)}
 #schedRoot .abs-name{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#schedRoot .abs-cell{height:20px;border-radius:4px;background:var(--surface);border:1px solid var(--line)}
+#schedRoot .abs-cell{height:20px;border-radius:4px;background:var(--surface);border:1px solid var(--line);cursor:pointer}
+#schedRoot .abs-cell:hover{outline:2px solid var(--accent);outline-offset:-1px}
 #schedRoot .abs-cell.we{background:var(--surface-2)}
 #schedRoot .abs-tot{text-align:center;font-size:12px;font-weight:700}
 #schedRoot .norm-edit{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:12.5px;color:var(--ink-soft)}
@@ -509,7 +510,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '02.08.2026-w'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '02.08.2026-x'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -1587,11 +1588,35 @@ function fillAbsTimeline(box, list){
       for(let d=sd; d<=ed; d++){ fill[d]=ABS_CLR[x.type]||'#B4B2A9'; tot++; }
     });
     html+=`<div class="abs-name">${escapeHtml(shortName(a.name))}</div>`;
-    for(let d=1;d<=n;d++){ const we=[0,6].includes(schDow(y,m,d)); html+=`<div class="abs-cell${we?' we':''}"${fill[d]?` style="background:${fill[d]};border-color:${fill[d]}"`:''}></div>`; }
+    for(let d=1;d<=n;d++){ const we=[0,6].includes(schDow(y,m,d)); html+=`<div class="abs-cell${we?' we':''}" data-login="${a.login}" data-iso="${schIso(y,m,d)}"${fill[d]?` style="background:${fill[d]};border-color:${fill[d]}"`:''}></div>`; }
     html+=`<div class="abs-tot">${tot||'—'}</div>`;
   });
   html+='</div>';
   box.innerHTML=html;
+  box.onclick=(ev)=>{ const c=ev.target.closest('.abs-cell[data-login]'); if(c) openAbsCellModal(c.dataset.login, c.dataset.iso); };
+}
+function openAbsCellModal(login, dateIso){
+  const existing=(SCHDATA.absences||[]).find(a=>a.adminId===login && dateIso>=a.start && dateIso<=a.end);
+  const el=modal(`<h3>Отсутствие · ${escapeHtml(adminName(login))}</h3>
+    <div class="grid" style="grid-template-columns:1fr 1fr;gap:8px">
+      <label class="field" style="grid-column:1/-1"><div class="lbl">Тип</div>
+        <select id="acType"><option value="otpusk">Отпуск</option><option value="bol">Больничный</option><option value="otgul">Отгул</option></select></label>
+      <label class="field"><div class="lbl">С</div><input id="acStart" type="date" value="${existing?existing.start:dateIso}"/></label>
+      <label class="field"><div class="lbl">По</div><input id="acEnd" type="date" value="${existing?existing.end:dateIso}"/></label>
+    </div>
+    <div class="actions">${existing?'<button class="btn btn-ghost btn-sm" id="acDel" style="margin-right:auto">🗑 Удалить</button>':''}<button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="acSave">Сохранить</button></div>`);
+  if(existing) el.querySelector('#acType').value=existing.type;
+  el.querySelector('#acSave').onclick=async()=>{
+    const s=el.querySelector('#acStart').value, e0=el.querySelector('#acEnd').value, t=el.querySelector('#acType').value;
+    if(!s){ toast('Укажите дату',true); return; }
+    const e=(!e0||e0<s)?s:e0;
+    SCHDATA.absences=SCHDATA.absences||[];
+    if(existing){ existing.type=t; existing.start=s; existing.end=e; }
+    else { SCHDATA.absences.push({id:uid(),adminId:login,type:t,start:s,end:e}); }
+    try{ await saveMonth(); closeModal(el); toast('Сохранено'); reflowSchedule(); }catch(err){ handleErr(err); }
+  };
+  const dl=el.querySelector('#acDel');
+  if(dl) dl.onclick=async()=>{ SCHDATA.absences=(SCHDATA.absences||[]).filter(a=>a!==existing); try{ await saveMonth(); closeModal(el); toast('Удалено'); reflowSchedule(); }catch(err){ handleErr(err); } };
 }
 function fillAbsBalance(box, list, settings, owner){
   if(!box) return;
