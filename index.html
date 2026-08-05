@@ -260,6 +260,7 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 .cn-ln.muted{color:var(--ink-faint);font-weight:500}
 .hire-lbl{font-size:11px;color:var(--ink-faint);display:inline-flex;align-items:center;gap:4px}
 .seed-strow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;font-size:13px}
+.btn.daynav{padding:6px 10px;font-size:16px;line-height:1;font-weight:700}
 .seed-strow select{max-width:170px}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 .btn.icon-only{padding:6px 10px;line-height:0}
@@ -517,7 +518,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '03.08.2026-c'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '03.08.2026-d'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -1142,7 +1143,7 @@ async function renderAllReports(body){
     <div id="banner"></div>
     ${cashNowCard(all)}
     <div class="bar fade-in">
-      <div class="datepick"><span class="lbl">День:</span><input type="date" id="pick" value="${todayStr()}" style="width:auto"/></div>
+      <div class="datepick"><span class="lbl">День:</span><button class="btn btn-sm daynav" id="dPrev" title="Предыдущий день">‹</button><input type="date" id="pick" value="${todayStr()}" style="width:auto"/><button class="btn btn-sm daynav" id="dNext" title="Следующий день">›</button><button class="btn btn-sm" id="dToday">Сегодня</button></div>
       <div class="datepick"><span class="lbl">Студия:</span><select id="stf" style="width:auto"><option value="all">Все студии</option>${STUDIOS.map(s=>`<option value="${s.id}">${s.name} · ${s.address}</option>`).join('')}</select></div>
       <div class="datepick"><span class="lbl">Период:</span><input type="date" id="pfrom" max="${todayStr()}" value="${todayStr().slice(0,8)}01" style="width:auto"/><span class="lbl">—</span><input type="date" id="pto" max="${todayStr()}" value="${todayStr()}" style="width:auto"/></div>
       <div class="grow"></div>
@@ -1219,7 +1220,12 @@ async function renderAllReports(body){
     }).join('');
     box.innerHTML=`<div class="cn-name">${title}</div>${lines}`;
   }
-  pick.onchange=async()=>{ await updateShiftTile(pick.value); refresh(); };
+  async function pickChanged(){ await updateShiftTile(pick.value); refresh(); }
+  function stepDay(delta){ const d=new Date(pick.value+'T00:00:00'); if(isNaN(d)) return; d.setDate(d.getDate()+delta); pick.value=dISO(d); pickChanged(); }
+  pick.onchange=pickChanged;
+  body.querySelector('#dPrev').onclick=()=>stepDay(-1);
+  body.querySelector('#dNext').onclick=()=>stepDay(1);
+  body.querySelector('#dToday').onclick=()=>{ pick.value=todayStr(); pickChanged(); };
   stf.onchange=()=>{ refresh(); showPeriod(); };
   pfrom.onchange=showPeriod;
   pto.onchange=showPeriod;
