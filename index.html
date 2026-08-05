@@ -381,6 +381,8 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 #schedRoot .abs-cell.we{background:var(--surface-2)}
 #schedRoot .abs-cell.covx{display:flex;align-items:center;justify-content:center;font-size:8.5px;font-weight:800;color:#2C2C2A;line-height:1}
 #schedRoot .abs-cell.clk{cursor:pointer}
+#schedRoot .abs-cell.coffee-cell{display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer}
+#schedRoot .abs-cell.coffee-cell:hover{outline:2px solid #A6743C;outline-offset:-1px}
 #schedRoot .abs-cell.split::after{content:'';position:absolute;top:0;right:0;width:0;height:0;border:5px solid transparent;border-top-color:#27500A;border-right-color:#27500A}
 #schedRoot .abs-cell.clk:hover{outline:2px solid var(--accent);outline-offset:-1px}
 #schedRoot .abs-tot{text-align:center;font-size:12px;font-weight:700}
@@ -520,7 +522,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '03.08.2026-h'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '03.08.2026-i'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -778,7 +780,7 @@ async function fillCoffeeChk(container, date, data){
   const who=(sc&&sc.coffee)?sc.coffee[date]:null;
   if(!who) return;
   if(session.role!=='owner' && session.login!==who) return;
-  const note=(session.role==='owner'&&session.login!==who)?` <small style="color:var(--ink-faint)">(назначен: ${escapeHtml(adminName(who))})</small>`:'';
+  const note=(session.role==='owner'&&session.login!==who)?` <small style="color:var(--ink-faint)">(назначен: ${escapeHtml(coffeeName(who))})</small>`:'';
   box.innerHTML=`<label class="chk zrep"><input type="checkbox" id="coffeeDone" ${data.coffeeDone?'checked':''}/> ☕ Кофе-машина обслужена${note}</label>`;
 }
 function renderForm(container,studio,date,data,onSaved,opts){
@@ -1495,7 +1497,7 @@ function confirmModal(msg,onYes){
 /* ================= Расписание (модуль) ================= */
 const MON2=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 const SCH_DOW=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
-let SCH=null, SCHDATA=null, TEAM=[], SCHsel=null, ABS_MODE='cal';
+let SCH=null, SCHDATA=null, TEAM=[], SCHsel=null, ABS_MODE='cal', COFFEE_ROSTER=[];
 
 function monthKey(y,m){return y+'-'+String(m+1).padStart(2,'0');}
 function schPad(n){return String(n).padStart(2,'0');}
@@ -1508,6 +1510,7 @@ function fmtH(x){return (Math.round(x*10)/10).toString().replace('.',',');}
 function uid(){return Math.random().toString(36).slice(2,9);}
 function teamById(id){return TEAM.find(a=>a.login===id);}
 function adminName(id){const a=teamById(id);return a?shortName(a.name):id;}
+function coffeeName(login){const a=teamById(login);if(a)return shortName(a.name);const r=COFFEE_ROSTER.find(x=>x.login===login);if(r)return shortName(r.name);return login;}
 function initials(name){return String(name||'').trim().split(/\s+/).map(w=>w[0]||'').join('').slice(0,2).toUpperCase();}
 function absName(t){return t==='otpusk'?'Отпуск':t==='bol'?'Больничный':'Отгул';}
 function homeAdmins(sid){return TEAM.filter(a=>a.home===sid);}
@@ -1543,7 +1546,7 @@ function reflowSchedule(){ if(SCH&&SCH._body) drawSchedule(SCH._body, SCH.editor
 
 function drawSchedule(body, editor){
   SCH._body=body; SCH.editor=editor;
-  const sub = editor ? [['calendar','Календарь'],['overview','Обзор'],['absences','Отсутствия']] : [['calendar','Календарь'],['overview','Обзор'],['dashboard','Моё расписание']];
+  const sub = editor ? [['calendar','Календарь'],['overview','Обзор'],['absences','Отсутствия']].concat(session.role==='owner'?[['coffee','Кофе-машина']]:[]) : [['calendar','Календарь'],['overview','Обзор'],['dashboard','Моё расписание']];
   if(!sub.some(x=>x[0]===SCH.view)) SCH.view=sub[0][0];
   body.innerHTML=`<div id="schedRoot">
     <div class="sch-bar">
@@ -1579,9 +1582,61 @@ function drawSub(root){
   if(SCH.view==='calendar') renderSchCalendar(el);
   else if(SCH.view==='overview') renderSchOverview(el);
   else if(SCH.view==='absences') renderSchAbsences(el);
+  else if(SCH.view==='coffee') renderSchCoffee(el);
   else renderSchPersonal(el);
 }
 const ABS_CLR={otpusk:'#FAC775',bol:'#F09595',otgul:'#B4B2A9'};
+async function renderSchCoffee(el){
+  el.innerHTML=`
+    <div class="section-title">☕ Кофе-машина · ${MON2[SCH.m]} ${SCH.y} <small style="color:var(--ink-faint);font-weight:500">(Машерова)</small></div>
+    <div id="coffeeRoster" class="abs-legend" style="align-items:center">Загрузка…</div>
+    <div id="coffeeTL" class="sch-scroll"></div>
+    <div class="hintline" style="margin:6px 2px 0">Нажмите на клетку — назначить/снять мытьё на этот день. В один день моет один человек.</div>`;
+  let settings={}; try{ settings=await apiGetSettings(); }catch(e){}
+  const roster=Array.isArray(settings.coffeeRoster)?settings.coffeeRoster:[];
+  COFFEE_ROSTER=roster;
+  drawCoffeeRoster(el, settings, roster);
+  drawCoffeeTimeline(el, roster);
+}
+function drawCoffeeRoster(el, settings, roster){
+  const box=el.querySelector('#coffeeRoster'); if(!box) return;
+  const inR=login=>roster.some(r=>r.login===login);
+  const cands=[]; const seen=new Set();
+  TEAM.forEach(a=>{ if(!seen.has(a.login)){ seen.add(a.login); cands.push({login:a.login,name:a.name}); } });
+  if(!seen.has(session.login)) cands.push({login:session.login,name:session.name,me:true});
+  box.innerHTML=`<span style="font-size:12px;color:var(--ink-soft);margin-right:4px">Кто в списке:</span>`+cands.map(c=>`<button class="rchip coffee-chip${inR(c.login)?' on':''}" data-cf="${escapeHtml(c.login)}" data-nm="${escapeHtml(c.name)}">${c.login===session.login?'Я · ':''}${escapeHtml(shortName(c.name))}${inR(c.login)?' ✓':''}</button>`).join('');
+  box.querySelectorAll('[data-cf]').forEach(b=>b.onclick=async()=>{
+    const login=b.dataset.cf, name=b.dataset.nm;
+    let nr=roster.slice();
+    if(inR(login)) nr=nr.filter(r=>r.login!==login); else nr.push({login,name});
+    try{ await apiSaveSettings(Object.assign({},settings,{coffeeRoster:nr})); toast('Список обновлён'); reflowSchedule(); }catch(e){ handleErr(e); }
+  });
+}
+function drawCoffeeTimeline(el, roster){
+  const box=el.querySelector('#coffeeTL'); if(!box) return;
+  const y=SCH.y,m=SCH.m,n=schDaysIn(y,m);
+  if(!roster.length){ box.innerHTML='<div class="hintline" style="padding:10px">Добавьте людей в список выше — они появятся строками.</div>'; return; }
+  const coffee=SCHDATA.coffee||{};
+  let html=`<div class="abs-grid" style="grid-template-columns:150px repeat(${n},1fr) 40px"><div></div>`;
+  for(let d=1;d<=n;d++){const we=[0,6].includes(schDow(y,m,d));html+=`<div class="abs-dh${we?' we':''}">${d}</div>`;}
+  html+='<div class="abs-dh">раз</div>';
+  roster.forEach(p=>{
+    let cnt=0;
+    html+=`<div class="abs-name"${p.login===session.login?' style="color:var(--accent-deep)"':''}>${p.login===session.login?'Я · ':''}${escapeHtml(shortName(p.name))}</div>`;
+    for(let d=1;d<=n;d++){ const iso=schIso(y,m,d), on=coffee[iso]===p.login; if(on)cnt++;
+      const we=[0,6].includes(schDow(y,m,d));
+      html+=`<div class="abs-cell coffee-cell${we?' we':''}" data-iso="${iso}" data-login="${escapeHtml(p.login)}"${on?' style="background:#A6743C;border-color:#A6743C;color:#fff"':''}>${on?'☕':''}</div>`; }
+    html+=`<div class="abs-tot">${cnt||'—'}</div>`;
+  });
+  html+='</div>';
+  box.innerHTML=html;
+  box.onclick=async(ev)=>{ const c=ev.target.closest('.coffee-cell[data-iso]'); if(!c) return;
+    const iso=c.dataset.iso, login=c.dataset.login;
+    SCHDATA.coffee=SCHDATA.coffee||{};
+    if(SCHDATA.coffee[iso]===login) delete SCHDATA.coffee[iso]; else SCHDATA.coffee[iso]=login;
+    try{ await saveMonth(); reflowSchedule(); }catch(e){ handleErr(e); }
+  };
+}
 async function renderSchAbsences(el){
   const owner=session.role==='owner';
   el.innerHTML=`
@@ -1705,7 +1760,7 @@ function schStrip(d, iso, sid, editor, showLabel){
   }
   const armed=(SCHsel&&editor)?' armed':'';
   const lbl=showLabel?`<span class="strip-lbl" style="color:${st.color}">${st.name[0]}</span>`:'';
-  const coffeeMark=(sid==='masherova' && SCHDATA.coffee && SCHDATA.coffee[iso])?`<span class="coffee-mark" title="Кофе-машина: ${escapeHtml(adminName(SCHDATA.coffee[iso]))}">☕</span>`:'';
+  const coffeeMark=(sid==='masherova' && SCHDATA.coffee && SCHDATA.coffee[iso])?`<span class="coffee-mark" title="Кофе-машина: ${escapeHtml(coffeeName(SCHDATA.coffee[iso]))}">☕</span>`:'';
   return `<div class="sch-strip${closed?' closed':''}${need?' need':''}${fill?' fill':''}${armed}" data-day="${d}" data-sid="${sid}" style="border-left:3px solid ${st.color}">${lbl}${coffeeMark}${inner}</div>`;
 }
 function renderSchCalendar(el){
