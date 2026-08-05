@@ -518,7 +518,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '03.08.2026-e'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '03.08.2026-f'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -1006,11 +1006,9 @@ function renderForm(container,studio,date,data,onSaved,opts){
       if(valNum('cashStart')==null){ toast('Сначала зафиксируйте наличные на начало дня',true); return; }
       const zEl=container.querySelector('#zReport');
       if(zEl && !zEl.checked){
-        const el=modal(`<h3>Z-отчёт</h3><p>Не отмечено, что <b>Z-отчёт распечатан и касса закрыта</b>. Пожалуйста, закройте смену на кассе и распечатайте Z-отчёт.</p>
-          <div class="actions" style="flex-direction:column;align-items:stretch;gap:8px">
-            <button class="btn btn-primary" id="zRepYes">Z-отчёт распечатан — продолжить</button>
-            <button class="btn" data-x>Отмена</button></div>`);
-        el.querySelector('#zRepYes').onclick=()=>{ zEl.checked=true; closeModal(el); proceedClose(); };
+        const el=modal(`<h3>Z-отчёт не отмечен</h3><p>Чтобы закрыть смену, отметьте галочку <b>«Z-отчёт распечатан, касса закрыта»</b>. Сначала закройте смену на кассе и распечатайте Z-отчёт.</p>
+          <div class="actions"><button class="btn btn-primary" data-x>Понятно</button></div>`);
+        try{ zEl.scrollIntoView({behavior:'smooth',block:'center'}); }catch(e){}
         return;
       }
       proceedClose();
