@@ -522,7 +522,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '03.08.2026-i'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '03.08.2026-l'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -591,6 +591,7 @@ async function apiDeleteReport(studio, date){
 async function apiListTeam(){ return await rpc('app_list_team',{p_token:TOKEN})||[]; }
 async function apiSetHome(login,home){ return await rpc('app_set_home',{p_token:TOKEN,p_login:login,p_home:home||''}); }
 async function apiSetHire(login,hire){ return await rpc('app_set_hire',{p_token:TOKEN,p_login:login,p_hire:hire||''}); }
+async function apiSetCoffee(login,val){ return await rpc('app_set_coffee',{p_token:TOKEN,p_login:login,p_val:!!val}); }
 async function apiGetSchedule(month){ return await rpc('app_get_schedule',{p_token:TOKEN,p_month:month}); }
 async function apiAllAbsences(){ return await rpc('app_all_absences',{p_token:TOKEN})||[]; }
 async function apiGetSettings(){ try{ return await rpc('app_get_settings',{p_token:TOKEN})||{}; }catch(e){ return {}; } }
@@ -781,7 +782,7 @@ async function fillCoffeeChk(container, date, data){
   if(!who) return;
   if(session.role!=='owner' && session.login!==who) return;
   const note=(session.role==='owner'&&session.login!==who)?` <small style="color:var(--ink-faint)">(назначен: ${escapeHtml(coffeeName(who))})</small>`:'';
-  box.innerHTML=`<label class="chk zrep"><input type="checkbox" id="coffeeDone" ${data.coffeeDone?'checked':''}/> ☕ Кофе-машина обслужена${note}</label>`;
+  box.innerHTML=`<label class="chk zrep"><input type="checkbox" id="coffeeDone" ${data.coffeeDone?'checked':''}/> ☕ Кофе+снеки — выполнено${note}</label>`;
 }
 function renderForm(container,studio,date,data,onSaved,opts){
   data=data||{}; opts=opts||{};
@@ -1118,7 +1119,7 @@ function dayCard(e,open){
     <div class="day-head"><span class="chev">▸</span>
       <span class="day-date">${fmtLong(e.date)}<span class="dow"> · ${fmtDow(e.date)}</span></span>
       <span class="st-tag" style="border-color:${studioColor(e.studioId)}">${sdot(e.studioId)}${studioAddr(e.studioId)}</span>
-      <span class="stat ${e.status==='closed'?'stat-closed':'stat-open'}">${e.status==='closed'?'закрыта':'не закрыта'}</span>${e.status==='closed'?(e.zReport?'<span class="zbadge zok">Z-отчёт ✓</span>':'<span class="zbadge zno">Z-отчёт ✗</span>'):''}${e.coffeeAssigned?(e.coffeeDone?'<span class="zbadge zok">☕ обслужена</span>':'<span class="zbadge zno">☕ не обслужена</span>'):''}
+      <span class="stat ${e.status==='closed'?'stat-closed':'stat-open'}">${e.status==='closed'?'закрыта':'не закрыта'}</span>${e.status==='closed'?(e.zReport?'<span class="zbadge zok">Z-отчёт ✓</span>':'<span class="zbadge zno">Z-отчёт ✗</span>'):''}${e.coffeeAssigned?(e.coffeeDone?'<span class="zbadge zok">☕ выполнено</span>':'<span class="zbadge zno">☕ не выполнено</span>'):''}
       <span class="day-by">заполнил(а): <b>${escapeHtml(shortName(e.filledBy||'—'))}</b><br><span style="color:var(--ink-faint)">${fmtTime(e.submittedAt)}</span></span></div>
     <div class="day-body">
       <div class="kv">
@@ -1397,7 +1398,7 @@ function exportExcel(entries){
       'Наличными за день':(e.cashEnd==null?'':num(e.cashEnd)-num(e.cashStart)-inSum+outSum),'Движения нетто':inSum-outSum,'Движения (детально)':chgText,
       'Картой':e.cashless??'','QR':e.allsports??'','EPOS':e.epos??'',
       'Выручка за день':(e.cashEnd==null?'':(num(e.cashEnd)-num(e.cashStart)-inSum+outSum)+num(e.cashless)+num(e.allsports)+num(e.epos)),
-      'Между сменами':(function(){const p=lastCashEndBefore(e.studioId,e.date);return (p&&e.cashStart!=null)?num(e.cashStart)-p.cashEnd:'';})(),'Причина (между сменами)':e.interNote||'','Z-отчёт':e.zReport?'да':(e.status==='closed'?'нет':''),'Кофе-машина':e.coffeeAssigned?(e.coffeeDone?'обслужена':'нет'):'',
+      'Между сменами':(function(){const p=lastCashEndBefore(e.studioId,e.date);return (p&&e.cashStart!=null)?num(e.cashStart)-p.cashEnd:'';})(),'Причина (между сменами)':e.interNote||'','Z-отчёт':e.zReport?'да':(e.status==='closed'?'нет':''),'Кофе+снеки':e.coffeeAssigned?(e.coffeeDone?'выполнено':'нет'):'',
       'Пришло новых':came,'Купили абонемент':bought,'Конверсия новых':pct(bought,came),'Абонементы закончились':endedC,'Продлили':renewC,'Не продлили':notRen,'Конверсия продлений':pct(renewC,endedC),
       'Новые клиенты (детально)':newDet,'Не продлили (детально)':nrDet,'Комментарии':e.comments||''
     };
@@ -1441,6 +1442,7 @@ async function renderUsers(body){
   });
   list.querySelectorAll('select[data-home]').forEach(sel=>{ sel.onchange=async()=>{ try{ await apiSetHome(sel.dataset.home, sel.value); toast('Домашний филиал обновлён'); }catch(e){ handleErr(e); } }; });
   list.querySelectorAll('input[data-hire]').forEach(inp=>{ inp.onchange=async()=>{ try{ await apiSetHire(inp.dataset.hire, inp.value); toast('Дата приёма сохранена'); }catch(e){ handleErr(e); } }; });
+  list.querySelectorAll('input[data-coffee]').forEach(cb=>{ cb.onchange=async()=>{ try{ await apiSetCoffee(cb.dataset.coffee, cb.checked); toast('Сохранено'); }catch(e){ handleErr(e); } }; });
   body.querySelector('#add').onclick=()=>addAdminModal(()=>renderUsers(body));
 }
 function userRow(u){
@@ -1450,6 +1452,7 @@ function userRow(u){
     <div class="u-ctl">
       <select class="home-sel" data-home="${escapeHtml(u.login)}" style="max-width:150px"><option value="">филиал —</option>${STUDIOS.map(s=>`<option value="${s.id}" ${u.home===s.id?'selected':''}>${s.name}</option>`).join('')}</select>
       <label class="hire-lbl">приём:<input type="date" class="hire-inp" data-hire="${escapeHtml(u.login)}" value="${u.hire||''}"/></label>
+      <label class="hire-lbl"><input type="checkbox" class="coffee-inp" data-coffee="${escapeHtml(u.login)}" ${u.coffee?'checked':''}/> ☕ кофе+снеки</label>
       <span class="st-pill ${u.active?'st-on':'st-off'}">${u.active?'доступ включён':'доступ отключён'}</span>
       <span class="ctl-item">Доступ <button class="sw ${u.active?'on':''}" data-act="active" aria-label="Доступ"></button></span>
       <span class="ctl-item">Старший <button class="sw ${u.senior?'on':''}" data-act="senior" aria-label="Старший"></button></span>
@@ -1546,7 +1549,7 @@ function reflowSchedule(){ if(SCH&&SCH._body) drawSchedule(SCH._body, SCH.editor
 
 function drawSchedule(body, editor){
   SCH._body=body; SCH.editor=editor;
-  const sub = editor ? [['calendar','Календарь'],['overview','Обзор'],['absences','Отсутствия']].concat(session.role==='owner'?[['coffee','Кофе-машина']]:[]) : [['calendar','Календарь'],['overview','Обзор'],['dashboard','Моё расписание']];
+  const sub = editor ? [['calendar','Календарь'],['overview','Обзор'],['absences','Отсутствия']].concat(session.role==='owner'?[['coffee','Кофе+снеки']]:[]) : [['calendar','Календарь'],['overview','Обзор'],['dashboard','Моё расписание']];
   if(!sub.some(x=>x[0]===SCH.view)) SCH.view=sub[0][0];
   body.innerHTML=`<div id="schedRoot">
     <div class="sch-bar">
@@ -1556,7 +1559,6 @@ function drawSchedule(body, editor){
       ${editor?`<button class="btn btn-sm" data-sact="seed" ${SCHDATA.approved?'disabled title="Снимите утверждение, чтобы менять"':''}>Заполнить черновик</button>
         <button class="btn btn-sm" data-sact="clear" ${SCHDATA.approved?'disabled':''}>Очистить</button>
         <button class="btn btn-sm" data-sact="absence">Отпуска / больничные</button>
-        <button class="btn btn-sm" data-sact="coffee">☕ Кофе-машина</button>
         <button class="btn btn-sm ${SCHDATA.approved?'':'btn-primary'}" data-sact="approve">${SCHDATA.approved?'Снять утверждение':'Утвердить месяц'}</button>`:''}
     </div>
     <div class="sch-subtabs">${sub.map(x=>`<button class="sch-subtab${x[0]===SCH.view?' on':''}" data-sview="${x[0]}">${x[1]}</button>`).join('')}</div>
@@ -1572,7 +1574,6 @@ function drawSchedule(body, editor){
     root.querySelector('[data-sact="seed"]').onclick=()=>openSeedModal();
     root.querySelector('[data-sact="clear"]').onclick=()=>clearDraft();
     root.querySelector('[data-sact="absence"]').onclick=()=>openAbsenceModal();
-    const _cfb=root.querySelector('[data-sact="coffee"]'); if(_cfb) _cfb.onclick=()=>openCoffeeModal();
     root.querySelector('[data-sact="approve"]').onclick=()=>toggleApprove();
   }
   drawSub(root);
@@ -1586,31 +1587,16 @@ function drawSub(root){
   else renderSchPersonal(el);
 }
 const ABS_CLR={otpusk:'#FAC775',bol:'#F09595',otgul:'#B4B2A9'};
-async function renderSchCoffee(el){
-  el.innerHTML=`
-    <div class="section-title">☕ Кофе-машина · ${MON2[SCH.m]} ${SCH.y} <small style="color:var(--ink-faint);font-weight:500">(Машерова)</small></div>
-    <div id="coffeeRoster" class="abs-legend" style="align-items:center">Загрузка…</div>
-    <div id="coffeeTL" class="sch-scroll"></div>
-    <div class="hintline" style="margin:6px 2px 0">Нажмите на клетку — назначить/снять мытьё на этот день. В один день моет один человек.</div>`;
-  let settings={}; try{ settings=await apiGetSettings(); }catch(e){}
-  const roster=Array.isArray(settings.coffeeRoster)?settings.coffeeRoster:[];
+function renderSchCoffee(el){
+  const seen=new Set(), roster=[];
+  TEAM.filter(a=>a.coffee).forEach(a=>{ if(!seen.has(a.login)){ seen.add(a.login); roster.push({login:a.login,name:a.name}); } });
+  if(!seen.has(session.login)) roster.push({login:session.login,name:session.name,me:true});
   COFFEE_ROSTER=roster;
-  drawCoffeeRoster(el, settings, roster);
+  el.innerHTML=`
+    <div class="section-title">☕ Кофе+снеки · ${MON2[SCH.m]} ${SCH.y} <small style="color:var(--ink-faint);font-weight:500">(Машерова)</small></div>
+    <div class="hintline" style="margin-bottom:10px">В списке — администраторы с флажком «☕ кофе+снеки» (вкладка «Администраторы») и вы. Клик по клетке — назначить/снять на этот день; в один день моет один. Назначения — на текущий месяц.</div>
+    <div id="coffeeTL" class="sch-scroll"></div>`;
   drawCoffeeTimeline(el, roster);
-}
-function drawCoffeeRoster(el, settings, roster){
-  const box=el.querySelector('#coffeeRoster'); if(!box) return;
-  const inR=login=>roster.some(r=>r.login===login);
-  const cands=[]; const seen=new Set();
-  TEAM.forEach(a=>{ if(!seen.has(a.login)){ seen.add(a.login); cands.push({login:a.login,name:a.name}); } });
-  if(!seen.has(session.login)) cands.push({login:session.login,name:session.name,me:true});
-  box.innerHTML=`<span style="font-size:12px;color:var(--ink-soft);margin-right:4px">Кто в списке:</span>`+cands.map(c=>`<button class="rchip coffee-chip${inR(c.login)?' on':''}" data-cf="${escapeHtml(c.login)}" data-nm="${escapeHtml(c.name)}">${c.login===session.login?'Я · ':''}${escapeHtml(shortName(c.name))}${inR(c.login)?' ✓':''}</button>`).join('');
-  box.querySelectorAll('[data-cf]').forEach(b=>b.onclick=async()=>{
-    const login=b.dataset.cf, name=b.dataset.nm;
-    let nr=roster.slice();
-    if(inR(login)) nr=nr.filter(r=>r.login!==login); else nr.push({login,name});
-    try{ await apiSaveSettings(Object.assign({},settings,{coffeeRoster:nr})); toast('Список обновлён'); reflowSchedule(); }catch(e){ handleErr(e); }
-  });
 }
 function drawCoffeeTimeline(el, roster){
   const box=el.querySelector('#coffeeTL'); if(!box) return;
@@ -1760,7 +1746,7 @@ function schStrip(d, iso, sid, editor, showLabel){
   }
   const armed=(SCHsel&&editor)?' armed':'';
   const lbl=showLabel?`<span class="strip-lbl" style="color:${st.color}">${st.name[0]}</span>`:'';
-  const coffeeMark=(sid==='masherova' && SCHDATA.coffee && SCHDATA.coffee[iso])?`<span class="coffee-mark" title="Кофе-машина: ${escapeHtml(coffeeName(SCHDATA.coffee[iso]))}">☕</span>`:'';
+  const coffeeMark=(sid==='masherova' && SCHDATA.coffee && SCHDATA.coffee[iso])?`<span class="coffee-mark" title="Кофе+снеки: ${escapeHtml(coffeeName(SCHDATA.coffee[iso]))}">☕</span>`:'';
   return `<div class="sch-strip${closed?' closed':''}${need?' need':''}${fill?' fill':''}${armed}" data-day="${d}" data-sid="${sid}" style="border-left:3px solid ${st.color}">${lbl}${coffeeMark}${inner}</div>`;
 }
 function renderSchCalendar(el){
@@ -1902,36 +1888,10 @@ function teamOptions(sel,iso,sid){
 }
 function splitMid(s,e){let m=Math.round(((toMin(s)+toMin(e))/2)/30)*30;return schPad(Math.floor(m/60))+':'+schPad(m%60);}
 
-function openCoffeeModal(){
-  const n=schDaysIn(SCH.y,SCH.m), mFirst=schIso(SCH.y,SCH.m,1), mLast=schIso(SCH.y,SCH.m,n);
-  const el=modal(`<h3>☕ Кофе-машина · назначение</h3><p>Назначается в пределах открытого месяца (${MON2[SCH.m]} ${SCH.y}).</p>
-    <div class="field"><div class="lbl">Кто моет</div><select id="cfAdm">${TEAM.map(a=>`<option value="${a.login}">${escapeHtml(shortName(a.name))}</option>`).join('')}</select></div>
-    <div class="grid" style="grid-template-columns:1fr 1fr;gap:8px">
-      <label class="field"><div class="lbl">С</div><input id="cfFrom" type="date" value="${mFirst}" min="${mFirst}" max="${mLast}"/></label>
-      <label class="field"><div class="lbl">По</div><input id="cfTo" type="date" value="${mLast}" min="${mFirst}" max="${mLast}"/></label>
-    </div>
-    <div class="field"><div class="lbl">Периодичность</div><select id="cfEvery"><option value="1">Каждый день</option><option value="2">Через день</option><option value="3">Каждые 3 дня</option><option value="7">Раз в неделю</option></select></div>
-    <div class="actions"><button class="btn btn-ghost btn-sm" id="cfClear" style="margin-right:auto">Очистить за период</button><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="cfGo">Назначить</button></div>`);
-  el.querySelector('#cfGo').onclick=async()=>{
-    const login=el.querySelector('#cfAdm').value, f=el.querySelector('#cfFrom').value, t=el.querySelector('#cfTo').value, every=+el.querySelector('#cfEvery').value||1;
-    if(!f||!t){ toast('Укажите даты',true); return; }
-    let lo=f<=t?f:t, hi=f<=t?t:f; if(lo<mFirst)lo=mFirst; if(hi>mLast)hi=mLast;
-    SCHDATA.coffee=SCHDATA.coffee||{};
-    let d=new Date(lo+'T00:00:00'), i=0;
-    while(dISO(d)<=hi){ if(i%every===0) SCHDATA.coffee[dISO(d)]=login; d.setDate(d.getDate()+1); i++; }
-    try{ await saveMonth(); closeModal(el); toast('Кофе-машина назначена'); reflowSchedule(); }catch(e){ handleErr(e); }
-  };
-  el.querySelector('#cfClear').onclick=async()=>{
-    const f=el.querySelector('#cfFrom').value, t=el.querySelector('#cfTo').value; let lo=f<=t?f:t, hi=f<=t?t:f;
-    SCHDATA.coffee=SCHDATA.coffee||{}; Object.keys(SCHDATA.coffee).forEach(k=>{ if(k>=lo&&k<=hi) delete SCHDATA.coffee[k]; });
-    try{ await saveMonth(); closeModal(el); toast('Назначения очищены'); reflowSchedule(); }catch(e){ handleErr(e); }
-  };
-}
 function openDayModal(day, sid){
   const iso=schIso(SCH.y,SCH.m,day), st=SMAP[sid];
   const r=dayRec(iso,sid)||{closed:false,shifts:[]};
   let shifts=(r.shifts||[]).map(s=>({...s})), closed=!!r.closed;
-  let coffee=(SCHDATA.coffee&&SCHDATA.coffee[iso])||'';
   const el=modal(`<h3>${st.name} · ${day} ${MON2[SCH.m].toLowerCase()}</h3><div id="dmBody"></div>
     <div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="dmSave">Сохранить</button></div>`);
   const dm=el.querySelector('#dmBody');
@@ -1948,10 +1908,7 @@ function openDayModal(day, sid){
           <button class="btn btn-sm" id="dmSplit">Разделить на 2</button>
         </div>
       </div>
-      ${(sid==='masherova' && !closed)?`<div class="coffee-sec">
-        <label class="chk"><input type="checkbox" id="dmCoffeeOn" ${coffee?'checked':''}/> ☕ Обслуживание кофе-машины</label>
-        <div id="dmCoffeeWho" style="margin-top:6px;${coffee?'':'display:none'}">Кто моет: <select id="dmCoffeeAdm">${TEAM.map(a=>`<option value="${a.login}" ${coffee===a.login?'selected':''}>${escapeHtml(shortName(a.name))}</option>`).join('')}</select></div>
-      </div>`:''}`;
+`;
     dm.querySelector('#dmClosed').onchange=e=>{closed=e.target.checked;draw();};
     if(!closed){
       dm.querySelectorAll('.sch-erow').forEach(row=>{const i=+row.dataset.i;
@@ -1964,11 +1921,6 @@ function openDayModal(day, sid){
         shifts=[{id:uid(),adminId:(shifts[0]?shifts[0].adminId:(ha[0]||{login:''}).login),start:st.start,end:mid},
                 {id:uid(),adminId:((ha[1]||ha[0]||{login:''}).login),start:mid,end:st.end}];draw();};
     }
-    const cfOn=dm.querySelector('#dmCoffeeOn');
-    if(cfOn){ const who=dm.querySelector('#dmCoffeeWho'), cfAdm=dm.querySelector('#dmCoffeeAdm');
-      cfOn.onchange=()=>{ if(cfOn.checked){ coffee=(cfAdm&&cfAdm.value)||((TEAM[0]||{}).login)||''; if(who)who.style.display=''; } else { coffee=''; if(who)who.style.display='none'; } };
-      if(cfAdm) cfAdm.onchange=()=>{ coffee=cfAdm.value; };
-    }
   }
   draw();
   el.querySelector('#dmSave').onclick=()=>{
@@ -1978,7 +1930,6 @@ function openDayModal(day, sid){
       const pairs=[...new Set(conflicts.map(c=>c.login+'|'+c.otherSid))];
       pairs.forEach(k=>{ const p=k.split('|'), os=p[1]; const r=dayRec(iso,os); if(r){ r.shifts=(r.shifts||[]).filter(x=>x.adminId!==p[0]); setDayRec(iso,os, r.shifts.length?r:null); } });
       setDayRec(iso,sid,(!closed && rec.shifts.length===0)?null:rec);
-      if(sid==='masherova'){ SCHDATA.coffee=SCHDATA.coffee||{}; if(coffee && !closed) SCHDATA.coffee[iso]=coffee; else delete SCHDATA.coffee[iso]; }
       try{ await saveMonth(); closeModal(el); toast(conflicts.length?'Сохранено · перенесено с других филиалов':'Сохранено'); reflowSchedule(); }catch(e){ handleErr(e); }
     };
     if(conflicts.length){
