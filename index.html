@@ -383,6 +383,8 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 #schedRoot .abs-cell.clk{cursor:pointer}
 #schedRoot .abs-cell.coffee-cell{display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer}
 #schedRoot .abs-cell.coffee-cell:hover{outline:2px solid #A6743C;outline-offset:-1px}
+#schedRoot .ro .coffee-cell{cursor:default}
+#schedRoot .ro .coffee-cell:hover{outline:none}
 #schedRoot .abs-cell.split::after{content:'';position:absolute;top:0;right:0;width:0;height:0;border:5px solid transparent;border-top-color:#27500A;border-right-color:#27500A}
 #schedRoot .abs-cell.clk:hover{outline:2px solid var(--accent);outline-offset:-1px}
 #schedRoot .abs-tot{text-align:center;font-size:12px;font-weight:700}
@@ -522,7 +524,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '03.08.2026-l'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '03.08.2026-m'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -1549,7 +1551,7 @@ function reflowSchedule(){ if(SCH&&SCH._body) drawSchedule(SCH._body, SCH.editor
 
 function drawSchedule(body, editor){
   SCH._body=body; SCH.editor=editor;
-  const sub = editor ? [['calendar','Календарь'],['overview','Обзор'],['absences','Отсутствия']].concat(session.role==='owner'?[['coffee','Кофе+снеки']]:[]) : [['calendar','Календарь'],['overview','Обзор'],['dashboard','Моё расписание']];
+  const sub = editor ? [['calendar','Календарь'],['overview','Обзор'],['absences','Отсутствия']].concat(session.role==='owner'?[['coffee','Кофе+снеки']]:[]) : [['calendar','Календарь'],['overview','Обзор'],['dashboard','Моё расписание']].concat(((TEAM.find(a=>a.login===session.login)||{}).coffee)?[['coffee','Кофе+снеки']]:[]);
   if(!sub.some(x=>x[0]===SCH.view)) SCH.view=sub[0][0];
   body.innerHTML=`<div id="schedRoot">
     <div class="sch-bar">
@@ -1587,18 +1589,27 @@ function drawSub(root){
   else renderSchPersonal(el);
 }
 const ABS_CLR={otpusk:'#FAC775',bol:'#F09595',otgul:'#B4B2A9'};
-function renderSchCoffee(el){
+async function renderSchCoffee(el){
+  const owner=session.role==='owner';
+  let settings={}; try{ settings=await apiGetSettings(); }catch(e){}
   const seen=new Set(), roster=[];
   TEAM.filter(a=>a.coffee).forEach(a=>{ if(!seen.has(a.login)){ seen.add(a.login); roster.push({login:a.login,name:a.name}); } });
-  if(!seen.has(session.login)) roster.push({login:session.login,name:session.name,me:true});
+  if(owner){
+    if(!seen.has(session.login)){ seen.add(session.login); roster.push({login:session.login,name:session.name,me:true}); }
+    if(!settings.coffeeOwner || settings.coffeeOwner.login!==session.login || settings.coffeeOwner.name!==session.name){
+      try{ await apiSaveSettings(Object.assign({},settings,{coffeeOwner:{login:session.login,name:session.name}})); }catch(e){}
+    }
+  } else if(settings.coffeeOwner && !seen.has(settings.coffeeOwner.login)){
+    seen.add(settings.coffeeOwner.login); roster.push({login:settings.coffeeOwner.login,name:settings.coffeeOwner.name});
+  }
   COFFEE_ROSTER=roster;
   el.innerHTML=`
     <div class="section-title">☕ Кофе+снеки · ${MON2[SCH.m]} ${SCH.y} <small style="color:var(--ink-faint);font-weight:500">(Машерова)</small></div>
-    <div class="hintline" style="margin-bottom:10px">В списке — администраторы с флажком «☕ кофе+снеки» (вкладка «Администраторы») и вы. Клик по клетке — назначить/снять на этот день; в один день моет один. Назначения — на текущий месяц.</div>
+    <div class="hintline" style="margin-bottom:10px">${owner?'В списке — администраторы с флажком «☕ кофе+снеки» (вкладка «Администраторы») и вы. Клик по клетке — назначить/снять; в один день моет один. Назначения — на текущий месяц.':'Ваш график кофе+снеки на месяц (только просмотр). Ваша строка отмечена «Я».'}</div>
     <div id="coffeeTL" class="sch-scroll"></div>`;
-  drawCoffeeTimeline(el, roster);
+  drawCoffeeTimeline(el, roster, !owner);
 }
-function drawCoffeeTimeline(el, roster){
+function drawCoffeeTimeline(el, roster, readonly){
   const box=el.querySelector('#coffeeTL'); if(!box) return;
   const y=SCH.y,m=SCH.m,n=schDaysIn(y,m);
   if(!roster.length){ box.innerHTML='<div class="hintline" style="padding:10px">Добавьте людей в список выше — они появятся строками.</div>'; return; }
@@ -1616,12 +1627,15 @@ function drawCoffeeTimeline(el, roster){
   });
   html+='</div>';
   box.innerHTML=html;
-  box.onclick=async(ev)=>{ const c=ev.target.closest('.coffee-cell[data-iso]'); if(!c) return;
-    const iso=c.dataset.iso, login=c.dataset.login;
-    SCHDATA.coffee=SCHDATA.coffee||{};
-    if(SCHDATA.coffee[iso]===login) delete SCHDATA.coffee[iso]; else SCHDATA.coffee[iso]=login;
-    try{ await saveMonth(); reflowSchedule(); }catch(e){ handleErr(e); }
-  };
+  box.classList.toggle('ro', !!readonly);
+  if(!readonly){
+    box.onclick=async(ev)=>{ const c=ev.target.closest('.coffee-cell[data-iso]'); if(!c) return;
+      const iso=c.dataset.iso, login=c.dataset.login;
+      SCHDATA.coffee=SCHDATA.coffee||{};
+      if(SCHDATA.coffee[iso]===login) delete SCHDATA.coffee[iso]; else SCHDATA.coffee[iso]=login;
+      try{ await saveMonth(); reflowSchedule(); }catch(e){ handleErr(e); }
+    };
+  }
 }
 async function renderSchAbsences(el){
   const owner=session.role==='owner';
