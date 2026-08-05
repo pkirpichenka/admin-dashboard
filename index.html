@@ -373,11 +373,12 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 #schedRoot .abs-dh{text-align:center;font-size:10px;color:var(--ink-faint)}
 #schedRoot .abs-dh.we{color:var(--gold)}
 #schedRoot .abs-name{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#schedRoot .abs-cell{height:20px;border-radius:4px;background:var(--surface);border:1px solid var(--line);cursor:pointer}
+#schedRoot .abs-cell{height:20px;border-radius:4px;background:var(--surface);border:1px solid var(--line);cursor:pointer;position:relative;overflow:hidden}
 #schedRoot .abs-cell:hover{outline:2px solid var(--accent);outline-offset:-1px}
 #schedRoot .abs-cell.we{background:var(--surface-2)}
 #schedRoot .abs-cell.covx{display:flex;align-items:center;justify-content:center;font-size:8.5px;font-weight:800;color:#2C2C2A;line-height:1}
 #schedRoot .abs-cell.clk{cursor:pointer}
+#schedRoot .abs-cell.split::after{content:'';position:absolute;top:0;right:0;width:0;height:0;border:5px solid transparent;border-top-color:#27500A;border-right-color:#27500A}
 #schedRoot .abs-cell.clk:hover{outline:2px solid var(--accent);outline-offset:-1px}
 #schedRoot .abs-tot{text-align:center;font-size:12px;font-weight:700}
 #schedRoot .norm-edit{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:12.5px;color:var(--ink-soft)}
@@ -516,7 +517,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '03.08.2026-b'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '03.08.2026-c'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -1894,13 +1895,13 @@ function renderSchOverview(el){
       let covered=0;
       for(let d=1;d<=n;d++){
         const iso=schIso(y,m,d), r=dayRec(iso,s.id), we=[0,6].includes(schDow(y,m,d)), past=iso<todayStr();
-        let bg=null, title='', t='';
+        let bg=null, title='', t='', split=false;
         if(r&&r.closed){ bg='#D3D1C7'; title='закрыто'; t='×'; }
-        else { const shifts=(r&&r.shifts)?r.shifts:[]; const present=shifts.filter(sh=>!absOn(sh.adminId,iso)); const absent=shifts.filter(sh=>absOn(sh.adminId,iso));
-          if(present.length){ bg='#97C459'; title=present.map(sh=>adminName(sh.adminId)).join(', '); t=initials(adminName(present[0].adminId)); covered++; }
+        else { const shifts=(r&&r.shifts)?r.shifts:[]; const present=shifts.filter(sh=>!absOn(sh.adminId,iso)).sort((a,b)=>toMin(a.start)-toMin(b.start)); const absent=shifts.filter(sh=>absOn(sh.adminId,iso));
+          if(present.length){ bg='#97C459'; title=present.map(sh=>adminName(sh.adminId)+' '+sh.start+'–'+sh.end).join(', '); t=initials(adminName(present[0].adminId)); covered++; split=present.length>=2; }
           else if(absent.length){ bg='#F09595'; title='нужна замена'; t='!'; }
           else if(!past){ bg='#FAC775'; title='нужно заполнить'; } }
-        html+=`<div class="abs-cell covx${editor?' clk':''}${we?' we':''}"${editor?` data-day="${d}" data-sid="${s.id}"`:''} title="${escapeHtml(title)}"${bg?` style="background:${bg};border-color:${bg}"`:''}>${escapeHtml(t)}</div>`;
+        html+=`<div class="abs-cell covx${editor?' clk':''}${we?' we':''}${split?' split':''}"${editor?` data-day="${d}" data-sid="${s.id}"`:''} title="${escapeHtml(title)}"${bg?` style="background:${bg};border-color:${bg}"`:''}>${escapeHtml(t)}</div>`;
       }
       html+=`<div class="abs-tot">${covered}</div>`;
     });
@@ -1912,7 +1913,7 @@ function renderSchOverview(el){
   el.innerHTML=`
     ${warns.length?`<div class="banner" style="background:var(--gold-soft);border-color:#E7CF9F"><div class="bt" style="color:var(--gold)">⚠ Более 3 смен подряд (${warns.length})</div><div class="bi">${warns.map(a=>`<span class="bchip" style="cursor:default;border-color:#E7CF9F">${escapeHtml(shortName(a.name))} — ${consecutiveMax(a.login)}</span>`).join('')}</div></div>`:''}
     <div class="section-title">Статус смен по дням</div>
-    <div class="abs-legend"><span><i style="background:#97C459"></i>готово</span><span><i style="background:#F09595"></i>нужна замена</span><span><i style="background:#FAC775"></i>нужно заполнить</span><span><i style="background:#D3D1C7"></i>закрыто</span></div>
+    <div class="abs-legend"><span><i style="background:#97C459"></i>готово</span><span><i style="background:#97C459;position:relative;overflow:hidden"><b style="position:absolute;top:0;right:0;border:4px solid transparent;border-top-color:#27500A;border-right-color:#27500A"></b></i>2 админа (утро/вечер)</span><span><i style="background:#F09595"></i>нужна замена</span><span><i style="background:#FAC775"></i>нужно заполнить</span><span><i style="background:#D3D1C7"></i>закрыто</span></div>
     <div class="sch-scroll" id="covWrap">${covGrid()}</div>${editor?'<div class="hintline" style="margin:4px 2px 0">Нажмите на клетку, чтобы назначить или заменить администратора.</div>':''}
     <div class="section-title">Часы за месяц</div>
     <div class="sch-scroll"><table class="sch-hrs"><thead><tr><th>Администратор</th><th>Часы</th><th>Смен</th><th>Серии</th></tr></thead><tbody>${hrows||'<tr><td colspan="4" style="color:var(--ink-faint)">Нет администраторов. Добавьте их и укажите филиал.</td></tr>'}</tbody></table></div>
