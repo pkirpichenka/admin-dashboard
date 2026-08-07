@@ -524,7 +524,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '03.08.2026-m'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '03.08.2026-n'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -1551,7 +1551,16 @@ function reflowSchedule(){ if(SCH&&SCH._body) drawSchedule(SCH._body, SCH.editor
 
 function drawSchedule(body, editor){
   SCH._body=body; SCH.editor=editor;
-  const sub = editor ? [['calendar','Календарь'],['overview','Обзор'],['absences','Отсутствия']].concat(session.role==='owner'?[['coffee','Кофе+снеки']]:[]) : [['calendar','Календарь'],['overview','Обзор'],['dashboard','Моё расписание']].concat(((TEAM.find(a=>a.login===session.login)||{}).coffee)?[['coffee','Кофе+снеки']]:[]);
+  const myCoffee=(TEAM.find(a=>a.login===session.login)||{}).coffee;
+  let sub;
+  if(editor){
+    sub=[['calendar','Календарь'],['overview','Обзор'],['absences','Отсутствия']];
+    if(session.senior && session.role!=='owner') sub.push(['dashboard','Моё расписание']);
+    if(session.role==='owner' || myCoffee) sub.push(['coffee','Кофе+снеки']);
+  } else {
+    sub=[['calendar','Календарь'],['overview','Обзор'],['dashboard','Моё расписание']];
+    if(myCoffee) sub.push(['coffee','Кофе+снеки']);
+  }
   if(!sub.some(x=>x[0]===SCH.view)) SCH.view=sub[0][0];
   body.innerHTML=`<div id="schedRoot">
     <div class="sch-bar">
