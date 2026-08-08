@@ -265,6 +265,7 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 .btn.daynav{padding:6px 10px;font-size:16px;line-height:1;font-weight:700}
 .seed-strow select{max-width:170px}
 .btn:disabled{opacity:.5;cursor:not-allowed}
+.autosave-ind{font-size:11px;color:var(--ink-faint);align-self:center;margin-right:auto}
 .btn.icon-only{padding:6px 10px;line-height:0}
 .icon-btn{width:36px;height:36px;flex:0 0 auto;border:1px solid var(--line);background:var(--surface);border-radius:10px;color:var(--ink-soft);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:var(--fx);padding:0}
 .icon-btn:hover{border-color:var(--accent);color:var(--accent-deep);background:var(--surface-2)}
@@ -524,7 +525,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '03.08.2026-n'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '03.08.2026-o'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -998,9 +999,30 @@ function renderForm(container,studio,date,data,onSaved,opts){
   // save (черновик — статус не меняется)
   container.querySelector('#save').onclick=async()=>{
     const rec=collectRec();
-    try{await apiSaveReport(studio,date,rec);toast(data.filledBy?'Отчёт обновлён':'Отчёт сохранён · '+session.name);onSaved&&onSaved();}
+    try{await apiSaveReport(studio,date,rec);lastAutoSnap=stripVolatile(rec);toast(data.filledBy?'Отчёт обновлён':'Отчёт сохранён · '+session.name);onSaved&&onSaved();}
     catch(e){toast('Не удалось сохранить',true);}
   };
+
+  // ---- Автосохранение черновика (данные не теряются, если забыли сохранить) ----
+  function stripVolatile(r){ const c=Object.assign({},r); delete c.lastEditedAt; delete c.submittedAt; return JSON.stringify(c); }
+  let lastAutoSnap=stripVolatile(collectRec()), autoSaving=false;
+  const _sb=container.querySelector('#save'), autoInd=document.createElement('span');
+  autoInd.className='autosave-ind'; autoInd.textContent='Автосохранение включено';
+  if(_sb&&_sb.parentNode) _sb.parentNode.insertBefore(autoInd,_sb);
+  function _hhmm(){ const d=new Date(); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+  function setAutoInd(t,err){ autoInd.textContent=t; autoInd.style.color=err?'var(--clay)':'var(--ink-faint)'; }
+  async function doAutoSave(){
+    if(autoSaving || !document.body.contains(container)) return;
+    const rec=collectRec(), snap=stripVolatile(rec);
+    if(snap===lastAutoSnap) return;
+    autoSaving=true;
+    try{ await apiSaveReport(studio,date,rec); lastAutoSnap=snap; setAutoInd('Черновик сохранён · '+_hhmm()); }
+    catch(e){ setAutoInd('Не сохранено — проверьте связь',true); }
+    finally{ autoSaving=false; }
+  }
+  const _autoTimer=setInterval(()=>{ if(!document.body.contains(container)){ clearInterval(_autoTimer); document.removeEventListener('visibilitychange',_onHide); return; } doAutoSave(); }, 20000);
+  function _onHide(){ if(document.visibilityState==='hidden'){ if(!document.body.contains(container)){ document.removeEventListener('visibilitychange',_onHide); return; } doAutoSave(); } }
+  document.addEventListener('visibilitychange',_onHide);
 
   // Закрыть смену — требует все финансовые поля + клиентов
   // поля, которые при пустом значении можно «считать нулём» одним нажатием
