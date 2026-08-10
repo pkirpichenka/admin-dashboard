@@ -305,6 +305,10 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 .tg-tbl tr:last-child td{border-bottom:none}
 .tg-tbl .tg-inp{width:100%;min-width:120px}
 .tg-tbl input[type=time]{width:120px}
+.subtabs{display:flex;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:5px;margin-bottom:20px;width:fit-content;max-width:100%;flex-wrap:wrap;box-shadow:var(--shadow)}
+.subtab{border:none;background:transparent;padding:8px 16px;border-radius:8px;font-weight:600;font-size:13.5px;color:var(--ink-soft);cursor:pointer;transition:var(--fx)}
+.subtab:hover{color:var(--accent-deep)}
+.subtab.on{background:var(--accent);color:#fff}
 .btn.icon-only{padding:6px 10px;line-height:0}
 .icon-btn{width:36px;height:36px;flex:0 0 auto;border:1px solid var(--line);background:var(--surface);border-radius:10px;color:var(--ink-soft);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:var(--fx);padding:0}
 .icon-btn:hover{border-color:var(--accent);color:var(--accent-deep);background:var(--surface-2)}
@@ -564,7 +568,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '03.08.2026-u'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '03.08.2026-v'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -1554,6 +1558,7 @@ async function renderMessages(body){
   }
   draw();
 }
+let USERS_VIEW='admins';
 async function renderUsers(body){
   let users;
   try{ users = await rpc('app_list_users', {p_token:TOKEN}) || []; }
@@ -1561,52 +1566,74 @@ async function renderUsers(body){
   users.sort((a,b)=>a.name.localeCompare(b.name,'ru'));
   const byLogin = Object.fromEntries(users.map(u=>[u.login,u]));
   let settings={}; try{ settings=await apiGetSettings(); }catch(e){}
-  body.innerHTML=`
-    <div class="bar fade-in"><div class="grow"><div class="section-title" style="margin:0">Администраторы (${users.length})</div></div>
-      <button class="btn btn-primary" id="add">+ Добавить администратора</button></div>
-    <p style="color:var(--ink-soft);font-size:13px;margin:0 0 16px">Включайте и отключайте доступ переключателем. «Старший» — полный доступ ко всем отчётам, как у руководителя. Управлять доступом может только руководитель.</p>
-    <div id="ulist"></div>
-    <div class="section-title" style="margin-top:28px">📨 Отчёт по сменам в Telegram</div>
-    <p class="msg-sub">Ежедневная сводка по филиалам приходит выбранным получателям в заданное время (по Минску). «Chat ID» — числовой идентификатор чата получателя с ботом.</p>
-    <div class="card" style="padding:0;overflow:hidden;max-width:720px">
-      <table class="tg-tbl"><thead><tr><th>Получатель</th><th style="text-align:center">Получать</th><th>Telegram chat ID</th><th>Время (Минск)</th></tr></thead><tbody id="tgRows"></tbody></table>
-    </div>
-    <div class="msg-actions"><button class="btn btn-primary" id="tgSave">Сохранить получателей</button><span id="tgInd" class="msg-ind"></span></div>`;
-  const list=body.querySelector('#ulist');
-  list.innerHTML=users.length?users.map(userRow).join(''):`<div class="empty">Пока нет администраторов. Добавьте первого.</div>`;
-  list.querySelectorAll('.urow').forEach(row=>{
-    const login=row.dataset.login; const u=byLogin[login]; if(!u) return;
-    row.querySelectorAll('[data-act]').forEach(el=>{
-      el.onclick=async()=>{
-        const act=el.dataset.act;
-        try{
-          if(act==='active'){ await rpc('app_update_admin',{p_token:TOKEN,p_login:login,p_active:!u.active,p_senior:u.senior,p_can_edit:u.canEdit}); toast(!u.active?'Доступ включён':'Доступ отключён'); renderUsers(body); }
-          else if(act==='senior'){ await rpc('app_update_admin',{p_token:TOKEN,p_login:login,p_active:u.active,p_senior:!u.senior,p_can_edit:u.canEdit}); toast(!u.senior?'Назначен старшим (полный доступ)':'Полный доступ снят'); renderUsers(body); }
-          else if(act==='canedit'){ await rpc('app_update_admin',{p_token:TOKEN,p_login:login,p_active:u.active,p_senior:u.senior,p_can_edit:!u.canEdit}); toast(!u.canEdit?'Разрешена правка утренних наличных':'Правка утренних наличных запрещена'); renderUsers(body); }
-          else if(act==='reset'){ resetPwModal(u,()=>renderUsers(body)); }
-          else if(act==='del'){ confirmModal(`Удалить администратора «${u.name}»? Он больше не сможет войти. Его отчёты сохранятся в логе.`, async()=>{ try{ await rpc('app_delete_admin',{p_token:TOKEN,p_login:login}); toast('Администратор удалён'); renderUsers(body); }catch(e){ handleErr(e); } }); }
-        }catch(e){ handleErr(e); }
-      };
+  const active=users.filter(u=>u.active), archived=users.filter(u=>!u.active);
+  const subs=[['admins','Администраторы ('+active.length+')'],['telegram','Telegram'],['archive','Уволенные ('+archived.length+')']];
+  body.innerHTML=`<div class="subtabs">${subs.map(x=>`<button class="subtab${USERS_VIEW===x[0]?' on':''}" data-uv="${x[0]}">${x[1]}</button>`).join('')}</div><div id="uBody"></div>`;
+  body.querySelectorAll('[data-uv]').forEach(b=>b.onclick=()=>{ USERS_VIEW=b.dataset.uv; body.querySelectorAll('[data-uv]').forEach(x=>x.classList.toggle('on',x.dataset.uv===USERS_VIEW)); drawU(); });
+  function wireRows(listEl){
+    listEl.querySelectorAll('.urow').forEach(row=>{
+      const login=row.dataset.login; const u=byLogin[login]; if(!u) return;
+      row.querySelectorAll('[data-act]').forEach(el=>{
+        el.onclick=async()=>{
+          const act=el.dataset.act;
+          try{
+            if(act==='active'){ await rpc('app_update_admin',{p_token:TOKEN,p_login:login,p_active:!u.active,p_senior:u.senior,p_can_edit:u.canEdit}); toast(!u.active?'Доступ включён':'Перемещён в «Уволенные»'); renderUsers(body); }
+            else if(act==='senior'){ await rpc('app_update_admin',{p_token:TOKEN,p_login:login,p_active:u.active,p_senior:!u.senior,p_can_edit:u.canEdit}); toast(!u.senior?'Назначен старшим (полный доступ)':'Полный доступ снят'); renderUsers(body); }
+            else if(act==='canedit'){ await rpc('app_update_admin',{p_token:TOKEN,p_login:login,p_active:u.active,p_senior:u.senior,p_can_edit:!u.canEdit}); toast(!u.canEdit?'Разрешена правка утренних наличных':'Правка утренних наличных запрещена'); renderUsers(body); }
+            else if(act==='reset'){ resetPwModal(u,()=>renderUsers(body)); }
+            else if(act==='del'){ confirmModal(`Удалить администратора «${u.name}»? Он больше не сможет войти. Его отчёты сохранятся в логе.`, async()=>{ try{ await rpc('app_delete_admin',{p_token:TOKEN,p_login:login}); toast('Администратор удалён'); renderUsers(body); }catch(e){ handleErr(e); } }); }
+          }catch(e){ handleErr(e); }
+        };
+      });
     });
-  });
-  list.querySelectorAll('select[data-home]').forEach(sel=>{ sel.onchange=async()=>{ try{ await apiSetHome(sel.dataset.home, sel.value); toast('Домашний филиал обновлён'); }catch(e){ handleErr(e); } }; });
-  list.querySelectorAll('input[data-hire]').forEach(inp=>{ inp.onchange=async()=>{ try{ await apiSetHire(inp.dataset.hire, inp.value); toast('Дата приёма сохранена'); }catch(e){ handleErr(e); } }; });
-  list.querySelectorAll('input[data-coffee]').forEach(cb=>{ cb.onchange=async()=>{ try{ await apiSetCoffee(cb.dataset.coffee, cb.checked); toast('Сохранено'); }catch(e){ handleErr(e); } }; });
-  const TG = Object.assign({recipients:{}}, settings.telegram||{}); TG.recipients=TG.recipients||{};
-  const recips=[{login:session.login,name:shortName(session.name)+' (вы)'}].concat(users.map(u=>({login:u.login,name:shortName(u.name)})));
-  const tgBody=body.querySelector('#tgRows');
-  tgBody.innerHTML=recips.map(r=>{ const c=TG.recipients[r.login]||{};
-    return `<tr><td>${escapeHtml(r.name)}</td>
-      <td style="text-align:center"><input type="checkbox" data-tgen="${escapeHtml(r.login)}" ${c.enabled?'checked':''}/></td>
-      <td><input class="tg-inp" data-tgcid="${escapeHtml(r.login)}" value="${escapeHtml(c.chatId||'')}" placeholder="напр. 123456789"/></td>
-      <td><input type="time" data-tgtime="${escapeHtml(r.login)}" value="${escapeHtml(c.time||'23:00')}"/></td></tr>`; }).join('');
-  function tgSet(login,k,v){ TG.recipients[login]=Object.assign({time:'23:00'},TG.recipients[login]||{}); TG.recipients[login][k]=v; }
-  tgBody.querySelectorAll('[data-tgen]').forEach(el=>el.onchange=()=>tgSet(el.dataset.tgen,'enabled',el.checked));
-  tgBody.querySelectorAll('[data-tgcid]').forEach(el=>el.onchange=()=>tgSet(el.dataset.tgcid,'chatId',el.value.trim()));
-  tgBody.querySelectorAll('[data-tgtime]').forEach(el=>el.onchange=()=>tgSet(el.dataset.tgtime,'time',el.value||'23:00'));
-  body.querySelector('#tgSave').onclick=async()=>{ const ind=body.querySelector('#tgInd');
-    try{ await apiSaveSettings(Object.assign({},settings,{telegram:TG})); ind.textContent='✓ Сохранено'; setTimeout(()=>{ if(ind) ind.textContent=''; },2500); }catch(e){ handleErr(e); } };
-  body.querySelector('#add').onclick=()=>addAdminModal(()=>renderUsers(body));
+    listEl.querySelectorAll('select[data-home]').forEach(sel=>{ sel.onchange=async()=>{ try{ await apiSetHome(sel.dataset.home, sel.value); toast('Домашний филиал обновлён'); }catch(e){ handleErr(e); } }; });
+    listEl.querySelectorAll('input[data-hire]').forEach(inp=>{ inp.onchange=async()=>{ try{ await apiSetHire(inp.dataset.hire, inp.value); toast('Дата приёма сохранена'); }catch(e){ handleErr(e); } }; });
+    listEl.querySelectorAll('input[data-coffee]').forEach(cb=>{ cb.onchange=async()=>{ try{ await apiSetCoffee(cb.dataset.coffee, cb.checked); toast('Сохранено'); }catch(e){ handleErr(e); } }; });
+  }
+  function drawAdmins(el){
+    el.innerHTML=`<div class="bar fade-in"><div class="grow"><div class="section-title" style="margin:0">Администраторы (${active.length})</div></div><button class="btn btn-primary" id="add">+ Добавить администратора</button></div>
+      <p style="color:var(--ink-soft);font-size:13px;margin:0 0 16px">Переключатель «Доступ» отключает вход — сотрудник уходит во вкладку «Уволенные». «Старший» — полный доступ ко всем отчётам.</p>
+      <div id="ulist">${active.length?active.map(userRow).join(''):'<div class="empty">Активных администраторов нет.</div>'}</div>`;
+    wireRows(el.querySelector('#ulist'));
+    el.querySelector('#add').onclick=()=>addAdminModal(()=>renderUsers(body));
+  }
+  function drawArchive(el){
+    el.innerHTML=`<p class="msg-sub">Уволенные (доступ отключён). Можно вернуть в работу или удалить окончательно. Их отчёты сохраняются в логе.</p>
+      <div id="ulist">${archived.length?archived.map(archRow).join(''):'<div class="empty">Здесь пусто — уволенных нет.</div>'}</div>`;
+    const listEl=el.querySelector('#ulist');
+    listEl.querySelectorAll('[data-restore]').forEach(b=>b.onclick=async()=>{ const u=byLogin[b.dataset.restore]; try{ await rpc('app_update_admin',{p_token:TOKEN,p_login:u.login,p_active:true,p_senior:u.senior,p_can_edit:u.canEdit}); toast('Сотрудник возвращён в работу'); renderUsers(body); }catch(e){ handleErr(e); } });
+    listEl.querySelectorAll('[data-del2]').forEach(b=>b.onclick=()=>{ const u=byLogin[b.dataset.del2]; confirmModal(`Удалить «${u.name}» окончательно? Он исчезнет из списков. Отчёты останутся в логе.`, async()=>{ try{ await rpc('app_delete_admin',{p_token:TOKEN,p_login:u.login}); toast('Удалён'); renderUsers(body); }catch(e){ handleErr(e); } }); });
+  }
+  function drawTelegram(el){
+    const TG = Object.assign({recipients:{}}, settings.telegram||{}); TG.recipients=TG.recipients||{};
+    const recips=[{login:session.login,name:shortName(session.name)+' (вы)'}].concat(active.map(u=>({login:u.login,name:shortName(u.name)})));
+    el.innerHTML=`<div class="section-title" style="margin-top:4px">📨 Отчёт по сменам в Telegram</div>
+      <p class="msg-sub">Ежедневная сводка по филиалам приходит выбранным получателям в заданное время (по Минску). «Chat ID» — идентификатор чата получателя с ботом. «Тест» отправляет проверочное сообщение прямо сейчас.</p>
+      <div class="card" style="padding:0;overflow:hidden;max-width:820px"><table class="tg-tbl"><thead><tr><th>Получатель</th><th style="text-align:center">Получать</th><th>Telegram chat ID</th><th>Время (Минск)</th><th></th></tr></thead><tbody>${recips.map(r=>{const c=TG.recipients[r.login]||{};return `<tr><td>${escapeHtml(r.name)}</td><td style="text-align:center"><input type="checkbox" data-tgen="${escapeHtml(r.login)}" ${c.enabled?'checked':''}/></td><td><input class="tg-inp" data-tgcid="${escapeHtml(r.login)}" value="${escapeHtml(c.chatId||'')}" placeholder="напр. 123456789"/></td><td><input type="time" data-tgtime="${escapeHtml(r.login)}" value="${escapeHtml(c.time||'23:00')}"/></td><td><button class="btn btn-sm" data-tgtest="${escapeHtml(r.login)}">Тест</button></td></tr>`;}).join('')}</tbody></table></div>
+      <div class="msg-actions"><button class="btn btn-primary" id="tgSave">Сохранить получателей</button><span id="tgInd" class="msg-ind"></span></div>`;
+    function tgSet(login,k,v){ TG.recipients[login]=Object.assign({time:'23:00'},TG.recipients[login]||{}); TG.recipients[login][k]=v; }
+    el.querySelectorAll('[data-tgen]').forEach(x=>x.onchange=()=>tgSet(x.dataset.tgen,'enabled',x.checked));
+    el.querySelectorAll('[data-tgcid]').forEach(x=>x.onchange=()=>tgSet(x.dataset.tgcid,'chatId',x.value.trim()));
+    el.querySelectorAll('[data-tgtime]').forEach(x=>x.onchange=()=>tgSet(x.dataset.tgtime,'time',x.value||'23:00'));
+    el.querySelectorAll('[data-tgtest]').forEach(x=>x.onclick=async()=>{
+      const cidEl=el.querySelector('[data-tgcid="'+x.dataset.tgtest+'"]'); const chatId=cidEl?cidEl.value.trim():'';
+      if(!chatId){ toast('Сначала укажите chat ID',true); return; }
+      x.disabled=true; const old=x.textContent; x.textContent='…';
+      try{
+        const r=await fetch(SUPABASE_URL+'/functions/v1/daily-report',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON_KEY},body:JSON.stringify({testChatId:chatId})});
+        const j=await r.json().catch(()=>({}));
+        if(j&&j.test&&j.ok) toast('Тест отправлен ✓'); else toast('Не отправлено — проверьте токен бота и chat ID',true);
+      }catch(e){ toast('Ошибка отправки (функция не развёрнута?)',true); }
+      x.disabled=false; x.textContent=old;
+    });
+    el.querySelector('#tgSave').onclick=async()=>{ const ind=el.querySelector('#tgInd'); try{ await apiSaveSettings(Object.assign({},settings,{telegram:TG})); settings.telegram=TG; ind.textContent='✓ Сохранено'; setTimeout(()=>{ if(ind) ind.textContent=''; },2500); }catch(e){ handleErr(e); } };
+  }
+  function drawU(){ const el=body.querySelector('#uBody'); if(USERS_VIEW==='telegram') drawTelegram(el); else if(USERS_VIEW==='archive') drawArchive(el); else drawAdmins(el); }
+  drawU();
+}
+function archRow(u){
+  return `<div class="urow" data-login="${escapeHtml(u.login)}"><div class="u-main"><div class="u-name">${escapeHtml(u.name)} ${u.senior?'<span class="badge-senior">старший</span>':''}</div><div class="u-login">логин: ${escapeHtml(u.login)}${u.home?' · '+studioName(u.home):''}</div></div>
+    <div class="u-ctl"><span class="st-pill st-off">уволен</span><button class="btn btn-sm" data-restore="${escapeHtml(u.login)}">Вернуть в работу</button><button class="btn btn-sm btn-ghost" data-del2="${escapeHtml(u.login)}">Удалить</button></div></div>`;
 }
 function userRow(u){
   return `<div class="urow" data-login="${escapeHtml(u.login)}">
