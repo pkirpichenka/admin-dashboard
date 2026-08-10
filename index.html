@@ -299,6 +299,12 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 .msg-prev-body{background:var(--surface-2);border-left:3px solid var(--accent);border-radius:8px;padding:11px 13px;font-size:13px;white-space:pre-wrap;line-height:1.5}
 .msg-actions{display:flex;align-items:center;gap:12px;margin-top:18px}
 .msg-ind{font-size:13px;color:var(--accent-deep);font-weight:700}
+.tg-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tg-tbl th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-faint);font-weight:700;padding:11px 14px;background:var(--surface-2);border-bottom:1px solid var(--line)}
+.tg-tbl td{padding:9px 14px;border-bottom:1px solid var(--line)}
+.tg-tbl tr:last-child td{border-bottom:none}
+.tg-tbl .tg-inp{width:100%;min-width:120px}
+.tg-tbl input[type=time]{width:120px}
 .btn.icon-only{padding:6px 10px;line-height:0}
 .icon-btn{width:36px;height:36px;flex:0 0 auto;border:1px solid var(--line);background:var(--surface);border-radius:10px;color:var(--ink-soft);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:var(--fx);padding:0}
 .icon-btn:hover{border-color:var(--accent);color:var(--accent-deep);background:var(--surface-2)}
@@ -558,7 +564,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '03.08.2026-t'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '03.08.2026-u'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -1554,11 +1560,18 @@ async function renderUsers(body){
   catch(e){ return handleErr(e); }
   users.sort((a,b)=>a.name.localeCompare(b.name,'ru'));
   const byLogin = Object.fromEntries(users.map(u=>[u.login,u]));
+  let settings={}; try{ settings=await apiGetSettings(); }catch(e){}
   body.innerHTML=`
     <div class="bar fade-in"><div class="grow"><div class="section-title" style="margin:0">Администраторы (${users.length})</div></div>
       <button class="btn btn-primary" id="add">+ Добавить администратора</button></div>
     <p style="color:var(--ink-soft);font-size:13px;margin:0 0 16px">Включайте и отключайте доступ переключателем. «Старший» — полный доступ ко всем отчётам, как у руководителя. Управлять доступом может только руководитель.</p>
-    <div id="ulist"></div>`;
+    <div id="ulist"></div>
+    <div class="section-title" style="margin-top:28px">📨 Отчёт по сменам в Telegram</div>
+    <p class="msg-sub">Ежедневная сводка по филиалам приходит выбранным получателям в заданное время (по Минску). «Chat ID» — числовой идентификатор чата получателя с ботом.</p>
+    <div class="card" style="padding:0;overflow:hidden;max-width:720px">
+      <table class="tg-tbl"><thead><tr><th>Получатель</th><th style="text-align:center">Получать</th><th>Telegram chat ID</th><th>Время (Минск)</th></tr></thead><tbody id="tgRows"></tbody></table>
+    </div>
+    <div class="msg-actions"><button class="btn btn-primary" id="tgSave">Сохранить получателей</button><span id="tgInd" class="msg-ind"></span></div>`;
   const list=body.querySelector('#ulist');
   list.innerHTML=users.length?users.map(userRow).join(''):`<div class="empty">Пока нет администраторов. Добавьте первого.</div>`;
   list.querySelectorAll('.urow').forEach(row=>{
@@ -1579,6 +1592,20 @@ async function renderUsers(body){
   list.querySelectorAll('select[data-home]').forEach(sel=>{ sel.onchange=async()=>{ try{ await apiSetHome(sel.dataset.home, sel.value); toast('Домашний филиал обновлён'); }catch(e){ handleErr(e); } }; });
   list.querySelectorAll('input[data-hire]').forEach(inp=>{ inp.onchange=async()=>{ try{ await apiSetHire(inp.dataset.hire, inp.value); toast('Дата приёма сохранена'); }catch(e){ handleErr(e); } }; });
   list.querySelectorAll('input[data-coffee]').forEach(cb=>{ cb.onchange=async()=>{ try{ await apiSetCoffee(cb.dataset.coffee, cb.checked); toast('Сохранено'); }catch(e){ handleErr(e); } }; });
+  const TG = Object.assign({recipients:{}}, settings.telegram||{}); TG.recipients=TG.recipients||{};
+  const recips=[{login:session.login,name:shortName(session.name)+' (вы)'}].concat(users.map(u=>({login:u.login,name:shortName(u.name)})));
+  const tgBody=body.querySelector('#tgRows');
+  tgBody.innerHTML=recips.map(r=>{ const c=TG.recipients[r.login]||{};
+    return `<tr><td>${escapeHtml(r.name)}</td>
+      <td style="text-align:center"><input type="checkbox" data-tgen="${escapeHtml(r.login)}" ${c.enabled?'checked':''}/></td>
+      <td><input class="tg-inp" data-tgcid="${escapeHtml(r.login)}" value="${escapeHtml(c.chatId||'')}" placeholder="напр. 123456789"/></td>
+      <td><input type="time" data-tgtime="${escapeHtml(r.login)}" value="${escapeHtml(c.time||'23:00')}"/></td></tr>`; }).join('');
+  function tgSet(login,k,v){ TG.recipients[login]=Object.assign({time:'23:00'},TG.recipients[login]||{}); TG.recipients[login][k]=v; }
+  tgBody.querySelectorAll('[data-tgen]').forEach(el=>el.onchange=()=>tgSet(el.dataset.tgen,'enabled',el.checked));
+  tgBody.querySelectorAll('[data-tgcid]').forEach(el=>el.onchange=()=>tgSet(el.dataset.tgcid,'chatId',el.value.trim()));
+  tgBody.querySelectorAll('[data-tgtime]').forEach(el=>el.onchange=()=>tgSet(el.dataset.tgtime,'time',el.value||'23:00'));
+  body.querySelector('#tgSave').onclick=async()=>{ const ind=body.querySelector('#tgInd');
+    try{ await apiSaveSettings(Object.assign({},settings,{telegram:TG})); ind.textContent='✓ Сохранено'; setTimeout(()=>{ if(ind) ind.textContent=''; },2500); }catch(e){ handleErr(e); } };
   body.querySelector('#add').onclick=()=>addAdminModal(()=>renderUsers(body));
 }
 function userRow(u){
