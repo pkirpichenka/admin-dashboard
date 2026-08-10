@@ -269,6 +269,36 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 .cl-row{display:flex;gap:8px;align-items:center;margin-bottom:6px}
 .cl-row input{flex:1;min-width:0}
 #clItems textarea,#omText{width:100%}
+.msg-sub{font-size:13px;color:var(--ink-faint);margin:0 0 4px;max-width:640px;line-height:1.5}
+.msg-target{display:flex;align-items:center;gap:12px;margin:16px 0 18px;flex-wrap:wrap}
+.msg-target-lbl{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-faint);font-weight:700}
+.msg-chips{display:flex;gap:8px;flex-wrap:wrap}
+.mchip{border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);border-radius:999px;padding:7px 15px;font-size:13px;font-weight:600;cursor:pointer;transition:var(--fx)}
+.mchip:hover{border-color:var(--accent);color:var(--accent-deep)}
+.mchip.on{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 2px 6px rgba(46,125,91,.25)}
+.msg-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+@media(max-width:760px){.msg-grid{grid-template-columns:1fr}}
+.msg-card{padding:18px 20px}
+.msg-card-h{display:flex;gap:12px;align-items:flex-start;margin-bottom:16px}
+.msg-ic{font-size:20px;line-height:1.1}
+.msg-card-t{font-weight:700;font-size:15px}
+.msg-card-d{font-size:12.5px;color:var(--ink-faint);margin-top:3px;line-height:1.45}
+.cl-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.cl-row{display:flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:3px 5px 3px 8px}
+.cl-grip{color:var(--ink-faint);font-size:15px;cursor:default;user-select:none;line-height:1}
+.cl-inp{flex:1;min-width:0;border:none;background:transparent;padding:9px 4px;font-size:14px;color:var(--ink)}
+.cl-inp:focus{outline:none}
+.btn-icon{border:none;background:transparent;cursor:pointer;font-size:14px;padding:7px 9px;border-radius:8px;opacity:.65;transition:var(--fx)}
+.btn-icon:hover{background:var(--clay-soft);opacity:1}
+.cl-empty{font-size:13px;color:var(--ink-faint);padding:12px 2px;font-style:italic}
+.cl-add{display:flex;gap:8px}
+.cl-add input{flex:1;min-width:0}
+#omText{width:100%;resize:vertical;min-height:130px}
+.msg-preview:not(:empty){margin-top:12px}
+.msg-prev-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-faint);font-weight:700;margin-bottom:6px}
+.msg-prev-body{background:var(--surface-2);border-left:3px solid var(--accent);border-radius:8px;padding:11px 13px;font-size:13px;white-space:pre-wrap;line-height:1.5}
+.msg-actions{display:flex;align-items:center;gap:12px;margin-top:18px}
+.msg-ind{font-size:13px;color:var(--accent-deep);font-weight:700}
 .btn.icon-only{padding:6px 10px;line-height:0}
 .icon-btn{width:36px;height:36px;flex:0 0 auto;border:1px solid var(--line);background:var(--surface);border-radius:10px;color:var(--ink-soft);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:var(--fx);padding:0}
 .icon-btn:hover{border-color:var(--accent);color:var(--accent-deep);background:var(--surface-2)}
@@ -528,7 +558,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '03.08.2026-r'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '03.08.2026-t'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -1303,7 +1333,7 @@ async function renderAllReports(body){
   pfrom.onchange=showPeriod;
   pto.onchange=showPeriod;
   showPeriod(); await updateShiftTile(pick.value); refresh();
-  body.querySelector('#export').onclick=()=>{const f=stfP.value;exportExcel(all.filter(e=>f==='all'||e.studioId===f));};
+  body.querySelector('#export').onclick=()=>{ const f=stfP.value, a=pfrom.value, b=pto.value, lo=a<=b?a:b, hi=a<=b?b:a; exportExcel(all.filter(e=>(f==='all'||e.studioId===f) && e.date>=lo && e.date<=hi)); };
 }
 
 /* ================= Наличные в кассе сейчас ================= */
@@ -1481,26 +1511,39 @@ async function renderMessages(body){
   function draw(){
     const targets=[['all','Всем']].concat(TEAM.map(a=>[a.login, shortName(a.name)]));
     const items=listOf(target);
+    const tName = target==='all' ? 'Всем' : shortName((TEAM.find(a=>a.login===target)||{}).name||target);
+    const om = msgOf(target);
     body.innerHTML=`
-      <div class="section-title">Сообщения и чек-листы</div>
-      <div class="abs-legend" style="align-items:center;margin-bottom:12px"><span style="font-size:12px;color:var(--ink-soft);margin-right:4px">Кому:</span>${targets.map(t=>`<button class="rchip${target===t[0]?' on':''}" data-tg="${escapeHtml(t[0])}">${escapeHtml(t[1])}</button>`).join('')}</div>
-      <div class="card" style="max-width:560px">
-        <div class="section-title" style="margin-top:0">✅ Чек-лист при закрытии смены</div>
-        <div id="clItems">${items.map((it,i)=>`<div class="cl-row"><input class="cl-inp" data-i="${i}" value="${escapeHtml(it)}"/><button class="btn btn-sm cl-del" data-i="${i}">✕</button></div>`).join('')||'<div class="hintline">Пунктов пока нет.</div>'}</div>
-        <div class="cl-row" style="margin-top:6px"><input id="clNew" placeholder="Новый пункт, напр. «Выключен свет»"/><button class="btn btn-sm" id="clAdd">+ Добавить</button></div>
-        <div class="section-title">📣 Сообщение при открытии смены</div>
-        <textarea id="omText" rows="3" placeholder="Текст сообщения (покажется при открытии смены)…">${escapeHtml(msgOf(target))}</textarea>
-        <div style="display:flex;gap:10px;align-items:center;margin-top:14px"><button class="btn btn-primary" id="msgSave">Сохранить</button><span id="msgInd" class="autosave-ind" style="margin-right:0"></span></div>
-      </div>`;
+      <div class="section-title" style="margin-bottom:2px">Сообщения и чек-листы</div>
+      <div class="msg-sub">Что увидит администратор при открытии и закрытии смены. Настройте для всех или для конкретного.</div>
+      <div class="msg-target">
+        <span class="msg-target-lbl">Кому</span>
+        <div class="msg-chips">${targets.map(t=>`<button class="mchip${target===t[0]?' on':''}" data-tg="${escapeHtml(t[0])}">${t[0]==='all'?'👥 ':''}${escapeHtml(t[1])}</button>`).join('')}</div>
+      </div>
+      <div class="msg-grid">
+        <div class="card msg-card">
+          <div class="msg-card-h"><span class="msg-ic">✅</span><div><div class="msg-card-t">Чек-лист при закрытии смены</div><div class="msg-card-d">Обязательные пункты — админ отметит их перед закрытием смены.</div></div></div>
+          <div id="clItems" class="cl-list">${items.length?items.map((it,i)=>`<div class="cl-row"><span class="cl-grip">≡</span><input class="cl-inp" data-i="${i}" value="${escapeHtml(it)}"/><button class="btn-icon cl-del" data-i="${i}" title="Удалить">🗑</button></div>`).join(''):'<div class="cl-empty">Пунктов пока нет — добавьте первый ниже.</div>'}</div>
+          <div class="cl-add"><input id="clNew" placeholder="Например: Выключен свет"/><button class="btn btn-sm" id="clAdd">Добавить</button></div>
+        </div>
+        <div class="card msg-card">
+          <div class="msg-card-h"><span class="msg-ic">📣</span><div><div class="msg-card-t">Сообщение при открытии смены</div><div class="msg-card-d">Покажется всплывающим окном, когда админ откроет смену.</div></div></div>
+          <textarea id="omText" rows="6" placeholder="Например: После 18:00 придёт мастер по кондиционеру — впустите его.">${escapeHtml(om)}</textarea>
+          <div id="omPrev" class="msg-preview">${om.trim()?`<div class="msg-prev-lbl">Предпросмотр</div><div class="msg-prev-body">📣 ${escapeHtml(om)}</div>`:''}</div>
+        </div>
+      </div>
+      <div class="msg-actions"><button class="btn btn-primary" id="msgSave">Сохранить для «${escapeHtml(tName)}»</button><span id="msgInd" class="msg-ind"></span></div>`;
     body.querySelectorAll('[data-tg]').forEach(b=>b.onclick=()=>{ target=b.dataset.tg; draw(); });
     body.querySelectorAll('.cl-inp').forEach(inp=>inp.onchange=()=>{ const arr=listOf(target).slice(); arr[+inp.dataset.i]=inp.value.trim(); setListOf(target,arr.filter(x=>x)); });
     body.querySelectorAll('.cl-del').forEach(b=>b.onclick=()=>{ const arr=listOf(target).slice(); arr.splice(+b.dataset.i,1); setListOf(target,arr); draw(); });
     const clAdd=body.querySelector('#clAdd'), clNew=body.querySelector('#clNew');
     clAdd.onclick=()=>{ const v=clNew.value.trim(); if(!v) return; const arr=listOf(target).slice(); arr.push(v); setListOf(target,arr); draw(); };
     clNew.onkeydown=(e)=>{ if(e.key==='Enter'){ e.preventDefault(); clAdd.onclick(); } };
-    body.querySelector('#omText').oninput=(e)=>setMsgOf(target, e.target.value);
+    const omText=body.querySelector('#omText'), omPrev=body.querySelector('#omPrev');
+    omText.oninput=()=>{ setMsgOf(target, omText.value); omPrev.innerHTML = omText.value.trim()?`<div class="msg-prev-lbl">Предпросмотр</div><div class="msg-prev-body">📣 ${escapeHtml(omText.value)}</div>`:''; };
     body.querySelector('#msgSave').onclick=async()=>{
-      try{ await apiSaveSettings(Object.assign({},settings,{messages:MSG})); body.querySelector('#msgInd').textContent='Сохранено'; }catch(e){ handleErr(e); }
+      const ind=body.querySelector('#msgInd');
+      try{ await apiSaveSettings(Object.assign({},settings,{messages:MSG})); ind.textContent='✓ Сохранено'; setTimeout(()=>{ if(ind) ind.textContent=''; },2500); }catch(e){ handleErr(e); }
     };
   }
   draw();
