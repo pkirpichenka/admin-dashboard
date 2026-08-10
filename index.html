@@ -266,6 +266,9 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 .seed-strow select{max-width:170px}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 .autosave-ind{font-size:11px;color:var(--ink-faint);align-self:center;margin-right:auto}
+.cl-row{display:flex;gap:8px;align-items:center;margin-bottom:6px}
+.cl-row input{flex:1;min-width:0}
+#clItems textarea,#omText{width:100%}
 .btn.icon-only{padding:6px 10px;line-height:0}
 .icon-btn{width:36px;height:36px;flex:0 0 auto;border:1px solid var(--line);background:var(--surface);border-radius:10px;color:var(--ink-soft);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:var(--fx);padding:0}
 .icon-btn:hover{border-color:var(--accent);color:var(--accent-deep);background:var(--surface-2)}
@@ -525,7 +528,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '03.08.2026-o'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '03.08.2026-r'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -727,7 +730,7 @@ function header(){
   </div>`;
 }
 function renderApp(){
-  if(session.role==='owner') renderRoleUI([{label:'Отчёты',render:renderAllReports},{label:'Расписание',render:renderSchedule},{label:'Администраторы',render:renderUsers}]);
+  if(session.role==='owner') renderRoleUI([{label:'Отчёты',render:renderAllReports},{label:'Расписание',render:renderSchedule},{label:'Администраторы',render:renderUsers},{label:'Сообщения',render:renderMessages}]);
   else if(session.senior)    renderRoleUI([{label:'Моя смена',render:renderShift},{label:'Расписание',render:renderSchedule},{label:'Все отчёты',render:renderAllReports}]);
   else                       renderRoleUI([{label:'Смена',render:renderShift},{label:'Расписание',render:renderSchedule}]);
 }
@@ -769,7 +772,7 @@ async function renderShift(body){
   const existing=await getEntry(shiftStudio,today)||{};
   await loadReports();
   const prev=lastCashEndBefore(shiftStudio, today);
-  const opts={prevCashEnd:prev?prev.cashEnd:null, prevDate:prev?prev.date:null};
+  const opts={prevCashEnd:prev?prev.cashEnd:null, prevDate:prev?prev.date:null, own:true};
   sb.innerHTML=`<div id="form"></div>
     <div class="section-title">Предыдущие 3 дня · ${studioName(shiftStudio)}</div>
     <div id="history"></div>`;
@@ -786,6 +789,15 @@ async function fillCoffeeChk(container, date, data){
   if(session.role!=='owner' && session.login!==who) return;
   const note=(session.role==='owner'&&session.login!==who)?` <small style="color:var(--ink-faint)">(назначен: ${escapeHtml(coffeeName(who))})</small>`:'';
   box.innerHTML=`<label class="chk zrep"><input type="checkbox" id="coffeeDone" ${data.coffeeDone?'checked':''}/> ☕ Кофе+снеки — выполнено${note}</label>`;
+}
+function openChecklistModal(items, onOk){
+  const el=modal(`<h3>Перед закрытием смены</h3><p>Отметьте, что всё сделано:</p>
+    <div id="clBox">${items.map((t,i)=>`<label class="chk" style="display:flex;gap:9px;margin-bottom:9px"><input type="checkbox" class="cl-chk" data-i="${i}"/> ${escapeHtml(t)}</label>`).join('')}</div>
+    <div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="clClose" disabled>Закрыть смену</button></div>`);
+  const btn=el.querySelector('#clClose'), boxes=Array.prototype.slice.call(el.querySelectorAll('.cl-chk'));
+  function upd(){ btn.disabled=!boxes.every(function(b){return b.checked;}); }
+  boxes.forEach(function(b){ b.onchange=upd; });
+  btn.onclick=function(){ closeModal(el); onOk(items.map(function(t){return {text:t,done:true};})); };
 }
 function renderForm(container,studio,date,data,onSaved,opts){
   data=data||{}; opts=opts||{};
@@ -982,7 +994,8 @@ function renderForm(container,studio,date,data,onSaved,opts){
       cashStartEditedBy:data.cashStartEditedBy, cashStartEditedAt:data.cashStartEditedAt,
       filledBy:data.filledBy||session.name, filledByLogin:data.filledByLogin||session.login,
       lastEditedBy:session.name, lastEditedAt:new Date().toISOString(),
-      submittedAt:data.submittedAt||new Date().toISOString()
+      submittedAt:data.submittedAt||new Date().toISOString(),
+      checklist: pendingChecklist || data.checklist || null
     };
   }
 
@@ -1043,7 +1056,7 @@ function renderForm(container,studio,date,data,onSaved,opts){
   }
   const closeBtn=container.querySelector('#closeShift');
   if(closeBtn){
-    closeBtn.onclick=()=>{
+    closeBtn.onclick=async()=>{
       if(valNum('cashStart')==null){ toast('Сначала зафиксируйте наличные на начало дня',true); return; }
       const zEl=container.querySelector('#zReport');
       if(zEl && !zEl.checked){
@@ -1052,6 +1065,8 @@ function renderForm(container,studio,date,data,onSaved,opts){
         try{ zEl.scrollIntoView({behavior:'smooth',block:'center'}); }catch(e){}
         return;
       }
+      try{ await msgReady; }catch(e){}
+      if(FORM_CHECKLIST.length){ openChecklistModal(FORM_CHECKLIST, function(res){ pendingChecklist=res; proceedClose(); }); return; }
       proceedClose();
     };
   }
@@ -1064,6 +1079,21 @@ function renderForm(container,studio,date,data,onSaved,opts){
   }
   function valNum(id){const v=container.querySelector('#'+id).value;return v===''?null:num(v);}
   function valStr(id){return container.querySelector('#'+id).value.trim();}
+  // ---- сообщения и чек-лист ----
+  var pendingChecklist=null, FORM_CHECKLIST=[];
+  var msgReady = apiGetSettings().then(function(s){
+    var M=(s&&s.messages)||{};
+    var cl=[]; if(M.checklist){ if(Array.isArray(M.checklist.all)) cl=cl.concat(M.checklist.all); if(M.checklist.byAdmin&&Array.isArray(M.checklist.byAdmin[session.login])) cl=cl.concat(M.checklist.byAdmin[session.login]); }
+    FORM_CHECKLIST=cl.map(function(x){return (x||'').trim();}).filter(function(x,i,a){return x&&a.indexOf(x)===i;});
+    return M;
+  }).catch(function(){return {};});
+  if(opts&&opts.own && (data.status!=='closed')){
+    msgReady.then(function(M){
+      var parts=[]; if(M.openMsg){ if(M.openMsg.all) parts.push(M.openMsg.all); if(M.openMsg.byAdmin&&M.openMsg.byAdmin[session.login]) parts.push(M.openMsg.byAdmin[session.login]); }
+      parts=parts.filter(function(x){return x&&x.trim();});
+      if(parts.length) modal(`<h3>📣 Сообщение</h3><p style="white-space:pre-wrap">${escapeHtml(parts.join('\n\n'))}</p><div class="actions"><button class="btn btn-primary" data-x>Понятно</button></div>`);
+    });
+  }
 }
 
 /* ================= Незакрытые смены: баннер + доводка ================= */
@@ -1143,7 +1173,7 @@ function dayCard(e,open){
     <div class="day-head"><span class="chev">▸</span>
       <span class="day-date">${fmtLong(e.date)}<span class="dow"> · ${fmtDow(e.date)}</span></span>
       <span class="st-tag" style="border-color:${studioColor(e.studioId)}">${sdot(e.studioId)}${studioAddr(e.studioId)}</span>
-      <span class="stat ${e.status==='closed'?'stat-closed':'stat-open'}">${e.status==='closed'?'закрыта':'не закрыта'}</span>${e.status==='closed'?(e.zReport?'<span class="zbadge zok">Z-отчёт ✓</span>':'<span class="zbadge zno">Z-отчёт ✗</span>'):''}${e.coffeeAssigned?(e.coffeeDone?'<span class="zbadge zok">☕ выполнено</span>':'<span class="zbadge zno">☕ не выполнено</span>'):''}
+      <span class="stat ${e.status==='closed'?'stat-closed':'stat-open'}">${e.status==='closed'?'закрыта':'не закрыта'}</span>${e.status==='closed'?(e.zReport?'<span class="zbadge zok">Z-отчёт ✓</span>':'<span class="zbadge zno">Z-отчёт ✗</span>'):''}${e.coffeeAssigned?(e.coffeeDone?'<span class="zbadge zok">☕ выполнено</span>':'<span class="zbadge zno">☕ не выполнено</span>'):''}${(e.checklist&&e.checklist.length)?`<span class="zbadge zok" title="${escapeHtml(e.checklist.map(c=>c.text).join(', '))}">✅ чек-лист (${e.checklist.length})</span>`:''}
       <span class="day-by">заполнил(а): <b>${escapeHtml(shortName(e.filledBy||'—'))}</b><br><span style="color:var(--ink-faint)">${fmtTime(e.submittedAt)}</span></span></div>
     <div class="day-body">
       <div class="kv">
@@ -1436,6 +1466,45 @@ function exportExcel(entries){
 }
 
 /* ================= User management (owner only) ================= */
+function defaultMessages(){ return {checklist:{all:[],byAdmin:{}}, openMsg:{all:'',byAdmin:{}}}; }
+async function renderMessages(body){
+  body.innerHTML=`<div class="hintline" style="padding:12px">Загрузка…</div>`;
+  let settings={}; try{ settings=await apiGetSettings(); }catch(e){}
+  const MSG = Object.assign(defaultMessages(), settings.messages||{});
+  MSG.checklist=Object.assign({all:[],byAdmin:{}}, MSG.checklist||{});
+  MSG.openMsg=Object.assign({all:'',byAdmin:{}}, MSG.openMsg||{});
+  let target='all';
+  const listOf=t=> t==='all'?(MSG.checklist.all||[]):((MSG.checklist.byAdmin||{})[t]||[]);
+  const setListOf=(t,arr)=>{ if(t==='all')MSG.checklist.all=arr; else { MSG.checklist.byAdmin=MSG.checklist.byAdmin||{}; MSG.checklist.byAdmin[t]=arr; } };
+  const msgOf=t=> t==='all'?(MSG.openMsg.all||''):((MSG.openMsg.byAdmin||{})[t]||'');
+  const setMsgOf=(t,v)=>{ if(t==='all')MSG.openMsg.all=v; else { MSG.openMsg.byAdmin=MSG.openMsg.byAdmin||{}; MSG.openMsg.byAdmin[t]=v; } };
+  function draw(){
+    const targets=[['all','Всем']].concat(TEAM.map(a=>[a.login, shortName(a.name)]));
+    const items=listOf(target);
+    body.innerHTML=`
+      <div class="section-title">Сообщения и чек-листы</div>
+      <div class="abs-legend" style="align-items:center;margin-bottom:12px"><span style="font-size:12px;color:var(--ink-soft);margin-right:4px">Кому:</span>${targets.map(t=>`<button class="rchip${target===t[0]?' on':''}" data-tg="${escapeHtml(t[0])}">${escapeHtml(t[1])}</button>`).join('')}</div>
+      <div class="card" style="max-width:560px">
+        <div class="section-title" style="margin-top:0">✅ Чек-лист при закрытии смены</div>
+        <div id="clItems">${items.map((it,i)=>`<div class="cl-row"><input class="cl-inp" data-i="${i}" value="${escapeHtml(it)}"/><button class="btn btn-sm cl-del" data-i="${i}">✕</button></div>`).join('')||'<div class="hintline">Пунктов пока нет.</div>'}</div>
+        <div class="cl-row" style="margin-top:6px"><input id="clNew" placeholder="Новый пункт, напр. «Выключен свет»"/><button class="btn btn-sm" id="clAdd">+ Добавить</button></div>
+        <div class="section-title">📣 Сообщение при открытии смены</div>
+        <textarea id="omText" rows="3" placeholder="Текст сообщения (покажется при открытии смены)…">${escapeHtml(msgOf(target))}</textarea>
+        <div style="display:flex;gap:10px;align-items:center;margin-top:14px"><button class="btn btn-primary" id="msgSave">Сохранить</button><span id="msgInd" class="autosave-ind" style="margin-right:0"></span></div>
+      </div>`;
+    body.querySelectorAll('[data-tg]').forEach(b=>b.onclick=()=>{ target=b.dataset.tg; draw(); });
+    body.querySelectorAll('.cl-inp').forEach(inp=>inp.onchange=()=>{ const arr=listOf(target).slice(); arr[+inp.dataset.i]=inp.value.trim(); setListOf(target,arr.filter(x=>x)); });
+    body.querySelectorAll('.cl-del').forEach(b=>b.onclick=()=>{ const arr=listOf(target).slice(); arr.splice(+b.dataset.i,1); setListOf(target,arr); draw(); });
+    const clAdd=body.querySelector('#clAdd'), clNew=body.querySelector('#clNew');
+    clAdd.onclick=()=>{ const v=clNew.value.trim(); if(!v) return; const arr=listOf(target).slice(); arr.push(v); setListOf(target,arr); draw(); };
+    clNew.onkeydown=(e)=>{ if(e.key==='Enter'){ e.preventDefault(); clAdd.onclick(); } };
+    body.querySelector('#omText').oninput=(e)=>setMsgOf(target, e.target.value);
+    body.querySelector('#msgSave').onclick=async()=>{
+      try{ await apiSaveSettings(Object.assign({},settings,{messages:MSG})); body.querySelector('#msgInd').textContent='Сохранено'; }catch(e){ handleErr(e); }
+    };
+  }
+  draw();
+}
 async function renderUsers(body){
   let users;
   try{ users = await rpc('app_list_users', {p_token:TOKEN}) || []; }
