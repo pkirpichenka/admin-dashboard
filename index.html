@@ -266,6 +266,7 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 .seed-strow select{max-width:170px}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 .autosave-ind{font-size:11px;color:var(--ink-faint);align-self:center;margin-right:auto}
+.cl-note.need{border-color:var(--clay)!important;box-shadow:0 0 0 2px var(--clay-soft)}
 .cl-row{display:flex;gap:8px;align-items:center;margin-bottom:6px}
 .cl-row input{flex:1;min-width:0}
 #clItems textarea,#omText{width:100%}
@@ -568,7 +569,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '03.08.2026-v'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '03.08.2026-w'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -991,8 +992,8 @@ function renderForm(container,studio,date,data,onSaved,opts){
         <input class="cl-note" value="${c.note?escapeHtml(c.note):''}" placeholder="Имя, что купил, откуда узнал…"/>
         <button type="button" class="cl-toggle${c.bought?' on':''}"><span class="dot"></span>абонемент</button></div>`).join('');
     newListBox.querySelectorAll('.cl-item').forEach(row=>{const i=+row.dataset.i;
-      row.querySelector('.cl-note').oninput=e=>{newList[i].note=e.target.value;};
-      row.querySelector('.cl-toggle').onclick=ev=>{newList[i].bought=!newList[i].bought;ev.currentTarget.classList.toggle('on',newList[i].bought);updBought();};});
+      row.querySelector('.cl-note').oninput=e=>{newList[i].note=e.target.value;e.target.classList.remove('need');};
+      row.querySelector('.cl-toggle').onclick=ev=>{newList[i].bought=!newList[i].bought;ev.currentTarget.classList.toggle('on',newList[i].bought);if(newList[i].bought){const n=row.querySelector('.cl-note');if(n)n.classList.remove('need');}updBought();};});
     updBought();
   }
   function syncNew(){const n=Math.max(0,Math.min(60,Math.floor(num(cameInput.value))));
@@ -1007,7 +1008,7 @@ function renderForm(container,studio,date,data,onSaved,opts){
       <div class="cl-item" data-i="${i}"><span class="ix">${i+1}</span>
         <input class="cl-note" value="${c.note?escapeHtml(c.note):''}" placeholder="Кто не продлил — имя, причина, что предложили…"/></div>`).join('');
     nrBox.querySelectorAll('.cl-item').forEach(row=>{const i=+row.dataset.i;
-      row.querySelector('.cl-note').oninput=e=>{notRenewList[i].note=e.target.value;};});
+      row.querySelector('.cl-note').oninput=e=>{notRenewList[i].note=e.target.value;e.target.classList.remove('need');};});
   }
   function syncNr(){const t=Math.max(0,Math.floor(num(endedIn.value))),r=Math.max(0,Math.floor(num(renewIn.value)));
     const nr=Math.max(0,Math.min(60,t-r));
@@ -1098,6 +1099,10 @@ function renderForm(container,studio,date,data,onSaved,opts){
   if(closeBtn){
     closeBtn.onclick=async()=>{
       if(valNum('cashStart')==null){ toast('Сначала зафиксируйте наличные на начало дня',true); return; }
+      let missClient=false;
+      container.querySelectorAll('#newList .cl-item').forEach(row=>{ const i=+row.dataset.i; const inp=row.querySelector('.cl-note'); const need=!newList[i].bought && !((newList[i].note||'').trim()); if(inp) inp.classList.toggle('need',need); if(need) missClient=true; });
+      container.querySelectorAll('#notRenewList .cl-item').forEach(row=>{ const i=+row.dataset.i; const inp=row.querySelector('.cl-note'); const need=!((notRenewList[i].note||'').trim()); if(inp) inp.classList.toggle('need',need); if(need) missClient=true; });
+      if(missClient){ const first=container.querySelector('.cl-note.need'); if(first){ try{ first.scrollIntoView({behavior:'smooth',block:'center'}); first.focus(); }catch(e){} } toast('Укажите причину: почему не купил первый абонемент / не продлил',true); return; }
       const zEl=container.querySelector('#zReport');
       if(zEl && !zEl.checked){
         const el=modal(`<h3>Z-отчёт не отмечен</h3><p>Чтобы закрыть смену, отметьте галочку <b>«Z-отчёт распечатан, касса закрыта»</b>. Сначала закройте смену на кассе и распечатайте Z-отчёт.</p>
