@@ -320,6 +320,16 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 .zbadge.zno{background:var(--clay-soft);color:var(--clay)}
 .hire-inp{font-size:12px;padding:4px 6px;max-width:140px}
 .sumcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+/* На десктопе: 3 студии занимают верхний ряд поровну, а два общих итога — весь нижний ряд пополам. */
+@media (min-width:761px){
+  .sumcards.sumcards-balanced{grid-template-columns:repeat(6,minmax(0,1fr))}
+  .sumcards.sumcards-balanced>.sumcard:not(.tot):not(.legal){grid-column:span 2}
+  .sumcards.sumcards-balanced>.sumcard.tot,
+  .sumcards.sumcards-balanced>.sumcard.legal{grid-column:span 3}
+  .sumcards.sumcards-balanced .sumcard.tot .sumcard-rows{column-gap:18px}
+  .sumcards.sumcards-balanced .sumcard.tot .sr{gap:10px}
+  .sumcards.sumcards-balanced .sumcard.tot .sr>span{font-size:10px}
+}
 .sumcard{border:1px solid var(--line);border-radius:12px;background:var(--surface-2);padding:12px 14px}
 .sumcard.tot{background:#fff;border-color:var(--accent);box-shadow:0 0 0 2px rgba(46,125,91,.12)}
 .sumcard-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:10px;flex-wrap:wrap}
@@ -607,7 +617,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '03.08.2026-x'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '03.08.2026-y'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -1487,7 +1497,7 @@ function daySummary(entries){
     ['st','net','mIn','mOut','end','day','card','qr','ep','rev','came','bought','ended','renew'].forEach(k=>T[k]+=m[k]);
     return sumCard(studioName(e.studioId), e.studioId, studioEntity(e.studioId), m, false, false);}).join('');
   const tot=rows.length>1?sumCard('','','',T,false,true):'';
-  return `<div class="daysum"><div class="ds-title">Итоги за день <small>(суммы в ${CUR})</small></div><div class="sumcards">${cards}${tot}${legalCard(rows)}</div></div>`;
+  return `<div class="daysum"><div class="ds-title">Итоги за день <small>(суммы в ${CUR})</small></div><div class="sumcards${rows.length===3?' sumcards-balanced':''}">${cards}${tot}${legalCard(rows)}</div></div>`;
 }
 
 /* ================= Итоги за период ================= */
@@ -1510,7 +1520,7 @@ function periodSummary(entries, from, to){
     return {days,day,net,mIn,mOut,inter,card,qr,ep,rev,came,bought,ended,renew,st:0,end:0};};
   const cards=sids.map(sid=>sumCard(studioName(sid), sid, studioEntity(sid), M(groups[sid]), true, false)).join('');
   const tot=sids.length>1?sumCard('','','',M(entries),true,true):'';
-  return `<div class="daysum"><div class="ds-title">Итоги за период: ${fmtLong(from)} – ${fmtLong(to)} <small>(суммы в ${CUR})</small></div><div class="sumcards">${cards}${tot}${legalCard(entries)}</div></div>`;
+  return `<div class="daysum"><div class="ds-title">Итоги за период: ${fmtLong(from)} – ${fmtLong(to)} <small>(суммы в ${CUR})</small></div><div class="sumcards${sids.length===3?' sumcards-balanced':''}">${cards}${tot}${legalCard(entries)}</div></div>`;
 }
 
 /* ================= Excel export ================= */
