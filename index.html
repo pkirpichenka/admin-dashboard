@@ -332,10 +332,14 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 .sumcard-g b{font-size:14px;font-variant-numeric:tabular-nums}
 .sumcard-cl{font-size:12px;color:var(--ink-soft);line-height:1.55;border-top:1px solid var(--line);padding-top:8px}
 .sumcard-cl b{color:var(--ink);font-variant-numeric:tabular-nums}
-.sumcard-rows{display:grid;grid-template-columns:1fr 1fr;gap:5px 16px;margin-bottom:10px}
-.sr{display:flex;align-items:baseline;justify-content:space-between;gap:8px;font-size:13px;min-width:0}
-.sr>span{color:var(--ink-faint);font-size:10.5px;text-transform:uppercase;letter-spacing:.2px;white-space:nowrap}
-.sr b{font-variant-numeric:tabular-nums;white-space:nowrap}
+.sumcard{min-width:0}
+.sumcard-rows{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:5px 10px;margin-bottom:10px;min-width:0}
+.sr{display:flex;align-items:baseline;justify-content:space-between;gap:5px;font-size:13px;min-width:0}
+.sr>span{color:var(--ink-faint);font-size:10px;text-transform:uppercase;letter-spacing:.1px;white-space:nowrap;min-width:0}
+.sr b{font-variant-numeric:tabular-nums;white-space:nowrap;flex:0 0 auto}
+.sumcard.tot .sumcard-rows{column-gap:8px}
+.sumcard.tot .sr{gap:4px}
+.sumcard.tot .sr>span{font-size:9.5px}
 .sr.sr-wide{grid-column:1/-1;border-top:1px dashed var(--line);padding-top:6px;margin-top:1px}
 .sumcard.legal{background:var(--surface-2);border-color:var(--accent)}
 .legal-rows{display:flex;flex-direction:column;gap:8px}
@@ -519,6 +523,40 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
   #export{display:none}
   .section-title{margin:20px 2px 10px}
 
+  /* Telegram: на телефоне таблица превращается в редактируемые карточки */
+  .tg-tbl,.tg-tbl tbody,.tg-tbl tr,.tg-tbl td{display:block;width:100%}
+  .tg-tbl thead{display:none}
+  .tg-tbl tr{padding:12px 14px;border-bottom:1px solid var(--line)}
+  .tg-tbl tr:last-child{border-bottom:none}
+  .tg-tbl td{padding:7px 0;border:0!important;display:grid;grid-template-columns:minmax(104px,34%) minmax(0,1fr);gap:10px;align-items:center;text-align:left!important;min-width:0}
+  .tg-tbl td::before{font-size:10px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.35px;font-weight:700}
+  .tg-tbl td:nth-child(1){display:block;font-size:15px;font-weight:700;padding:2px 0 9px}
+  .tg-tbl td:nth-child(1)::before{content:none}
+  .tg-tbl td:nth-child(2)::before{content:'Получать'}
+  .tg-tbl td:nth-child(3)::before{content:'Telegram chat ID'}
+  .tg-tbl td:nth-child(4)::before{content:'Время (Минск)'}
+  .tg-tbl td:nth-child(5)::before{content:'Проверка'}
+  .tg-tbl .tg-inp,.tg-tbl input[type=time]{width:100%;min-width:0;max-width:100%}
+  .tg-tbl input[type=checkbox]{width:22px;height:22px;justify-self:start}
+  .tg-tbl td:last-child .btn{justify-self:start}
+
+  /* Администраторы: мобильная сетка без наложений статуса на кофе+снеки */
+  .urow{display:block;padding:14px}
+  .u-main{width:100%;min-width:0;margin-bottom:14px}
+  .u-name{flex-wrap:wrap}
+  .u-ctl{margin-left:0;width:100%;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px 12px;align-items:center}
+  .u-ctl>.home-sel{grid-column:1/2;max-width:none!important;width:100%;min-width:0}
+  .u-ctl>.hire-lbl{min-width:0}
+  .u-ctl>.hire-lbl:nth-child(2){grid-column:2/3;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:6px}
+  .u-ctl>.hire-lbl:nth-child(3){grid-column:1/-1;justify-self:start;display:flex;align-items:center;gap:8px}
+  .u-ctl>.st-pill{grid-column:1/-1;justify-self:start}
+  .u-ctl>.ctl-item{justify-content:space-between;min-width:0}
+  .u-ctl>.ctl-item:nth-child(7){grid-column:1/-1}
+  .u-ctl>[data-act="reset"]{grid-column:1/2;width:100%}
+  .u-ctl>[data-act="del"]{grid-column:2/3;width:100%}
+  .u-ctl .hire-inp{max-width:none;width:100%;min-width:0}
+  .u-ctl .coffee-inp{width:22px;height:22px;flex:0 0 auto}
+
   /* Карточка дня */
   .day-head{flex-wrap:wrap;gap:6px 10px}
   .day-by{margin-left:0;text-align:left;width:100%}
@@ -569,7 +607,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '03.08.2026-w'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '03.08.2026-x'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
