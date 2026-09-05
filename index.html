@@ -320,16 +320,6 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 .zbadge.zno{background:var(--clay-soft);color:var(--clay)}
 .hire-inp{font-size:12px;padding:4px 6px;max-width:140px}
 .sumcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
-/* На десктопе: 3 студии занимают верхний ряд поровну, а два общих итога — весь нижний ряд пополам. */
-@media (min-width:761px){
-  .sumcards.sumcards-balanced{grid-template-columns:repeat(6,minmax(0,1fr))}
-  .sumcards.sumcards-balanced>.sumcard:not(.tot):not(.legal){grid-column:span 2}
-  .sumcards.sumcards-balanced>.sumcard.tot,
-  .sumcards.sumcards-balanced>.sumcard.legal{grid-column:span 3}
-  .sumcards.sumcards-balanced .sumcard.tot .sumcard-rows{column-gap:18px}
-  .sumcards.sumcards-balanced .sumcard.tot .sr{gap:10px}
-  .sumcards.sumcards-balanced .sumcard.tot .sr>span{font-size:10px}
-}
 .sumcard{border:1px solid var(--line);border-radius:12px;background:var(--surface-2);padding:12px 14px}
 .sumcard.tot{background:#fff;border-color:var(--accent);box-shadow:0 0 0 2px rgba(46,125,91,.12)}
 .sumcard-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:10px;flex-wrap:wrap}
@@ -342,14 +332,10 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 .sumcard-g b{font-size:14px;font-variant-numeric:tabular-nums}
 .sumcard-cl{font-size:12px;color:var(--ink-soft);line-height:1.55;border-top:1px solid var(--line);padding-top:8px}
 .sumcard-cl b{color:var(--ink);font-variant-numeric:tabular-nums}
-.sumcard{min-width:0}
-.sumcard-rows{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:5px 10px;margin-bottom:10px;min-width:0}
-.sr{display:flex;align-items:baseline;justify-content:space-between;gap:5px;font-size:13px;min-width:0}
-.sr>span{color:var(--ink-faint);font-size:10px;text-transform:uppercase;letter-spacing:.1px;white-space:nowrap;min-width:0}
-.sr b{font-variant-numeric:tabular-nums;white-space:nowrap;flex:0 0 auto}
-.sumcard.tot .sumcard-rows{column-gap:8px}
-.sumcard.tot .sr{gap:4px}
-.sumcard.tot .sr>span{font-size:9.5px}
+.sumcard-rows{display:grid;grid-template-columns:1fr 1fr;gap:5px 16px;margin-bottom:10px}
+.sr{display:flex;align-items:baseline;justify-content:space-between;gap:8px;font-size:13px;min-width:0}
+.sr>span{color:var(--ink-faint);font-size:10.5px;text-transform:uppercase;letter-spacing:.2px;white-space:nowrap}
+.sr b{font-variant-numeric:tabular-nums;white-space:nowrap}
 .sr.sr-wide{grid-column:1/-1;border-top:1px dashed var(--line);padding-top:6px;margin-top:1px}
 .sumcard.legal{background:var(--surface-2);border-color:var(--accent)}
 .legal-rows{display:flex;flex-direction:column;gap:8px}
@@ -533,40 +519,6 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
   #export{display:none}
   .section-title{margin:20px 2px 10px}
 
-  /* Telegram: на телефоне таблица превращается в редактируемые карточки */
-  .tg-tbl,.tg-tbl tbody,.tg-tbl tr,.tg-tbl td{display:block;width:100%}
-  .tg-tbl thead{display:none}
-  .tg-tbl tr{padding:12px 14px;border-bottom:1px solid var(--line)}
-  .tg-tbl tr:last-child{border-bottom:none}
-  .tg-tbl td{padding:7px 0;border:0!important;display:grid;grid-template-columns:minmax(104px,34%) minmax(0,1fr);gap:10px;align-items:center;text-align:left!important;min-width:0}
-  .tg-tbl td::before{font-size:10px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.35px;font-weight:700}
-  .tg-tbl td:nth-child(1){display:block;font-size:15px;font-weight:700;padding:2px 0 9px}
-  .tg-tbl td:nth-child(1)::before{content:none}
-  .tg-tbl td:nth-child(2)::before{content:'Получать'}
-  .tg-tbl td:nth-child(3)::before{content:'Telegram chat ID'}
-  .tg-tbl td:nth-child(4)::before{content:'Время (Минск)'}
-  .tg-tbl td:nth-child(5)::before{content:'Проверка'}
-  .tg-tbl .tg-inp,.tg-tbl input[type=time]{width:100%;min-width:0;max-width:100%}
-  .tg-tbl input[type=checkbox]{width:22px;height:22px;justify-self:start}
-  .tg-tbl td:last-child .btn{justify-self:start}
-
-  /* Администраторы: мобильная сетка без наложений статуса на кофе+снеки */
-  .urow{display:block;padding:14px}
-  .u-main{width:100%;min-width:0;margin-bottom:14px}
-  .u-name{flex-wrap:wrap}
-  .u-ctl{margin-left:0;width:100%;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px 12px;align-items:center}
-  .u-ctl>.home-sel{grid-column:1/2;max-width:none!important;width:100%;min-width:0}
-  .u-ctl>.hire-lbl{min-width:0}
-  .u-ctl>.hire-lbl:nth-child(2){grid-column:2/3;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:6px}
-  .u-ctl>.hire-lbl:nth-child(3){grid-column:1/-1;justify-self:start;display:flex;align-items:center;gap:8px}
-  .u-ctl>.st-pill{grid-column:1/-1;justify-self:start}
-  .u-ctl>.ctl-item{justify-content:space-between;min-width:0}
-  .u-ctl>.ctl-item:nth-child(7){grid-column:1/-1}
-  .u-ctl>[data-act="reset"]{grid-column:1/2;width:100%}
-  .u-ctl>[data-act="del"]{grid-column:2/3;width:100%}
-  .u-ctl .hire-inp{max-width:none;width:100%;min-width:0}
-  .u-ctl .coffee-inp{width:22px;height:22px;flex:0 0 auto}
-
   /* Карточка дня */
   .day-head{flex-wrap:wrap;gap:6px 10px}
   .day-by{margin-left:0;text-align:left;width:100%}
@@ -597,6 +549,83 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
   .who .fio{max-width:120px}
   #schedRoot .sch-grid-head,#schedRoot .sch-grid{min-width:520px}
 }
+
+
+/* ================= UI refinements 03.08.2026-z ================= */
+/* Desktop totals: three studios above, two wide totals below */
+@media (min-width:761px){
+  .sumcards{grid-template-columns:repeat(6,minmax(0,1fr));align-items:stretch}
+  .sumcards>.sumcard:not(.tot):not(.legal){grid-column:span 2}
+  .sumcards>.sumcard.tot,.sumcards>.sumcard.legal{grid-column:span 3}
+  .sumcard-rows{gap:7px 18px}
+  .sumcard-rows .sr{gap:10px}
+  .sumcard-rows .sr>span{font-size:10px;letter-spacing:.1px}
+  .sumcard-rows .sr b{font-size:13.5px}
+}
+
+/* Admin cards: stable layout hooks */
+.phone-inp{max-width:170px;font-size:12.5px;padding:7px 9px}
+.u-ctl .u-phone{display:flex;align-items:center;gap:6px;color:var(--ink-faint);font-size:11px;font-weight:600}
+.u-ctl .u-phone input{min-width:0}
+
+/* Detailed administrator schedule */
+#schedRoot .adm-sched-grid{display:grid;gap:2px;align-items:center;min-width:640px}
+#schedRoot .adm-sched-grid .abs-name{padding-right:8px}
+#schedRoot .adm-sched-cell{height:20px;border-radius:4px;border:1px solid var(--line);background:var(--surface);position:relative}
+#schedRoot .adm-sched-cell.we{background:var(--surface-2)}
+#schedRoot .adm-sched-cell.has{border-color:transparent;box-shadow:inset 0 0 0 1px rgba(23,38,31,.06)}
+#schedRoot .adm-sched-cell.absent{background:#D3D1C7;border-color:#D3D1C7}
+#schedRoot .adm-sched-legend{display:flex;align-items:center;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--ink-soft);margin:8px 0 0}
+#schedRoot .adm-sched-legend>span{display:flex;align-items:center;gap:6px}
+#schedRoot .adm-sched-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+#schedRoot .adm-sched-actions{display:flex;align-items:center;justify-content:flex-end;margin-top:10px}
+
+/* Mobile: Telegram recipients become readable cards instead of an overflowing table */
+@media (max-width:640px){
+  .tg-tbl{display:block;width:100%;font-size:13px}
+  .tg-tbl thead{display:none}
+  .tg-tbl tbody{display:block;width:100%}
+  .tg-tbl tr{display:grid;grid-template-columns:1fr;gap:0;padding:16px 14px;border-bottom:1px solid var(--line)}
+  .tg-tbl tr:last-child{border-bottom:none}
+  .tg-tbl td{display:grid;grid-template-columns:minmax(118px,42%) minmax(0,1fr);align-items:center;gap:10px;padding:8px 0;border:0;min-width:0;text-align:left!important}
+  .tg-tbl td::before{content:attr(data-label);font-size:11px;text-transform:uppercase;letter-spacing:.35px;color:var(--ink-faint);font-weight:700}
+  .tg-tbl td.tg-name{display:block;padding:0 0 10px;font-size:16px;font-weight:700}
+  .tg-tbl td.tg-name::before{content:none}
+  .tg-tbl td input{min-width:0;max-width:100%}
+  .tg-tbl .tg-inp,.tg-tbl input[type=time]{width:100%;min-width:0}
+  .tg-tbl input[type=checkbox]{width:auto;justify-self:start}
+  .tg-tbl td.tg-test .btn{justify-self:start}
+
+  /* Mobile administrator cards: no overlaps, logical rows */
+  .urow{display:block;padding:16px 14px}
+  .u-main{min-width:0;margin-bottom:14px}
+  .u-name{font-size:16px;line-height:1.25;flex-wrap:wrap}
+  .u-ctl{margin-left:0;width:100%;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px 14px;align-items:center}
+  .u-ctl>*{min-width:0;margin:0!important}
+  .u-ctl .u-home{grid-column:1}
+  .u-ctl .u-hire{grid-column:2}
+  .u-ctl .u-phone{grid-column:1/-1}
+  .u-ctl .u-phone input{width:100%;max-width:none;font-size:16px;padding:9px 11px}
+  .u-ctl .u-coffee{grid-column:1/-1;justify-content:flex-start}
+  .u-ctl .u-status{grid-column:1/-1;justify-self:start}
+  .u-ctl .u-access{grid-column:1}
+  .u-ctl .u-senior{grid-column:2}
+  .u-ctl .u-canedit{grid-column:1/-1}
+  .u-ctl .u-reset{grid-column:1}
+  .u-ctl .u-delete{grid-column:2;justify-self:center}
+  .u-ctl .ctl-item{justify-content:space-between;width:100%;font-size:13px}
+  .u-ctl .home-sel{max-width:none!important;width:100%}
+  .u-ctl .hire-lbl{display:flex;align-items:center;gap:7px}
+  .u-ctl .hire-inp{max-width:none;width:100%;min-width:0}
+
+  /* Totals stack safely on narrow screens */
+  .sumcards{grid-template-columns:1fr}
+  .sumcard-rows{grid-template-columns:1fr 1fr;gap:8px 14px}
+  .sr{gap:8px}
+  .sr>span{white-space:normal;line-height:1.2}
+  .sr b{white-space:nowrap}
+}
+
 </style>
 
 <div id="root"></div>
@@ -617,7 +646,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '03.08.2026-y'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '03.08.2026-z'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -1497,7 +1526,7 @@ function daySummary(entries){
     ['st','net','mIn','mOut','end','day','card','qr','ep','rev','came','bought','ended','renew'].forEach(k=>T[k]+=m[k]);
     return sumCard(studioName(e.studioId), e.studioId, studioEntity(e.studioId), m, false, false);}).join('');
   const tot=rows.length>1?sumCard('','','',T,false,true):'';
-  return `<div class="daysum"><div class="ds-title">Итоги за день <small>(суммы в ${CUR})</small></div><div class="sumcards${rows.length===3?' sumcards-balanced':''}">${cards}${tot}${legalCard(rows)}</div></div>`;
+  return `<div class="daysum"><div class="ds-title">Итоги за день <small>(суммы в ${CUR})</small></div><div class="sumcards">${cards}${tot}${legalCard(rows)}</div></div>`;
 }
 
 /* ================= Итоги за период ================= */
@@ -1520,7 +1549,7 @@ function periodSummary(entries, from, to){
     return {days,day,net,mIn,mOut,inter,card,qr,ep,rev,came,bought,ended,renew,st:0,end:0};};
   const cards=sids.map(sid=>sumCard(studioName(sid), sid, studioEntity(sid), M(groups[sid]), true, false)).join('');
   const tot=sids.length>1?sumCard('','','',M(entries),true,true):'';
-  return `<div class="daysum"><div class="ds-title">Итоги за период: ${fmtLong(from)} – ${fmtLong(to)} <small>(суммы в ${CUR})</small></div><div class="sumcards${sids.length===3?' sumcards-balanced':''}">${cards}${tot}${legalCard(entries)}</div></div>`;
+  return `<div class="daysum"><div class="ds-title">Итоги за период: ${fmtLong(from)} – ${fmtLong(to)} <small>(суммы в ${CUR})</small></div><div class="sumcards">${cards}${tot}${legalCard(entries)}</div></div>`;
 }
 
 /* ================= Excel export ================= */
@@ -1619,6 +1648,7 @@ async function renderUsers(body){
   users.sort((a,b)=>a.name.localeCompare(b.name,'ru'));
   const byLogin = Object.fromEntries(users.map(u=>[u.login,u]));
   let settings={}; try{ settings=await apiGetSettings(); }catch(e){}
+  settings.adminPhones=settings.adminPhones||{};
   const active=users.filter(u=>u.active), archived=users.filter(u=>!u.active);
   const subs=[['admins','Администраторы ('+active.length+')'],['telegram','Telegram'],['archive','Уволенные ('+archived.length+')']];
   body.innerHTML=`<div class="subtabs">${subs.map(x=>`<button class="subtab${USERS_VIEW===x[0]?' on':''}" data-uv="${x[0]}">${x[1]}</button>`).join('')}</div><div id="uBody"></div>`;
@@ -1642,11 +1672,17 @@ async function renderUsers(body){
     listEl.querySelectorAll('select[data-home]').forEach(sel=>{ sel.onchange=async()=>{ try{ await apiSetHome(sel.dataset.home, sel.value); toast('Домашний филиал обновлён'); }catch(e){ handleErr(e); } }; });
     listEl.querySelectorAll('input[data-hire]').forEach(inp=>{ inp.onchange=async()=>{ try{ await apiSetHire(inp.dataset.hire, inp.value); toast('Дата приёма сохранена'); }catch(e){ handleErr(e); } }; });
     listEl.querySelectorAll('input[data-coffee]').forEach(cb=>{ cb.onchange=async()=>{ try{ await apiSetCoffee(cb.dataset.coffee, cb.checked); toast('Сохранено'); }catch(e){ handleErr(e); } }; });
+    listEl.querySelectorAll('input[data-phone]').forEach(inp=>{ inp.onchange=async()=>{
+      const login=inp.dataset.phone, v=inp.value.trim();
+      settings.adminPhones=settings.adminPhones||{};
+      if(v) settings.adminPhones[login]=v; else delete settings.adminPhones[login];
+      try{ await apiSaveSettings(settings); toast('Телефон сохранён'); }catch(e){ handleErr(e); }
+    }; });
   }
   function drawAdmins(el){
     el.innerHTML=`<div class="bar fade-in"><div class="grow"><div class="section-title" style="margin:0">Администраторы (${active.length})</div></div><button class="btn btn-primary" id="add">+ Добавить администратора</button></div>
       <p style="color:var(--ink-soft);font-size:13px;margin:0 0 16px">Переключатель «Доступ» отключает вход — сотрудник уходит во вкладку «Уволенные». «Старший» — полный доступ ко всем отчётам.</p>
-      <div id="ulist">${active.length?active.map(userRow).join(''):'<div class="empty">Активных администраторов нет.</div>'}</div>`;
+      <div id="ulist">${active.length?active.map(u=>userRow(u,(settings.adminPhones||{})[u.login]||'')).join(''):'<div class="empty">Активных администраторов нет.</div>'}</div>`;
     wireRows(el.querySelector('#ulist'));
     el.querySelector('#add').onclick=()=>addAdminModal(()=>renderUsers(body));
   }
@@ -1662,7 +1698,7 @@ async function renderUsers(body){
     const recips=[{login:session.login,name:shortName(session.name)+' (вы)'}].concat(active.map(u=>({login:u.login,name:shortName(u.name)})));
     el.innerHTML=`<div class="section-title" style="margin-top:4px">📨 Отчёт по сменам в Telegram</div>
       <p class="msg-sub">Ежедневная сводка по филиалам приходит выбранным получателям в заданное время (по Минску). «Chat ID» — идентификатор чата получателя с ботом. «Тест» отправляет проверочное сообщение прямо сейчас.</p>
-      <div class="card" style="padding:0;overflow:hidden;max-width:820px"><table class="tg-tbl"><thead><tr><th>Получатель</th><th style="text-align:center">Получать</th><th>Telegram chat ID</th><th>Время (Минск)</th><th></th></tr></thead><tbody>${recips.map(r=>{const c=TG.recipients[r.login]||{};return `<tr><td>${escapeHtml(r.name)}</td><td style="text-align:center"><input type="checkbox" data-tgen="${escapeHtml(r.login)}" ${c.enabled?'checked':''}/></td><td><input class="tg-inp" data-tgcid="${escapeHtml(r.login)}" value="${escapeHtml(c.chatId||'')}" placeholder="напр. 123456789"/></td><td><input type="time" data-tgtime="${escapeHtml(r.login)}" value="${escapeHtml(c.time||'23:00')}"/></td><td><button class="btn btn-sm" data-tgtest="${escapeHtml(r.login)}">Тест</button></td></tr>`;}).join('')}</tbody></table></div>
+      <div class="card" style="padding:0;overflow:hidden;max-width:820px"><table class="tg-tbl"><thead><tr><th>Получатель</th><th style="text-align:center">Получать</th><th>Telegram chat ID</th><th>Время (Минск)</th><th></th></tr></thead><tbody>${recips.map(r=>{const c=TG.recipients[r.login]||{};return `<tr><td class="tg-name">${escapeHtml(r.name)}</td><td data-label="Получать" style="text-align:center"><input type="checkbox" data-tgen="${escapeHtml(r.login)}" ${c.enabled?'checked':''}/></td><td data-label="Telegram chat ID"><input class="tg-inp" data-tgcid="${escapeHtml(r.login)}" value="${escapeHtml(c.chatId||'')}" placeholder="напр. 123456789"/></td><td data-label="Время (Минск)"><input type="time" data-tgtime="${escapeHtml(r.login)}" value="${escapeHtml(c.time||'23:00')}"/></td><td class="tg-test" data-label="Проверка"><button class="btn btn-sm" data-tgtest="${escapeHtml(r.login)}">Тест</button></td></tr>`;}).join('')}</tbody></table></div>
       <div class="msg-actions"><button class="btn btn-primary" id="tgSave">Сохранить получателей</button><span id="tgInd" class="msg-ind"></span></div>`;
     function tgSet(login,k,v){ TG.recipients[login]=Object.assign({time:'23:00'},TG.recipients[login]||{}); TG.recipients[login][k]=v; }
     el.querySelectorAll('[data-tgen]').forEach(x=>x.onchange=()=>tgSet(x.dataset.tgen,'enabled',x.checked));
@@ -1688,20 +1724,21 @@ function archRow(u){
   return `<div class="urow" data-login="${escapeHtml(u.login)}"><div class="u-main"><div class="u-name">${escapeHtml(u.name)} ${u.senior?'<span class="badge-senior">старший</span>':''}</div><div class="u-login">логин: ${escapeHtml(u.login)}${u.home?' · '+studioName(u.home):''}</div></div>
     <div class="u-ctl"><span class="st-pill st-off">уволен</span><button class="btn btn-sm" data-restore="${escapeHtml(u.login)}">Вернуть в работу</button><button class="btn btn-sm btn-ghost" data-del2="${escapeHtml(u.login)}">Удалить</button></div></div>`;
 }
-function userRow(u){
+function userRow(u,phone){
   return `<div class="urow" data-login="${escapeHtml(u.login)}">
     <div class="u-main"><div class="u-name">${escapeHtml(u.name)} ${u.senior?'<span class="badge-senior">старший</span>':''}</div>
       <div class="u-login">логин: ${escapeHtml(u.login)}</div></div>
     <div class="u-ctl">
-      <select class="home-sel" data-home="${escapeHtml(u.login)}" style="max-width:150px"><option value="">филиал —</option>${STUDIOS.map(s=>`<option value="${s.id}" ${u.home===s.id?'selected':''}>${s.name}</option>`).join('')}</select>
-      <label class="hire-lbl">приём:<input type="date" class="hire-inp" data-hire="${escapeHtml(u.login)}" value="${u.hire||''}"/></label>
-      <label class="hire-lbl"><input type="checkbox" class="coffee-inp" data-coffee="${escapeHtml(u.login)}" ${u.coffee?'checked':''}/> ☕ кофе+снеки</label>
-      <span class="st-pill ${u.active?'st-on':'st-off'}">${u.active?'доступ включён':'доступ отключён'}</span>
-      <span class="ctl-item">Доступ <button class="sw ${u.active?'on':''}" data-act="active" aria-label="Доступ"></button></span>
-      <span class="ctl-item">Старший <button class="sw ${u.senior?'on':''}" data-act="senior" aria-label="Старший"></button></span>
-      <span class="ctl-item">Правка касс. утра <button class="sw ${u.canEdit?'on':''}" data-act="canedit" aria-label="Правка утренних наличных"></button></span>
-      <button class="btn btn-sm" data-act="reset">Сбросить пароль</button>
-      <button class="btn btn-sm btn-ghost" data-act="del">Удалить</button>
+      <select class="home-sel u-home" data-home="${escapeHtml(u.login)}" style="max-width:150px"><option value="">филиал —</option>${STUDIOS.map(s=>`<option value="${s.id}" ${u.home===s.id?'selected':''}>${s.name}</option>`).join('')}</select>
+      <label class="hire-lbl u-hire">приём:<input type="date" class="hire-inp" data-hire="${escapeHtml(u.login)}" value="${u.hire||''}"/></label>
+      <label class="u-phone">тел.: <input type="tel" inputmode="tel" class="phone-inp" data-phone="${escapeHtml(u.login)}" value="${escapeHtml(phone||'')}" placeholder="+375…"/></label>
+      <label class="hire-lbl u-coffee"><input type="checkbox" class="coffee-inp" data-coffee="${escapeHtml(u.login)}" ${u.coffee?'checked':''}/> ☕ кофе+снеки</label>
+      <span class="st-pill u-status ${u.active?'st-on':'st-off'}">${u.active?'доступ включён':'доступ отключён'}</span>
+      <span class="ctl-item u-access">Доступ <button class="sw ${u.active?'on':''}" data-act="active" aria-label="Доступ"></button></span>
+      <span class="ctl-item u-senior">Старший <button class="sw ${u.senior?'on':''}" data-act="senior" aria-label="Старший"></button></span>
+      <span class="ctl-item u-canedit">Правка касс. утра <button class="sw ${u.canEdit?'on':''}" data-act="canedit" aria-label="Правка утренних наличных"></button></span>
+      <button class="btn btn-sm u-reset" data-act="reset">Сбросить пароль</button>
+      <button class="btn btn-sm btn-ghost u-delete" data-act="del">Удалить</button>
     </div></div>`;
 }
 function addAdminModal(onDone){
@@ -2213,6 +2250,52 @@ function absDaysInMonth(login, type){
   });
   return days;
 }
+function adminScheduleOverviewGrid(){
+  const y=SCH.y,m=SCH.m,n=schDaysIn(y,m);
+  let html=`<div class="adm-sched-grid" style="grid-template-columns:150px repeat(${n},1fr)"><div></div>`;
+  for(let d=1;d<=n;d++){ const we=[0,6].includes(schDow(y,m,d)); html+=`<div class="abs-dh${we?' we':''}">${d}</div>`; }
+  TEAM.forEach(a=>{
+    html+=`<div class="abs-name">${escapeHtml(shortName(a.name))}</div>`;
+    for(let d=1;d<=n;d++){
+      const iso=schIso(y,m,d), we=[0,6].includes(schDow(y,m,d)), ab=absOn(a.login,iso);
+      const sids=[];
+      STUDIOS.forEach(st=>{ const r=dayRec(iso,st.id); if(r&&!r.closed&&(r.shifts||[]).some(sh=>sh.adminId===a.login)) sids.push(st.id); });
+      let cls='adm-sched-cell'+(we?' we':''); let style='', title='';
+      if(ab){ cls+=' absent'; title=absName(ab.type); }
+      else if(sids.length){
+        cls+=' has';
+        const cols=sids.map(id=>studioColor(id));
+        if(cols.length===1) style=`background:${cols[0]};border-color:${cols[0]}`;
+        else { const stops=[]; cols.forEach((c,i)=>{ const a=Math.round(i*100/cols.length), b=Math.round((i+1)*100/cols.length); stops.push(`${c} ${a}%`,`${c} ${b}%`); }); style=`background:linear-gradient(90deg,${stops.join(',')});border-color:transparent`; }
+        title=sids.map(id=>studioName(id)).join(' / ');
+      }
+      html+=`<div class="${cls}"${style?` style="${style}"`:''}${title?` title="${escapeHtml(title)}"`:''}></div>`;
+    }
+  });
+  html+='</div>';
+  return html;
+}
+function exportAdminScheduleOverview(){
+  const y=SCH.y,m=SCH.m,n=schDaysIn(y,m), rows=[];
+  TEAM.forEach(a=>{
+    const r={'Администратор':shortName(a.name)};
+    for(let d=1;d<=n;d++){
+      const iso=schIso(y,m,d), ab=absOn(a.login,iso), names=[];
+      if(ab) r[String(d)]=absName(ab.type);
+      else {
+        STUDIOS.forEach(st=>{ const rec=dayRec(iso,st.id); if(rec&&!rec.closed&&(rec.shifts||[]).some(sh=>sh.adminId===a.login)) names.push(st.name); });
+        r[String(d)]=names.join(' / ');
+      }
+    }
+    rows.push(r);
+  });
+  if(!rows.length){ toast('Нет данных для выгрузки',true); return; }
+  const ws=XLSX.utils.json_to_sheet(rows); ws['!cols']=[{wch:24}].concat(Array.from({length:n},()=>({wch:5})));
+  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Расписание администраторов');
+  XLSX.writeFile(wb,`raspisanie_adminov_${monthKey(y,m)}.xlsx`);
+  toast('Расписание выгружено');
+}
+
 function renderSchOverview(el){
   const editor=session.role==='owner'||session.senior;
   const n=schDaysIn(SCH.y,SCH.m);
@@ -2246,6 +2329,10 @@ function renderSchOverview(el){
     <div class="section-title">Статус смен по дням</div>
     <div class="abs-legend"><span><i style="background:#97C459"></i>готово</span><span><i style="background:#97C459;position:relative;overflow:hidden"><b style="position:absolute;top:0;right:0;border:4px solid transparent;border-top-color:#27500A;border-right-color:#27500A"></b></i>2 админа (утро/вечер)</span><span><i style="background:#F09595"></i>нужна замена</span><span><i style="background:#FAC775"></i>нужно заполнить</span><span><i style="background:#D3D1C7"></i>закрыто</span></div>
     <div class="sch-scroll" id="covWrap">${covGrid()}</div>${editor?'<div class="hintline" style="margin:4px 2px 0">Нажмите на клетку, чтобы назначить или заменить администратора.</div>':''}
+    <div class="section-title">Расписание администраторов</div>
+    <div class="sch-scroll" id="admSchedWrap">${adminScheduleOverviewGrid()}</div>
+    <div class="adm-sched-legend">${STUDIOS.map(s=>`<span><i style="background:${s.color}"></i>${s.name}</span>`).join('')}<span><i style="background:#D3D1C7"></i>выходной / отсутствие</span></div>
+    <div class="adm-sched-actions"><button class="btn btn-sm" id="admSchedExport">⇩ Скачать в Excel</button></div>
     <div class="section-title">Часы за месяц</div>
     <div class="sch-scroll"><table class="sch-hrs"><thead><tr><th>Администратор</th><th>Часы</th><th>Смен</th><th>Серии</th></tr></thead><tbody>${hrows||'<tr><td colspan="4" style="color:var(--ink-faint)">Нет администраторов. Добавьте их и укажите филиал.</td></tr>'}</tbody></table></div>
     <div class="section-title">Отсутствия за месяц (дней)</div>
@@ -2258,6 +2345,7 @@ function renderSchOverview(el){
     <div id="yearAbs" class="sch-scroll"><div class="hintline" style="padding:10px">Загрузка…</div></div>`;
   el.querySelectorAll('[data-am]').forEach(b=>b.onclick=()=>{ ABS_MODE=b.dataset.am; el.querySelectorAll('[data-am]').forEach(x=>x.classList.toggle('on',x.dataset.am===ABS_MODE)); fillYearAbsences(el.querySelector('#yearAbs')); });
   fillYearAbsences(el.querySelector('#yearAbs'));
+  const admExp=el.querySelector('#admSchedExport'); if(admExp) admExp.onclick=exportAdminScheduleOverview;
   if(editor){ const cw=el.querySelector('#covWrap'); if(cw) cw.onclick=(ev)=>{ const c=ev.target.closest('[data-day][data-sid]'); if(c) openDayModal(+c.dataset.day, c.dataset.sid); }; }
 }
 function dISO(dt){ return dt.getFullYear()+'-'+schPad(dt.getMonth()+1)+'-'+schPad(dt.getDate()); }
