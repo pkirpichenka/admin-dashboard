@@ -551,17 +551,23 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 }
 
 
-/* ================= UI refinements 07.09.2026-a ================= */
+/* ================= UI refinements 07.09.2026-b ================= */
 /* Desktop totals: three studios above, two wide totals below */
 @media (min-width:761px){
   .sumcards{grid-template-columns:repeat(6,minmax(0,1fr));align-items:stretch}
-  .sumcards>.sumcard:not(.tot):not(.legal){grid-column:span 2}
+  .sumcards>.sumcard:not(.tot):not(.legal):not(.forecast){grid-column:span 2}
   .sumcards>.sumcard.tot,.sumcards>.sumcard.legal{grid-column:span 3}
+  .sumcards.forecast-grid>.sumcard.tot,.sumcards.forecast-grid>.sumcard.legal,.sumcards.forecast-grid>.sumcard.forecast{grid-column:span 2}
   .sumcard-rows{gap:7px 18px}
   .sumcard-rows .sr{gap:10px}
   .sumcard-rows .sr>span{font-size:10px;letter-spacing:.1px}
   .sumcard-rows .sr b{font-size:13.5px}
 }
+.sumcard.forecast{background:linear-gradient(180deg,#fff,var(--surface-2));border-color:var(--gold)}
+.sumcard.forecast .sc-name{color:var(--ink)}
+.legal-mode{margin-left:auto;font-size:9px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.25px;white-space:nowrap}
+.legal-rows .lr b.legal-pair{font-size:12.5px;white-space:nowrap;text-align:right}
+
 
 /* Admin cards: stable layout hooks */
 .phone-inp{max-width:170px;font-size:12.5px;padding:7px 9px}
@@ -649,7 +655,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '07.09.2026-a'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '07.09.2026-b'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -1477,7 +1483,7 @@ function movFormula(m){
   if(mi>0 && mo>0) s+=' = +'+_numf(mi)+' −'+_numf(mo);
   return `<b style="color:${col}">${s}</b>`;
 }
-function sumCard(label, dotId, entity, m, period, total){
+function sumCard(label, dotId, entity, m, period, total, titleOverride, extraClass){
   const row=(k,v)=>`<div class="sr"><span>${k}</span>${v}</div>`;
   const b=v=>`<b>${_numf(v)}</b>`;
   let rows;
@@ -1493,14 +1499,39 @@ function sumCard(label, dotId, entity, m, period, total){
          + `<div class="sr sr-wide"><span>Движения</span>${movFormula(m)}</div>`;
   }
   const clients=`Пришло <b>${m.came}</b> · купили <b>${m.bought}</b> (${pct(m.bought,m.came)}) · законч. <b>${m.ended}</b> · продлили <b>${m.renew}</b> (${pct(m.renew,m.ended)}) · не прод. <b>${Math.max(0,m.ended-m.renew)}</b>`;
-  const head = total
-    ? '<span class="sc-name">Итого по всем</span>'
-    : `<span class="sc-name">${dotId?sdot(dotId):''}${label}</span>`;
-  return `<div class="sumcard${total?' tot':''}">
+  const head = titleOverride
+    ? `<span class="sc-name">${escapeHtml(titleOverride)}</span>`
+    : (total
+      ? '<span class="sc-name">Итого по всем</span>'
+      : `<span class="sc-name">${dotId?sdot(dotId):''}${label}</span>`);
+  return `<div class="sumcard${total?' tot':''}${extraClass?' '+extraClass:''}">
     <div class="sumcard-h">${head}<span class="sc-rev">Выручка<b>${_numf(m.rev)} ${CUR}</b></span></div>
     <div class="sumcard-rows">${rows}</div>
     <div class="sumcard-cl">${clients}</div>
   </div>`;
+}
+function _round1(n){ return Math.round((Number(n)||0)*10)/10; }
+function forecastMetrics(m, factor){
+  factor=Number(factor)||1;
+  const out=Object.assign({},m);
+  ['day','inter','card','qr','ep','mIn','mOut'].forEach(k=>{ out[k]=_round1((Number(m[k])||0)*factor); });
+  out.net=_round1(out.mIn-out.mOut);
+  out.rev=_round1(out.day+out.card+out.qr+out.ep);
+  ['came','bought','ended','renew','days'].forEach(k=>{ out[k]=Math.round((Number(m[k])||0)*factor); });
+  out.st=0; out.end=0;
+  return out;
+}
+function forecastMeta(from,to){
+  if(!from||!to) return null;
+  const today=todayStr(), mk=today.slice(0,7);
+  if(from.slice(0,7)!==mk || to.slice(0,7)!==mk) return null;
+  const y=+mk.slice(0,4), mo=+mk.slice(5,7);
+  const daysInMonth=new Date(y,mo,0).getDate();
+  const currentDay=+today.slice(8,10);
+  const toDay=Math.min(+to.slice(8,10),currentDay);
+  const fromDay=+from.slice(8,10);
+  const elapsed=Math.max(1,toDay-fromDay+1);
+  return {factor:daysInMonth/elapsed,elapsed,daysInMonth,month:MON[mo-1]};
 }
 function legalTotals(entries){
   const sum=(sid,k)=>entries.filter(e=>e.studioId===sid).reduce((a,e)=>a+(Number(e[k])||0),0);
@@ -1510,14 +1541,17 @@ function legalTotals(entries){
   const ooo=sum('masherova','cashless')+sum('kuibysheva','cashless')+sum('masherova','allsports');
   return {cash,ip,ooo};
 }
-function legalCard(entries){
-  const t=legalTotals(entries);
+function legalCard(entries, forecastFactor){
+  const t=legalTotals(entries), hasForecast=Number(forecastFactor)>0;
+  const val=v=>hasForecast
+    ? `<b class="legal-pair">${_numf(v)} / ${_numf(_round1(v*forecastFactor))} ${CUR}</b>`
+    : `<b>${_numf(v)} ${CUR}</b>`;
   return `<div class="sumcard legal">
-    <div class="sumcard-h"><span class="sc-name">Итого по юрлицам</span></div>
+    <div class="sumcard-h"><span class="sc-name">Итого по юрлицам</span>${hasForecast?'<span class="legal-mode">факт / прогноз</span>':''}</div>
     <div class="legal-rows">
-      <div class="lr"><span>Наличные</span><b>${_numf(t.cash)} ${CUR}</b></div>
-      <div class="lr"><span>ИП</span><b>${_numf(t.ip)} ${CUR}</b></div>
-      <div class="lr"><span>ООО</span><b>${_numf(t.ooo)} ${CUR}</b></div>
+      <div class="lr"><span>Наличные</span>${val(t.cash)}</div>
+      <div class="lr"><span>ИП</span>${val(t.ip)}</div>
+      <div class="lr"><span>ООО</span>${val(t.ooo)}</div>
     </div></div>`;
 }
 function daySummary(entries){
@@ -1551,8 +1585,13 @@ function periodSummary(entries, from, to){
       ended+=Number(e.ended)||0; renew+=Number(e.renewed??e.oldCount)||0;});
     return {days,day,net,mIn,mOut,inter,card,qr,ep,rev,came,bought,ended,renew,st:0,end:0};};
   const cards=sids.map(sid=>sumCard(studioName(sid), sid, studioEntity(sid), M(groups[sid]), true, false)).join('');
-  const tot=sids.length>1?sumCard('','','',M(entries),true,true):'';
-  return `<div class="daysum"><div class="ds-title">Итоги за период: ${fmtLong(from)} – ${fmtLong(to)} <small>(суммы в ${CUR})</small></div><div class="sumcards">${cards}${tot}${legalCard(entries)}</div></div>`;
+  const totalMetrics=M(entries);
+  const tot=sids.length>1?sumCard('','','',totalMetrics,true,true):'';
+  const fm=forecastMeta(from,to);
+  const forecast=(fm&&sids.length>1)
+    ? sumCard('','','',forecastMetrics(totalMetrics,fm.factor),true,true,'Прогноз до конца месяца','forecast')
+    : '';
+  return `<div class="daysum"><div class="ds-title">Итоги за период: ${fmtLong(from)} – ${fmtLong(to)} <small>(суммы в ${CUR})</small></div><div class="sumcards${forecast?' forecast-grid':''}">${cards}${tot}${legalCard(entries,fm?fm.factor:null)}${forecast}</div></div>`;
 }
 
 /* ================= Excel export ================= */
