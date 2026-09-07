@@ -655,7 +655,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '07.09.2026-b'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '07.09.2026-c'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -1490,7 +1490,7 @@ function sumCard(label, dotId, entity, m, period, total, titleOverride, extraCla
   if(period){
     rows = row('Нал. за день',_sgn(m.day)) + row('Между сменами',_sgn(m.inter||0))
          + row('Картой',b(m.card)) + row('QR',b(m.qr))
-         + row('EPOS',b(m.ep)) + row('Дней',`<b>${m.days}</b>`)
+         + row('EPOS',b(m.ep))
          + `<div class="sr sr-wide"><span>Движения</span>${movFormula(m)}</div>`;
   } else {
     rows = row('Утро',b(m.st)) + row('Вечер',b(m.end))
@@ -1589,7 +1589,7 @@ function periodSummary(entries, from, to){
   const tot=sids.length>1?sumCard('','','',totalMetrics,true,true):'';
   const fm=forecastMeta(from,to);
   const forecast=(fm&&sids.length>1)
-    ? sumCard('','','',forecastMetrics(totalMetrics,fm.factor),true,true,'Прогноз до конца месяца','forecast')
+    ? sumCard('','','',forecastMetrics(totalMetrics,fm.factor),true,true,'Прогноз','forecast')
     : '';
   return `<div class="daysum"><div class="ds-title">Итоги за период: ${fmtLong(from)} – ${fmtLong(to)} <small>(суммы в ${CUR})</small></div><div class="sumcards${forecast?' forecast-grid':''}">${cards}${tot}${legalCard(entries,fm?fm.factor:null)}${forecast}</div></div>`;
 }
