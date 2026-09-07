@@ -551,7 +551,7 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 }
 
 
-/* ================= UI refinements 03.08.2026-z ================= */
+/* ================= UI refinements 07.09.2026-a ================= */
 /* Desktop totals: three studios above, two wide totals below */
 @media (min-width:761px){
   .sumcards{grid-template-columns:repeat(6,minmax(0,1fr));align-items:stretch}
@@ -571,6 +571,9 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 /* Detailed administrator schedule */
 #schedRoot .adm-sched-grid{display:grid;gap:2px;align-items:center;min-width:640px}
 #schedRoot .adm-sched-grid .abs-name{padding-right:8px}
+#schedRoot .adm-sched-person{line-height:1.15;min-width:0}
+#schedRoot .adm-sched-person .adm-sched-name{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#schedRoot .adm-sched-person .adm-sched-phone{display:block;margin-top:2px;font-size:10px;line-height:1.15;color:var(--ink-faint);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #schedRoot .adm-sched-cell{height:20px;border-radius:4px;border:1px solid var(--line);background:var(--surface);position:relative}
 #schedRoot .adm-sched-cell.we{background:var(--surface-2)}
 #schedRoot .adm-sched-cell.has{border-color:transparent;box-shadow:inset 0 0 0 1px rgba(23,38,31,.06)}
@@ -646,7 +649,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '03.08.2026-z'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '07.09.2026-a'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -1649,6 +1652,7 @@ async function renderUsers(body){
   const byLogin = Object.fromEntries(users.map(u=>[u.login,u]));
   let settings={}; try{ settings=await apiGetSettings(); }catch(e){}
   settings.adminPhones=settings.adminPhones||{};
+  ADMIN_PHONES=settings.adminPhones;
   const active=users.filter(u=>u.active), archived=users.filter(u=>!u.active);
   const subs=[['admins','Администраторы ('+active.length+')'],['telegram','Telegram'],['archive','Уволенные ('+archived.length+')']];
   body.innerHTML=`<div class="subtabs">${subs.map(x=>`<button class="subtab${USERS_VIEW===x[0]?' on':''}" data-uv="${x[0]}">${x[1]}</button>`).join('')}</div><div id="uBody"></div>`;
@@ -1676,6 +1680,7 @@ async function renderUsers(body){
       const login=inp.dataset.phone, v=inp.value.trim();
       settings.adminPhones=settings.adminPhones||{};
       if(v) settings.adminPhones[login]=v; else delete settings.adminPhones[login];
+      ADMIN_PHONES=settings.adminPhones;
       try{ await apiSaveSettings(settings); toast('Телефон сохранён'); }catch(e){ handleErr(e); }
     }; });
   }
@@ -1780,7 +1785,7 @@ function confirmModal(msg,onYes){
 /* ================= Расписание (модуль) ================= */
 const MON2=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 const SCH_DOW=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
-let SCH=null, SCHDATA=null, TEAM=[], SCHsel=null, ABS_MODE='cal', COFFEE_ROSTER=[];
+let SCH=null, SCHDATA=null, TEAM=[], SCHsel=null, ABS_MODE='cal', COFFEE_ROSTER=[], ADMIN_PHONES={};
 
 function monthKey(y,m){return y+'-'+String(m+1).padStart(2,'0');}
 function schPad(n){return String(n).padStart(2,'0');}
@@ -1823,6 +1828,8 @@ async function renderSchedule(body){
   if(!SCH){ const now=new Date(); const defSids = editor ? STUDIOS.map(s=>s.id) : (session.home?[session.home]:STUDIOS.map(s=>s.id)); SCH={y:now.getFullYear(), m:now.getMonth(), sids:defSids, view:'calendar', calView:(typeof window!=='undefined'&&window.innerWidth<640)?'list':'grid'}; }
   try{ TEAM=await apiListTeam(); SCHDATA=await loadMonth(SCH.y,SCH.m); }
   catch(e){ return handleErr(e); }
+  try{ const _s=await apiGetSettings(); ADMIN_PHONES=(_s&&_s.adminPhones)||{}; }
+  catch(e){ ADMIN_PHONES={}; }
   drawSchedule(body, editor);
 }
 function reflowSchedule(){ if(SCH&&SCH._body) drawSchedule(SCH._body, SCH.editor); }
@@ -2252,10 +2259,11 @@ function absDaysInMonth(login, type){
 }
 function adminScheduleOverviewGrid(){
   const y=SCH.y,m=SCH.m,n=schDaysIn(y,m);
-  let html=`<div class="adm-sched-grid" style="grid-template-columns:150px repeat(${n},1fr)"><div></div>`;
+  let html=`<div class="adm-sched-grid" style="grid-template-columns:180px repeat(${n},1fr)"><div></div>`;
   for(let d=1;d<=n;d++){ const we=[0,6].includes(schDow(y,m,d)); html+=`<div class="abs-dh${we?' we':''}">${d}</div>`; }
   TEAM.forEach(a=>{
-    html+=`<div class="abs-name">${escapeHtml(shortName(a.name))}</div>`;
+    const phone=(ADMIN_PHONES&&ADMIN_PHONES[a.login])||'';
+    html+=`<div class="abs-name adm-sched-person"><span class="adm-sched-name">${escapeHtml(shortName(a.name))}</span>${phone?`<span class="adm-sched-phone">${escapeHtml(phone)}</span>`:''}</div>`;
     for(let d=1;d<=n;d++){
       const iso=schIso(y,m,d), we=[0,6].includes(schDow(y,m,d)), ab=absOn(a.login,iso);
       const sids=[];
@@ -2278,7 +2286,7 @@ function adminScheduleOverviewGrid(){
 function exportAdminScheduleOverview(){
   const y=SCH.y,m=SCH.m,n=schDaysIn(y,m), rows=[];
   TEAM.forEach(a=>{
-    const r={'Администратор':shortName(a.name)};
+    const r={'Администратор':shortName(a.name),'Телефон':(ADMIN_PHONES&&ADMIN_PHONES[a.login])||''};
     for(let d=1;d<=n;d++){
       const iso=schIso(y,m,d), ab=absOn(a.login,iso), names=[];
       if(ab) r[String(d)]=absName(ab.type);
@@ -2290,7 +2298,7 @@ function exportAdminScheduleOverview(){
     rows.push(r);
   });
   if(!rows.length){ toast('Нет данных для выгрузки',true); return; }
-  const ws=XLSX.utils.json_to_sheet(rows); ws['!cols']=[{wch:24}].concat(Array.from({length:n},()=>({wch:5})));
+  const ws=XLSX.utils.json_to_sheet(rows); ws['!cols']=[{wch:24},{wch:18}].concat(Array.from({length:n},()=>({wch:5})));
   const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Расписание администраторов');
   XLSX.writeFile(wb,`raspisanie_adminov_${monthKey(y,m)}.xlsx`);
   toast('Расписание выгружено');
