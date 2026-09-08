@@ -655,7 +655,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '07.09.2026-c'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '08.09.2026-d'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -745,6 +745,14 @@ function prevDays(iso,count){const [y,m,dd]=iso.split('-').map(Number);const out
 function fmtTime(iso){if(!iso)return '';return new Date(iso).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});}
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function shortName(name){const p=String(name||'').trim().split(/\s+/).filter(Boolean); if(p.length<=1) return p[0]||''; return p[0]+' '+p.slice(1).map(w=>w[0]?w[0].toUpperCase()+'.':'').join('');}
+
+/* Не даём колесику мыши / тачпаду случайно менять числовые поля.
+   Если курсор находится над активным input[type=number], поле теряет фокус,
+   а прокрутка страницы продолжается как обычно. */
+document.addEventListener('wheel', function(e){
+  const el=(e.target&&e.target.closest)?e.target.closest('input[type=\"number\"]'):null;
+  if(el && document.activeElement===el) el.blur();
+}, {capture:true, passive:true});
 
 /* ================= Toast & modal ================= */
 let toastT;
