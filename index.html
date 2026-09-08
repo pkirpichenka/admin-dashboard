@@ -655,7 +655,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '08.09.2026-d'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '08.09.2026-e'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -2304,11 +2304,20 @@ function absDaysInMonth(login, type){
   });
   return days;
 }
+function teamSortedByStudio(list=TEAM){
+  const order=new Map(STUDIOS.map((s,i)=>[s.id,i]));
+  return (list||[]).slice().sort((a,b)=>{
+    const ai=order.has(a.home)?order.get(a.home):999;
+    const bi=order.has(b.home)?order.get(b.home):999;
+    if(ai!==bi) return ai-bi;
+    return String(a.name||a.login||'').localeCompare(String(b.name||b.login||''),'ru');
+  });
+}
 function adminScheduleOverviewGrid(){
   const y=SCH.y,m=SCH.m,n=schDaysIn(y,m);
   let html=`<div class="adm-sched-grid" style="grid-template-columns:180px repeat(${n},1fr)"><div></div>`;
   for(let d=1;d<=n;d++){ const we=[0,6].includes(schDow(y,m,d)); html+=`<div class="abs-dh${we?' we':''}">${d}</div>`; }
-  TEAM.forEach(a=>{
+  teamSortedByStudio().forEach(a=>{
     const phone=(ADMIN_PHONES&&ADMIN_PHONES[a.login])||'';
     html+=`<div class="abs-name adm-sched-person"><span class="adm-sched-name">${escapeHtml(shortName(a.name))}</span>${phone?`<span class="adm-sched-phone">${escapeHtml(phone)}</span>`:''}</div>`;
     for(let d=1;d<=n;d++){
@@ -2332,7 +2341,7 @@ function adminScheduleOverviewGrid(){
 }
 function exportAdminScheduleOverview(){
   const y=SCH.y,m=SCH.m,n=schDaysIn(y,m), rows=[];
-  TEAM.forEach(a=>{
+  teamSortedByStudio().forEach(a=>{
     const r={'Администратор':shortName(a.name),'Телефон':(ADMIN_PHONES&&ADMIN_PHONES[a.login])||''};
     for(let d=1;d<=n;d++){
       const iso=schIso(y,m,d), ab=absOn(a.login,iso), names=[];
@@ -2377,8 +2386,9 @@ function renderSchOverview(el){
     html+='</div>';
     return html;
   }
-  const warns=TEAM.filter(a=>consecutiveMax(a.login)>3);
-  const hrows=TEAM.map(a=>`<tr><td class="rowh">${escapeHtml(shortName(a.name))}</td><td>${fmtH(adminHours(a.login))} ч</td><td>${adminMonthShifts(a.login).length}</td><td>${consecutiveMax(a.login)>3?'<span class="warnpill">'+consecutiveMax(a.login)+' подряд</span>':'—'}</td></tr>`).join('');
+  const overviewTeam=teamSortedByStudio();
+  const warns=overviewTeam.filter(a=>consecutiveMax(a.login)>3);
+  const hrows=overviewTeam.map(a=>`<tr><td class="rowh">${escapeHtml(shortName(a.name))}</td><td>${fmtH(adminHours(a.login))} ч</td><td>${adminMonthShifts(a.login).length}</td><td>${consecutiveMax(a.login)>3?'<span class="warnpill">'+consecutiveMax(a.login)+' подряд</span>':'—'}</td></tr>`).join('');
   el.innerHTML=`
     ${warns.length?`<div class="banner" style="background:var(--gold-soft);border-color:#E7CF9F"><div class="bt" style="color:var(--gold)">⚠ Более 3 смен подряд (${warns.length})</div><div class="bi">${warns.map(a=>`<span class="bchip" style="cursor:default;border-color:#E7CF9F">${escapeHtml(shortName(a.name))} — ${consecutiveMax(a.login)}</span>`).join('')}</div></div>`:''}
     <div class="section-title">Статус смен по дням</div>
@@ -2391,7 +2401,7 @@ function renderSchOverview(el){
     <div class="section-title">Часы за месяц</div>
     <div class="sch-scroll"><table class="sch-hrs"><thead><tr><th>Администратор</th><th>Часы</th><th>Смен</th><th>Серии</th></tr></thead><tbody>${hrows||'<tr><td colspan="4" style="color:var(--ink-faint)">Нет администраторов. Добавьте их и укажите филиал.</td></tr>'}</tbody></table></div>
     <div class="section-title">Отсутствия за месяц (дней)</div>
-    <div class="sch-scroll"><table class="sch-hrs"><thead><tr><th>Администратор</th><th>Отпуск</th><th>Больн.</th><th>Отгул</th><th>Всего</th></tr></thead><tbody>${TEAM.map(a=>{const o=absDaysInMonth(a.login,'otpusk'),b=absDaysInMonth(a.login,'bol'),g=absDaysInMonth(a.login,'otgul'),t=o+b+g;return `<tr><td class="rowh">${escapeHtml(shortName(a.name))}</td><td>${o||'—'}</td><td>${b||'—'}</td><td>${g||'—'}</td><td><b>${t||'—'}</b></td></tr>`;}).join('')||'<tr><td colspan="5" style="color:var(--ink-faint)">Нет данных</td></tr>'}</tbody></table></div>
+    <div class="sch-scroll"><table class="sch-hrs"><thead><tr><th>Администратор</th><th>Отпуск</th><th>Больн.</th><th>Отгул</th><th>Всего</th></tr></thead><tbody>${overviewTeam.map(a=>{const o=absDaysInMonth(a.login,'otpusk'),b=absDaysInMonth(a.login,'bol'),g=absDaysInMonth(a.login,'otgul'),t=o+b+g;return `<tr><td class="rowh">${escapeHtml(shortName(a.name))}</td><td>${o||'—'}</td><td>${b||'—'}</td><td>${g||'—'}</td><td><b>${t||'—'}</b></td></tr>`;}).join('')||'<tr><td colspan="5" style="color:var(--ink-faint)">Нет данных</td></tr>'}</tbody></table></div>
     <div class="section-title">Отсутствия за год (дней)</div>
     <div class="sch-viewtoggle" style="margin-bottom:8px">
       <button class="vt${ABS_MODE!=='work'?' on':''}" data-am="cal">Календарный ${SCH.y}</button>
@@ -2421,7 +2431,7 @@ async function fillYearAbsences(box){
   let rows;
   if(ABS_MODE==='work'){
     const today=todayStr();
-    rows=TEAM.map(a=>{
+    rows=teamSortedByStudio().map(a=>{
       if(!a.hire) return `<tr><td class="rowh">${escapeHtml(shortName(a.name))}</td><td colspan="4" style="color:var(--ink-faint)">укажите дату приёма в «Администраторы»</td></tr>`;
       const wy=workYear(a.hire, today);
       const o=daysIn(a.login,'otpusk',wy.start,wy.end),b=daysIn(a.login,'bol',wy.start,wy.end),g=daysIn(a.login,'otgul',wy.start,wy.end),t=o+b+g;
@@ -2429,7 +2439,7 @@ async function fillYearAbsences(box){
     }).join('');
   } else {
     const y=SCH.y, first=y+'-01-01', last=y+'-12-31';
-    rows=TEAM.map(a=>{const o=daysIn(a.login,'otpusk',first,last),b=daysIn(a.login,'bol',first,last),g=daysIn(a.login,'otgul',first,last),t=o+b+g;
+    rows=teamSortedByStudio().map(a=>{const o=daysIn(a.login,'otpusk',first,last),b=daysIn(a.login,'bol',first,last),g=daysIn(a.login,'otgul',first,last),t=o+b+g;
       return `<tr><td class="rowh">${escapeHtml(shortName(a.name))}</td><td>${o||'—'}</td><td>${b||'—'}</td><td>${g||'—'}</td><td><b>${t||'—'}</b></td></tr>`;}).join('');
   }
   box.innerHTML=`<table class="sch-hrs"><thead><tr><th>Администратор</th><th>Отпуск</th><th>Больн.</th><th>Отгул</th><th>Всего</th></tr></thead><tbody>${rows||'<tr><td colspan="5" style="color:var(--ink-faint)">Нет данных</td></tr>'}</tbody></table>`;
