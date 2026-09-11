@@ -1,9 +1,8 @@
 <!--
   Дашборд администратора сети студий растяжки (Минск) — прототип
   Студии: Машерова 11 · Куйбышева 22 · Толбухина 2
-  Роли: Руководитель (полный доступ + управление доступом) /
-        Старший администратор (полный доступ к отчётам) / Администратор (смена)
-  Учётные записи с паролями; регистрация и отзыв доступа — только у руководителя.
+  Роли: Руководитель (все права) / Администратор с индивидуальным набором прав.
+  Учётные записи с паролями; руководитель может делегировать управление и права доступа.
   Валюта: BYN (Br). Записи сохраняются между сессиями, выгрузка лога в Excel.
 -->
 <meta charset="utf-8" />
@@ -635,6 +634,36 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
   .sr b{white-space:nowrap}
 }
 
+
+
+/* ================= Granular permissions UI 11.09.2026-f ================= */
+.perm-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;background:var(--surface-2);color:var(--accent-deep);font-size:10px;font-weight:700;white-space:nowrap}
+.perm-badge.full{background:var(--gold-soft);color:var(--gold)}
+.u-perms-info{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--ink-soft);white-space:nowrap}
+.u-perms-info b{color:var(--ink);font-weight:700}
+.u-perm-btn{white-space:nowrap}
+.perm-modal{max-width:760px;max-height:min(90vh,820px);overflow:auto}
+.perm-presets{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 16px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.perm-groups{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.perm-group{border:1px solid var(--line);border-radius:12px;background:var(--surface-2);padding:12px}
+.perm-group-title{font-family:'Unbounded';font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--ink-soft);margin-bottom:8px}
+.perm-row{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:start;padding:8px 0;border-top:1px solid rgba(31,42,36,.07);cursor:pointer}
+.perm-row:first-of-type{border-top:0}
+.perm-row input{width:18px;height:18px;margin-top:1px}
+.perm-row span{min-width:0}
+.perm-row b{display:block;font-size:12.5px;line-height:1.25}
+.perm-row small{display:block;color:var(--ink-faint);font-size:10.5px;line-height:1.3;margin-top:2px}
+.perm-note{margin-top:12px;padding:10px 12px;border-radius:10px;background:var(--gold-soft);color:var(--ink-soft);font-size:11.5px;line-height:1.4}
+.u-ctl select:disabled,.u-ctl input:disabled{opacity:.7;cursor:not-allowed;background:var(--surface-2)}
+@media(max-width:640px){
+  .perm-modal{padding:18px 14px;max-height:92vh}
+  .perm-groups{grid-template-columns:1fr}
+  .perm-presets{display:grid;grid-template-columns:1fr 1fr}
+  .perm-presets .btn:last-child{grid-column:1/-1}
+  .u-ctl .u-perms-info{grid-column:1/-1;white-space:normal}
+  .u-ctl .u-perm-btn{grid-column:1/-1;width:100%}
+}
+
 </style>
 
 <div id="root"></div>
@@ -655,7 +684,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '08.09.2026-e'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '11.09.2026-f'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -667,6 +696,72 @@ const CONFIGURED = !/ВСТАВЬТЕ/.test(SUPABASE_URL) && !/ВСТАВЬТЕ/
 const sb = (CONFIGURED && window.supabase) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
 let TOKEN = null;
+
+/* ================= Granular access permissions ================= */
+const PERMISSION_DEFS = [
+  {key:'reports.view_all', group:'Отчёты', label:'Все отчёты', desc:'Просмотр общего журнала, итогов и Excel-выгрузки.'},
+  {key:'reports.edit_morning', group:'Отчёты', label:'Правка наличных утром', desc:'Можно менять уже зафиксированный остаток на начало дня.'},
+  {key:'reports.edit_closed', group:'Отчёты', label:'Редактировать отчёты', desc:'Открывать и изменять любые отчёты, в том числе закрытые, и создавать отчёт вручную.'},
+  {key:'reports.delete', group:'Отчёты', label:'Удалять отчёты', desc:'Безвозвратно удалять отчёты из журнала.'},
+  {key:'schedule.edit', group:'Расписание', label:'Редактировать расписание', desc:'Назначать и заменять администраторов, заполнять и очищать черновик.'},
+  {key:'schedule.approve', group:'Расписание', label:'Утверждать расписание', desc:'Утверждать месяц и снимать утверждение.'},
+  {key:'schedule.absences', group:'Расписание', label:'Отпуска / больничные', desc:'Добавлять, менять и удалять отсутствия.'},
+  {key:'schedule.leave_norms', group:'Расписание', label:'Нормы отсутствий', desc:'Менять годовые нормы отпуска, больничных и отгулов.'},
+  {key:'schedule.coffee', group:'Расписание', label:'Кофе+снеки', desc:'Назначать и снимать график кофе+снеки.'},
+  {key:'admins.view', group:'Администраторы', label:'Видеть администраторов', desc:'Просмотр карточек активных и уволенных сотрудников.'},
+  {key:'admins.manage', group:'Администраторы', label:'Управлять администраторами', desc:'Добавление, увольнение, восстановление, удаление, пароль, филиал, телефон и другие поля.'},
+  {key:'admins.permissions', group:'Администраторы', label:'Выдавать права доступа', desc:'Можно изменять права других администраторов. Не влияет на аккаунт руководителя.'},
+  {key:'telegram.manage', group:'Настройки', label:'Telegram', desc:'Получатели, chat ID, время и тестовая отправка.'},
+  {key:'messages.manage', group:'Настройки', label:'Сообщения и чек-листы', desc:'Настройка сообщений при открытии и чек-листа закрытия смены.'}
+];
+const PERMISSION_KEYS = PERMISSION_DEFS.map(x=>x.key);
+const SENIOR_PERMISSION_KEYS = ['reports.view_all','schedule.edit','schedule.approve','schedule.absences'];
+function permObject(keys){ const o={}; (keys||[]).forEach(k=>o[k]=true); return o; }
+const PERMISSION_PRESETS = {
+  basic:{},
+  senior:permObject(SENIOR_PERMISSION_KEYS),
+  full:permObject(PERMISSION_KEYS)
+};
+function normalizePermissions(p){ const o={}; PERMISSION_KEYS.forEach(k=>o[k]=!!(p&&p[k])); if(o['reports.edit_closed']||o['reports.delete'])o['reports.view_all']=true; if(o['admins.manage']||o['admins.permissions'])o['admins.view']=true; return o; }
+function legacyPermissions(s){
+  const o=normalizePermissions((s&&s.permissions)||{});
+  if(s&&s.senior) SENIOR_PERMISSION_KEYS.forEach(k=>o[k]=true);
+  if(s&&s.canEdit) o['reports.edit_morning']=true;
+  return o;
+}
+function can(key){
+  if(!session) return false;
+  if(session.role==='owner') return true;
+  return !!((session.permissions||{})[key]);
+}
+function hasAnyPermission(){ return PERMISSION_KEYS.some(k=>can(k)); }
+function permissionCount(p){ return PERMISSION_KEYS.filter(k=>!!(p&&p[k])).length; }
+function permissionPresetName(p){
+  const n=normalizePermissions(p);
+  if(PERMISSION_KEYS.every(k=>n[k])) return 'Полный доступ';
+  const on=PERMISSION_KEYS.filter(k=>n[k]);
+  if(on.length===0) return 'Обычный';
+  if(on.length===SENIOR_PERMISSION_KEYS.length && SENIOR_PERMISSION_KEYS.every(k=>n[k])) return 'Старший';
+  return 'Настроено · '+on.length;
+}
+function persistSession(){
+  if(!session||!TOKEN) return;
+  try{ sessionStorage.setItem('sess', JSON.stringify({token:TOKEN,login:session.login,name:session.name,role:session.role,senior:!!session.senior,canEdit:!!session.canEdit,home:session.home||null,permissions:normalizePermissions(session.permissions||{})})); }catch(e){}
+}
+async function refreshPermissions(){
+  if(!session) return;
+  if(session.role==='owner'){
+    session.permissions=normalizePermissions(PERMISSION_PRESETS.full); session.permissionsLoaded=true; persistSession(); return;
+  }
+  try{
+    const p=await rpc('app_my_permissions',{p_token:TOKEN});
+    session.permissions=normalizePermissions(p||{}); session.permissionsLoaded=true; session.senior=false; session.canEdit=!!session.permissions['reports.edit_morning'];
+  }catch(e){
+    // До применения SQL-миграции сохраняем прежнее поведение старшего/правки кассы.
+    session.permissions=legacyPermissions(session); session.permissionsLoaded=false;
+  }
+  persistSession();
+}
 
 async function rpc(fn, args){
   const {data, error} = await sb.rpc(fn, args || {});
@@ -680,8 +775,8 @@ function handleErr(e){
 }
 function saveSession(s){
   TOKEN = s.token;
-  session = {login:s.login, name:s.name, role:s.role, senior:s.senior, canEdit:!!s.canEdit, home:s.home||null};
-  try{ sessionStorage.setItem('sess', JSON.stringify(s)); }catch(e){}
+  session = {login:s.login, name:s.name, role:s.role, senior:!!s.senior, canEdit:!!s.canEdit, home:s.home||null, permissions:normalizePermissions(s.permissions||{}), permissionsLoaded:false};
+  persistSession();
 }
 async function doLogout(){
   try{ if(TOKEN) await rpc('app_logout', {p_token:TOKEN}); }catch(e){}
@@ -693,7 +788,12 @@ async function doLogout(){
 /* ---- Отчёты: кэш + доступ, которым пользуется остальной код ---- */
 let REPORTS = null;
 async function loadReports(force){
-  if(REPORTS === null || force){ REPORTS = await rpc('app_list_reports', {p_token:TOKEN}) || []; }
+  if(REPORTS === null || force){
+    if(can('reports.view_all')){
+      try{ REPORTS = await rpc('app_list_all_reports_permitted', {p_token:TOKEN}) || []; }
+      catch(e){ REPORTS = await rpc('app_list_reports', {p_token:TOKEN}) || []; }
+    } else REPORTS = await rpc('app_list_reports', {p_token:TOKEN}) || [];
+  }
   return REPORTS;
 }
 async function getEntry(studio, date){
@@ -707,8 +807,9 @@ function lastCashEndBefore(studio, before){
   return c.length ? {date:c[0].date, cashEnd:num(c[0].cashEnd)} : null;
 }
 async function apiSaveReport(studio, date, payload){
-  const r = await rpc('app_save_report', {p_token:TOKEN, p_studio:studio, p_date:date, p_payload:payload});
-  // обновляем кэш на месте — значения сразу доступны при перерисовке, без round-trip
+  let r;
+  if(session && session.role!=='owner' && can('reports.edit_closed')) r=await rpc('app_save_report_permitted',{p_token:TOKEN,p_studio:studio,p_date:date,p_payload:payload});
+  else r=await rpc('app_save_report', {p_token:TOKEN, p_studio:studio, p_date:date, p_payload:payload});
   if(Array.isArray(REPORTS)){
     const i=REPORTS.findIndex(e=>e.studioId===studio && e.date===date);
     const copy=JSON.parse(JSON.stringify(payload));
@@ -717,19 +818,36 @@ async function apiSaveReport(studio, date, payload){
   return r;
 }
 async function apiDeleteReport(studio, date){
-  const r = await rpc('app_delete_report', {p_token:TOKEN, p_studio:studio, p_date:date});
+  const r = (session&&session.role==='owner')
+    ? await rpc('app_delete_report', {p_token:TOKEN, p_studio:studio, p_date:date})
+    : await rpc('app_delete_report_permitted', {p_token:TOKEN, p_studio:studio, p_date:date});
   REPORTS = null;
   return r;
 }
 async function apiListTeam(){ return await rpc('app_list_team',{p_token:TOKEN})||[]; }
-async function apiSetHome(login,home){ return await rpc('app_set_home',{p_token:TOKEN,p_login:login,p_home:home||''}); }
-async function apiSetHire(login,hire){ return await rpc('app_set_hire',{p_token:TOKEN,p_login:login,p_hire:hire||''}); }
-async function apiSetCoffee(login,val){ return await rpc('app_set_coffee',{p_token:TOKEN,p_login:login,p_val:!!val}); }
+async function apiListUsers(){
+  try{ return await rpc('app_perm_list_users',{p_token:TOKEN})||[]; }
+  catch(e){ if(session&&session.role==='owner') return await rpc('app_list_users',{p_token:TOKEN})||[]; throw e; }
+}
+async function apiCreateAdmin(login,name,password){ return await rpc('app_perm_create_admin',{p_token:TOKEN,p_login:login,p_name:name,p_password:password}); }
+async function apiSetActive(login,val){ return await rpc('app_perm_set_active',{p_token:TOKEN,p_login:login,p_active:!!val}); }
+async function apiResetPassword(login,password){ return await rpc('app_perm_reset_password',{p_token:TOKEN,p_login:login,p_new_password:password}); }
+async function apiDeleteAdmin(login){ return await rpc('app_perm_delete_admin',{p_token:TOKEN,p_login:login}); }
+async function apiSetPermissions(login,permissions){ return await rpc('app_set_admin_permissions',{p_token:TOKEN,p_login:login,p_permissions:normalizePermissions(permissions)}); }
+async function apiSetHome(login,home){ return await rpc('app_perm_set_home',{p_token:TOKEN,p_login:login,p_home:home||''}); }
+async function apiSetHire(login,hire){ return await rpc('app_perm_set_hire',{p_token:TOKEN,p_login:login,p_hire:hire||''}); }
+async function apiSetCoffee(login,val){ return await rpc('app_perm_set_coffee',{p_token:TOKEN,p_login:login,p_val:!!val}); }
 async function apiGetSchedule(month){ return await rpc('app_get_schedule',{p_token:TOKEN,p_month:month}); }
 async function apiAllAbsences(){ return await rpc('app_all_absences',{p_token:TOKEN})||[]; }
 async function apiGetSettings(){ try{ return await rpc('app_get_settings',{p_token:TOKEN})||{}; }catch(e){ return {}; } }
-async function apiSaveSettings(data){ return await rpc('app_save_settings',{p_token:TOKEN,p_data:data}); }
-async function apiSaveSchedule(month,data){ return await rpc('app_save_schedule',{p_token:TOKEN,p_month:month,p_data:data}); }
+async function apiSaveSettings(data){
+  if(session&&session.role==='owner') return await rpc('app_save_settings',{p_token:TOKEN,p_data:data});
+  return await rpc('app_save_settings_permitted',{p_token:TOKEN,p_data:data});
+}
+async function apiSaveSchedule(month,data){
+  if(session&&session.role==='owner') return await rpc('app_save_schedule',{p_token:TOKEN,p_month:month,p_data:data});
+  return await rpc('app_save_schedule_permitted',{p_token:TOKEN,p_month:month,p_data:data});
+}
 
 /* ================= Format helpers ================= */
 const DOW=['вс','пн','вт','ср','чт','пт','сб'];
@@ -781,8 +899,8 @@ async function boot(){
   // попытка восстановить сессию после обновления страницы
   let saved=null; try{ saved=JSON.parse(sessionStorage.getItem('sess')); }catch(e){}
   if(saved && saved.token){
-    TOKEN=saved.token; session={login:saved.login,name:saved.name,role:saved.role,senior:saved.senior,canEdit:!!saved.canEdit,home:saved.home||null};
-    try{ await loadReports(true); renderApp(); return; }
+    TOKEN=saved.token; session={login:saved.login,name:saved.name,role:saved.role,senior:!!saved.senior,canEdit:!!saved.canEdit,home:saved.home||null,permissions:normalizePermissions(saved.permissions||{}),permissionsLoaded:false};
+    try{ await refreshPermissions(); await loadReports(true); renderApp(); return; }
     catch(e){ TOKEN=null; session=null; try{sessionStorage.removeItem('sess');}catch(_){} }
   }
   let needs;
@@ -819,7 +937,7 @@ function renderSetup(){
     try{
       const res=await rpc('app_bootstrap_owner', {p_login:login, p_name:name, p_password:pass});
       if(res && res.error==='exists'){ toast('Руководитель уже создан — войдите',true); renderLogin(); return; }
-      saveSession(res); toast('Аккаунт руководителя создан'); renderApp();
+      saveSession(res); await refreshPermissions(); toast('Аккаунт руководителя создан'); renderApp();
     }catch(e){ handleErr(e); }
   };
 }
@@ -843,7 +961,7 @@ function renderLogin(){
       const res=await rpc('app_login', {p_login:login, p_password:pass});
       if(!res){ toast('Неверный логин или пароль',true); return; }
       if(res.error==='disabled'){ toast('Доступ отключён. Обратитесь к руководителю.',true); return; }
-      saveSession(res); renderApp();
+      saveSession(res); await refreshPermissions(); renderApp();
     }catch(e){ handleErr(e); }
   };
   root.querySelector('#l-ok').onclick=go;
@@ -851,10 +969,14 @@ function renderLogin(){
 }
 
 /* ================= App shell / routing ================= */
-function roleLabel(){ return session.role==='owner'?'Руководитель':(session.senior?'Старший администратор':'Администратор'); }
+function roleLabel(){
+  if(session.role==='owner') return 'Руководитель';
+  return permissionPresetName(session.permissions)==='Старший'?'Старший администратор':'Администратор';
+}
 function header(){
-  const full=session.role==='owner'||session.senior;
-  const pill=full?'<span class="role-pill role-boss">полный доступ</span>':'<span class="role-pill role-admin">смена</span>';
+  const full=session.role==='owner'||PERMISSION_KEYS.every(k=>can(k));
+  const extended=!full&&hasAnyPermission();
+  const pill=full?'<span class="role-pill role-boss">полный доступ</span>':(extended?'<span class="role-pill role-boss">расширенный доступ</span>':'<span class="role-pill role-admin">смена</span>');
   return `<div class="top fade-in">
     <div class="mark">${LEAF}</div>
     <div class="brand"><div class="name" title="версия ${APP_VERSION}">FAD</div></div>
@@ -865,9 +987,14 @@ function header(){
   </div>`;
 }
 function renderApp(){
-  if(session.role==='owner') renderRoleUI([{label:'Отчёты',render:renderAllReports},{label:'Расписание',render:renderSchedule},{label:'Администраторы',render:renderUsers},{label:'Сообщения',render:renderMessages}]);
-  else if(session.senior)    renderRoleUI([{label:'Моя смена',render:renderShift},{label:'Расписание',render:renderSchedule},{label:'Все отчёты',render:renderAllReports}]);
-  else                       renderRoleUI([{label:'Смена',render:renderShift},{label:'Расписание',render:renderSchedule}]);
+  const tabs=[];
+  if(session.role==='owner') tabs.push({label:'Отчёты',render:renderAllReports});
+  else tabs.push({label:'Смена',render:renderShift});
+  tabs.push({label:'Расписание',render:renderSchedule});
+  if(session.role!=='owner' && can('reports.view_all')) tabs.push({label:'Все отчёты',render:renderAllReports});
+  if(session.role==='owner' || can('admins.view') || can('admins.manage') || can('admins.permissions') || can('telegram.manage')) tabs.push({label:'Администраторы',render:renderUsers});
+  if(session.role==='owner' || can('messages.manage')) tabs.push({label:'Сообщения',render:renderMessages});
+  renderRoleUI(tabs);
 }
 function renderRoleUI(tabs){
   const root=document.getElementById('root');
@@ -921,8 +1048,9 @@ async function fillCoffeeChk(container, date, data){
   let sc=null; try{ sc=await apiGetSchedule(date.slice(0,7)); }catch(e){}
   const who=(sc&&sc.coffee)?sc.coffee[date]:null;
   if(!who) return;
-  if(session.role!=='owner' && session.login!==who) return;
-  const note=(session.role==='owner'&&session.login!==who)?` <small style="color:var(--ink-faint)">(назначен: ${escapeHtml(coffeeName(who))})</small>`:'';
+  const coffeeManager=can('schedule.coffee');
+  if(!coffeeManager && session.login!==who) return;
+  const note=(coffeeManager&&session.login!==who)?` <small style="color:var(--ink-faint)">(назначен: ${escapeHtml(coffeeName(who))})</small>`:'';
   box.innerHTML=`<label class="chk zrep"><input type="checkbox" id="coffeeDone" ${data.coffeeDone?'checked':''}/> ☕ Кофе+снеки — выполнено${note}</label>`;
 }
 function openChecklistModal(items, onOk){
@@ -940,7 +1068,7 @@ function renderForm(container,studio,date,data,onSaved,opts){
   let newList=Array.isArray(data.newList)?data.newList.map(c=>({...c})):[];
   let notRenewList=Array.isArray(data.notRenewList)?data.notRenewList.map(c=>({...c})):[];
   const morningFixed=data.cashStart!=null;
-  const canEditMorning=(session.role==='owner')||(session.canEdit===true);
+  const canEditMorning=can('reports.edit_morning');
   const morningLocked=morningFixed&&!canEditMorning;
 
   container.innerHTML=`
@@ -961,7 +1089,7 @@ function renderForm(container,studio,date,data,onSaved,opts){
           <label class="field"><div class="lbl">Причина расхождения с прошлым остатком <small id="interAmt"></small></div>
             <input id="interNote" value="${data.interNote?escapeHtml(data.interNote):''}" placeholder="напр.: аренда за сб–вс, инкассация, ошибка пересчёта…"/></label>
         </div>
-        ${morningLocked?'<div class="hintline" style="margin-top:6px">Сумма зафиксирована при пересчёте кассы. Изменить может руководитель или старший администратор (если ему разрешено).</div>':''}
+        ${morningLocked?'<div class="hintline" style="margin-top:6px">Сумма зафиксирована при пересчёте кассы. Изменить может сотрудник с правом «Правка наличных утром».</div>':''}
         <div style="height:14px"></div>
         <label class="field" style="max-width:320px;margin-bottom:4px">
           <div class="lbl">Наличные на конец дня</div>
@@ -1332,7 +1460,7 @@ function dayCard(e,open){
         <div class="item"><div class="k">Конверсия новых</div><div class="v">${pct(bought,came)}</div></div>
         <div class="item"><div class="k">Конверсия продлений</div><div class="v">${pct(renewC,endedC)}</div></div>
       </div>
-      ${(session&&(session.role==='owner'||session.canEdit))?`<button class="btn btn-sm" data-editmorning="${e.studioId}|${e.date}" style="margin:2px 6px 8px 0">✎ Изменить наличные утром</button>`:''}${(session&&session.role==='owner')?`<button class="btn btn-sm" data-editreport="${e.studioId}|${e.date}" style="margin:2px 6px 8px 0">✎ Редактировать отчёт</button>`:''}${(session&&session.role==='owner')?`<button class="btn btn-sm btn-ghost" data-delreport="${e.studioId}|${e.date}" style="margin:2px 0 8px">🗑 Удалить отчёт</button>`:''}
+      ${(session&&can('reports.edit_morning'))?`<button class="btn btn-sm" data-editmorning="${e.studioId}|${e.date}" style="margin:2px 6px 8px 0">✎ Изменить наличные утром</button>`:''}${(session&&can('reports.edit_closed'))?`<button class="btn btn-sm" data-editreport="${e.studioId}|${e.date}" style="margin:2px 6px 8px 0">✎ Редактировать отчёт</button>`:''}${(session&&can('reports.delete'))?`<button class="btn btn-sm btn-ghost" data-delreport="${e.studioId}|${e.date}" style="margin:2px 0 8px">🗑 Удалить отчёт</button>`:''}
       ${e.cashStartEditedBy?`<div class="hintline" style="margin-bottom:8px">Наличные утром изменены: ${escapeHtml(shortName(e.cashStartEditedBy))}${e.cashStartEditedAt?' · '+fmtTime(e.cashStartEditedAt):''}</div>`:''}
       <div class="notes"><div class="k">Движения наличных</div>${changeList}</div>
       ${newDetail?`<div class="notes"><div class="k">Новые клиенты — по каждому</div>${newDetail}</div>`:''}
@@ -1390,7 +1518,7 @@ async function renderAllReports(body){
     const f=stf.value, d=pick.value;
     const pe=all.filter(e=>e.date===d&&(f==='all'||e.studioId===f));
     let extra='';
-    if(session.role==='owner'){
+    if(can('reports.edit_closed')){
       const present=new Set(pe.map(e=>e.studioId));
       const miss=STUDIOS.filter(st=>(f==='all'||st.id===f)&&!present.has(st.id));
       if(miss.length) extra=`<div class="miss-row">${miss.map(st=>`<button class="btn btn-sm" data-create="${st.id}|${d}">+ Открыть отчёт: ${sdot(st.id)}${st.name}</button>`).join('')}</div>`;
@@ -1640,6 +1768,7 @@ function exportExcel(entries){
 /* ================= User management (owner only) ================= */
 function defaultMessages(){ return {checklist:{all:[],byAdmin:{}}, openMsg:{all:'',byAdmin:{}}}; }
 async function renderMessages(body){
+  if(!TEAM.length){ try{ TEAM=await apiListTeam(); }catch(e){} }
   body.innerHTML=`<div class="hintline" style="padding:12px">Загрузка…</div>`;
   let settings={}; try{ settings=await apiGetSettings(); }catch(e){}
   const MSG = Object.assign(defaultMessages(), settings.messages||{});
@@ -1692,18 +1821,30 @@ async function renderMessages(body){
 }
 let USERS_VIEW='admins';
 async function renderUsers(body){
-  let users;
-  try{ users = await rpc('app_list_users', {p_token:TOKEN}) || []; }
+  let allUsers;
+  try{ allUsers = await apiListUsers() || []; }
   catch(e){ return handleErr(e); }
-  users.sort((a,b)=>a.name.localeCompare(b.name,'ru'));
+  allUsers.sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'ru'));
+  const ownerUser=allUsers.find(u=>u.role==='owner')||null;
+  const users=allUsers.filter(u=>u.role!=='owner');
   const byLogin = Object.fromEntries(users.map(u=>[u.login,u]));
   let settings={}; try{ settings=await apiGetSettings(); }catch(e){}
   settings.adminPhones=settings.adminPhones||{};
   ADMIN_PHONES=settings.adminPhones;
   const active=users.filter(u=>u.active), archived=users.filter(u=>!u.active);
-  const subs=[['admins','Администраторы ('+active.length+')'],['telegram','Telegram'],['archive','Уволенные ('+archived.length+')']];
+  const viewAdmins=session.role==='owner'||can('admins.view')||can('admins.manage')||can('admins.permissions');
+  const manageAdmins=session.role==='owner'||can('admins.manage');
+  const managePerms=session.role==='owner'||can('admins.permissions');
+  const manageTelegram=session.role==='owner'||can('telegram.manage');
+  const subs=[];
+  if(viewAdmins) subs.push(['admins','Администраторы ('+active.length+')']);
+  if(manageTelegram) subs.push(['telegram','Telegram']);
+  if(viewAdmins) subs.push(['archive','Уволенные ('+archived.length+')']);
+  if(!subs.length){ body.innerHTML='<div class="empty">Нет доступных разделов.</div>'; return; }
+  if(!subs.some(x=>x[0]===USERS_VIEW)) USERS_VIEW=subs[0][0];
   body.innerHTML=`<div class="subtabs">${subs.map(x=>`<button class="subtab${USERS_VIEW===x[0]?' on':''}" data-uv="${x[0]}">${x[1]}</button>`).join('')}</div><div id="uBody"></div>`;
   body.querySelectorAll('[data-uv]').forEach(b=>b.onclick=()=>{ USERS_VIEW=b.dataset.uv; body.querySelectorAll('[data-uv]').forEach(x=>x.classList.toggle('on',x.dataset.uv===USERS_VIEW)); drawU(); });
+
   function wireRows(listEl){
     listEl.querySelectorAll('.urow').forEach(row=>{
       const login=row.dataset.login; const u=byLogin[login]; if(!u) return;
@@ -1711,43 +1852,50 @@ async function renderUsers(body){
         el.onclick=async()=>{
           const act=el.dataset.act;
           try{
-            if(act==='active'){ await rpc('app_update_admin',{p_token:TOKEN,p_login:login,p_active:!u.active,p_senior:u.senior,p_can_edit:u.canEdit}); toast(!u.active?'Доступ включён':'Перемещён в «Уволенные»'); renderUsers(body); }
-            else if(act==='senior'){ await rpc('app_update_admin',{p_token:TOKEN,p_login:login,p_active:u.active,p_senior:!u.senior,p_can_edit:u.canEdit}); toast(!u.senior?'Назначен старшим (полный доступ)':'Полный доступ снят'); renderUsers(body); }
-            else if(act==='canedit'){ await rpc('app_update_admin',{p_token:TOKEN,p_login:login,p_active:u.active,p_senior:u.senior,p_can_edit:!u.canEdit}); toast(!u.canEdit?'Разрешена правка утренних наличных':'Правка утренних наличных запрещена'); renderUsers(body); }
-            else if(act==='reset'){ resetPwModal(u,()=>renderUsers(body)); }
-            else if(act==='del'){ confirmModal(`Удалить администратора «${u.name}»? Он больше не сможет войти. Его отчёты сохранятся в логе.`, async()=>{ try{ await rpc('app_delete_admin',{p_token:TOKEN,p_login:login}); toast('Администратор удалён'); renderUsers(body); }catch(e){ handleErr(e); } }); }
+            if(act==='active' && manageAdmins){ await apiSetActive(login,!u.active); toast(!u.active?'Доступ включён':'Перемещён в «Уволенные»'); renderUsers(body); }
+            else if(act==='reset' && manageAdmins){ resetPwModal(u,()=>renderUsers(body)); }
+            else if(act==='del' && manageAdmins){ confirmModal(`Удалить администратора «${u.name}»? Он больше не сможет войти. Его отчёты сохранятся в логе.`, async()=>{ try{ await apiDeleteAdmin(login); toast('Администратор удалён'); renderUsers(body); }catch(e){ handleErr(e); } }); }
           }catch(e){ handleErr(e); }
         };
       });
+      const pb=row.querySelector('[data-perms]');
+      if(pb&&managePerms) pb.onclick=()=>permissionsModal(u,()=>renderUsers(body));
     });
-    listEl.querySelectorAll('select[data-home]').forEach(sel=>{ sel.onchange=async()=>{ try{ await apiSetHome(sel.dataset.home, sel.value); toast('Домашний филиал обновлён'); }catch(e){ handleErr(e); } }; });
-    listEl.querySelectorAll('input[data-hire]').forEach(inp=>{ inp.onchange=async()=>{ try{ await apiSetHire(inp.dataset.hire, inp.value); toast('Дата приёма сохранена'); }catch(e){ handleErr(e); } }; });
-    listEl.querySelectorAll('input[data-coffee]').forEach(cb=>{ cb.onchange=async()=>{ try{ await apiSetCoffee(cb.dataset.coffee, cb.checked); toast('Сохранено'); }catch(e){ handleErr(e); } }; });
-    listEl.querySelectorAll('input[data-phone]').forEach(inp=>{ inp.onchange=async()=>{
-      const login=inp.dataset.phone, v=inp.value.trim();
-      settings.adminPhones=settings.adminPhones||{};
-      if(v) settings.adminPhones[login]=v; else delete settings.adminPhones[login];
-      ADMIN_PHONES=settings.adminPhones;
-      try{ await apiSaveSettings(settings); toast('Телефон сохранён'); }catch(e){ handleErr(e); }
-    }; });
+    if(manageAdmins){
+      listEl.querySelectorAll('select[data-home]').forEach(sel=>{ sel.onchange=async()=>{ try{ await apiSetHome(sel.dataset.home, sel.value); toast('Домашний филиал обновлён'); }catch(e){ handleErr(e); } }; });
+      listEl.querySelectorAll('input[data-hire]').forEach(inp=>{ inp.onchange=async()=>{ try{ await apiSetHire(inp.dataset.hire, inp.value); toast('Дата приёма сохранена'); }catch(e){ handleErr(e); } }; });
+      listEl.querySelectorAll('input[data-coffee]').forEach(cb=>{ cb.onchange=async()=>{ try{ await apiSetCoffee(cb.dataset.coffee, cb.checked); toast('Сохранено'); }catch(e){ handleErr(e); } }; });
+      listEl.querySelectorAll('input[data-phone]').forEach(inp=>{ inp.onchange=async()=>{
+        const login=inp.dataset.phone, v=inp.value.trim();
+        settings.adminPhones=settings.adminPhones||{};
+        if(v) settings.adminPhones[login]=v; else delete settings.adminPhones[login];
+        ADMIN_PHONES=settings.adminPhones;
+        try{ await apiSaveSettings(settings); toast('Телефон сохранён'); }catch(e){ handleErr(e); }
+      }; });
+    }
   }
   function drawAdmins(el){
-    el.innerHTML=`<div class="bar fade-in"><div class="grow"><div class="section-title" style="margin:0">Администраторы (${active.length})</div></div><button class="btn btn-primary" id="add">+ Добавить администратора</button></div>
-      <p style="color:var(--ink-soft);font-size:13px;margin:0 0 16px">Переключатель «Доступ» отключает вход — сотрудник уходит во вкладку «Уволенные». «Старший» — полный доступ ко всем отчётам.</p>
-      <div id="ulist">${active.length?active.map(u=>userRow(u,(settings.adminPhones||{})[u.login]||'')).join(''):'<div class="empty">Активных администраторов нет.</div>'}</div>`;
+    el.innerHTML=`<div class="bar fade-in"><div class="grow"><div class="section-title" style="margin:0">Администраторы (${active.length})</div></div>${manageAdmins?'<button class="btn btn-primary" id="add">+ Добавить администратора</button>':''}</div>
+      <p style="color:var(--ink-soft);font-size:13px;margin:0 0 16px">Права задаются отдельно для каждого сотрудника: отчёты, расписание, администраторы, Telegram и сообщения. «Полный доступ» даёт все рабочие возможности дашборда, но аккаунт руководителя изменить нельзя.</p>
+      <div id="ulist">${active.length?active.map(u=>userRow(u,(settings.adminPhones||{})[u.login]||'',{manage:manageAdmins,permissions:managePerms})).join(''):'<div class="empty">Активных администраторов нет.</div>'}</div>`;
     wireRows(el.querySelector('#ulist'));
-    el.querySelector('#add').onclick=()=>addAdminModal(()=>renderUsers(body));
+    const add=el.querySelector('#add'); if(add) add.onclick=()=>addAdminModal(()=>renderUsers(body));
   }
   function drawArchive(el){
-    el.innerHTML=`<p class="msg-sub">Уволенные (доступ отключён). Можно вернуть в работу или удалить окончательно. Их отчёты сохраняются в логе.</p>
-      <div id="ulist">${archived.length?archived.map(archRow).join(''):'<div class="empty">Здесь пусто — уволенных нет.</div>'}</div>`;
+    el.innerHTML=`<p class="msg-sub">Уволенные (доступ отключён).${manageAdmins?' Можно вернуть в работу или удалить окончательно.':''} Их отчёты сохраняются в логе.</p>
+      <div id="ulist">${archived.length?archived.map(u=>archRow(u,manageAdmins)).join(''):'<div class="empty">Здесь пусто — уволенных нет.</div>'}</div>`;
     const listEl=el.querySelector('#ulist');
-    listEl.querySelectorAll('[data-restore]').forEach(b=>b.onclick=async()=>{ const u=byLogin[b.dataset.restore]; try{ await rpc('app_update_admin',{p_token:TOKEN,p_login:u.login,p_active:true,p_senior:u.senior,p_can_edit:u.canEdit}); toast('Сотрудник возвращён в работу'); renderUsers(body); }catch(e){ handleErr(e); } });
-    listEl.querySelectorAll('[data-del2]').forEach(b=>b.onclick=()=>{ const u=byLogin[b.dataset.del2]; confirmModal(`Удалить «${u.name}» окончательно? Он исчезнет из списков. Отчёты останутся в логе.`, async()=>{ try{ await rpc('app_delete_admin',{p_token:TOKEN,p_login:u.login}); toast('Удалён'); renderUsers(body); }catch(e){ handleErr(e); } }); });
+    if(manageAdmins){
+      listEl.querySelectorAll('[data-restore]').forEach(b=>b.onclick=async()=>{ const u=byLogin[b.dataset.restore]; try{ await apiSetActive(u.login,true); toast('Сотрудник возвращён в работу'); renderUsers(body); }catch(e){ handleErr(e); } });
+      listEl.querySelectorAll('[data-del2]').forEach(b=>b.onclick=()=>{ const u=byLogin[b.dataset.del2]; confirmModal(`Удалить «${u.name}» окончательно? Он исчезнет из списков. Отчёты останутся в логе.`, async()=>{ try{ await apiDeleteAdmin(u.login); toast('Удалён'); renderUsers(body); }catch(e){ handleErr(e); } }); });
+    }
   }
   function drawTelegram(el){
     const TG = Object.assign({recipients:{}}, settings.telegram||{}); TG.recipients=TG.recipients||{};
-    const recips=[{login:session.login,name:shortName(session.name)+' (вы)'}].concat(active.map(u=>({login:u.login,name:shortName(u.name)})));
+    const recips=[];
+    if(ownerUser&&ownerUser.active) recips.push({login:ownerUser.login,name:shortName(ownerUser.name)+(ownerUser.login===session.login?' (вы)':'')});
+    else if(session.role==='owner') recips.push({login:session.login,name:shortName(session.name)+' (вы)'});
+    active.forEach(u=>recips.push({login:u.login,name:shortName(u.name)+(u.login===session.login?' (вы)':'')}));
     el.innerHTML=`<div class="section-title" style="margin-top:4px">📨 Отчёт по сменам в Telegram</div>
       <p class="msg-sub">Ежедневная сводка по филиалам приходит выбранным получателям в заданное время (по Минску). «Chat ID» — идентификатор чата получателя с ботом. «Тест» отправляет проверочное сообщение прямо сейчас.</p>
       <div class="card" style="padding:0;overflow:hidden;max-width:820px"><table class="tg-tbl"><thead><tr><th>Получатель</th><th style="text-align:center">Получать</th><th>Telegram chat ID</th><th>Время (Минск)</th><th></th></tr></thead><tbody>${recips.map(r=>{const c=TG.recipients[r.login]||{};return `<tr><td class="tg-name">${escapeHtml(r.name)}</td><td data-label="Получать" style="text-align:center"><input type="checkbox" data-tgen="${escapeHtml(r.login)}" ${c.enabled?'checked':''}/></td><td data-label="Telegram chat ID"><input class="tg-inp" data-tgcid="${escapeHtml(r.login)}" value="${escapeHtml(c.chatId||'')}" placeholder="напр. 123456789"/></td><td data-label="Время (Минск)"><input type="time" data-tgtime="${escapeHtml(r.login)}" value="${escapeHtml(c.time||'23:00')}"/></td><td class="tg-test" data-label="Проверка"><button class="btn btn-sm" data-tgtest="${escapeHtml(r.login)}">Тест</button></td></tr>`;}).join('')}</tbody></table></div>
@@ -1772,33 +1920,59 @@ async function renderUsers(body){
   function drawU(){ const el=body.querySelector('#uBody'); if(USERS_VIEW==='telegram') drawTelegram(el); else if(USERS_VIEW==='archive') drawArchive(el); else drawAdmins(el); }
   drawU();
 }
-function archRow(u){
-  return `<div class="urow" data-login="${escapeHtml(u.login)}"><div class="u-main"><div class="u-name">${escapeHtml(u.name)} ${u.senior?'<span class="badge-senior">старший</span>':''}</div><div class="u-login">логин: ${escapeHtml(u.login)}${u.home?' · '+studioName(u.home):''}</div></div>
-    <div class="u-ctl"><span class="st-pill st-off">уволен</span><button class="btn btn-sm" data-restore="${escapeHtml(u.login)}">Вернуть в работу</button><button class="btn btn-sm btn-ghost" data-del2="${escapeHtml(u.login)}">Удалить</button></div></div>`;
+function userPermissions(u){
+  const p=normalizePermissions(u&&u.permissions||{});
+  if(u&&u.senior) SENIOR_PERMISSION_KEYS.forEach(k=>p[k]=true);
+  if(u&&u.canEdit) p['reports.edit_morning']=true;
+  return p;
 }
-function userRow(u,phone){
+function archRow(u,manage){
+  const p=userPermissions(u);
+  return `<div class="urow" data-login="${escapeHtml(u.login)}"><div class="u-main"><div class="u-name">${escapeHtml(u.name)}</div><div class="u-login">логин: ${escapeHtml(u.login)}${u.home?' · '+studioName(u.home):''} · ${escapeHtml(permissionPresetName(p))}</div></div>
+    <div class="u-ctl"><span class="st-pill st-off">уволен</span>${manage?`<button class="btn btn-sm" data-restore="${escapeHtml(u.login)}">Вернуть в работу</button><button class="btn btn-sm btn-ghost" data-del2="${escapeHtml(u.login)}">Удалить</button>`:''}</div></div>`;
+}
+function userRow(u,phone,opts){
+  opts=opts||{}; const p=userPermissions(u), pName=permissionPresetName(p), disabled=opts.manage?'':' disabled';
   return `<div class="urow" data-login="${escapeHtml(u.login)}">
-    <div class="u-main"><div class="u-name">${escapeHtml(u.name)} ${u.senior?'<span class="badge-senior">старший</span>':''}</div>
+    <div class="u-main"><div class="u-name">${escapeHtml(u.name)} <span class="perm-badge${pName==='Полный доступ'?' full':''}">${escapeHtml(pName)}</span></div>
       <div class="u-login">логин: ${escapeHtml(u.login)}</div></div>
     <div class="u-ctl">
-      <select class="home-sel u-home" data-home="${escapeHtml(u.login)}" style="max-width:150px"><option value="">филиал —</option>${STUDIOS.map(s=>`<option value="${s.id}" ${u.home===s.id?'selected':''}>${s.name}</option>`).join('')}</select>
-      <label class="hire-lbl u-hire">приём:<input type="date" class="hire-inp" data-hire="${escapeHtml(u.login)}" value="${u.hire||''}"/></label>
-      <label class="u-phone">тел.: <input type="tel" inputmode="tel" class="phone-inp" data-phone="${escapeHtml(u.login)}" value="${escapeHtml(phone||'')}" placeholder="+375…"/></label>
-      <label class="hire-lbl u-coffee"><input type="checkbox" class="coffee-inp" data-coffee="${escapeHtml(u.login)}" ${u.coffee?'checked':''}/> ☕ кофе+снеки</label>
+      <select class="home-sel u-home" data-home="${escapeHtml(u.login)}" style="max-width:150px"${disabled}><option value="">филиал —</option>${STUDIOS.map(s=>`<option value="${s.id}" ${u.home===s.id?'selected':''}>${s.name}</option>`).join('')}</select>
+      <label class="hire-lbl u-hire">приём:<input type="date" class="hire-inp" data-hire="${escapeHtml(u.login)}" value="${u.hire||''}"${disabled}/></label>
+      <label class="u-phone">тел.: <input type="tel" inputmode="tel" class="phone-inp" data-phone="${escapeHtml(u.login)}" value="${escapeHtml(phone||'')}" placeholder="+375…"${disabled}/></label>
+      <label class="hire-lbl u-coffee"><input type="checkbox" class="coffee-inp" data-coffee="${escapeHtml(u.login)}" ${u.coffee?'checked':''}${disabled}/> ☕ кофе+снеки</label>
       <span class="st-pill u-status ${u.active?'st-on':'st-off'}">${u.active?'доступ включён':'доступ отключён'}</span>
-      <span class="ctl-item u-access">Доступ <button class="sw ${u.active?'on':''}" data-act="active" aria-label="Доступ"></button></span>
-      <span class="ctl-item u-senior">Старший <button class="sw ${u.senior?'on':''}" data-act="senior" aria-label="Старший"></button></span>
-      <span class="ctl-item u-canedit">Правка касс. утра <button class="sw ${u.canEdit?'on':''}" data-act="canedit" aria-label="Правка утренних наличных"></button></span>
-      <button class="btn btn-sm u-reset" data-act="reset">Сбросить пароль</button>
-      <button class="btn btn-sm btn-ghost u-delete" data-act="del">Удалить</button>
+      ${opts.manage?`<span class="ctl-item u-access">Доступ <button class="sw ${u.active?'on':''}" data-act="active" aria-label="Доступ"></button></span>`:''}
+      <span class="u-perms-info">Права: <b>${escapeHtml(pName)}</b></span>
+      ${opts.permissions?`<button class="btn btn-sm u-perm-btn" data-perms="${escapeHtml(u.login)}">Настроить права</button>`:''}
+      ${opts.manage?`<button class="btn btn-sm u-reset" data-act="reset">Сбросить пароль</button><button class="btn btn-sm btn-ghost u-delete" data-act="del">Удалить</button>`:''}
     </div></div>`;
 }
+function permissionsModal(u,onDone){
+  let state=userPermissions(u);
+  const groups=[...new Set(PERMISSION_DEFS.map(x=>x.group))];
+  const el=modal(`<h3>Права доступа</h3><p>${escapeHtml(u.name)} · ${escapeHtml(u.login)}</p>
+    <div class="perm-presets"><button class="btn btn-sm" data-preset="basic">Обычный</button><button class="btn btn-sm" data-preset="senior">Старший</button><button class="btn btn-sm btn-primary" data-preset="full">Полный доступ</button></div>
+    <div class="perm-groups">${groups.map(g=>`<div class="perm-group"><div class="perm-group-title">${escapeHtml(g)}</div>${PERMISSION_DEFS.filter(x=>x.group===g).map(d=>`<label class="perm-row"><input type="checkbox" data-pkey="${d.key}" ${state[d.key]?'checked':''}/><span><b>${escapeHtml(d.label)}</b><small>${escapeHtml(d.desc)}</small></span></label>`).join('')}</div>`).join('')}</div>
+    <div class="perm-note">Полный доступ включает возможность выдавать права другим администраторам. Аккаунт руководителя этими правами изменить или удалить нельзя.</div>
+    <div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="permSave">Сохранить права</button></div>`);
+  const modalBox=el.querySelector('.modal'); if(modalBox) modalBox.classList.add('perm-modal');
+  function apply(p){ state=normalizePermissions(p); el.querySelectorAll('[data-pkey]').forEach(x=>x.checked=!!state[x.dataset.pkey]); }
+  el.querySelectorAll('[data-preset]').forEach(b=>b.onclick=()=>apply(PERMISSION_PRESETS[b.dataset.preset]||{}));
+  el.querySelector('#permSave').onclick=async()=>{
+    const p={}; el.querySelectorAll('[data-pkey]').forEach(x=>p[x.dataset.pkey]=x.checked);
+    try{
+      await apiSetPermissions(u.login,p); closeModal(el); toast('Права доступа сохранены');
+      if(session.login===u.login){ session.permissions=normalizePermissions(p); session.senior=false; session.canEdit=!!p['reports.edit_morning']; persistSession(); renderApp(); }
+      else onDone&&onDone();
+    }catch(e){ handleErr(e); }
+  };
+}
 function addAdminModal(onDone){
-  const el=modal(`<h3>Новый администратор</h3><p>Он войдёт по логину и паролю. Пароль можно позже сбросить.</p>
+  const el=modal(`<h3>Новый администратор</h3><p>Он войдёт по логину и паролю. После создания права можно настроить отдельно.</p>
     <div class="field"><div class="lbl">ФИО</div><input id="m-name" placeholder="Петрова Анна"/></div>
     <div class="field"><div class="lbl">Логин</div><input id="m-login" placeholder="anna" autocapitalize="off"/></div>
     <div class="field"><div class="lbl">Пароль</div><input id="m-pass" placeholder="минимум 4 символа"/></div>
-    <label class="chk" style="margin-top:2px"><input type="checkbox" id="m-senior"/> Старший (полный доступ к отчётам)</label>
     <div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="m-ok">Создать</button></div>`);
   el.querySelector('#m-ok').onclick=async()=>{
     const name=el.querySelector('#m-name').value.trim();
@@ -1807,7 +1981,7 @@ function addAdminModal(onDone){
     if(!name||!login||!pass){toast('Заполните все поля',true);return;}
     if(pass.length<4){toast('Пароль слишком короткий',true);return;}
     try{
-      const res=await rpc('app_create_admin',{p_token:TOKEN,p_login:login,p_name:name,p_password:pass,p_senior:el.querySelector('#m-senior').checked});
+      const res=await apiCreateAdmin(login,name,pass);
       if(res && res.error==='login_taken'){ toast('Такой логин уже занят',true); return; }
       closeModal(el); toast('Администратор добавлен'); onDone&&onDone();
     }catch(e){ handleErr(e); }
@@ -1819,7 +1993,7 @@ function resetPwModal(u,onDone){
     <div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="r-ok">Сохранить</button></div>`);
   el.querySelector('#r-ok').onclick=async()=>{
     const p=el.querySelector('#r-pass').value; if(p.length<4){toast('Пароль слишком короткий',true);return;}
-    try{ await rpc('app_reset_password',{p_token:TOKEN,p_login:u.login,p_new_password:p}); closeModal(el); toast('Пароль обновлён'); onDone&&onDone(); }
+    try{ await apiResetPassword(u.login,p); closeModal(el); toast('Пароль обновлён'); onDone&&onDone(); }
     catch(e){ handleErr(e); }
   };
 }
@@ -1871,7 +2045,7 @@ async function loadMonth(y,m){
 async function saveMonth(){ await apiSaveSchedule(monthKey(SCH.y,SCH.m), SCHDATA); }
 
 async function renderSchedule(body){
-  const editor = session.role==='owner' || session.senior;
+  const editor = can('schedule.edit');
   if(!SCH){ const now=new Date(); const defSids = editor ? STUDIOS.map(s=>s.id) : (session.home?[session.home]:STUDIOS.map(s=>s.id)); SCH={y:now.getFullYear(), m:now.getMonth(), sids:defSids, view:'calendar', calView:(typeof window!=='undefined'&&window.innerWidth<640)?'list':'grid'}; }
   try{ TEAM=await apiListTeam(); SCHDATA=await loadMonth(SCH.y,SCH.m); }
   catch(e){ return handleErr(e); }
@@ -1883,26 +2057,21 @@ function reflowSchedule(){ if(SCH&&SCH._body) drawSchedule(SCH._body, SCH.editor
 
 function drawSchedule(body, editor){
   SCH._body=body; SCH.editor=editor;
+  const canEdit=can('schedule.edit'), canAbsence=can('schedule.absences'), canApprove=can('schedule.approve'), canCoffee=can('schedule.coffee');
   const myCoffee=(TEAM.find(a=>a.login===session.login)||{}).coffee;
-  let sub;
-  if(editor){
-    sub=[['calendar','Календарь'],['overview','Обзор'],['absences','Отсутствия']];
-    if(session.senior && session.role!=='owner') sub.push(['dashboard','Моё расписание']);
-    if(session.role==='owner' || myCoffee) sub.push(['coffee','Кофе+снеки']);
-  } else {
-    sub=[['calendar','Календарь'],['overview','Обзор'],['dashboard','Моё расписание']];
-    if(myCoffee) sub.push(['coffee','Кофе+снеки']);
-  }
+  const sub=[['calendar','Календарь'],['overview','Обзор']];
+  if(canAbsence||can('schedule.leave_norms')) sub.push(['absences','Отсутствия']);
+  if(session.role!=='owner') sub.push(['dashboard','Моё расписание']);
+  if(canCoffee||myCoffee||session.role==='owner') sub.push(['coffee','Кофе+снеки']);
   if(!sub.some(x=>x[0]===SCH.view)) SCH.view=sub[0][0];
   body.innerHTML=`<div id="schedRoot">
     <div class="sch-bar">
       <div class="sch-month"><button class="btn btn-sm" data-mv="-1">‹</button><b>${MON2[SCH.m]} ${SCH.y}</b><button class="btn btn-sm" data-mv="1">›</button></div>
       <span class="sch-status ${SCHDATA.approved?'ap':'dr'}">${SCHDATA.approved?'✓ утверждён':'черновик'}</span>
       <div class="grow"></div>
-      ${editor?`<button class="btn btn-sm" data-sact="seed" ${SCHDATA.approved?'disabled title="Снимите утверждение, чтобы менять"':''}>Заполнить черновик</button>
-        <button class="btn btn-sm" data-sact="clear" ${SCHDATA.approved?'disabled':''}>Очистить</button>
-        <button class="btn btn-sm" data-sact="absence">Отпуска / больничные</button>
-        <button class="btn btn-sm ${SCHDATA.approved?'':'btn-primary'}" data-sact="approve">${SCHDATA.approved?'Снять утверждение':'Утвердить месяц'}</button>`:''}
+      ${canEdit?`<button class="btn btn-sm" data-sact="seed" ${SCHDATA.approved?'disabled title="Снимите утверждение, чтобы менять"':''}>Заполнить черновик</button><button class="btn btn-sm" data-sact="clear" ${SCHDATA.approved?'disabled':''}>Очистить</button>`:''}
+      ${canAbsence?'<button class="btn btn-sm" data-sact="absence">Отпуска / больничные</button>':''}
+      ${canApprove?`<button class="btn btn-sm ${SCHDATA.approved?'':'btn-primary'}" data-sact="approve">${SCHDATA.approved?'Снять утверждение':'Утвердить месяц'}</button>`:''}
     </div>
     <div class="sch-subtabs">${sub.map(x=>`<button class="sch-subtab${x[0]===SCH.view?' on':''}" data-sview="${x[0]}">${x[1]}</button>`).join('')}</div>
     <div id="schSub"></div>
@@ -1910,15 +2079,13 @@ function drawSchedule(body, editor){
   const root=body.querySelector('#schedRoot');
   root.querySelectorAll('[data-mv]').forEach(b=>b.onclick=async()=>{
     let m=SCH.m+(+b.dataset.mv), y=SCH.y; if(m<0){m=11;y--;} if(m>11){m=0;y++;} SCH.y=y; SCH.m=m;
-    try{ SCHDATA=await loadMonth(y,m); }catch(e){ return handleErr(e); } drawSchedule(body,editor);
+    try{ SCHDATA=await loadMonth(y,m); }catch(e){ return handleErr(e); } drawSchedule(body,can('schedule.edit'));
   });
   root.querySelectorAll('[data-sview]').forEach(b=>b.onclick=()=>{ SCH.view=b.dataset.sview; root.querySelectorAll('[data-sview]').forEach(x=>x.classList.toggle('on',x.dataset.sview===SCH.view)); drawSub(root); });
-  if(editor){
-    root.querySelector('[data-sact="seed"]').onclick=()=>openSeedModal();
-    root.querySelector('[data-sact="clear"]').onclick=()=>clearDraft();
-    root.querySelector('[data-sact="absence"]').onclick=()=>openAbsenceModal();
-    root.querySelector('[data-sact="approve"]').onclick=()=>toggleApprove();
-  }
+  const seed=root.querySelector('[data-sact="seed"]'); if(seed) seed.onclick=()=>openSeedModal();
+  const clear=root.querySelector('[data-sact="clear"]'); if(clear) clear.onclick=()=>clearDraft();
+  const absence=root.querySelector('[data-sact="absence"]'); if(absence) absence.onclick=()=>openAbsenceModal();
+  const approve=root.querySelector('[data-sact="approve"]'); if(approve) approve.onclick=()=>toggleApprove();
   drawSub(root);
 }
 function drawSub(root){
@@ -1931,11 +2098,11 @@ function drawSub(root){
 }
 const ABS_CLR={otpusk:'#FAC775',bol:'#F09595',otgul:'#B4B2A9'};
 async function renderSchCoffee(el){
-  const owner=session.role==='owner';
+  const isOwner=session.role==='owner', manager=can('schedule.coffee');
   let settings={}; try{ settings=await apiGetSettings(); }catch(e){}
   const seen=new Set(), roster=[];
   TEAM.filter(a=>a.coffee).forEach(a=>{ if(!seen.has(a.login)){ seen.add(a.login); roster.push({login:a.login,name:a.name}); } });
-  if(owner){
+  if(isOwner){
     if(!seen.has(session.login)){ seen.add(session.login); roster.push({login:session.login,name:session.name,me:true}); }
     if(!settings.coffeeOwner || settings.coffeeOwner.login!==session.login || settings.coffeeOwner.name!==session.name){
       try{ await apiSaveSettings(Object.assign({},settings,{coffeeOwner:{login:session.login,name:session.name}})); }catch(e){}
@@ -1946,9 +2113,9 @@ async function renderSchCoffee(el){
   COFFEE_ROSTER=roster;
   el.innerHTML=`
     <div class="section-title">☕ Кофе+снеки · ${MON2[SCH.m]} ${SCH.y} <small style="color:var(--ink-faint);font-weight:500">(Машерова)</small></div>
-    <div class="hintline" style="margin-bottom:10px">${owner?'В списке — администраторы с флажком «☕ кофе+снеки» (вкладка «Администраторы») и вы. Клик по клетке — назначить/снять; в один день моет один. Назначения — на текущий месяц.':'Ваш график кофе+снеки на месяц (только просмотр). Ваша строка отмечена «Я».'}</div>
+    <div class="hintline" style="margin-bottom:10px">${manager?'В списке — сотрудники с флажком «☕ кофе+снеки». Клик по клетке — назначить или снять назначение.':'Ваш график кофе+снеки на месяц (только просмотр). Ваша строка отмечена «Я».'}</div>
     <div id="coffeeTL" class="sch-scroll"></div>`;
-  drawCoffeeTimeline(el, roster, !owner);
+  drawCoffeeTimeline(el, roster, !manager);
 }
 function drawCoffeeTimeline(el, roster, readonly){
   const box=el.querySelector('#coffeeTL'); if(!box) return;
@@ -1979,14 +2146,14 @@ function drawCoffeeTimeline(el, roster, readonly){
   }
 }
 async function renderSchAbsences(el){
-  const owner=session.role==='owner';
+  const manageAbs=can('schedule.absences'), manageNorms=can('schedule.leave_norms');
   el.innerHTML=`
     <div class="section-title">Отсутствия · ${MON2[SCH.m]} ${SCH.y}</div>
     <div class="abs-legend">
       <span><i style="background:#FAC775"></i>отпуск</span>
       <span><i style="background:#F09595"></i>больничный</span>
       <span><i style="background:#B4B2A9"></i>отгул</span>
-      <button class="btn btn-sm" id="absEdit" style="margin-left:auto">Добавить / изменить</button>
+      ${manageAbs?'<button class="btn btn-sm" id="absEdit" style="margin-left:auto">Добавить / изменить</button>':''}
     </div>
     <div id="absTimeline" class="sch-scroll"><div class="hintline" style="padding:10px">Загрузка…</div></div>
     <div id="absBalance" style="margin-top:16px"></div>`;
@@ -1996,10 +2163,10 @@ async function renderSchAbsences(el){
   try{ settings=await apiGetSettings(); }catch(e){}
   const seen=new Set(), list=[];
   (all||[]).forEach(a=>{ const k=a.id||JSON.stringify([a.adminId,a.type,a.start,a.end]); if(!seen.has(k)){ seen.add(k); list.push(a); } });
-  fillAbsTimeline(el.querySelector('#absTimeline'), list);
-  fillAbsBalance(el.querySelector('#absBalance'), list, settings, owner);
+  fillAbsTimeline(el.querySelector('#absTimeline'), list, manageAbs);
+  fillAbsBalance(el.querySelector('#absBalance'), list, settings, manageNorms);
 }
-function fillAbsTimeline(box, list){
+function fillAbsTimeline(box, list, editable){
   if(!box) return;
   const y=SCH.y,m=SCH.m,n=schDaysIn(y,m),first=schIso(y,m,1),last=schIso(y,m,n);
   if(!TEAM.length){ box.innerHTML='<div class="hintline" style="padding:10px">Нет администраторов.</div>'; return; }
@@ -2020,7 +2187,7 @@ function fillAbsTimeline(box, list){
   });
   html+='</div>';
   box.innerHTML=html;
-  box.onclick=(ev)=>{ const c=ev.target.closest('.abs-cell[data-login]'); if(c) openAbsCellModal(c.dataset.login, c.dataset.iso); };
+  if(editable) box.onclick=(ev)=>{ const c=ev.target.closest('.abs-cell[data-login]'); if(c) openAbsCellModal(c.dataset.login, c.dataset.iso); };
 }
 function openAbsCellModal(login, dateIso){
   const existing=(SCHDATA.absences||[]).find(a=>a.adminId===login && dateIso>=a.start && dateIso<=a.end);
@@ -2045,7 +2212,7 @@ function openAbsCellModal(login, dateIso){
   const dl=el.querySelector('#acDel');
   if(dl) dl.onclick=async()=>{ SCHDATA.absences=(SCHDATA.absences||[]).filter(a=>a!==existing); try{ await saveMonth(); closeModal(el); toast('Удалено'); reflowSchedule(); }catch(err){ handleErr(err); } };
 }
-function fillAbsBalance(box, list, settings, owner){
+function fillAbsBalance(box, list, settings, canNorms){
   if(!box) return;
   const norms=(settings&&settings.leaveNorms)||{otpusk:24,bol:0,otgul:0};
   const nO=+norms.otpusk||0, nB=+norms.bol||0, nG=+norms.otgul||0;
@@ -2062,7 +2229,7 @@ function fillAbsBalance(box, list, settings, owner){
       : `<b>${o}</b>`;
     return `<tr><td class="rowh">${escapeHtml(shortName(a.name))}<br><small class="ent">${period}</small></td><td style="min-width:170px">${otp}</td><td>${b}${nB?(' / '+nB):''}</td><td>${g}${nG?(' / '+nG):''}</td></tr>`;
   }).join('');
-  const editor = owner ? `<div class="norm-edit">Нормы дней в год:
+  const editor = canNorms ? `<div class="norm-edit">Нормы дней в год:
       <label>Отпуск <input id="nOtp" type="number" min="0" value="${nO}"/></label>
       <label>Больн. <input id="nBol" type="number" min="0" value="${nB}"/></label>
       <label>Отгул <input id="nOtg" type="number" min="0" value="${nG}"/></label>
@@ -2105,7 +2272,7 @@ function schStrip(d, iso, sid, editor, showLabel){
   return `<div class="sch-strip${closed?' closed':''}${need?' need':''}${fill?' fill':''}${armed}" data-day="${d}" data-sid="${sid}" style="border-left:3px solid ${st.color}">${lbl}${coffeeMark}${inner}</div>`;
 }
 function renderSchCalendar(el){
-  const editor=session.role==='owner'||session.senior;
+  const editor=can('schedule.edit');
   let sids=(SCH.sids&&SCH.sids.length)?SCH.sids.filter(id=>SMAP[id]):[];
   if(!sids.length) sids=[STUDIOS[0].id];
   sids=STUDIOS.map(s=>s.id).filter(id=>sids.includes(id));
@@ -2361,7 +2528,7 @@ function exportAdminScheduleOverview(){
 }
 
 function renderSchOverview(el){
-  const editor=session.role==='owner'||session.senior;
+  const editor=can('schedule.edit');
   const n=schDaysIn(SCH.y,SCH.m);
   function covGrid(){
     const y=SCH.y,m=SCH.m;
