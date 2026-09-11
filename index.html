@@ -636,7 +636,7 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 
 
 
-/* ================= Granular permissions UI 11.09.2026-f ================= */
+/* ================= Granular permissions UI 11.09.2026-g ================= */
 .perm-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;background:var(--surface-2);color:var(--accent-deep);font-size:10px;font-weight:700;white-space:nowrap}
 .perm-badge.full{background:var(--gold-soft);color:var(--gold)}
 .u-perms-info{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--ink-soft);white-space:nowrap}
@@ -653,6 +653,13 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 .perm-row span{min-width:0}
 .perm-row b{display:block;font-size:12.5px;line-height:1.25}
 .perm-row small{display:block;color:var(--ink-faint);font-size:10.5px;line-height:1.3;margin-top:2px}
+.perm-days{margin-top:8px;padding:10px;border-top:1px solid rgba(31,42,36,.07);background:rgba(255,255,255,.48);border-radius:9px}
+.perm-days.hidden{display:none}
+.perm-days-title{font-size:12px;font-weight:700;color:var(--ink);margin-bottom:6px}
+.perm-days-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.perm-days-line input{width:92px;min-width:92px;padding:7px 9px}
+.perm-days-line span{font-size:12px;color:var(--ink-soft)}
+.perm-days small{display:block;margin-top:5px;color:var(--ink-faint);font-size:10.5px;line-height:1.3}
 .perm-note{margin-top:12px;padding:10px 12px;border-radius:10px;background:var(--gold-soft);color:var(--ink-soft);font-size:11.5px;line-height:1.4}
 .u-ctl select:disabled,.u-ctl input:disabled{opacity:.7;cursor:not-allowed;background:var(--surface-2)}
 @media(max-width:640px){
@@ -684,7 +691,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '11.09.2026-f'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '11.09.2026-g'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -722,7 +729,20 @@ const PERMISSION_PRESETS = {
   senior:permObject(SENIOR_PERMISSION_KEYS),
   full:permObject(PERMISSION_KEYS)
 };
-function normalizePermissions(p){ const o={}; PERMISSION_KEYS.forEach(k=>o[k]=!!(p&&p[k])); if(o['reports.edit_closed']||o['reports.delete'])o['reports.view_all']=true; if(o['admins.manage']||o['admins.permissions'])o['admins.view']=true; return o; }
+function reportDaysValue(p){
+  const raw=Number(p&&p['reports.days']);
+  if(!Number.isFinite(raw)) return 0;
+  return Math.max(0,Math.min(3650,Math.floor(raw)));
+}
+function normalizePermissions(p){
+  const o={};
+  PERMISSION_KEYS.forEach(k=>o[k]=!!(p&&p[k]));
+  o['reports.days']=reportDaysValue(p);
+  if(o['reports.edit_closed']||o['reports.delete'])o['reports.view_all']=true;
+  if(o['admins.manage']||o['admins.permissions'])o['admins.view']=true;
+  if(!o['reports.view_all'])o['reports.days']=0;
+  return o;
+}
 function legacyPermissions(s){
   const o=normalizePermissions((s&&s.permissions)||{});
   if(s&&s.senior) SENIOR_PERMISSION_KEYS.forEach(k=>o[k]=true);
@@ -734,15 +754,23 @@ function can(key){
   if(session.role==='owner') return true;
   return !!((session.permissions||{})[key]);
 }
+function reportDaysLimit(){
+  if(!session||session.role==='owner') return 0;
+  return reportDaysValue(session.permissions||{});
+}
 function hasAnyPermission(){ return PERMISSION_KEYS.some(k=>can(k)); }
 function permissionCount(p){ return PERMISSION_KEYS.filter(k=>!!(p&&p[k])).length; }
 function permissionPresetName(p){
   const n=normalizePermissions(p);
-  if(PERMISSION_KEYS.every(k=>n[k])) return 'Полный доступ';
-  const on=PERMISSION_KEYS.filter(k=>n[k]);
-  if(on.length===0) return 'Обычный';
-  if(on.length===SENIOR_PERMISSION_KEYS.length && SENIOR_PERMISSION_KEYS.every(k=>n[k])) return 'Старший';
-  return 'Настроено · '+on.length;
+  let base;
+  if(PERMISSION_KEYS.every(k=>n[k])) base='Полный доступ';
+  else {
+    const on=PERMISSION_KEYS.filter(k=>n[k]);
+    if(on.length===0) base='Обычный';
+    else if(on.length===SENIOR_PERMISSION_KEYS.length && SENIOR_PERMISSION_KEYS.every(k=>n[k])) base='Старший';
+    else base='Настроено · '+on.length;
+  }
+  return n['reports.view_all']&&n['reports.days']>0 ? `${base} · ${n['reports.days']} дн.` : base;
 }
 function persistSession(){
   if(!session||!TOKEN) return;
@@ -780,28 +808,32 @@ function saveSession(s){
 }
 async function doLogout(){
   try{ if(TOKEN) await rpc('app_logout', {p_token:TOKEN}); }catch(e){}
-  TOKEN = null; session = null; REPORTS = null;
+  TOKEN = null; session = null; REPORTS = null; ALL_REPORTS = null;
   try{ sessionStorage.removeItem('sess'); }catch(e){}
   boot();
 }
 
-/* ---- Отчёты: кэш + доступ, которым пользуется остальной код ---- */
+/* ---- Отчёты: обычный кэш смены + отдельный кэш общего журнала ---- */
 let REPORTS = null;
+let ALL_REPORTS = null;
 async function loadReports(force){
-  if(REPORTS === null || force){
-    if(can('reports.view_all')){
-      try{ REPORTS = await rpc('app_list_all_reports_permitted', {p_token:TOKEN}) || []; }
-      catch(e){ REPORTS = await rpc('app_list_reports', {p_token:TOKEN}) || []; }
-    } else REPORTS = await rpc('app_list_reports', {p_token:TOKEN}) || [];
-  }
+  if(REPORTS === null || force) REPORTS = await rpc('app_list_reports', {p_token:TOKEN}) || [];
   return REPORTS;
+}
+async function loadAllReports(force){
+  if(session&&session.role==='owner') return await loadReports(force);
+  if(ALL_REPORTS===null||force){
+    try{ ALL_REPORTS=await rpc('app_list_all_reports_permitted',{p_token:TOKEN})||[]; }
+    catch(e){ ALL_REPORTS=await loadReports(force); }
+  }
+  return ALL_REPORTS;
 }
 async function getEntry(studio, date){
   const all = await loadReports();
   return all.find(e => e.studioId === studio && e.date === date) || null;
 }
-function lastCashEndBefore(studio, before){
-  const all = REPORTS || [];
+function lastCashEndBefore(studio, before, source){
+  const all = source || REPORTS || [];
   const c = all.filter(e => e.studioId===studio && e.date < before && e.cashEnd!=null)
                .sort((a,b)=> a.date<b.date?1:-1);
   return c.length ? {date:c[0].date, cashEnd:num(c[0].cashEnd)} : null;
@@ -815,13 +847,14 @@ async function apiSaveReport(studio, date, payload){
     const copy=JSON.parse(JSON.stringify(payload));
     if(i>=0) REPORTS[i]=copy; else REPORTS.unshift(copy);
   }
+  ALL_REPORTS=null;
   return r;
 }
 async function apiDeleteReport(studio, date){
   const r = (session&&session.role==='owner')
     ? await rpc('app_delete_report', {p_token:TOKEN, p_studio:studio, p_date:date})
     : await rpc('app_delete_report_permitted', {p_token:TOKEN, p_studio:studio, p_date:date});
-  REPORTS = null;
+  REPORTS = null; ALL_REPORTS=null;
   return r;
 }
 async function apiListTeam(){ return await rpc('app_list_team',{p_token:TOKEN})||[]; }
@@ -860,6 +893,7 @@ function pct(a,b){a=(a===''||a==null)?null:Number(a);b=(b===''||b==null)?null:Nu
 function num(v){const n=parseFloat(v);return isNaN(n)?0:n;}
 function prevDays(iso,count){const [y,m,dd]=iso.split('-').map(Number);const out=[];
   for(let i=1;i<=count;i++){const d=new Date(y,m-1,dd-i);const o=d.getTimezoneOffset();out.push(new Date(d.getTime()-o*60000).toISOString().slice(0,10));}return out;}
+function isoAddDays(iso,delta){const [y,m,dd]=iso.split('-').map(Number);const d=new Date(y,m-1,dd+delta);const o=d.getTimezoneOffset();return new Date(d.getTime()-o*60000).toISOString().slice(0,10);}
 function fmtTime(iso){if(!iso)return '';return new Date(iso).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});}
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function shortName(name){const p=String(name||'').trim().split(/\s+/).filter(Boolean); if(p.length<=1) return p[0]||''; return p[0]+' '+p.slice(1).map(w=>w[0]?w[0].toUpperCase()+'.':'').join('');}
@@ -971,10 +1005,12 @@ function renderLogin(){
 /* ================= App shell / routing ================= */
 function roleLabel(){
   if(session.role==='owner') return 'Руководитель';
-  return permissionPresetName(session.permissions)==='Старший'?'Старший администратор':'Администратор';
+  const p=normalizePermissions(session.permissions||{});
+  const isSenior=PERMISSION_KEYS.filter(k=>p[k]).length===SENIOR_PERMISSION_KEYS.length && SENIOR_PERMISSION_KEYS.every(k=>p[k]);
+  return isSenior?'Старший администратор':'Администратор';
 }
 function header(){
-  const full=session.role==='owner'||PERMISSION_KEYS.every(k=>can(k));
+  const full=session.role==='owner'||(PERMISSION_KEYS.every(k=>can(k))&&reportDaysLimit()===0);
   const extended=!full&&hasAnyPermission();
   const pill=full?'<span class="role-pill role-boss">полный доступ</span>':(extended?'<span class="role-pill role-boss">расширенный доступ</span>':'<span class="role-pill role-admin">смена</span>');
   return `<div class="top fade-in">
@@ -1376,9 +1412,9 @@ async function fillBanner(el, gotoEditor){
   </div>`;
   el.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{const p=b.dataset.go.split('|');gotoEditor(p[0],p[1]);});
 }
-async function openShiftEditor(body, studio, date, back){
-  let existing={};
-  try{ existing=await getEntry(studio,date)||{}; await loadReports(); }catch(e){}
+async function openShiftEditor(body, studio, date, back, existingOverride){
+  let existing=existingOverride||{};
+  try{ if(!existingOverride)existing=await getEntry(studio,date)||{}; await loadReports(); }catch(e){}
   const prev=lastCashEndBefore(studio,date);
   const opts={prevCashEnd:prev?prev.cashEnd:null, prevDate:prev?prev.date:null};
   body.innerHTML=`<button class="btn btn-sm" id="backBtn" style="margin-bottom:14px">← Назад</button>
@@ -1396,11 +1432,11 @@ async function renderHistory(container,studio,dates,onChange){
   container.innerHTML=entries.map(e=>dayCard(e)).join('');
   wireDayCards(container,onChange);
 }
-function wireDayCards(container,onChange){
+function wireDayCards(container,onChange,source){
   container.querySelectorAll('.day-head').forEach(h=>h.onclick=()=>h.parentElement.classList.toggle('open'));
   container.querySelectorAll('[data-editmorning]').forEach(btn=>{
     btn.onclick=(ev)=>{ ev.stopPropagation(); const p=btn.dataset.editmorning.split('|');
-      const entry=(REPORTS||[]).find(x=>x.studioId===p[0]&&x.date===p[1]);
+      const entry=(source||REPORTS||[]).find(x=>x.studioId===p[0]&&x.date===p[1]);
       if(entry) editMorningModal(entry,onChange); };
   });
   container.querySelectorAll('[data-delreport]').forEach(btn=>{
@@ -1422,12 +1458,12 @@ function editMorningModal(entry,onDone){
     catch(e){ handleErr(e); }
   };
 }
-function dayCard(e,open){
+function dayCard(e,open,source){
   const inSum=(e.changes||[]).filter(c=>c.type==='in').reduce((s,c)=>s+num(c.amount),0);
   const outSum=(e.changes||[]).filter(c=>c.type!=='in').reduce((s,c)=>s+num(c.amount),0);
   const expected=num(e.cashStart)+inSum-outSum;
   const diff=e.cashEnd==null?null:num(e.cashEnd)-expected;
-  const prevInfo=lastCashEndBefore(e.studioId,e.date);
+  const prevInfo=lastCashEndBefore(e.studioId,e.date,source);
   const inter=(prevInfo&&e.cashStart!=null)?num(e.cashStart)-prevInfo.cashEnd:null;
   const came=e.newCame??e.newCount??null;
   const bought=e.newBought!=null?e.newBought:(Array.isArray(e.newList)?e.newList.filter(x=>x.bought).length:null);
@@ -1472,19 +1508,22 @@ function dayCard(e,open){
 
 /* ================= All reports (owner + senior) ================= */
 async function renderAllReports(body){
-  let all, sched=null; try{ all=await loadReports(true); }catch(e){ return handleErr(e); }
+  let all, sched=null; try{ all=await loadAllReports(true); }catch(e){ return handleErr(e); }
+  const reportDays=reportDaysLimit();
+  const minReportDate=reportDays>0?isoAddDays(todayStr(),-(reportDays-1)):null;
   try{ TEAM=await apiListTeam(); }catch(e){}
   try{ const _d=new Date(); sched=await apiGetSchedule(monthKey(_d.getFullYear(), _d.getMonth())); }catch(e){ sched=null; }
   body.innerHTML=`
     <div id="banner"></div>
+    ${reportDays>0?`<div class="hintline" style="margin-bottom:10px">Доступны отчёты за последние <b>${reportDays}</b> дн. · с ${fmtLong(minReportDate)} по сегодня.</div>`:''}
     ${cashNowCard(all)}
     <div class="bar fade-in">
-      <div class="datepick"><span class="lbl">День:</span><button class="btn btn-sm daynav" id="dPrev" title="Предыдущий день">‹</button><input type="date" id="pick" value="${todayStr()}" style="width:auto"/><button class="btn btn-sm daynav" id="dNext" title="Следующий день">›</button><button class="btn btn-sm" id="dToday">Сегодня</button></div>
+      <div class="datepick"><span class="lbl">День:</span><button class="btn btn-sm daynav" id="dPrev" title="Предыдущий день">‹</button><input type="date" id="pick" ${minReportDate?`min="${minReportDate}"`:''} max="${todayStr()}" value="${todayStr()}" style="width:auto"/><button class="btn btn-sm daynav" id="dNext" title="Следующий день">›</button><button class="btn btn-sm" id="dToday">Сегодня</button></div>
       <div class="datepick"><span class="lbl">Студия:</span><select id="stf" style="width:auto"><option value="all">Все студии</option>${STUDIOS.map(s=>`<option value="${s.id}">${s.name} · ${s.address}</option>`).join('')}</select></div>
     </div>
     <div id="picked"></div>
     <div class="bar">
-      <div class="datepick"><span class="lbl">Период:</span><input type="date" id="pfrom" max="${todayStr()}" value="${todayStr().slice(0,8)}01" style="width:auto"/><span class="lbl">—</span><input type="date" id="pto" max="${todayStr()}" value="${todayStr()}" style="width:auto"/></div>
+      <div class="datepick"><span class="lbl">Период:</span><input type="date" id="pfrom" ${minReportDate?`min="${minReportDate}"`:''} max="${todayStr()}" value="${minReportDate&&minReportDate>todayStr().slice(0,8)+'01'?minReportDate:todayStr().slice(0,8)+'01'}" style="width:auto"/><span class="lbl">—</span><input type="date" id="pto" ${minReportDate?`min="${minReportDate}"`:''} max="${todayStr()}" value="${todayStr()}" style="width:auto"/></div>
       <div class="datepick"><span class="lbl">Студия:</span><select id="stfP" style="width:auto"><option value="all">Все студии</option>${STUDIOS.map(s=>`<option value="${s.id}">${s.name} · ${s.address}</option>`).join('')}</select></div>
       <div class="grow"></div>
       <button class="btn icon-only" id="export" title="Выгрузить в Excel" aria-label="Выгрузить в Excel"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" fill="#217346"/><path d="M8.7 8l2.6 4-2.6 4M15.3 8l-2.6 4 2.6 4" stroke="#fff" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
@@ -1496,7 +1535,7 @@ async function renderAllReports(body){
   const pick=body.querySelector('#pick'),stf=body.querySelector('#stf'),stfP=body.querySelector('#stfP'),
         picked=body.querySelector('#picked'),alllist=body.querySelector('#alllist'),cnt=body.querySelector('#cnt');
   function wireEdit(el){
-    el.querySelectorAll('[data-editreport]').forEach(btn=>{ btn.onclick=(ev)=>{ ev.stopPropagation(); const p=btn.dataset.editreport.split('|'); openShiftEditor(body,p[0],p[1],()=>renderAllReports(body)); }; });
+    el.querySelectorAll('[data-editreport]').forEach(btn=>{ btn.onclick=(ev)=>{ ev.stopPropagation(); const p=btn.dataset.editreport.split('|'); const entry=all.find(x=>x.studioId===p[0]&&x.date===p[1])||null; openShiftEditor(body,p[0],p[1],()=>renderAllReports(body),entry); }; });
     el.querySelectorAll('[data-create]').forEach(btn=>{ btn.onclick=()=>{ const p=btn.dataset.create.split('|'); openShiftEditor(body,p[0],p[1],()=>renderAllReports(body)); }; });
   }
   function dayScheduleHtml(dateIso){
@@ -1523,12 +1562,12 @@ async function renderAllReports(body){
       const miss=STUDIOS.filter(st=>(f==='all'||st.id===f)&&!present.has(st.id));
       if(miss.length) extra=`<div class="miss-row">${miss.map(st=>`<button class="btn btn-sm" data-create="${st.id}|${d}">+ Открыть отчёт: ${sdot(st.id)}${st.name}</button>`).join('')}</div>`;
     }
-    picked.innerHTML=daySummary(pe)+(pe.length?pe.map(e=>dayCard(e,true)).join(''):`<div class="empty">За ${fmtLong(d)} нет отчётов${f==='all'?'':' по выбранной студии'}.</div>`)+extra;
-    wireDayCards(picked,()=>renderAllReports(body)); wireEdit(picked);
+    picked.innerHTML=daySummary(pe)+(pe.length?pe.map(e=>dayCard(e,true,all)).join(''):`<div class="empty">За ${fmtLong(d)} нет отчётов${f==='all'?'':' по выбранной студии'}.</div>`)+extra;
+    wireDayCards(picked,()=>renderAllReports(body),all); wireEdit(picked);
     const list=all.filter(e=>f==='all'||e.studioId===f);
     cnt.textContent=list.length;
-    alllist.innerHTML=list.length?list.map(e=>dayCard(e)).join(''):`<div class="empty">Отчётов пока нет.</div>`;
-    wireDayCards(alllist,()=>renderAllReports(body)); wireEdit(alllist);
+    alllist.innerHTML=list.length?list.map(e=>dayCard(e,false,all)).join(''):`<div class="empty">Отчётов пока нет.</div>`;
+    wireDayCards(alllist,()=>renderAllReports(body),all); wireEdit(alllist);
   }
   const pfrom=body.querySelector('#pfrom'), pto=body.querySelector('#pto'), periodsum=body.querySelector('#periodsum');
   function showPeriod(){
@@ -1560,7 +1599,7 @@ async function renderAllReports(body){
     box.innerHTML=`<div class="cn-name">${title}</div>${lines}`;
   }
   async function pickChanged(){ await updateShiftTile(pick.value); refresh(); }
-  function stepDay(delta){ const d=new Date(pick.value+'T00:00:00'); if(isNaN(d)) return; d.setDate(d.getDate()+delta); pick.value=dISO(d); pickChanged(); }
+  function stepDay(delta){ const d=new Date(pick.value+'T00:00:00'); if(isNaN(d)) return; d.setDate(d.getDate()+delta); const next=dISO(d); if(minReportDate&&next<minReportDate)return; if(next>todayStr())return; pick.value=next; pickChanged(); }
   pick.onchange=pickChanged;
   body.querySelector('#dPrev').onclick=()=>stepDay(-1);
   body.querySelector('#dNext').onclick=()=>stepDay(1);
@@ -1953,14 +1992,23 @@ function permissionsModal(u,onDone){
   const groups=[...new Set(PERMISSION_DEFS.map(x=>x.group))];
   const el=modal(`<h3>Права доступа</h3><p>${escapeHtml(u.name)} · ${escapeHtml(u.login)}</p>
     <div class="perm-presets"><button class="btn btn-sm" data-preset="basic">Обычный</button><button class="btn btn-sm" data-preset="senior">Старший</button><button class="btn btn-sm btn-primary" data-preset="full">Полный доступ</button></div>
-    <div class="perm-groups">${groups.map(g=>`<div class="perm-group"><div class="perm-group-title">${escapeHtml(g)}</div>${PERMISSION_DEFS.filter(x=>x.group===g).map(d=>`<label class="perm-row"><input type="checkbox" data-pkey="${d.key}" ${state[d.key]?'checked':''}/><span><b>${escapeHtml(d.label)}</b><small>${escapeHtml(d.desc)}</small></span></label>`).join('')}</div>`).join('')}</div>
-    <div class="perm-note">Полный доступ включает возможность выдавать права другим администраторам. Аккаунт руководителя этими правами изменить или удалить нельзя.</div>
+    <div class="perm-groups">${groups.map(g=>`<div class="perm-group"><div class="perm-group-title">${escapeHtml(g)}</div>${PERMISSION_DEFS.filter(x=>x.group===g).map(d=>`<label class="perm-row"><input type="checkbox" data-pkey="${d.key}" ${state[d.key]?'checked':''}/><span><b>${escapeHtml(d.label)}</b><small>${escapeHtml(d.desc)}</small></span></label>`).join('')}${g==='Отчёты'?`<div class="perm-days ${state['reports.view_all']?'':'hidden'}" id="permDaysBox"><div class="perm-days-title">За сколько дней видеть отчёты</div><div class="perm-days-line"><input id="permDays" type="number" inputmode="numeric" min="0" max="3650" step="1" value="${state['reports.days']||0}"/><span>дней назад</span></div><small>0 — без ограничения. Период считается от текущего дня включительно.</small></div>`:''}</div>`).join('')}</div>
+    <div class="perm-note">Ограничение по дням применяется на сервере: более старые отчёты не отображаются и недоступны для редактирования/удаления. Полный доступ без ограничения — значение 0. Аккаунт руководителя этими правами изменить или удалить нельзя.</div>
     <div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="permSave">Сохранить права</button></div>`);
   const modalBox=el.querySelector('.modal'); if(modalBox) modalBox.classList.add('perm-modal');
-  function apply(p){ state=normalizePermissions(p); el.querySelectorAll('[data-pkey]').forEach(x=>x.checked=!!state[x.dataset.pkey]); }
+  const daysBox=el.querySelector('#permDaysBox'), daysInp=el.querySelector('#permDays'), viewAllChk=el.querySelector('[data-pkey="reports.view_all"]');
+  function syncDaysVisibility(){ if(daysBox)daysBox.classList.toggle('hidden',!(viewAllChk&&viewAllChk.checked)); }
+  function apply(p){
+    state=normalizePermissions(p);
+    el.querySelectorAll('[data-pkey]').forEach(x=>x.checked=!!state[x.dataset.pkey]);
+    if(daysInp)daysInp.value=state['reports.days']||0;
+    syncDaysVisibility();
+  }
+  if(viewAllChk)viewAllChk.addEventListener('change',syncDaysVisibility);
   el.querySelectorAll('[data-preset]').forEach(b=>b.onclick=()=>apply(PERMISSION_PRESETS[b.dataset.preset]||{}));
   el.querySelector('#permSave').onclick=async()=>{
     const p={}; el.querySelectorAll('[data-pkey]').forEach(x=>p[x.dataset.pkey]=x.checked);
+    p['reports.days']=viewAllChk&&viewAllChk.checked?reportDaysValue({'reports.days':daysInp?daysInp.value:0}):0;
     try{
       await apiSetPermissions(u.login,p); closeModal(el); toast('Права доступа сохранены');
       if(session.login===u.login){ session.permissions=normalizePermissions(p); session.senior=false; session.canEdit=!!p['reports.edit_morning']; persistSession(); renderApp(); }
