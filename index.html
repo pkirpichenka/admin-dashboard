@@ -691,7 +691,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '11.09.2026-i'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '11.09.2026-j'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -706,7 +706,8 @@ let TOKEN = null;
 
 /* ================= Granular access permissions ================= */
 const PERMISSION_DEFS = [
-  {key:'reports.view_all', group:'Отчёты', label:'Все отчёты', desc:'Просмотр общего журнала, итогов и Excel-выгрузки.'},
+  {key:'reports.view_all', group:'Отчёты', label:'Все отчёты', desc:'Просмотр общего журнала и Excel-выгрузки.'},
+  {key:'reports.view_totals', group:'Отчёты', label:'Видеть итоги', desc:'Показывать итоги за день и период, юрлица и прогноз.'},
   {key:'reports.edit_morning', group:'Отчёты', label:'Правка наличных утром', desc:'Можно менять уже зафиксированный остаток на начало дня.'},
   {key:'reports.edit_closed', group:'Отчёты', label:'Редактировать отчёты', desc:'Открывать и изменять любые отчёты, в том числе закрытые, и создавать отчёт вручную.'},
   {key:'reports.delete', group:'Отчёты', label:'Удалять отчёты', desc:'Безвозвратно удалять отчёты из журнала.'},
@@ -722,7 +723,7 @@ const PERMISSION_DEFS = [
   {key:'messages.manage', group:'Настройки', label:'Сообщения и чек-листы', desc:'Настройка сообщений при открытии и чек-листа закрытия смены.'}
 ];
 const PERMISSION_KEYS = PERMISSION_DEFS.map(x=>x.key);
-const SENIOR_PERMISSION_KEYS = ['reports.view_all','schedule.edit','schedule.approve','schedule.absences'];
+const SENIOR_PERMISSION_KEYS = ['reports.view_all','reports.view_totals','schedule.edit','schedule.approve','schedule.absences'];
 function permObject(keys){ const o={}; (keys||[]).forEach(k=>o[k]=true); return o; }
 const PERMISSION_PRESETS = {
   basic:{},
@@ -743,9 +744,9 @@ function normalizePermissions(p){
   PERMISSION_KEYS.forEach(k=>o[k]=!!(p&&p[k]));
   o['reports.days']=reportDaysValue(p);
   o['reports.anchor_date']=reportAnchorDateValue(p);
-  if(o['reports.edit_closed']||o['reports.delete'])o['reports.view_all']=true;
+  if(o['reports.edit_closed']||o['reports.delete']||o['reports.view_totals'])o['reports.view_all']=true;
   if(o['admins.manage']||o['admins.permissions'])o['admins.view']=true;
-  if(!o['reports.view_all']){o['reports.days']=0;o['reports.anchor_date']='';}
+  if(!o['reports.view_all']){o['reports.view_totals']=false;o['reports.days']=0;o['reports.anchor_date']='';}
   if(o['reports.days']<=0)o['reports.anchor_date']='';
   return o;
 }
@@ -1584,7 +1585,7 @@ async function renderAllReports(body){
       const miss=STUDIOS.filter(st=>(f==='all'||st.id===f)&&!present.has(st.id));
       if(miss.length) extra=`<div class="miss-row">${miss.map(st=>`<button class="btn btn-sm" data-create="${st.id}|${d}">+ Открыть отчёт: ${sdot(st.id)}${st.name}</button>`).join('')}</div>`;
     }
-    picked.innerHTML=daySummary(pe)+(pe.length?pe.map(e=>dayCard(e,true,all)).join(''):`<div class="empty">За ${fmtLong(d)} нет отчётов${f==='all'?'':' по выбранной студии'}.</div>`)+extra;
+    picked.innerHTML=(can('reports.view_totals')?daySummary(pe):'')+(pe.length?pe.map(e=>dayCard(e,true,all)).join(''):`<div class="empty">За ${fmtLong(d)} нет отчётов${f==='all'?'':' по выбранной студии'}.</div>`)+extra;
     wireDayCards(picked,()=>renderAllReports(body),all); wireEdit(picked);
     const list=all.filter(e=>f==='all'||e.studioId===f);
     cnt.textContent=list.length;
@@ -1597,7 +1598,7 @@ async function renderAllReports(body){
     if(!a||!b){ periodsum.innerHTML=''; return; }
     const lo=a<=b?a:b, hi=a<=b?b:a;
     const ent=all.filter(e=>e.date>=lo&&e.date<=hi&&(f==='all'||e.studioId===f));
-    periodsum.innerHTML=periodSummary(ent,lo,hi);
+    periodsum.innerHTML=can('reports.view_totals')?periodSummary(ent,lo,hi):'';
   }
   const schedCache={}; if(sched) schedCache[todayStr().slice(0,7)]=sched;
   async function updateShiftTile(dateIso){
@@ -2015,7 +2016,7 @@ function permissionsModal(u,onDone){
   const el=modal(`<h3>Права доступа</h3><p>${escapeHtml(u.name)} · ${escapeHtml(u.login)}</p>
     <div class="perm-presets"><button class="btn btn-sm" data-preset="basic">Обычный</button><button class="btn btn-sm" data-preset="senior">Старший</button><button class="btn btn-sm btn-primary" data-preset="full">Полный доступ</button></div>
     <div class="perm-groups">${groups.map(g=>`<div class="perm-group"><div class="perm-group-title">${escapeHtml(g)}</div>${PERMISSION_DEFS.filter(x=>x.group===g).map(d=>`<label class="perm-row"><input type="checkbox" data-pkey="${d.key}" ${state[d.key]?'checked':''}/><span><b>${escapeHtml(d.label)}</b><small>${escapeHtml(d.desc)}</small></span></label>`).join('')}${g==='Отчёты'?`<div class="perm-days ${state['reports.view_all']?'':'hidden'}" id="permDaysBox"><div class="perm-days-title">Период доступа к отчётам</div><div class="perm-days-line"><input id="permDays" type="number" inputmode="numeric" min="0" max="3650" step="1" value="${state['reports.days']||0}"/><span>дней</span></div><div class="perm-days-line"><span>Отсчёт до даты:</span><input id="permAnchorDate" type="date" max="${todayStr()}" value="${state['reports.anchor_date']||todayStr()}"/></div><small>Например: 30 дней и дата 10.09 — доступны отчёты за 30 дней, заканчивая 10.09 включительно. 0 дней — без ограничения.</small></div>`:''}</div>`).join('')}</div>
-    <div class="perm-note">Ограничение периода применяется на сервере: отчёты вне заданного окна не отображаются и недоступны для редактирования/удаления. Полный доступ без ограничения — значение 0. Аккаунт руководителя этими правами изменить или удалить нельзя.</div>
+    <div class="perm-note">Ограничение периода применяется на сервере: отчёты вне заданного окна не отображаются и недоступны для редактирования/удаления. «Видеть итоги» можно отключить отдельно, сохранив доступ к самим отчётам. Полный доступ без ограничения — значение 0. Аккаунт руководителя этими правами изменить или удалить нельзя.</div>
     <div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="permSave">Сохранить права</button></div>`);
   const modalBox=el.querySelector('.modal'); if(modalBox) modalBox.classList.add('perm-modal');
   const daysBox=el.querySelector('#permDaysBox'), daysInp=el.querySelector('#permDays'), anchorInp=el.querySelector('#permAnchorDate'), viewAllChk=el.querySelector('[data-pkey="reports.view_all"]');
