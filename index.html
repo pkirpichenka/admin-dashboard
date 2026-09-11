@@ -691,7 +691,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '11.09.2026-h'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '11.09.2026-i'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -788,7 +788,7 @@ function permissionPresetName(p){
   }
   if(n['reports.view_all']&&n['reports.days']>0){
     const a=n['reports.anchor_date'];
-    return `${base} · ${n['reports.days']} дн.${a?' до '+fmtDate(a):''}`;
+    return `${base} · ${n['reports.days']} дн.${a?' до '+a.split('-').reverse().join('.'):''}`;
   }
   return base;
 }
