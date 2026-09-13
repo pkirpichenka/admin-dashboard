@@ -691,7 +691,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '11.09.2026-j'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '13.09.2026-k'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -817,9 +817,39 @@ async function rpc(fn, args){
   if(error) throw error;
   return data;
 }
+let forbiddenCheckPromise=null;
+function isForbiddenErr(e){
+  const msg=((e&&e.message)||String(e||'')).toLowerCase();
+  return msg.includes('forbidden') || msg.includes('permission denied') || msg.includes('not allowed');
+}
+async function handleForbiddenErr(){
+  // В новых точечных правах `forbidden` означает не только истёкшую сессию,
+  // но и обычный отказ конкретному действию. Проверяем сессию через RPC,
+  // который доступен любому активному пользователю, и не выкидываем человека
+  // из дашборда из-за недостаточного права.
+  if(forbiddenCheckPromise) return forbiddenCheckPromise;
+  const token=TOKEN;
+  forbiddenCheckPromise=(async()=>{
+    let alive=false;
+    try{
+      if(token && sb){
+        const res=await sb.rpc('app_list_team',{p_token:token});
+        alive=!res.error;
+      }
+    }catch(_){ alive=false; }
+    if(TOKEN!==token) return;
+    if(alive){
+      toast('Недостаточно прав для этого действия', true);
+    }else{
+      toast('Сессия истекла — войдите снова', true);
+      await doLogout();
+    }
+  })().finally(()=>{ forbiddenCheckPromise=null; });
+  return forbiddenCheckPromise;
+}
 function handleErr(e){
   const msg = (e && e.message) ? e.message : String(e);
-  if(/forbidden/i.test(msg)){ toast('Сессия истекла — войдите снова', true); doLogout(); return; }
+  if(isForbiddenErr(e)){ void handleForbiddenErr(); return; }
   toast('Ошибка: ' + msg, true);
 }
 function saveSession(s){
@@ -861,8 +891,22 @@ function lastCashEndBefore(studio, before, source){
 }
 async function apiSaveReport(studio, date, payload){
   let r;
-  if(session && session.role!=='owner' && can('reports.edit_closed')) r=await rpc('app_save_report_permitted',{p_token:TOKEN,p_studio:studio,p_date:date,p_payload:payload});
-  else r=await rpc('app_save_report', {p_token:TOKEN, p_studio:studio, p_date:date, p_payload:payload});
+  if(session && session.role!=='owner'){
+    // Сначала всегда используем обычное сохранение смены. Это важно для текущей
+    // рабочей смены: ограничение периода в праве «Все отчёты» не должно мешать
+    // администратору заполнять сегодняшний отчёт.
+    try{
+      r=await rpc('app_save_report', {p_token:TOKEN, p_studio:studio, p_date:date, p_payload:payload});
+    }catch(e){
+      // Только если обычное сохранение запрещено и есть право редактировать
+      // закрытые отчёты, пробуем расширенный RPC с проверкой заданного периода.
+      if(can('reports.edit_closed') && isForbiddenErr(e)){
+        r=await rpc('app_save_report_permitted',{p_token:TOKEN,p_studio:studio,p_date:date,p_payload:payload});
+      }else throw e;
+    }
+  }else{
+    r=await rpc('app_save_report', {p_token:TOKEN, p_studio:studio, p_date:date, p_payload:payload});
+  }
   if(Array.isArray(REPORTS)){
     const i=REPORTS.findIndex(e=>e.studioId===studio && e.date===date);
     const copy=JSON.parse(JSON.stringify(payload));
