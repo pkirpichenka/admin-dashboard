@@ -691,7 +691,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '13.09.2026-l'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '14.09.2026-m'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
@@ -1593,7 +1593,7 @@ async function renderAllReports(body){
     ${reportDays>0?`<div class="hintline" style="margin-bottom:10px">Доступны отчёты за <b>${reportDays}</b> дн. · с ${fmtLong(minReportDate)} по ${fmtLong(maxReportDate)}.</div>`:''}
     ${cashNowCard(all)}
     <div class="bar fade-in">
-      <div class="datepick"><span class="lbl">День:</span><button class="btn btn-sm daynav" id="dPrev" title="Предыдущий день">‹</button><input type="date" id="pick" ${minReportDate?`min="${minReportDate}"`:''} max="${maxReportDate}" value="${maxReportDate}" style="width:auto"/><button class="btn btn-sm daynav" id="dNext" title="Следующий день">›</button><button class="btn btn-sm" id="dToday">${reportDays>0?'К дате':'Сегодня'}</button></div>
+      <div class="datepick"><span class="lbl">День:</span><button class="btn btn-sm daynav" id="dPrev" title="Предыдущий день">‹</button><input type="date" id="pick" ${minReportDate?`min="${minReportDate}"`:''} value="${maxReportDate}" style="width:auto"/><button class="btn btn-sm daynav" id="dNext" title="Следующий день">›</button><button class="btn btn-sm" id="dToday">${reportDays>0?'К дате':'Сегодня'}</button></div>
       <div class="datepick"><span class="lbl">Студия:</span><select id="stf" style="width:auto"><option value="all">Все студии</option>${STUDIOS.map(s=>`<option value="${s.id}">${s.name} · ${s.address}</option>`).join('')}</select></div>
     </div>
     <div id="picked"></div>
@@ -1675,7 +1675,7 @@ async function renderAllReports(body){
     box.innerHTML=`<div class="cn-name">${title}</div>${lines}`;
   }
   async function pickChanged(){ await updateShiftTile(pick.value); refresh(); }
-  function stepDay(delta){ const d=new Date(pick.value+'T00:00:00'); if(isNaN(d)) return; d.setDate(d.getDate()+delta); const next=dISO(d); if(minReportDate&&next<minReportDate)return; if(next>maxReportDate)return; pick.value=next; pickChanged(); }
+  function stepDay(delta){ const d=new Date(pick.value+'T00:00:00'); if(isNaN(d)) return; d.setDate(d.getDate()+delta); const next=dISO(d); if(minReportDate&&next<minReportDate)return; pick.value=next; pickChanged(); }
   pick.onchange=pickChanged;
   body.querySelector('#dPrev').onclick=()=>stepDay(-1);
   body.querySelector('#dNext').onclick=()=>stepDay(1);
