@@ -671,6 +671,32 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
   .u-ctl .u-perm-btn{grid-column:1/-1;width:100%}
 }
 
+
+/* ================= Overflow safety 26.09.2026-n =================
+   Universal guard for numeric values in summary cards and all data tables.
+   Long values shrink automatically in JS and wrap only as a last resort. */
+.sumcards,.sumcard,.sumcard-h,.sumcard-rows,.legal-rows,.sr,.lr{min-width:0}
+.sumcard{overflow:hidden}
+.sumcard-h>.sc-name{min-width:0;overflow-wrap:anywhere}
+.sc-rev{min-width:0;max-width:68%;flex:0 1 auto}
+.sc-rev b{display:block;max-width:100%;min-width:0;white-space:nowrap;text-align:right}
+.sr>span,.lr>span{min-width:0}
+.sr>b{display:block;min-width:0;max-width:62%;flex:0 1 auto;text-align:right;white-space:nowrap}
+.sr.sr-wide>b{flex:1 1 auto;max-width:none}
+.lr>b{display:block;min-width:0;max-width:76%;flex:0 1 auto;text-align:right;white-space:nowrap}
+.legal-rows .lr b.legal-pair{max-width:78%}
+.cn-val{min-width:0;max-width:100%;overflow:hidden}
+
+/* All current and future tables inherit sane overflow behaviour.
+   Wide schedule tables still scroll horizontally inside .sch-scroll. */
+table{max-width:100%;box-sizing:border-box}
+table th,table td{box-sizing:border-box;min-width:0;max-width:100%;overflow-wrap:anywhere}
+table th>*,table td>*{max-width:100%;box-sizing:border-box}
+.ds-table th,.ds-table td{white-space:normal}
+
+.num-autofit{font-variant-numeric:tabular-nums}
+.num-autofit.num-fit-wrap{white-space:normal!important;overflow-wrap:anywhere!important;word-break:break-word}
+
 </style>
 
 <div id="root"></div>
@@ -691,7 +717,69 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '14.09.2026-m'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '26.09.2026-n'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+
+/* ================= Numeric overflow guard 26.09.2026-n ================= */
+let __numFitQueued=false;
+function _numericFitCandidate(el){
+  if(!el || !el.isConnected) return false;
+  if(el.querySelector && el.querySelector('input,select,textarea,button')) return false;
+  const t=(el.textContent||'').trim();
+  if(!/\d/.test(t)) return false;
+  /* Avoid shrinking ordinary prose/date labels; currencies and formula rows are allowed. */
+  const letters=(t.match(/[A-Za-zА-Яа-яЁё]/g)||[]).length;
+  if(letters>4 && !/\b(?:BYN|Br)\b/i.test(t)) return false;
+  return true;
+}
+function fitNumericOverflow(root=document){
+  const selector=[
+    '.sumcard .sr b',
+    '.sumcard .lr b',
+    '.sumcard .sc-rev b',
+    '.sumcard .sumcard-g b',
+    '.cn-val',
+    'table th','table td'
+  ].join(',');
+  const list=(root.matches && root.matches(selector))
+    ? [root]
+    : Array.from(root.querySelectorAll?root.querySelectorAll(selector):[]);
+  list.forEach(el=>{
+    if(!_numericFitCandidate(el)) return;
+    if(!el.dataset.numFitInit){
+      el.dataset.numFitInit='1';
+      el.dataset.numFitInline=el.style.fontSize||'';
+    }
+    el.style.fontSize=el.dataset.numFitInline||'';
+    el.classList.add('num-autofit');
+    el.classList.remove('num-fit-wrap');
+    if(el.clientWidth<=0) return;
+    let size=parseFloat(getComputedStyle(el).fontSize)||13;
+    const min=Math.max(8.5,Math.min(10,size*0.72));
+    let guard=0;
+    while(el.scrollWidth>el.clientWidth+1 && size>min && guard<20){
+      size=Math.max(min,size-.5);
+      el.style.fontSize=size+'px';
+      guard++;
+    }
+    if(el.scrollWidth>el.clientWidth+1) el.classList.add('num-fit-wrap');
+  });
+}
+function scheduleNumericFit(){
+  if(__numFitQueued) return;
+  __numFitQueued=true;
+  requestAnimationFrame(()=>{
+    __numFitQueued=false;
+    fitNumericOverflow(document);
+  });
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',scheduleNumericFit,{once:true});
+else scheduleNumericFit();
+window.addEventListener('resize',scheduleNumericFit,{passive:true});
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(scheduleNumericFit).catch(()=>{});
+try{
+  new MutationObserver(scheduleNumericFit).observe(document.documentElement,{subtree:true,childList:true,characterData:true});
+}catch(e){}
+
 
 /* ================= Подключение к Supabase =================
    Вставьте два значения из Supabase: Project Settings → API.
