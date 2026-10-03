@@ -717,7 +717,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '26.09.2026-n'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '03.10.2026-o'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Numeric overflow guard 26.09.2026-n ================= */
 let __numFitQueued=false;
@@ -827,14 +827,15 @@ function reportDaysValue(p){
   return Math.max(0,Math.min(3650,Math.floor(raw)));
 }
 function reportAnchorDateValue(p){
-  const raw=String((p&&p['reports.anchor_date'])||'').trim();
-  return /^\d{4}-\d{2}-\d{2}$/.test(raw)?raw:'';
+  // Служебное поле для обратной совместимости с серверной миграцией.
+  // Пользователь больше не задаёт конечную дату: окно всегда заканчивается сегодня.
+  return reportDaysValue(p)>0?todayStr():'';
 }
 function normalizePermissions(p){
   const o={};
   PERMISSION_KEYS.forEach(k=>o[k]=!!(p&&p[k]));
   o['reports.days']=reportDaysValue(p);
-  o['reports.anchor_date']=reportAnchorDateValue(p);
+  o['reports.anchor_date']=o['reports.days']>0?todayStr():'';
   if(o['reports.edit_closed']||o['reports.delete']||o['reports.view_totals']||o['reports.period']||o['reports.period_totals']||o['reports.export'])o['reports.view_all']=true;
   if(o['reports.period_totals']||o['reports.export'])o['reports.period']=true;
   if(o['admins.manage']||o['admins.permissions'])o['admins.view']=true;
@@ -860,12 +861,12 @@ function reportDaysLimit(){
 }
 function reportAnchorDate(){
   if(!session||session.role==='owner') return '';
-  return reportAnchorDateValue(session.permissions||{});
+  return reportDaysLimit()>0?todayStr():'';
 }
 function reportAccessRange(){
   const days=reportDaysLimit();
   if(days<=0)return {days:0,anchor:'',from:'',to:''};
-  const anchor=reportAnchorDate()||todayStr();
+  const anchor=todayStr();
   return {days,anchor,from:isoAddDays(anchor,-(days-1)),to:anchor};
 }
 function hasAnyPermission(){ return PERMISSION_KEYS.some(k=>can(k)); }
@@ -881,8 +882,7 @@ function permissionPresetName(p){
     else base='Настроено · '+on.length;
   }
   if(n['reports.view_all']&&n['reports.days']>0){
-    const a=n['reports.anchor_date'];
-    return `${base} · ${n['reports.days']} дн.${a?' до '+a.split('-').reverse().join('.'):''}`;
+    return `${base} · последние ${n['reports.days']} дн.`;
   }
   return base;
 }
@@ -1678,10 +1678,10 @@ async function renderAllReports(body){
   try{ const _d=new Date(); sched=await apiGetSchedule(monthKey(_d.getFullYear(), _d.getMonth())); }catch(e){ sched=null; }
   body.innerHTML=`
     <div id="banner"></div>
-    ${reportDays>0?`<div class="hintline" style="margin-bottom:10px">Доступны отчёты за <b>${reportDays}</b> дн. · с ${fmtLong(minReportDate)} по ${fmtLong(maxReportDate)}.</div>`:''}
+    ${reportDays>0?`<div class="hintline" style="margin-bottom:10px">Доступны отчёты за последние <b>${reportDays}</b> дн., включая сегодня · с ${fmtLong(minReportDate)} по ${fmtLong(maxReportDate)}.</div>`:''}
     ${cashNowCard(all)}
     <div class="bar fade-in">
-      <div class="datepick"><span class="lbl">День:</span><button class="btn btn-sm daynav" id="dPrev" title="Предыдущий день">‹</button><input type="date" id="pick" ${minReportDate?`min="${minReportDate}"`:''} value="${maxReportDate}" style="width:auto"/><button class="btn btn-sm daynav" id="dNext" title="Следующий день">›</button><button class="btn btn-sm" id="dToday">${reportDays>0?'К дате':'Сегодня'}</button></div>
+      <div class="datepick"><span class="lbl">День:</span><button class="btn btn-sm daynav" id="dPrev" title="Предыдущий день">‹</button><input type="date" id="pick" ${minReportDate?`min="${minReportDate}"`:''} value="${maxReportDate}" style="width:auto"/><button class="btn btn-sm daynav" id="dNext" title="Следующий день">›</button><button class="btn btn-sm" id="dToday">Сегодня</button></div>
       <div class="datepick"><span class="lbl">Студия:</span><select id="stf" style="width:auto"><option value="all">Все студии</option>${STUDIOS.map(s=>`<option value="${s.id}">${s.name} · ${s.address}</option>`).join('')}</select></div>
     </div>
     <div id="picked"></div>
@@ -2157,17 +2157,16 @@ function permissionsModal(u,onDone){
   const groups=[...new Set(PERMISSION_DEFS.map(x=>x.group))];
   const el=modal(`<h3>Права доступа</h3><p>${escapeHtml(u.name)} · ${escapeHtml(u.login)}</p>
     <div class="perm-presets"><button class="btn btn-sm" data-preset="basic">Обычный</button><button class="btn btn-sm" data-preset="senior">Старший</button><button class="btn btn-sm btn-primary" data-preset="full">Полный доступ</button></div>
-    <div class="perm-groups">${groups.map(g=>`<div class="perm-group"><div class="perm-group-title">${escapeHtml(g)}</div>${PERMISSION_DEFS.filter(x=>x.group===g).map(d=>`<label class="perm-row"><input type="checkbox" data-pkey="${d.key}" ${state[d.key]?'checked':''}/><span><b>${escapeHtml(d.label)}</b><small>${escapeHtml(d.desc)}</small></span></label>`).join('')}${g==='Отчёты'?`<div class="perm-days ${state['reports.view_all']?'':'hidden'}" id="permDaysBox"><div class="perm-days-title">Период доступа к отчётам</div><div class="perm-days-line"><input id="permDays" type="number" inputmode="numeric" min="0" max="3650" step="1" value="${state['reports.days']||0}"/><span>дней</span></div><div class="perm-days-line"><span>Отсчёт до даты:</span><input id="permAnchorDate" type="date" max="${todayStr()}" value="${state['reports.anchor_date']||todayStr()}"/></div><small>Например: 30 дней и дата 10.09 — доступны отчёты за 30 дней, заканчивая 10.09 включительно. 0 дней — без ограничения.</small></div>`:''}</div>`).join('')}</div>
-    <div class="perm-note">Ограничение периода доступа применяется на сервере: отчёты вне заданного окна не отображаются и недоступны для редактирования/удаления. Отдельно можно включить итоги за день, сам блок «Период», отображение итогов периода и скачивание Excel. Полный доступ без ограничения — значение 0. Аккаунт руководителя этими правами изменить или удалить нельзя.</div>
+    <div class="perm-groups">${groups.map(g=>`<div class="perm-group"><div class="perm-group-title">${escapeHtml(g)}</div>${PERMISSION_DEFS.filter(x=>x.group===g).map(d=>`<label class="perm-row"><input type="checkbox" data-pkey="${d.key}" ${state[d.key]?'checked':''}/><span><b>${escapeHtml(d.label)}</b><small>${escapeHtml(d.desc)}</small></span></label>`).join('')}${g==='Отчёты'?`<div class="perm-days ${state['reports.view_all']?'':'hidden'}" id="permDaysBox"><div class="perm-days-title">Период доступа к отчётам</div><div class="perm-days-line"><span>Последние</span><input id="permDays" type="number" inputmode="numeric" min="0" max="3650" step="1" value="${state['reports.days']||0}"/><span>дней, включая сегодня</span></div><small>Например: 40 дней — доступны сегодняшний день и предыдущие 39 дней. Окно автоматически сдвигается каждый день. 0 дней — без ограничения.</small></div>`:''}</div>`).join('')}</div>
+    <div class="perm-note">Ограничение периода доступа применяется на сервере: считаются последние N дней от текущего дня включительно, и окно автоматически сдвигается каждый день. Отчёты вне этого окна не отображаются и недоступны для редактирования/удаления. Отдельно можно включить итоги за день, сам блок «Период», отображение итогов периода и скачивание Excel. Полный доступ без ограничения — значение 0. Аккаунт руководителя этими правами изменить или удалить нельзя.</div>
     <div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="permSave">Сохранить права</button></div>`);
   const modalBox=el.querySelector('.modal'); if(modalBox) modalBox.classList.add('perm-modal');
-  const daysBox=el.querySelector('#permDaysBox'), daysInp=el.querySelector('#permDays'), anchorInp=el.querySelector('#permAnchorDate'), viewAllChk=el.querySelector('[data-pkey="reports.view_all"]');
+  const daysBox=el.querySelector('#permDaysBox'), daysInp=el.querySelector('#permDays'), viewAllChk=el.querySelector('[data-pkey="reports.view_all"]');
   function syncDaysVisibility(){ if(daysBox)daysBox.classList.toggle('hidden',!(viewAllChk&&viewAllChk.checked)); }
   function apply(p){
     state=normalizePermissions(p);
     el.querySelectorAll('[data-pkey]').forEach(x=>x.checked=!!state[x.dataset.pkey]);
     if(daysInp)daysInp.value=state['reports.days']||0;
-    if(anchorInp)anchorInp.value=state['reports.anchor_date']||todayStr();
     syncDaysVisibility();
   }
   if(viewAllChk)viewAllChk.addEventListener('change',syncDaysVisibility);
@@ -2175,7 +2174,9 @@ function permissionsModal(u,onDone){
   el.querySelector('#permSave').onclick=async()=>{
     const p={}; el.querySelectorAll('[data-pkey]').forEach(x=>p[x.dataset.pkey]=x.checked);
     p['reports.days']=viewAllChk&&viewAllChk.checked?reportDaysValue({'reports.days':daysInp?daysInp.value:0}):0;
-    p['reports.anchor_date']=p['reports.days']>0?reportAnchorDateValue({'reports.anchor_date':anchorInp?anchorInp.value:todayStr()}):'';
+    // Сохраняем служебную дату для совместимости со старой серверной проверкой.
+    // Миграция reports-last-days-update.sql поддерживает её равной текущему дню автоматически.
+    p['reports.anchor_date']=p['reports.days']>0?todayStr():'';
     try{
       await apiSetPermissions(u.login,p); closeModal(el); toast('Права доступа сохранены');
       if(session.login===u.login){ session.permissions=normalizePermissions(p); session.senior=false; session.canEdit=!!p['reports.edit_morning']; persistSession(); renderApp(); }
