@@ -715,6 +715,12 @@ table th>*,table td>*{max-width:100%;box-sizing:border-box}
 .audit-tbl .audit-details{width:95px;text-align:right}
 .audit-empty{padding:28px;text-align:center;color:var(--ink-faint)}
 .audit-json{max-height:60vh;overflow:auto;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:12px;font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere}
+.audit-detail-list{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:12px}
+.audit-detail-row{display:grid;grid-template-columns:minmax(120px,180px) minmax(0,1fr);gap:12px;padding:10px 12px;border-bottom:1px solid var(--line);align-items:start}
+.audit-detail-row:last-child{border-bottom:none}
+.audit-detail-k{font-size:11px;text-transform:uppercase;letter-spacing:.25px;color:var(--ink-faint);font-weight:700}
+.audit-detail-v{font-size:13px;color:var(--ink);font-weight:600;overflow-wrap:anywhere;white-space:pre-wrap}
+@media(max-width:520px){.audit-detail-row{grid-template-columns:1fr;gap:3px}}
 @media(max-width:720px){
   .audit-toolbar{align-items:stretch}
   .audit-toolbar .field-mini{width:calc(50% - 5px)}
@@ -743,7 +749,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '03.10.2026-q'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '03.10.2026-s'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Numeric overflow guard 26.09.2026-n ================= */
 let __numFitQueued=false;
@@ -936,8 +942,6 @@ async function refreshPermissions(){
 
 /* ================= Audit log ================= */
 const AUDIT_RPC_META = {
-  app_save_report:{action:'Сохранён отчёт',entity:'report'},
-  app_save_report_permitted:{action:'Сохранён отчёт',entity:'report'},
   app_delete_report:{action:'Удалён отчёт',entity:'report'},
   app_delete_report_permitted:{action:'Удалён отчёт',entity:'report'},
   app_perm_create_admin:{action:'Создан администратор',entity:'admin'},
@@ -984,9 +988,10 @@ async function auditAction(action,entityType,entityKey,details,tokenOverride){
 }
 function auditRpcSuccess(fn,args,data){
   if(fn==='app_audit_write'||fn==='app_list_audit_log') return;
-  if(fn==='app_login'||fn==='app_bootstrap_owner'){
+  if(fn==='app_login') return; // вход фиксируется серверным триггером sessions
+  if(fn==='app_bootstrap_owner'){
     const tok=data&&data.token;
-    if(tok) void auditAction(fn==='app_login'?'Вход в систему':'Создан аккаунт руководителя','auth','',{},tok);
+    if(tok) void auditAction('Создан аккаунт руководителя','auth','',{},tok);
     return;
   }
   const meta=AUDIT_RPC_META[fn]; if(!meta) return;
@@ -1005,12 +1010,84 @@ function auditObjectLabel(r){
   const t={report:'Отчёт',admin:'Администратор',schedule:'Расписание',settings:'Настройки',telegram:'Telegram',export:'Выгрузка',auth:'Авторизация'}[r.entity_type]||r.entity_type||'';
   return [t,r.entity_key].filter(Boolean).join(' · ');
 }
+const AUDIT_DETAIL_LABELS={
+  before:'Было',after:'Стало',value:'Значение',amount:'Сумма',comment:'Комментарий',
+  beforeComment:'Комментарий был',afterComment:'Комментарий стал',text:'Текст',
+  client:'Клиент',bought:'Абонемент',count:'Количество',item:'Пункт',
+  done:'Выполнено',studio:'Филиал',date:'Дата',status:'Статус',type:'Тип',
+  from:'С',to:'По',login:'Пользователь',rows:'Строк в выгрузке'
+};
+function auditHumanValue(v){
+  if(v===null||v===undefined||v==='') return '—';
+  if(typeof v==='boolean') return v?'Да':'Нет';
+  if(Array.isArray(v)) return v.map(auditHumanValue).join('; ');
+  if(typeof v==='object') return Object.entries(v).map(([k,x])=>`${AUDIT_DETAIL_LABELS[k]||k}: ${auditHumanValue(x)}`).join('; ');
+  return String(v);
+}
+function auditLegacyReportPairs(details){
+  const p=details&&details.p_payload;
+  if(!p||typeof p!=='object'||Array.isArray(p)) return null;
+  const out=[], add=(k,v)=>{ if(v!==undefined&&v!==null&&v!=='') out.push([k,auditHumanValue(v)]); };
+  add('Дата',p.date||details.p_date);
+  add('Филиал',p.studioId||details.p_studio);
+  add('Наличные на начало дня',p.cashStart==null?null:p.cashStart+' BYN');
+  add('Наличные на конец дня',p.cashEnd==null?null:p.cashEnd+' BYN');
+  add('Картой',p.cashless==null?null:p.cashless+' BYN');
+  add('QR',p.allsports==null?null:p.allsports+' BYN');
+  add('EPOS',p.epos==null?null:p.epos+' BYN');
+  add('Пришло новых клиентов',p.newCame);
+  add('Купили абонемент',p.newBought);
+  add('Закончились абонементы',p.ended);
+  add('Продлили абонементы',p.renewed);
+  add('Причина расхождения между сменами',p.interNote);
+  add('Комментарий к смене',p.comments);
+  if(p.zReport!==undefined) add('Z-отчёт',p.zReport?'Да':'Нет');
+  if(p.coffeeDone!==undefined) add('Кофе+снеки',p.coffeeDone?'Выполнено':'Не выполнено');
+  if(p.status) add('Статус смены',p.status==='closed'?'Закрыта':'Открыта');
+  (p.changes||[]).forEach((c,i)=>{
+    const type=c.type==='in'?'Внесение наличных':'Выдача наличных';
+    out.push([`${type} №${i+1}`,`${c.amount??'—'} BYN${c.comment?' · '+c.comment:''}`]);
+  });
+  (p.newList||[]).forEach((c,i)=>{
+    if((c.note||'')||c.bought) out.push([`Новый клиент №${i+1}`,`${c.note||'—'} · абонемент: ${c.bought?'да':'нет'}`]);
+  });
+  (p.notRenewList||[]).forEach((c,i)=>{
+    if(c.note) out.push([`Не продлил №${i+1}`,c.note]);
+  });
+  (p.checklist||[]).forEach((c,i)=>{
+    out.push([`Чек-лист №${i+1}`,`${c.text||'Пункт'} · ${c.done?'выполнено':'не выполнено'}`]);
+  });
+  return out;
+}
+function auditDetailPairs(details,prefix){
+  if(!prefix){
+    const legacy=auditLegacyReportPairs(details);
+    if(legacy) return legacy;
+  }
+  const out=[]; const obj=details&&typeof details==='object'?details:{};
+  Object.entries(obj).forEach(([k,v])=>{
+    const label=(prefix?prefix+' · ':'')+(AUDIT_DETAIL_LABELS[k]||k);
+    if(v&&typeof v==='object'&&!Array.isArray(v)){
+      const nested=auditDetailPairs(v,label);
+      if(nested.length) out.push(...nested); else out.push([label,'—']);
+    }else out.push([label,auditHumanValue(v)]);
+  });
+  return out;
+}
+function auditDetailsText(details){
+  const pairs=auditDetailPairs(details);
+  return pairs.map(([k,v])=>`${k}: ${v}`).join(' | ');
+}
 function auditDetailsModal(r){
-  return modal(`<h3>${escapeHtml((r&&r.action)||'Детали действия')}</h3><p>${escapeHtml(auditFmtDateTime(r&&r.created_at))} · ${escapeHtml((r&&r.actor_name)||'')} (${escapeHtml((r&&r.actor_login)||'')})</p><pre class="audit-json">${escapeHtml(JSON.stringify((r&&r.details)||{},null,2))}</pre><div class="actions"><button class="btn btn-primary" data-x>Закрыть</button></div>`);
+  const pairs=auditDetailPairs((r&&r.details)||{});
+  const body=pairs.length
+    ? `<div class="audit-detail-list">${pairs.map(([k,v])=>`<div class="audit-detail-row"><div class="audit-detail-k">${escapeHtml(k)}</div><div class="audit-detail-v">${escapeHtml(v)}</div></div>`).join('')}</div>`
+    : `<div class="audit-empty">Дополнительных данных нет.</div>`;
+  return modal(`<h3>${escapeHtml((r&&r.action)||'Детали действия')}</h3><p>${escapeHtml(auditFmtDateTime(r&&r.created_at))} · ${escapeHtml((r&&r.actor_name)||'')} (${escapeHtml((r&&r.actor_login)||'')})</p>${body}<div class="actions"><button class="btn btn-primary" data-x>Закрыть</button></div>`);
 }
 function exportAuditExcel(rows,fromDate,toDate,login){
   if(!rows||!rows.length){toast('Нет данных для выгрузки',true);return}
-  const out=rows.map(r=>({'Дата и время (Минск)':auditFmtDateTime(r.created_at),'Пользователь':r.actor_name||'','Логин':r.actor_login||'','Роль':r.actor_role||'','Действие':r.action||'','Раздел':r.entity_type||'','Объект':r.entity_key||'','Детали':JSON.stringify(r.details||{})}));
+  const out=rows.map(r=>({'Дата и время (Минск)':auditFmtDateTime(r.created_at),'Пользователь':r.actor_name||'','Логин':r.actor_login||'','Роль':r.actor_role||'','Действие':r.action||'','Раздел':r.entity_type||'','Объект':r.entity_key||'','Детали':auditDetailsText(r.details||{})}));
   const ws=XLSX.utils.json_to_sheet(out); ws['!cols']=[{wch:22},{wch:28},{wch:18},{wch:12},{wch:32},{wch:16},{wch:28},{wch:80}];
   const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Лог действий');
   XLSX.writeFile(wb,`fad-log_${fromDate||'all'}_${toDate||'all'}.xlsx`);
@@ -1566,7 +1643,7 @@ function renderForm(container,studio,date,data,onSaved,opts){
       status:data.status||'open', closedBy:data.closedBy, closedByLogin:data.closedByLogin, closedAt:data.closedAt,
       cashStartEditedBy:data.cashStartEditedBy, cashStartEditedAt:data.cashStartEditedAt,
       filledBy:data.filledBy||session.name, filledByLogin:data.filledByLogin||session.login,
-      lastEditedBy:session.name, lastEditedAt:new Date().toISOString(),
+      lastEditedBy:session.name, lastEditedByLogin:session.login, lastEditedAt:new Date().toISOString(),
       submittedAt:data.submittedAt||new Date().toISOString(),
       checklist: pendingChecklist || data.checklist || null
     };
@@ -1727,7 +1804,7 @@ function editMorningModal(entry,onDone){
     <div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="em-ok">Сохранить</button></div>`);
   el.querySelector('#em-ok').onclick=async()=>{
     const v=el.querySelector('#em').value; const nv=v===''?null:num(v);
-    const upd=Object.assign({},entry,{cashStart:nv,cashStartEditedBy:session.name,cashStartEditedAt:new Date().toISOString()});
+    const upd=Object.assign({},entry,{cashStart:nv,cashStartEditedBy:session.name,cashStartEditedByLogin:session.login,cashStartEditedAt:new Date().toISOString(),lastEditedBy:session.name,lastEditedByLogin:session.login,lastEditedAt:new Date().toISOString()});
     try{ await apiSaveReport(entry.studioId,entry.date,upd); closeModal(el); toast('Наличные утром обновлены'); onDone&&onDone(); }
     catch(e){ handleErr(e); }
   };
