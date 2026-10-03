@@ -697,6 +697,32 @@ table th>*,table td>*{max-width:100%;box-sizing:border-box}
 .num-autofit{font-variant-numeric:tabular-nums}
 .num-autofit.num-fit-wrap{white-space:normal!important;overflow-wrap:anywhere!important;word-break:break-word}
 
+
+/* ================= Audit log 03.10.2026-p ================= */
+.audit-toolbar{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin:0 0 14px}
+.audit-toolbar .field-mini{display:flex;flex-direction:column;gap:5px}
+.audit-toolbar .field-mini>span{font-size:11px;text-transform:uppercase;letter-spacing:.35px;color:var(--ink-faint);font-weight:700}
+.audit-toolbar input,.audit-toolbar select{min-width:150px}
+.audit-wrap{border:1px solid var(--line);border-radius:12px;overflow:auto;background:var(--surface);box-shadow:var(--shadow)}
+.audit-tbl{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;min-width:820px}
+.audit-tbl th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.35px;color:var(--ink-faint);font-weight:700;padding:10px 12px;background:var(--surface-2);border-bottom:1px solid var(--line)}
+.audit-tbl td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top;min-width:0;overflow-wrap:anywhere}
+.audit-tbl tr:last-child td{border-bottom:none}
+.audit-tbl .audit-time{width:150px;white-space:nowrap}
+.audit-tbl .audit-user{width:150px}
+.audit-tbl .audit-action{width:190px;font-weight:700}
+.audit-tbl .audit-object{width:190px}
+.audit-tbl .audit-details{width:95px;text-align:right}
+.audit-empty{padding:28px;text-align:center;color:var(--ink-faint)}
+.audit-json{max-height:60vh;overflow:auto;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:12px;font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere}
+@media(max-width:720px){
+  .audit-toolbar{align-items:stretch}
+  .audit-toolbar .field-mini{width:calc(50% - 5px)}
+  .audit-toolbar .field-mini.audit-user-filter{width:100%}
+  .audit-toolbar input,.audit-toolbar select{width:100%;min-width:0}
+  .audit-toolbar .btn{flex:1}
+}
+
 </style>
 
 <div id="root"></div>
@@ -717,7 +743,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '03.10.2026-o'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '03.10.2026-p'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Numeric overflow guard 26.09.2026-n ================= */
 let __numFitQueued=false;
@@ -905,9 +931,95 @@ async function refreshPermissions(){
   persistSession();
 }
 
+
+/* ================= Audit log ================= */
+const AUDIT_RPC_META = {
+  app_save_report:{action:'Сохранён отчёт',entity:'report'},
+  app_save_report_permitted:{action:'Сохранён отчёт',entity:'report'},
+  app_delete_report:{action:'Удалён отчёт',entity:'report'},
+  app_delete_report_permitted:{action:'Удалён отчёт',entity:'report'},
+  app_perm_create_admin:{action:'Создан администратор',entity:'admin'},
+  app_perm_set_active:{action:'Изменён доступ администратора',entity:'admin'},
+  app_perm_reset_password:{action:'Сброшен пароль администратора',entity:'admin'},
+  app_perm_delete_admin:{action:'Удалён администратор',entity:'admin'},
+  app_set_admin_permissions:{action:'Изменены права администратора',entity:'admin'},
+  app_perm_set_home:{action:'Изменён филиал администратора',entity:'admin'},
+  app_perm_set_hire:{action:'Изменена дата приёма',entity:'admin'},
+  app_perm_set_coffee:{action:'Изменён доступ к кофе+снекам',entity:'admin'},
+  app_save_schedule:{action:'Изменено расписание',entity:'schedule'},
+  app_save_schedule_permitted:{action:'Изменено расписание',entity:'schedule'}
+};
+function auditSanitize(v,key){
+  if(v==null) return v;
+  const k=String(key||'').toLowerCase();
+  if(k.includes('password')||k.includes('pass_hash')||k==='p_password'||k==='p_new_password'||k.includes('token')) return '[скрыто]';
+  if(Array.isArray(v)) return v.map((x,i)=>auditSanitize(x,String(i)));
+  if(typeof v==='object'){
+    const o={}; Object.keys(v).forEach(kk=>{o[kk]=auditSanitize(v[kk],kk)}); return o;
+  }
+  return v;
+}
+function auditEntityKey(fn,args){
+  args=args||{};
+  if(fn.includes('report')) return [args.p_studio,args.p_date].filter(Boolean).join(' · ');
+  if(fn.includes('admin')||fn.includes('set_home')||fn.includes('set_hire')||fn.includes('set_coffee')||fn.includes('set_active')||fn.includes('reset_password')) return args.p_login||'';
+  if(fn.includes('schedule')) return args.p_month||'';
+  return '';
+}
+async function auditAction(action,entityType,entityKey,details,tokenOverride){
+  const tok=tokenOverride||TOKEN;
+  if(!tok||!sb) return null;
+  try{
+    const {data,error}=await sb.rpc('app_audit_write',{
+      p_token:tok,p_action:String(action||'Действие'),
+      p_entity_type:String(entityType||'other'),
+      p_entity_key:entityKey==null?'':String(entityKey),
+      p_details:auditSanitize(details||{},'details')
+    });
+    if(error) throw error;
+    return data;
+  }catch(e){ try{console.warn('audit log failed',e)}catch(_){} return null; }
+}
+function auditRpcSuccess(fn,args,data){
+  if(fn==='app_audit_write'||fn==='app_list_audit_log') return;
+  if(fn==='app_login'||fn==='app_bootstrap_owner'){
+    const tok=data&&data.token;
+    if(tok) void auditAction(fn==='app_login'?'Вход в систему':'Создан аккаунт руководителя','auth','',{},tok);
+    return;
+  }
+  const meta=AUDIT_RPC_META[fn]; if(!meta) return;
+  const clean=Object.assign({},args||{}); delete clean.p_token;
+  void auditAction(meta.action,meta.entity,auditEntityKey(fn,args),clean);
+}
+async function apiListAuditLog(fromDate,toDate,login,limit){
+  return await rpc('app_list_audit_log',{p_token:TOKEN,p_from:fromDate||null,p_to:toDate||null,p_login:login||null,p_limit:Math.max(1,Math.min(10000,Number(limit)||5000))})||[];
+}
+function auditFmtDateTime(ts){
+  if(!ts) return '';
+  try{return new Intl.DateTimeFormat('ru-RU',{timeZone:'Europe/Minsk',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(new Date(ts))}
+  catch(e){return String(ts)}
+}
+function auditObjectLabel(r){
+  const t={report:'Отчёт',admin:'Администратор',schedule:'Расписание',settings:'Настройки',telegram:'Telegram',export:'Выгрузка',auth:'Авторизация'}[r.entity_type]||r.entity_type||'';
+  return [t,r.entity_key].filter(Boolean).join(' · ');
+}
+function auditDetailsModal(r){
+  return modal(`<h3>${escapeHtml((r&&r.action)||'Детали действия')}</h3><p>${escapeHtml(auditFmtDateTime(r&&r.created_at))} · ${escapeHtml((r&&r.actor_name)||'')} (${escapeHtml((r&&r.actor_login)||'')})</p><pre class="audit-json">${escapeHtml(JSON.stringify((r&&r.details)||{},null,2))}</pre><div class="actions"><button class="btn btn-primary" data-x>Закрыть</button></div>`);
+}
+function exportAuditExcel(rows,fromDate,toDate,login){
+  if(!rows||!rows.length){toast('Нет данных для выгрузки',true);return}
+  const out=rows.map(r=>({'Дата и время (Минск)':auditFmtDateTime(r.created_at),'Пользователь':r.actor_name||'','Логин':r.actor_login||'','Роль':r.actor_role||'','Действие':r.action||'','Раздел':r.entity_type||'','Объект':r.entity_key||'','Детали':JSON.stringify(r.details||{})}));
+  const ws=XLSX.utils.json_to_sheet(out); ws['!cols']=[{wch:22},{wch:28},{wch:18},{wch:12},{wch:32},{wch:16},{wch:28},{wch:80}];
+  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Лог действий');
+  XLSX.writeFile(wb,`fad-log_${fromDate||'all'}_${toDate||'all'}.xlsx`);
+  void auditAction('Скачан Excel журнала действий','export','audit-log',{from:fromDate||'',to:toDate||'',login:login||'',rows:rows.length});
+  toast('Лог выгружен в Excel');
+}
+
 async function rpc(fn, args){
   const {data, error} = await sb.rpc(fn, args || {});
   if(error) throw error;
+  auditRpcSuccess(fn,args||{},data);
   return data;
 }
 let forbiddenCheckPromise=null;
@@ -951,6 +1063,7 @@ function saveSession(s){
   persistSession();
 }
 async function doLogout(){
+  try{ if(TOKEN) await auditAction('Выход из системы','auth','',{}); }catch(e){}
   try{ if(TOKEN) await rpc('app_logout', {p_token:TOKEN}); }catch(e){}
   TOKEN = null; session = null; REPORTS = null; ALL_REPORTS = null;
   try{ sessionStorage.removeItem('sess'); }catch(e){}
@@ -1966,6 +2079,7 @@ function exportExcel(entries){
   ws['!cols']=Object.keys(rows[0]||{}).map(k=>({wch:Math.min(Math.max(k.length+2,10),40)}));
   const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Лог отчётов');
   XLSX.writeFile(wb,`otchet-studii_${todayStr()}.xlsx`);
+  void auditAction('Скачан Excel отчётов','export','reports',{rows:entries.length});
   toast('Excel-лог выгружен');
 }
 
@@ -2018,7 +2132,7 @@ async function renderMessages(body){
     omText.oninput=()=>{ setMsgOf(target, omText.value); omPrev.innerHTML = omText.value.trim()?`<div class="msg-prev-lbl">Предпросмотр</div><div class="msg-prev-body">📣 ${escapeHtml(omText.value)}</div>`:''; };
     body.querySelector('#msgSave').onclick=async()=>{
       const ind=body.querySelector('#msgInd');
-      try{ await apiSaveSettings(Object.assign({},settings,{messages:MSG})); ind.textContent='✓ Сохранено'; setTimeout(()=>{ if(ind) ind.textContent=''; },2500); }catch(e){ handleErr(e); }
+      try{ await apiSaveSettings(Object.assign({},settings,{messages:MSG})); void auditAction('Изменены сообщения и чек-листы','settings','messages',{target,checklist:listOf(target),message:msgOf(target)}); ind.textContent='✓ Сохранено'; setTimeout(()=>{ if(ind) ind.textContent=''; },2500); }catch(e){ handleErr(e); }
     };
   }
   draw();
@@ -2044,6 +2158,7 @@ async function renderUsers(body){
   if(viewAdmins) subs.push(['admins','Администраторы ('+active.length+')']);
   if(manageTelegram) subs.push(['telegram','Telegram']);
   if(viewAdmins) subs.push(['archive','Уволенные ('+archived.length+')']);
+  if(session.role==='owner') subs.push(['log','Лог']);
   if(!subs.length){ body.innerHTML='<div class="empty">Нет доступных разделов.</div>'; return; }
   if(!subs.some(x=>x[0]===USERS_VIEW)) USERS_VIEW=subs[0][0];
   body.innerHTML=`<div class="subtabs">${subs.map(x=>`<button class="subtab${USERS_VIEW===x[0]?' on':''}" data-uv="${x[0]}">${x[1]}</button>`).join('')}</div><div id="uBody"></div>`;
@@ -2074,7 +2189,7 @@ async function renderUsers(body){
         settings.adminPhones=settings.adminPhones||{};
         if(v) settings.adminPhones[login]=v; else delete settings.adminPhones[login];
         ADMIN_PHONES=settings.adminPhones;
-        try{ await apiSaveSettings(settings); toast('Телефон сохранён'); }catch(e){ handleErr(e); }
+        try{ await apiSaveSettings(settings); void auditAction('Изменён телефон администратора','admin',login,{phone:v}); toast('Телефон сохранён'); }catch(e){ handleErr(e); }
       }; });
     }
   }
@@ -2094,6 +2209,34 @@ async function renderUsers(body){
       listEl.querySelectorAll('[data-del2]').forEach(b=>b.onclick=()=>{ const u=byLogin[b.dataset.del2]; confirmModal(`Удалить «${u.name}» окончательно? Он исчезнет из списков. Отчёты останутся в логе.`, async()=>{ try{ await apiDeleteAdmin(u.login); toast('Удалён'); renderUsers(body); }catch(e){ handleErr(e); } }); });
     }
   }
+
+  async function drawAudit(el){
+    const today=todayStr(), from=isoAddDays(today,-29);
+    el.innerHTML=`<div class="bar fade-in"><div class="grow"><div class="section-title" style="margin:0">Лог действий пользователей</div></div></div>
+      <p class="msg-sub">Фиксируются вход/выход, изменения отчётов и расписания, управление администраторами, настройки и выгрузки. Пароли и токены в лог не записываются.</p>
+      <div class="audit-toolbar">
+        <label class="field-mini"><span>С даты</span><input type="date" id="auditFrom" value="${from}"/></label>
+        <label class="field-mini"><span>По дату</span><input type="date" id="auditTo" value="${today}"/></label>
+        <label class="field-mini audit-user-filter"><span>Пользователь</span><select id="auditLogin"><option value="">Все пользователи</option>${allUsers.map(u=>`<option value="${escapeHtml(u.login)}">${escapeHtml(u.name)} · ${escapeHtml(u.login)}</option>`).join('')}</select></label>
+        <button class="btn btn-primary" id="auditLoad">Показать</button><button class="btn" id="auditExcel">⬇ Excel</button>
+      </div><div id="auditResult"><div class="audit-empty">Загрузка…</div></div>`;
+    const fromEl=el.querySelector('#auditFrom'),toEl=el.querySelector('#auditTo'),loginEl=el.querySelector('#auditLogin'),result=el.querySelector('#auditResult');
+    let rows=[];
+    async function load(){
+      const f=fromEl.value||'',t=toEl.value||'',l=loginEl.value||'';
+      if(f&&t&&f>t){toast('Дата «С» не может быть позже даты «По»',true);return}
+      result.innerHTML='<div class="audit-empty">Загрузка…</div>';
+      try{
+        rows=await apiListAuditLog(f,t,l,5000);
+        result.innerHTML=rows.length?`<div class="audit-wrap"><table class="audit-tbl"><thead><tr><th class="audit-time">Дата и время</th><th class="audit-user">Пользователь</th><th class="audit-action">Действие</th><th class="audit-object">Объект</th><th class="audit-details">Детали</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td class="audit-time">${escapeHtml(auditFmtDateTime(r.created_at))}</td><td class="audit-user"><b>${escapeHtml(r.actor_name||r.actor_login||'')}</b><br><span style="color:var(--ink-faint)">${escapeHtml(r.actor_login||'')}</span></td><td class="audit-action">${escapeHtml(r.action||'')}</td><td class="audit-object">${escapeHtml(auditObjectLabel(r))}</td><td class="audit-details"><button class="btn btn-sm" data-audit-detail="${i}">Открыть</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="audit-empty">За выбранный период действий нет.</div>';
+        result.querySelectorAll('[data-audit-detail]').forEach(b=>b.onclick=()=>auditDetailsModal(rows[+b.dataset.auditDetail]));
+      }catch(e){result.innerHTML='<div class="audit-empty">Не удалось загрузить лог.</div>';handleErr(e)}
+    }
+    el.querySelector('#auditLoad').onclick=load;
+    el.querySelector('#auditExcel').onclick=()=>exportAuditExcel(rows,fromEl.value,toEl.value,loginEl.value);
+    await load();
+  }
+
   function drawTelegram(el){
     const TG = Object.assign({recipients:{}}, settings.telegram||{}); TG.recipients=TG.recipients||{};
     const recips=[];
@@ -2115,13 +2258,13 @@ async function renderUsers(body){
       try{
         const r=await fetch(SUPABASE_URL+'/functions/v1/daily-report',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON_KEY},body:JSON.stringify({testChatId:chatId})});
         const j=await r.json().catch(()=>({}));
-        if(j&&j.test&&j.ok) toast('Тест отправлен ✓'); else toast('Не отправлено — проверьте токен бота и chat ID',true);
+        if(j&&j.test&&j.ok){ void auditAction('Отправлен тест Telegram','telegram',x.dataset.tgtest,{chatId}); toast('Тест отправлен ✓'); } else toast('Не отправлено — проверьте токен бота и chat ID',true);
       }catch(e){ toast('Ошибка отправки (функция не развёрнута?)',true); }
       x.disabled=false; x.textContent=old;
     });
-    el.querySelector('#tgSave').onclick=async()=>{ const ind=el.querySelector('#tgInd'); try{ await apiSaveSettings(Object.assign({},settings,{telegram:TG})); settings.telegram=TG; ind.textContent='✓ Сохранено'; setTimeout(()=>{ if(ind) ind.textContent=''; },2500); }catch(e){ handleErr(e); } };
+    el.querySelector('#tgSave').onclick=async()=>{ const ind=el.querySelector('#tgInd'); try{ await apiSaveSettings(Object.assign({},settings,{telegram:TG})); settings.telegram=TG; void auditAction('Изменены настройки Telegram','telegram','recipients',{recipients:TG.recipients}); ind.textContent='✓ Сохранено'; setTimeout(()=>{ if(ind) ind.textContent=''; },2500); }catch(e){ handleErr(e); } };
   }
-  function drawU(){ const el=body.querySelector('#uBody'); if(USERS_VIEW==='telegram') drawTelegram(el); else if(USERS_VIEW==='archive') drawArchive(el); else drawAdmins(el); }
+  function drawU(){ const el=body.querySelector('#uBody'); if(USERS_VIEW==='telegram') drawTelegram(el); else if(USERS_VIEW==='archive') drawArchive(el); else if(USERS_VIEW==='log') void drawAudit(el); else drawAdmins(el); }
   drawU();
 }
 function userPermissions(u){
@@ -2455,7 +2598,7 @@ function fillAbsBalance(box, list, settings, canNorms){
   const ns=box.querySelector('#nSave');
   if(ns) ns.onclick=async()=>{
     const data=Object.assign({}, settings||{}, {leaveNorms:{otpusk:+box.querySelector('#nOtp').value||0, bol:+box.querySelector('#nBol').value||0, otgul:+box.querySelector('#nOtg').value||0}});
-    try{ await apiSaveSettings(data); toast('Нормы сохранены'); reflowSchedule(); }catch(e){ handleErr(e); }
+    try{ await apiSaveSettings(data); void auditAction('Изменены нормы отсутствий','settings','leaveNorms',{leaveNorms:data.leaveNorms}); toast('Нормы сохранены'); reflowSchedule(); }catch(e){ handleErr(e); }
   };
 }
 
@@ -2740,6 +2883,7 @@ function exportAdminScheduleOverview(){
   const ws=XLSX.utils.json_to_sheet(rows); ws['!cols']=[{wch:24},{wch:18}].concat(Array.from({length:n},()=>({wch:5})));
   const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Расписание администраторов');
   XLSX.writeFile(wb,`raspisanie_adminov_${monthKey(y,m)}.xlsx`);
+  void auditAction('Скачан Excel расписания','export','schedule',{month:monthKey(y,m),rows:rows.length});
   toast('Расписание выгружено');
 }
 
