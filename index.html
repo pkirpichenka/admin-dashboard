@@ -743,7 +743,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '03.10.2026-p'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '03.10.2026-q'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 /* ================= Numeric overflow guard 26.09.2026-n ================= */
 let __numFitQueued=false;
@@ -836,6 +836,7 @@ const PERMISSION_DEFS = [
   {key:'admins.view', group:'Администраторы', label:'Видеть администраторов', desc:'Просмотр карточек активных и уволенных сотрудников.'},
   {key:'admins.manage', group:'Администраторы', label:'Управлять администраторами', desc:'Добавление, увольнение, восстановление, удаление, пароль, филиал, телефон и другие поля.'},
   {key:'admins.permissions', group:'Администраторы', label:'Выдавать права доступа', desc:'Можно изменять права других администраторов. Не влияет на аккаунт руководителя.'},
+  {key:'admins.audit', group:'Администраторы', label:'Видеть лог действий', desc:'Просмотр журнала действий пользователей, деталей изменений и выгрузка журнала в Excel.'},
   {key:'telegram.manage', group:'Настройки', label:'Telegram', desc:'Получатели, chat ID, время и тестовая отправка.'},
   {key:'messages.manage', group:'Настройки', label:'Сообщения и чек-листы', desc:'Настройка сообщений при открытии и чек-листа закрытия смены.'}
 ];
@@ -922,8 +923,9 @@ async function refreshPermissions(){
     session.permissions=normalizePermissions(PERMISSION_PRESETS.full); session.permissionsLoaded=true; persistSession(); return;
   }
   try{
-    const p=await rpc('app_my_permissions',{p_token:TOKEN});
-    session.permissions=normalizePermissions(p||{}); session.permissionsLoaded=true; session.senior=false; session.canEdit=!!session.permissions['reports.edit_morning'];
+    const p=await rpc('app_my_permissions',{p_token:TOKEN})||{};
+    try{ p['admins.audit']=!!(await rpc('app_my_audit_permission',{p_token:TOKEN})); }catch(e){}
+    session.permissions=normalizePermissions(p); session.permissionsLoaded=true; session.senior=false; session.canEdit=!!session.permissions['reports.edit_morning'];
   }catch(e){
     // До применения SQL-миграции сохраняем прежнее поведение старшего/правки кассы.
     session.permissions=legacyPermissions(session); session.permissionsLoaded=false;
@@ -1138,6 +1140,7 @@ async function apiSetActive(login,val){ return await rpc('app_perm_set_active',{
 async function apiResetPassword(login,password){ return await rpc('app_perm_reset_password',{p_token:TOKEN,p_login:login,p_new_password:password}); }
 async function apiDeleteAdmin(login){ return await rpc('app_perm_delete_admin',{p_token:TOKEN,p_login:login}); }
 async function apiSetPermissions(login,permissions){ return await rpc('app_set_admin_permissions',{p_token:TOKEN,p_login:login,p_permissions:normalizePermissions(permissions)}); }
+async function apiSetAuditPermission(login,val){ return await rpc('app_set_audit_permission',{p_token:TOKEN,p_login:login,p_value:!!val}); }
 async function apiSetHome(login,home){ return await rpc('app_perm_set_home',{p_token:TOKEN,p_login:login,p_home:home||''}); }
 async function apiSetHire(login,hire){ return await rpc('app_perm_set_hire',{p_token:TOKEN,p_login:login,p_hire:hire||''}); }
 async function apiSetCoffee(login,val){ return await rpc('app_perm_set_coffee',{p_token:TOKEN,p_login:login,p_val:!!val}); }
@@ -1299,7 +1302,7 @@ function renderApp(){
   else tabs.push({label:'Смена',render:renderShift});
   tabs.push({label:'Расписание',render:renderSchedule});
   if(session.role!=='owner' && can('reports.view_all')) tabs.push({label:'Все отчёты',render:renderAllReports});
-  if(session.role==='owner' || can('admins.view') || can('admins.manage') || can('admins.permissions') || can('telegram.manage')) tabs.push({label:'Администраторы',render:renderUsers});
+  if(session.role==='owner' || can('admins.view') || can('admins.manage') || can('admins.permissions') || can('admins.audit') || can('telegram.manage')) tabs.push({label:'Администраторы',render:renderUsers});
   if(session.role==='owner' || can('messages.manage')) tabs.push({label:'Сообщения',render:renderMessages});
   renderRoleUI(tabs);
 }
@@ -2139,26 +2142,33 @@ async function renderMessages(body){
 }
 let USERS_VIEW='admins';
 async function renderUsers(body){
-  let allUsers;
-  try{ allUsers = await apiListUsers() || []; }
-  catch(e){ return handleErr(e); }
-  allUsers.sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'ru'));
-  const ownerUser=allUsers.find(u=>u.role==='owner')||null;
-  const users=allUsers.filter(u=>u.role!=='owner');
-  const byLogin = Object.fromEntries(users.map(u=>[u.login,u]));
-  let settings={}; try{ settings=await apiGetSettings(); }catch(e){}
-  settings.adminPhones=settings.adminPhones||{};
-  ADMIN_PHONES=settings.adminPhones;
-  const active=users.filter(u=>u.active), archived=users.filter(u=>!u.active);
   const viewAdmins=session.role==='owner'||can('admins.view')||can('admins.manage')||can('admins.permissions');
   const manageAdmins=session.role==='owner'||can('admins.manage');
   const managePerms=session.role==='owner'||can('admins.permissions');
   const manageTelegram=session.role==='owner'||can('telegram.manage');
+  const viewAudit=session.role==='owner'||can('admins.audit');
+
+  let allUsers=[];
+  if(viewAdmins||manageTelegram){
+    try{ allUsers = await apiListUsers() || []; }
+    catch(e){ return handleErr(e); }
+  }
+  allUsers.sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'ru'));
+  const ownerUser=allUsers.find(u=>u.role==='owner')||null;
+  const users=allUsers.filter(u=>u.role!=='owner');
+  const byLogin = Object.fromEntries(users.map(u=>[u.login,u]));
+  let settings={};
+  if(viewAdmins||manageTelegram){
+    try{ settings=await apiGetSettings(); }catch(e){}
+  }
+  settings.adminPhones=settings.adminPhones||{};
+  ADMIN_PHONES=settings.adminPhones;
+  const active=users.filter(u=>u.active), archived=users.filter(u=>!u.active);
   const subs=[];
   if(viewAdmins) subs.push(['admins','Администраторы ('+active.length+')']);
   if(manageTelegram) subs.push(['telegram','Telegram']);
   if(viewAdmins) subs.push(['archive','Уволенные ('+archived.length+')']);
-  if(session.role==='owner') subs.push(['log','Лог']);
+  if(viewAudit) subs.push(['log','Лог']);
   if(!subs.length){ body.innerHTML='<div class="empty">Нет доступных разделов.</div>'; return; }
   if(!subs.some(x=>x[0]===USERS_VIEW)) USERS_VIEW=subs[0][0];
   body.innerHTML=`<div class="subtabs">${subs.map(x=>`<button class="subtab${USERS_VIEW===x[0]?' on':''}" data-uv="${x[0]}">${x[1]}</button>`).join('')}</div><div id="uBody"></div>`;
@@ -2195,7 +2205,7 @@ async function renderUsers(body){
   }
   function drawAdmins(el){
     el.innerHTML=`<div class="bar fade-in"><div class="grow"><div class="section-title" style="margin:0">Администраторы (${active.length})</div></div>${manageAdmins?'<button class="btn btn-primary" id="add">+ Добавить администратора</button>':''}</div>
-      <p style="color:var(--ink-soft);font-size:13px;margin:0 0 16px">Права задаются отдельно для каждого сотрудника: отчёты, расписание, администраторы, Telegram и сообщения. «Полный доступ» даёт все рабочие возможности дашборда, но аккаунт руководителя изменить нельзя.</p>
+      <p style="color:var(--ink-soft);font-size:13px;margin:0 0 16px">Права задаются отдельно для каждого сотрудника: отчёты, расписание, администраторы, лог действий, Telegram и сообщения. «Полный доступ» даёт все рабочие возможности дашборда, но аккаунт руководителя изменить нельзя.</p>
       <div id="ulist">${active.length?active.map(u=>userRow(u,(settings.adminPhones||{})[u.login]||'',{manage:manageAdmins,permissions:managePerms})).join(''):'<div class="empty">Активных администраторов нет.</div>'}</div>`;
     wireRows(el.querySelector('#ulist'));
     const add=el.querySelector('#add'); if(add) add.onclick=()=>addAdminModal(()=>renderUsers(body));
@@ -2228,6 +2238,14 @@ async function renderUsers(body){
       result.innerHTML='<div class="audit-empty">Загрузка…</div>';
       try{
         rows=await apiListAuditLog(f,t,l,5000);
+        const known=new Set([...loginEl.options].map(o=>o.value));
+        rows.forEach(r=>{
+          if(r.actor_login&&!known.has(r.actor_login)){
+            const o=document.createElement('option');
+            o.value=r.actor_login; o.textContent=(r.actor_name||r.actor_login)+' · '+r.actor_login;
+            loginEl.appendChild(o); known.add(r.actor_login);
+          }
+        });
         result.innerHTML=rows.length?`<div class="audit-wrap"><table class="audit-tbl"><thead><tr><th class="audit-time">Дата и время</th><th class="audit-user">Пользователь</th><th class="audit-action">Действие</th><th class="audit-object">Объект</th><th class="audit-details">Детали</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td class="audit-time">${escapeHtml(auditFmtDateTime(r.created_at))}</td><td class="audit-user"><b>${escapeHtml(r.actor_name||r.actor_login||'')}</b><br><span style="color:var(--ink-faint)">${escapeHtml(r.actor_login||'')}</span></td><td class="audit-action">${escapeHtml(r.action||'')}</td><td class="audit-object">${escapeHtml(auditObjectLabel(r))}</td><td class="audit-details"><button class="btn btn-sm" data-audit-detail="${i}">Открыть</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="audit-empty">За выбранный период действий нет.</div>';
         result.querySelectorAll('[data-audit-detail]').forEach(b=>b.onclick=()=>auditDetailsModal(rows[+b.dataset.auditDetail]));
       }catch(e){result.innerHTML='<div class="audit-empty">Не удалось загрузить лог.</div>';handleErr(e)}
@@ -2321,7 +2339,9 @@ function permissionsModal(u,onDone){
     // Миграция reports-last-days-update.sql поддерживает её равной текущему дню автоматически.
     p['reports.anchor_date']=p['reports.days']>0?todayStr():'';
     try{
-      await apiSetPermissions(u.login,p); closeModal(el); toast('Права доступа сохранены');
+      await apiSetPermissions(u.login,p);
+      await apiSetAuditPermission(u.login,!!p['admins.audit']);
+      closeModal(el); toast('Права доступа сохранены');
       if(session.login===u.login){ session.permissions=normalizePermissions(p); session.senior=false; session.canEdit=!!p['reports.edit_morning']; persistSession(); renderApp(); }
       else onDone&&onDone();
     }catch(e){ handleErr(e); }
