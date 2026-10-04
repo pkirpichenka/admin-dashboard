@@ -729,6 +729,25 @@ table th>*,table td>*{max-width:100%;box-sizing:border-box}
   .audit-toolbar .btn{flex:1}
 }
 
+
+/* ================= Safe auto-update 03.10.2026-t ================= */
+.app-update-banner{
+  position:fixed;left:50%;bottom:16px;transform:translateX(-50%);
+  z-index:10050;display:flex;align-items:center;gap:10px;
+  width:min(92vw,620px);padding:11px 12px 11px 14px;
+  background:#153d2f;color:#fff;border-radius:14px;
+  box-shadow:0 16px 40px rgba(0,0,0,.22);
+  font-size:12.5px;font-weight:600
+}
+.app-update-banner .aub-grow{flex:1;min-width:0}
+.app-update-banner .aub-sub{display:block;margin-top:2px;font-weight:500;opacity:.78;font-size:11px}
+.app-update-banner .btn{flex:0 0 auto;background:#fff;color:#153d2f;border-color:#fff}
+@media(max-width:560px){
+  .app-update-banner{bottom:10px;align-items:stretch;flex-wrap:wrap}
+  .app-update-banner .aub-grow{flex:1 1 100%}
+  .app-update-banner .btn{flex:1}
+}
+
 </style>
 
 <div id="root"></div>
@@ -749,7 +768,123 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '03.10.2026-s'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '03.10.2026-t'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+
+
+const APP_UPDATE_INTERVAL_MS = 5*60*1000;
+const APP_RETURN_CHECK_MS = 10*60*1000;
+let APP_REMOTE_VERSION = APP_VERSION;
+let APP_UPDATE_AVAILABLE = false;
+let APP_UPDATE_CHECKING = false;
+let APP_HIDDEN_AT = 0;
+let APP_REPORT_UNSAVED_CHECK = ()=>false;
+const APP_DIRTY_REASONS = new Set();
+
+function markAppDirty(reason){ if(reason) APP_DIRTY_REASONS.add(reason); }
+function clearAppDirty(reason){
+  if(reason) APP_DIRTY_REASONS.delete(reason);
+  setTimeout(maybeApplyAppUpdate,0);
+}
+function appHasUnsavedWork(){
+  try{ if(APP_REPORT_UNSAVED_CHECK && APP_REPORT_UNSAVED_CHECK()) return true; }catch(e){}
+  if(APP_DIRTY_REASONS.size) return true;
+  if(document.querySelector('.overlay')) return true;
+  const a=document.activeElement;
+  if(a && a!==document.body && a.matches && a.matches('input,textarea,select,[contenteditable="true"]')) return true;
+  return false;
+}
+function appUpdateBanner(){
+  let b=document.getElementById('appUpdateBanner');
+  if(!APP_UPDATE_AVAILABLE){ if(b) b.remove(); return; }
+  if(!b){
+    b=document.createElement('div');
+    b.id='appUpdateBanner';
+    b.className='app-update-banner';
+    b.innerHTML=`<div class="aub-grow"><span id="aubText">Доступно обновление FAD</span><span class="aub-sub" id="aubSub">Обновится автоматически, когда данные будут сохранены.</span></div><button class="btn btn-sm" id="aubNow">Обновить сейчас</button>`;
+    document.body.appendChild(b);
+    b.querySelector('#aubNow').onclick=()=>{
+      if(appHasUnsavedWork()){ toast('Сначала сохраните изменения — обновление подождёт',true); return; }
+      reloadToLatestVersion();
+    };
+  }
+  const t=b.querySelector('#aubText'), s=b.querySelector('#aubSub');
+  if(t) t.textContent=`Доступно обновление FAD${APP_REMOTE_VERSION&&APP_REMOTE_VERSION!==APP_VERSION?' · '+APP_REMOTE_VERSION:''}`;
+  if(s) s.textContent=appHasUnsavedWork()
+    ? 'Есть несохранённые данные — обновление выполнится после сохранения.'
+    : 'Обновление готово и будет применено автоматически.';
+}
+function reloadToLatestVersion(){
+  if(!APP_UPDATE_AVAILABLE) return;
+  try{
+    const key='fad_last_update_reload';
+    const now=Date.now();
+    const prev=JSON.parse(sessionStorage.getItem(key)||'{}');
+    if(prev.version===APP_REMOTE_VERSION && now-(prev.at||0)<30000) return;
+    sessionStorage.setItem(key,JSON.stringify({version:APP_REMOTE_VERSION,at:now}));
+  }catch(e){}
+  const u=new URL(location.href);
+  u.searchParams.set('__fad_update',(APP_REMOTE_VERSION||'latest')+'-'+Date.now());
+  location.replace(u.toString());
+}
+function maybeApplyAppUpdate(){
+  if(!APP_UPDATE_AVAILABLE) return;
+  appUpdateBanner();
+  if(appHasUnsavedWork()) return;
+  setTimeout(()=>{
+    if(APP_UPDATE_AVAILABLE && !appHasUnsavedWork()) reloadToLatestVersion();
+  },250);
+}
+async function checkForAppUpdate(showStatus){
+  if(APP_UPDATE_CHECKING) return;
+  APP_UPDATE_CHECKING=true;
+  try{
+    const u=new URL(location.href);
+    u.hash='';
+    u.search='';
+    u.searchParams.set('__fad_check',Date.now());
+    const r=await fetch(u.toString(),{cache:'no-store',credentials:'same-origin',headers:{'Cache-Control':'no-cache'}});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const html=await r.text();
+    const m=html.match(/const\s+APP_VERSION\s*=\s*['"]([^'"]+)['"]/);
+    if(!m||!m[1]) throw new Error('version not found');
+    APP_REMOTE_VERSION=m[1];
+    if(APP_REMOTE_VERSION!==APP_VERSION){
+      APP_UPDATE_AVAILABLE=true;
+      appUpdateBanner();
+      maybeApplyAppUpdate();
+    }else{
+      APP_UPDATE_AVAILABLE=false;
+      appUpdateBanner();
+      if(showStatus) toast('Установлена актуальная версия');
+    }
+  }catch(e){
+    if(showStatus) toast('Не удалось проверить обновление',true);
+  }finally{
+    APP_UPDATE_CHECKING=false;
+  }
+}
+function initSafeAutoUpdate(){
+  try{
+    const u=new URL(location.href);
+    if(u.searchParams.has('__fad_update')){
+      u.searchParams.delete('__fad_update');
+      history.replaceState(null,'',u.pathname+(u.search?u.search:'')+u.hash);
+    }
+  }catch(e){}
+  setTimeout(()=>checkForAppUpdate(false),10000);
+  setInterval(()=>{ if(document.visibilityState==='visible') checkForAppUpdate(false); },APP_UPDATE_INTERVAL_MS);
+  setInterval(()=>{ if(APP_UPDATE_AVAILABLE) maybeApplyAppUpdate(); },30000);
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='hidden'){ APP_HIDDEN_AT=Date.now(); return; }
+    const away=APP_HIDDEN_AT?Date.now()-APP_HIDDEN_AT:0;
+    APP_HIDDEN_AT=0;
+    if(away>=APP_RETURN_CHECK_MS) checkForAppUpdate(false);
+    else if(APP_UPDATE_AVAILABLE) maybeApplyAppUpdate();
+  });
+  document.addEventListener('focusout',()=>{ if(APP_UPDATE_AVAILABLE) setTimeout(maybeApplyAppUpdate,150); });
+  window.addEventListener('online',()=>checkForAppUpdate(false));
+}
+
 
 /* ================= Numeric overflow guard 26.09.2026-n ================= */
 let __numFitQueued=false;
@@ -1387,7 +1522,11 @@ function renderRoleUI(tabs){
   const root=document.getElementById('root');
   root.innerHTML=`<div class="topbar">${header()}${tabs.length>1?`<div class="tabsrow"><div class="tabs">${tabs.map((t,i)=>`<button class="tab${i===0?' on':''}" data-i="${i}">${t.label}</button>`).join('')}</div></div>`:''}</div><div class="wrap"><div id="tabbody"></div></div>`;
   root.querySelector('#logout').onclick=()=>doLogout();
-  const _rb=root.querySelector('#refreshBtn'); if(_rb) _rb.onclick=()=>location.reload();
+  const _rb=root.querySelector('#refreshBtn'); if(_rb) _rb.onclick=async()=>{
+    if(appHasUnsavedWork()){ toast('Есть несохранённые изменения — сначала сохраните их',true); return; }
+    await checkForAppUpdate(false);
+    if(APP_UPDATE_AVAILABLE) reloadToLatestVersion(); else location.reload();
+  };
   const body=root.querySelector('#tabbody');
   function show(i){root.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',+b.dataset.i===i));tabs[i].render(body);}
   root.querySelectorAll('.tab').forEach(b=>b.onclick=()=>show(+b.dataset.i));
@@ -1654,7 +1793,7 @@ function renderForm(container,studio,date,data,onSaved,opts){
   if(fixBtn){
     fixBtn.onclick=async()=>{
       if(valNum('cashStart')==null){ toast('Сначала введите сумму наличных',true); return; }
-      try{ await apiSaveReport(studio,date,collectRec()); toast('Наличные на начало дня зафиксированы'); onSaved&&onSaved(); }
+      try{ await apiSaveReport(studio,date,collectRec()); toast('Наличные на начало дня зафиксированы'); onSaved&&onSaved(); setTimeout(maybeApplyAppUpdate,0); }
       catch(e){ handleErr(e); }
     };
   }
@@ -1662,13 +1801,17 @@ function renderForm(container,studio,date,data,onSaved,opts){
   // save (черновик — статус не меняется)
   container.querySelector('#save').onclick=async()=>{
     const rec=collectRec();
-    try{await apiSaveReport(studio,date,rec);lastAutoSnap=stripVolatile(rec);toast(data.filledBy?'Отчёт обновлён':'Отчёт сохранён · '+session.name);onSaved&&onSaved();}
+    try{await apiSaveReport(studio,date,rec);lastAutoSnap=stripVolatile(rec);toast(data.filledBy?'Отчёт обновлён':'Отчёт сохранён · '+session.name);onSaved&&onSaved();setTimeout(maybeApplyAppUpdate,0);}
     catch(e){toast('Не удалось сохранить',true);}
   };
 
   // ---- Автосохранение черновика (данные не теряются, если забыли сохранить) ----
   function stripVolatile(r){ const c=Object.assign({},r); delete c.lastEditedAt; delete c.submittedAt; return JSON.stringify(c); }
   let lastAutoSnap=stripVolatile(collectRec()), autoSaving=false;
+  APP_REPORT_UNSAVED_CHECK=()=>{
+    if(!document.body.contains(container)) return false;
+    try{ return autoSaving || stripVolatile(collectRec())!==lastAutoSnap; }catch(e){ return false; }
+  };
   const _sb=container.querySelector('#save'), autoInd=document.createElement('span');
   autoInd.className='autosave-ind'; autoInd.textContent='Автосохранение включено';
   if(_sb&&_sb.parentNode) _sb.parentNode.insertBefore(autoInd,_sb);
@@ -1681,7 +1824,7 @@ function renderForm(container,studio,date,data,onSaved,opts){
     autoSaving=true;
     try{ await apiSaveReport(studio,date,rec); lastAutoSnap=snap; setAutoInd('Черновик сохранён · '+_hhmm()); }
     catch(e){ setAutoInd('Не сохранено — проверьте связь',true); }
-    finally{ autoSaving=false; }
+    finally{ autoSaving=false; if(APP_UPDATE_AVAILABLE) setTimeout(maybeApplyAppUpdate,0); }
   }
   const _autoTimer=setInterval(()=>{ if(!document.body.contains(container)){ clearInterval(_autoTimer); document.removeEventListener('visibilitychange',_onHide); return; } doAutoSave(); }, 20000);
   function _onHide(){ if(document.visibilityState==='hidden'){ if(!document.body.contains(container)){ document.removeEventListener('visibilitychange',_onHide); return; } doAutoSave(); } }
@@ -1692,7 +1835,7 @@ function renderForm(container,studio,date,data,onSaved,opts){
   const ZEROABLE=[['cashEnd','наличные на конец дня'],['cashless','картой'],['allsports','QR'],['epos','EPOS'],['newCame','пришло новых'],['ended','закончились абонементы'],['renewed','продлили']];
   async function doClose(){
     const rec=collectRec(); rec.status='closed'; rec.closedBy=session.name; rec.closedByLogin=session.login; rec.closedAt=new Date().toISOString();
-    try{ await apiSaveReport(studio,date,rec); toast('Смена закрыта'); onSaved&&onSaved(); }catch(e){ handleErr(e); }
+    try{ await apiSaveReport(studio,date,rec); toast('Смена закрыта'); onSaved&&onSaved(); setTimeout(maybeApplyAppUpdate,0); }catch(e){ handleErr(e); }
   }
   function proceedClose(){
     const empties=ZEROABLE.filter(f=>valNum(f[0])==null);
@@ -1728,7 +1871,7 @@ function renderForm(container,studio,date,data,onSaved,opts){
   if(reopenBtn){
     reopenBtn.onclick=async()=>{
       const rec=collectRec(); rec.status='open'; rec.closedBy=null; rec.closedByLogin=null; rec.closedAt=null;
-      try{ await apiSaveReport(studio,date,rec); toast('Смена открыта заново'); onSaved&&onSaved(); }catch(e){ handleErr(e); }
+      try{ await apiSaveReport(studio,date,rec); toast('Смена открыта заново'); onSaved&&onSaved(); setTimeout(maybeApplyAppUpdate,0); }catch(e){ handleErr(e); }
     };
   }
   function valNum(id){const v=container.querySelector('#'+id).value;return v===''?null:num(v);}
@@ -2173,6 +2316,7 @@ async function renderMessages(body){
   MSG.checklist=Object.assign({all:[],byAdmin:{}}, MSG.checklist||{});
   MSG.openMsg=Object.assign({all:'',byAdmin:{}}, MSG.openMsg||{});
   let target='all';
+  clearAppDirty('messages');
   const listOf=t=> t==='all'?(MSG.checklist.all||[]):((MSG.checklist.byAdmin||{})[t]||[]);
   const setListOf=(t,arr)=>{ if(t==='all')MSG.checklist.all=arr; else { MSG.checklist.byAdmin=MSG.checklist.byAdmin||{}; MSG.checklist.byAdmin[t]=arr; } };
   const msgOf=t=> t==='all'?(MSG.openMsg.all||''):((MSG.openMsg.byAdmin||{})[t]||'');
@@ -2203,16 +2347,16 @@ async function renderMessages(body){
       </div>
       <div class="msg-actions"><button class="btn btn-primary" id="msgSave">Сохранить для «${escapeHtml(tName)}»</button><span id="msgInd" class="msg-ind"></span></div>`;
     body.querySelectorAll('[data-tg]').forEach(b=>b.onclick=()=>{ target=b.dataset.tg; draw(); });
-    body.querySelectorAll('.cl-inp').forEach(inp=>inp.onchange=()=>{ const arr=listOf(target).slice(); arr[+inp.dataset.i]=inp.value.trim(); setListOf(target,arr.filter(x=>x)); });
-    body.querySelectorAll('.cl-del').forEach(b=>b.onclick=()=>{ const arr=listOf(target).slice(); arr.splice(+b.dataset.i,1); setListOf(target,arr); draw(); });
+    body.querySelectorAll('.cl-inp').forEach(inp=>inp.onchange=()=>{ const arr=listOf(target).slice(); arr[+inp.dataset.i]=inp.value.trim(); setListOf(target,arr.filter(x=>x)); markAppDirty('messages'); });
+    body.querySelectorAll('.cl-del').forEach(b=>b.onclick=()=>{ const arr=listOf(target).slice(); arr.splice(+b.dataset.i,1); setListOf(target,arr); markAppDirty('messages'); draw(); });
     const clAdd=body.querySelector('#clAdd'), clNew=body.querySelector('#clNew');
-    clAdd.onclick=()=>{ const v=clNew.value.trim(); if(!v) return; const arr=listOf(target).slice(); arr.push(v); setListOf(target,arr); draw(); };
+    clAdd.onclick=()=>{ const v=clNew.value.trim(); if(!v) return; const arr=listOf(target).slice(); arr.push(v); setListOf(target,arr); markAppDirty('messages'); draw(); };
     clNew.onkeydown=(e)=>{ if(e.key==='Enter'){ e.preventDefault(); clAdd.onclick(); } };
     const omText=body.querySelector('#omText'), omPrev=body.querySelector('#omPrev');
-    omText.oninput=()=>{ setMsgOf(target, omText.value); omPrev.innerHTML = omText.value.trim()?`<div class="msg-prev-lbl">Предпросмотр</div><div class="msg-prev-body">📣 ${escapeHtml(omText.value)}</div>`:''; };
+    omText.oninput=()=>{ setMsgOf(target, omText.value); markAppDirty('messages'); omPrev.innerHTML = omText.value.trim()?`<div class="msg-prev-lbl">Предпросмотр</div><div class="msg-prev-body">📣 ${escapeHtml(omText.value)}</div>`:''; };
     body.querySelector('#msgSave').onclick=async()=>{
       const ind=body.querySelector('#msgInd');
-      try{ await apiSaveSettings(Object.assign({},settings,{messages:MSG})); void auditAction('Изменены сообщения и чек-листы','settings','messages',{target,checklist:listOf(target),message:msgOf(target)}); ind.textContent='✓ Сохранено'; setTimeout(()=>{ if(ind) ind.textContent=''; },2500); }catch(e){ handleErr(e); }
+      try{ await apiSaveSettings(Object.assign({},settings,{messages:MSG})); void auditAction('Изменены сообщения и чек-листы','settings','messages',{target,checklist:listOf(target),message:msgOf(target)}); clearAppDirty('messages'); ind.textContent='✓ Сохранено'; setTimeout(()=>{ if(ind) ind.textContent=''; },2500); }catch(e){ handleErr(e); }
     };
   }
   draw();
@@ -2333,6 +2477,7 @@ async function renderUsers(body){
   }
 
   function drawTelegram(el){
+    clearAppDirty('telegram');
     const TG = Object.assign({recipients:{}}, settings.telegram||{}); TG.recipients=TG.recipients||{};
     const recips=[];
     if(ownerUser&&ownerUser.active) recips.push({login:ownerUser.login,name:shortName(ownerUser.name)+(ownerUser.login===session.login?' (вы)':'')});
@@ -2342,7 +2487,7 @@ async function renderUsers(body){
       <p class="msg-sub">Ежедневная сводка по филиалам приходит выбранным получателям в заданное время (по Минску). «Chat ID» — идентификатор чата получателя с ботом. «Тест» отправляет проверочное сообщение прямо сейчас.</p>
       <div class="card" style="padding:0;overflow:hidden;max-width:820px"><table class="tg-tbl"><thead><tr><th>Получатель</th><th style="text-align:center">Получать</th><th>Telegram chat ID</th><th>Время (Минск)</th><th></th></tr></thead><tbody>${recips.map(r=>{const c=TG.recipients[r.login]||{};return `<tr><td class="tg-name">${escapeHtml(r.name)}</td><td data-label="Получать" style="text-align:center"><input type="checkbox" data-tgen="${escapeHtml(r.login)}" ${c.enabled?'checked':''}/></td><td data-label="Telegram chat ID"><input class="tg-inp" data-tgcid="${escapeHtml(r.login)}" value="${escapeHtml(c.chatId||'')}" placeholder="напр. 123456789"/></td><td data-label="Время (Минск)"><input type="time" data-tgtime="${escapeHtml(r.login)}" value="${escapeHtml(c.time||'23:00')}"/></td><td class="tg-test" data-label="Проверка"><button class="btn btn-sm" data-tgtest="${escapeHtml(r.login)}">Тест</button></td></tr>`;}).join('')}</tbody></table></div>
       <div class="msg-actions"><button class="btn btn-primary" id="tgSave">Сохранить получателей</button><span id="tgInd" class="msg-ind"></span></div>`;
-    function tgSet(login,k,v){ TG.recipients[login]=Object.assign({time:'23:00'},TG.recipients[login]||{}); TG.recipients[login][k]=v; }
+    function tgSet(login,k,v){ TG.recipients[login]=Object.assign({time:'23:00'},TG.recipients[login]||{}); TG.recipients[login][k]=v; markAppDirty('telegram'); }
     el.querySelectorAll('[data-tgen]').forEach(x=>x.onchange=()=>tgSet(x.dataset.tgen,'enabled',x.checked));
     el.querySelectorAll('[data-tgcid]').forEach(x=>x.onchange=()=>tgSet(x.dataset.tgcid,'chatId',x.value.trim()));
     el.querySelectorAll('[data-tgtime]').forEach(x=>x.onchange=()=>tgSet(x.dataset.tgtime,'time',x.value||'23:00'));
@@ -2357,7 +2502,7 @@ async function renderUsers(body){
       }catch(e){ toast('Ошибка отправки (функция не развёрнута?)',true); }
       x.disabled=false; x.textContent=old;
     });
-    el.querySelector('#tgSave').onclick=async()=>{ const ind=el.querySelector('#tgInd'); try{ await apiSaveSettings(Object.assign({},settings,{telegram:TG})); settings.telegram=TG; void auditAction('Изменены настройки Telegram','telegram','recipients',{recipients:TG.recipients}); ind.textContent='✓ Сохранено'; setTimeout(()=>{ if(ind) ind.textContent=''; },2500); }catch(e){ handleErr(e); } };
+    el.querySelector('#tgSave').onclick=async()=>{ const ind=el.querySelector('#tgInd'); try{ await apiSaveSettings(Object.assign({},settings,{telegram:TG})); settings.telegram=TG; void auditAction('Изменены настройки Telegram','telegram','recipients',{recipients:TG.recipients}); clearAppDirty('telegram'); ind.textContent='✓ Сохранено'; setTimeout(()=>{ if(ind) ind.textContent=''; },2500); }catch(e){ handleErr(e); } };
   }
   function drawU(){ const el=body.querySelector('#uBody'); if(USERS_VIEW==='telegram') drawTelegram(el); else if(USERS_VIEW==='archive') drawArchive(el); else if(USERS_VIEW==='log') void drawAudit(el); else drawAdmins(el); }
   drawU();
@@ -2693,9 +2838,10 @@ function fillAbsBalance(box, list, settings, canNorms){
   box.innerHTML=`<div class="section-title">Баланс за год</div>${editor}
     <div class="sch-scroll"><table class="sch-hrs"><thead><tr><th>Администратор</th><th>Отпуск</th><th>Больн.</th><th>Отгул</th></tr></thead><tbody>${rows||'<tr><td colspan="4" style="color:var(--ink-faint)">Нет данных</td></tr>'}</tbody></table></div>`;
   const ns=box.querySelector('#nSave');
+  ['nOtp','nBol','nOtg'].forEach(id=>{ const inp=box.querySelector('#'+id); if(inp) inp.oninput=()=>markAppDirty('leaveNorms'); });
   if(ns) ns.onclick=async()=>{
     const data=Object.assign({}, settings||{}, {leaveNorms:{otpusk:+box.querySelector('#nOtp').value||0, bol:+box.querySelector('#nBol').value||0, otgul:+box.querySelector('#nOtg').value||0}});
-    try{ await apiSaveSettings(data); void auditAction('Изменены нормы отсутствий','settings','leaveNorms',{leaveNorms:data.leaveNorms}); toast('Нормы сохранены'); reflowSchedule(); }catch(e){ handleErr(e); }
+    try{ await apiSaveSettings(data); void auditAction('Изменены нормы отсутствий','settings','leaveNorms',{leaveNorms:data.leaveNorms}); clearAppDirty('leaveNorms'); toast('Нормы сохранены'); reflowSchedule(); }catch(e){ handleErr(e); }
   };
 }
 
@@ -3162,5 +3308,6 @@ async function toggleApprove(){
 }
 
 /* ================= Start ================= */
+initSafeAutoUpdate();
 boot();
 </script>
