@@ -214,12 +214,12 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 .login .mark{width:52px;height:52px;margin-bottom:16px}
 .login h1{font-family:'Unbounded';font-weight:700;font-size:20px;margin:0 0 4px}
 .login p.lead{color:var(--ink-soft);font-size:13.5px;margin:0 0 22px}
-.overlay{position:fixed;inset:0;background:rgba(23,38,31,.42);display:grid;place-items:center;z-index:60;padding:20px}
-.modal{background:#fff;border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.3);width:100%;max-width:390px;padding:24px}
+.overlay{position:fixed;inset:0;background:rgba(23,38,31,.42);display:grid;place-items:start center;z-index:60;padding:20px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.modal{background:#fff;border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.3);width:100%;max-width:390px;padding:24px;max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .modal h3{margin:0 0 4px;font-family:'Unbounded';font-size:17px}
 .modal p{margin:0 0 16px;color:var(--ink-soft);font-size:13.5px}
 .modal .field{margin-bottom:12px}
-.modal .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+.modal .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;position:sticky;bottom:-24px;background:#fff;padding:10px 0 4px;z-index:3}
 .chk{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;color:var(--ink);font-weight:500}
 .chk input{width:auto}
 
@@ -524,7 +524,9 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
   .kv{grid-template-columns:repeat(auto-fit,minmax(118px,1fr))}
 
   /* Модалки на всю ширину */
-  .modal{max-width:none;padding:20px 18px}
+  .overlay{padding:10px 12px calc(10px + env(safe-area-inset-bottom))}
+  .modal{max-width:none;padding:20px 18px;max-height:calc(100vh - 20px - env(safe-area-inset-bottom));max-height:calc(100dvh - 20px - env(safe-area-inset-bottom))}
+  .modal .actions{bottom:-20px;padding-bottom:calc(4px + env(safe-area-inset-bottom))}
   .sch-erow{flex-wrap:wrap}
   .sch-erow .dm-adm{flex:1 1 100%}
   .sch-erow input[type=time]{flex:1 1 40%}
@@ -768,7 +770,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '03.10.2026-t'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '04.10.2026-u'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
