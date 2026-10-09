@@ -770,7 +770,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '04.10.2026-u'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '09.10.2026-v'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -1311,7 +1311,8 @@ function lastCashEndBefore(studio, before, source){
                .sort((a,b)=> a.date<b.date?1:-1);
   return c.length ? {date:c[0].date, cashEnd:num(c[0].cashEnd)} : null;
 }
-async function apiSaveReport(studio, date, payload){
+const REPORT_SAVE_QUEUES=new Map();
+async function apiSaveReportNow(studio,date,payload){
   let r;
   if(session && session.role!=='owner'){
     // Сначала всегда используем обычное сохранение смены. Это важно для текущей
@@ -1336,6 +1337,21 @@ async function apiSaveReport(studio, date, payload){
   }
   ALL_REPORTS=null;
   return r;
+}
+async function apiSaveReport(studio,date,payload){
+  // Все сохранения одного отчёта выполняются строго по очереди.
+  // Это не даёт более старому автосохранению завершиться ПОСЛЕ закрытия смены
+  // и затереть свежие данные/статус.
+  const key=studio+'|'+date;
+  const prev=REPORT_SAVE_QUEUES.get(key)||Promise.resolve();
+  const snapshot=JSON.parse(JSON.stringify(payload));
+  const run=prev.catch(()=>{}).then(()=>apiSaveReportNow(studio,date,snapshot));
+  REPORT_SAVE_QUEUES.set(key,run);
+  try{
+    return await run;
+  }finally{
+    if(REPORT_SAVE_QUEUES.get(key)===run) REPORT_SAVE_QUEUES.delete(key);
+  }
 }
 async function apiDeleteReport(studio, date){
   const r = (session&&session.role==='owner')
@@ -1809,10 +1825,10 @@ function renderForm(container,studio,date,data,onSaved,opts){
 
   // ---- Автосохранение черновика (данные не теряются, если забыли сохранить) ----
   function stripVolatile(r){ const c=Object.assign({},r); delete c.lastEditedAt; delete c.submittedAt; return JSON.stringify(c); }
-  let lastAutoSnap=stripVolatile(collectRec()), autoSaving=false;
+  let lastAutoSnap=stripVolatile(collectRec()), autoSaving=false, shiftTransition=false;
   APP_REPORT_UNSAVED_CHECK=()=>{
     if(!document.body.contains(container)) return false;
-    try{ return autoSaving || stripVolatile(collectRec())!==lastAutoSnap; }catch(e){ return false; }
+    try{ return shiftTransition || autoSaving || stripVolatile(collectRec())!==lastAutoSnap; }catch(e){ return false; }
   };
   const _sb=container.querySelector('#save'), autoInd=document.createElement('span');
   autoInd.className='autosave-ind'; autoInd.textContent='Автосохранение включено';
@@ -1820,7 +1836,7 @@ function renderForm(container,studio,date,data,onSaved,opts){
   function _hhmm(){ const d=new Date(); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
   function setAutoInd(t,err){ autoInd.textContent=t; autoInd.style.color=err?'var(--clay)':'var(--ink-faint)'; }
   async function doAutoSave(){
-    if(autoSaving || !document.body.contains(container)) return;
+    if(autoSaving || shiftTransition || !document.body.contains(container)) return;
     const rec=collectRec(), snap=stripVolatile(rec);
     if(snap===lastAutoSnap) return;
     autoSaving=true;
@@ -1836,8 +1852,27 @@ function renderForm(container,studio,date,data,onSaved,opts){
   // поля, которые при пустом значении можно «считать нулём» одним нажатием
   const ZEROABLE=[['cashEnd','наличные на конец дня'],['cashless','картой'],['allsports','QR'],['epos','EPOS'],['newCame','пришло новых'],['ended','закончились абонементы'],['renewed','продлили']];
   async function doClose(){
-    const rec=collectRec(); rec.status='closed'; rec.closedBy=session.name; rec.closedByLogin=session.login; rec.closedAt=new Date().toISOString();
-    try{ await apiSaveReport(studio,date,rec); toast('Смена закрыта'); onSaved&&onSaved(); setTimeout(maybeApplyAppUpdate,0); }catch(e){ handleErr(e); }
+    if(shiftTransition) return;
+    shiftTransition=true;
+    const oldStatus=data.status, oldClosedBy=data.closedBy, oldClosedByLogin=data.closedByLogin, oldClosedAt=data.closedAt;
+    const closedAt=new Date().toISOString();
+    // Сразу меняем локальный статус, чтобы никакое параллельное collectRec()
+    // не могло подготовить более старый payload со status=open.
+    data.status='closed'; data.closedBy=session.name; data.closedByLogin=session.login; data.closedAt=closedAt;
+    const rec=collectRec();
+    rec.status='closed'; rec.closedBy=session.name; rec.closedByLogin=session.login; rec.closedAt=closedAt;
+    try{
+      await apiSaveReport(studio,date,rec);
+      lastAutoSnap=stripVolatile(rec);
+      toast('Смена закрыта');
+      if(onSaved) await onSaved();
+      setTimeout(maybeApplyAppUpdate,0);
+    }catch(e){
+      data.status=oldStatus; data.closedBy=oldClosedBy; data.closedByLogin=oldClosedByLogin; data.closedAt=oldClosedAt;
+      handleErr(e);
+    }finally{
+      shiftTransition=false;
+    }
   }
   function proceedClose(){
     const empties=ZEROABLE.filter(f=>valNum(f[0])==null);
@@ -1852,6 +1887,7 @@ function renderForm(container,studio,date,data,onSaved,opts){
   const closeBtn=container.querySelector('#closeShift');
   if(closeBtn){
     closeBtn.onclick=async()=>{
+      if(shiftTransition) return;
       if(valNum('cashStart')==null){ toast('Сначала зафиксируйте наличные на начало дня',true); return; }
       let missClient=false;
       container.querySelectorAll('#newList .cl-item').forEach(row=>{ const i=+row.dataset.i; const inp=row.querySelector('.cl-note'); const need=!newList[i].bought && !((newList[i].note||'').trim()); if(inp) inp.classList.toggle('need',need); if(need) missClient=true; });
@@ -1872,8 +1908,26 @@ function renderForm(container,studio,date,data,onSaved,opts){
   const reopenBtn=container.querySelector('#reopen');
   if(reopenBtn){
     reopenBtn.onclick=async()=>{
-      const rec=collectRec(); rec.status='open'; rec.closedBy=null; rec.closedByLogin=null; rec.closedAt=null;
-      try{ await apiSaveReport(studio,date,rec); toast('Смена открыта заново'); onSaved&&onSaved(); setTimeout(maybeApplyAppUpdate,0); }catch(e){ handleErr(e); }
+      if(shiftTransition) return;
+      shiftTransition=true;
+      reopenBtn.disabled=true;
+      const oldStatus=data.status, oldClosedBy=data.closedBy, oldClosedByLogin=data.closedByLogin, oldClosedAt=data.closedAt;
+      data.status='open'; data.closedBy=null; data.closedByLogin=null; data.closedAt=null;
+      const rec=collectRec();
+      rec.status='open'; rec.closedBy=null; rec.closedByLogin=null; rec.closedAt=null;
+      try{
+        await apiSaveReport(studio,date,rec);
+        lastAutoSnap=stripVolatile(rec);
+        toast('Смена открыта заново');
+        if(onSaved) await onSaved();
+        setTimeout(maybeApplyAppUpdate,0);
+      }catch(e){
+        data.status=oldStatus; data.closedBy=oldClosedBy; data.closedByLogin=oldClosedByLogin; data.closedAt=oldClosedAt;
+        reopenBtn.disabled=false;
+        handleErr(e);
+      }finally{
+        shiftTransition=false;
+      }
     };
   }
   function valNum(id){const v=container.querySelector('#'+id).value;return v===''?null:num(v);}
