@@ -803,6 +803,43 @@ table th>*,table td>*{max-width:100%;box-sizing:border-box}
 .cal-reminder-state.on{background:#edf8f2;color:#24513e;border-color:#b9ddcb}
 .reminder-days-preview{font-size:11px;color:var(--ink-soft);margin-top:5px}
 .reminder-settings-note{font-size:11px;color:var(--ink-soft);line-height:1.45;margin-top:8px}
+.reminder-modal{max-width:560px;padding:0;overflow:hidden}
+.reminder-modal .rem-head{display:flex;gap:12px;align-items:flex-start;padding:22px 24px 18px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#fff,var(--surface-2))}
+.reminder-modal .rem-icon{width:38px;height:38px;border-radius:11px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:19px;flex:0 0 auto;box-shadow:0 6px 16px rgba(46,125,91,.18)}
+.reminder-modal .rem-head h3{margin:1px 0 4px;font-size:17px}
+.reminder-modal .rem-head p{margin:0;font-size:12.5px;line-height:1.45}
+.reminder-modal .rem-body{padding:18px 24px 4px}
+.reminder-modal .rem-enable{display:flex;align-items:center;gap:12px;padding:13px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);margin-bottom:16px;cursor:pointer}
+.reminder-modal .rem-enable input{width:18px;height:18px;accent-color:var(--accent);flex:0 0 auto}
+.reminder-modal .rem-enable-main{min-width:0}
+.reminder-modal .rem-enable-title{font-size:13.5px;font-weight:700;color:var(--ink)}
+.reminder-modal .rem-enable-sub{font-size:11.5px;color:var(--ink-soft);margin-top:2px;line-height:1.35}
+.reminder-modal .rem-section-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.45px;color:var(--ink-faint);margin:2px 0 9px}
+.reminder-modal .rem-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(150px,.65fr);gap:12px}
+.reminder-modal .rem-grid .field{margin:0}
+.reminder-modal .rem-preview{margin-top:6px;padding:5px 8px;border-radius:8px;background:#edf8f2;color:var(--accent-deep);font-size:10.5px;font-weight:700;line-height:1.35}
+.reminder-modal .rem-info{display:grid;gap:8px;margin-top:16px}
+.reminder-modal .rem-info-row{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:#fff}
+.reminder-modal .rem-info-ic{width:25px;height:25px;border-radius:8px;background:var(--surface-2);display:grid;place-items:center;flex:0 0 auto;font-size:13px}
+.reminder-modal .rem-info-txt{font-size:11.5px;color:var(--ink-soft);line-height:1.45;min-width:0;flex:1}
+.reminder-modal .rem-info-txt b{color:var(--ink)}
+.reminder-modal .rem-info-act{flex:0 0 auto}
+.reminder-modal .rem-info-act .btn{padding:6px 9px;font-size:11.5px}
+.reminder-modal .rem-test-row{display:flex;align-items:center;gap:10px;margin-top:12px;padding:10px 12px;border:1px dashed var(--line-strong);border-radius:11px}
+.reminder-modal .rem-test-row .grow{min-width:0}
+.reminder-modal .rem-test-title{font-size:12px;font-weight:700}
+.reminder-modal .rem-test-sub{font-size:11px;color:var(--ink-soft);margin-top:2px}
+.reminder-modal .actions{margin-top:16px;padding:12px 24px 18px;bottom:0;border-top:1px solid var(--line);background:#fff}
+.reminder-modal .actions .btn-primary{min-width:112px}
+@media(max-width:640px){
+  .reminder-modal{max-width:none}
+  .reminder-modal .rem-head{padding:18px 18px 15px}
+  .reminder-modal .rem-body{padding:15px 18px 2px}
+  .reminder-modal .rem-grid{grid-template-columns:1fr}
+  .reminder-modal .rem-info-row{align-items:center}
+  .reminder-modal .actions{padding:11px 18px calc(14px + env(safe-area-inset-bottom));bottom:0}
+}
+
 
 @media(max-width:900px){
   .cal-layout{grid-template-columns:1fr}
@@ -834,7 +871,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '14.10.2026-y'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '14.10.2026-z'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -2625,16 +2662,30 @@ function reminderDaysLabel(days){
 async function calendarReminderSettingsModal(current,onSaved){
   const cfg=Object.assign({enabled:true,days:[7,1],time:'09:00'},current||{});
   cfg.days=normalizeReminderDays(cfg.days);
-  const el=modal(`<h3>🔔 Telegram-напоминания</h3>
-    <p>Напоминания приходят владельцу в Telegram по chat ID из раздела «Администраторы → Telegram».</p>
-    <label class="field" style="display:flex;align-items:center;gap:8px"><input id="crEnabled" type="checkbox" ${cfg.enabled!==false?'checked':''}/><b>Напоминания включены</b></label>
-    <div class="field"><div class="lbl">За сколько дней напоминать</div><input id="crDays" inputmode="numeric" value="${escapeHtml(cfg.days.join(', '))}" placeholder="7, 1"/>
-      <div class="reminder-days-preview" id="crDaysPreview">${escapeHtml(reminderDaysLabel(cfg.days))}</div>
+  const el=modal(`<div class="rem-head">
+      <div class="rem-icon">🔔</div>
+      <div><h3>Telegram-напоминания</h3><p>Получатели выбираются отдельно в «Администраторы → Telegram» с галочкой «Календарь».</p></div>
     </div>
-    <div class="field"><div class="lbl">Время отправки (Минск)</div><input id="crTime" type="time" value="${escapeHtml(cfg.time||'09:00')}"/></div>
-    <div class="reminder-settings-note">Можно указать несколько периодов через запятую, например <b>14, 7, 1</b>. Значение <b>0</b> означает напоминание в сам день события. Сервер проверяет календарь автоматически, даже если FAD никто не открыл.</div>
-    <div class="reminder-settings-note"><b>Пасха и Радуница:</b> даты рассчитываются автоматически на будущие годы и добавляются в календарь без ручного ввода.</div>
-    <div class="actions"><button class="btn" id="crSync">♻ Обновить праздники</button><button class="btn" id="crTest">Тест Telegram</button><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="crSave">Сохранить</button></div>`);
+    <div class="rem-body">
+      <label class="rem-enable">
+        <input id="crEnabled" type="checkbox" ${cfg.enabled!==false?'checked':''}/>
+        <div class="rem-enable-main"><div class="rem-enable-title">Напоминания включены</div><div class="rem-enable-sub">FAD автоматически проверяет календарь и отправляет уведомления выбранным получателям.</div></div>
+      </label>
+      <div class="rem-section-title">Расписание уведомлений</div>
+      <div class="rem-grid">
+        <div class="field"><div class="lbl">За сколько дней напоминать</div><input id="crDays" inputmode="numeric" value="${escapeHtml(cfg.days.join(', '))}" placeholder="7, 1"/>
+          <div class="rem-preview" id="crDaysPreview">${escapeHtml(reminderDaysLabel(cfg.days))}</div>
+        </div>
+        <div class="field"><div class="lbl">Время · Минск</div><input id="crTime" type="time" value="${escapeHtml(cfg.time||'09:00')}"/></div>
+      </div>
+      <div class="rem-info">
+        <div class="rem-info-row"><div class="rem-info-ic">⏱</div><div class="rem-info-txt">Можно указать несколько периодов: <b>14, 7, 1</b>. Значение <b>0</b> означает уведомление непосредственно в день события.</div></div>
+        <div class="rem-info-row"><div class="rem-info-ic">♻</div><div class="rem-info-txt"><b>Пасха и Радуница</b><br>FAD рассчитывает переходящие даты автоматически и поддерживает календарь на будущие годы.</div><div class="rem-info-act"><button class="btn btn-sm" id="crSync">Обновить даты</button></div></div>
+      </div>
+      <div class="rem-test-row"><div class="grow"><div class="rem-test-title">Проверка Telegram</div><div class="rem-test-sub">Отправить тестовое календарное уведомление владельцу.</div></div><button class="btn btn-sm" id="crTest">Отправить тест</button></div>
+    </div>
+    <div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="crSave">Сохранить</button></div>`);
+  const modalBox=el.querySelector('.modal'); if(modalBox)modalBox.classList.add('reminder-modal');
   const daysEl=el.querySelector('#crDays'),prev=el.querySelector('#crDaysPreview');
   daysEl.oninput=()=>{prev.textContent=reminderDaysLabel(daysEl.value)};
   el.querySelector('#crSync').onclick=async()=>{
