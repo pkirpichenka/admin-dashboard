@@ -834,7 +834,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '14.10.2026-x'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '14.10.2026-y'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -2633,9 +2633,24 @@ async function calendarReminderSettingsModal(current,onSaved){
     </div>
     <div class="field"><div class="lbl">Время отправки (Минск)</div><input id="crTime" type="time" value="${escapeHtml(cfg.time||'09:00')}"/></div>
     <div class="reminder-settings-note">Можно указать несколько периодов через запятую, например <b>14, 7, 1</b>. Значение <b>0</b> означает напоминание в сам день события. Сервер проверяет календарь автоматически, даже если FAD никто не открыл.</div>
-    <div class="actions"><button class="btn" id="crTest">Тест Telegram</button><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="crSave">Сохранить</button></div>`);
+    <div class="reminder-settings-note"><b>Пасха и Радуница:</b> даты рассчитываются автоматически на будущие годы и добавляются в календарь без ручного ввода.</div>
+    <div class="actions"><button class="btn" id="crSync">♻ Обновить праздники</button><button class="btn" id="crTest">Тест Telegram</button><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="crSave">Сохранить</button></div>`);
   const daysEl=el.querySelector('#crDays'),prev=el.querySelector('#crDaysPreview');
   daysEl.oninput=()=>{prev.textContent=reminderDaysLabel(daysEl.value)};
+  el.querySelector('#crSync').onclick=async()=>{
+    const b=el.querySelector('#crSync'); b.disabled=true; const old=b.textContent;b.textContent='…';
+    try{
+      const r=await fetch(SUPABASE_URL+'/functions/v1/calendar-reminders',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON_KEY},
+        body:JSON.stringify({syncHolidays:true,token:TOKEN})
+      });
+      const j=await r.json().catch(()=>({}));
+      if(r.ok&&j&&j.ok){toast('Пасха и Радуница обновлены ✓');}
+      else toast((j&&j.error)||'Не удалось обновить праздники',true);
+    }catch(e){toast('Функция calendar-reminders ещё не развёрнута',true);}
+    b.disabled=false;b.textContent=old;
+  };
   el.querySelector('#crTest').onclick=async()=>{
     const b=el.querySelector('#crTest'); b.disabled=true; const old=b.textContent;b.textContent='…';
     try{
@@ -2699,6 +2714,7 @@ async function renderCalendar(body){
     body.innerHTML=`<div class="cal-toolbar fade-in">
       <button class="btn btn-sm" id="calPrev">‹</button><button class="btn btn-sm" id="calToday">Сегодня</button><button class="btn btn-sm" id="calNext">›</button>
       <div class="cal-month-title">${CAL_MONTHS[m]} ${y}</div><div class="grow"></div>
+      <span class="cal-reminder-state on" title="Пасха и Радуница рассчитываются системой автоматически">♻ Пасха/Радуница · авто</span>
       <span class="cal-reminder-state ${reminderCfg.enabled!==false?'on':''}">🔔 ${reminderCfg.enabled!==false?escapeHtml(reminderDaysLabel(reminderCfg.days))+' · '+escapeHtml(reminderCfg.time||'09:00'):'выключены'}</span>
       ${manage?'<button class="btn" id="calReminders">⚙ Напоминания</button><button class="btn btn-primary" id="calAdd">+ Добавить событие</button>':''}
     </div>
@@ -2902,12 +2918,13 @@ async function renderUsers(body){
     if(ownerUser&&ownerUser.active) recips.push({login:ownerUser.login,name:shortName(ownerUser.name)+(ownerUser.login===session.login?' (вы)':'')});
     else if(session.role==='owner') recips.push({login:session.login,name:shortName(session.name)+' (вы)'});
     active.forEach(u=>recips.push({login:u.login,name:shortName(u.name)+(u.login===session.login?' (вы)':'')}));
-    el.innerHTML=`<div class="section-title" style="margin-top:4px">📨 Отчёт по сменам в Telegram</div>
-      <p class="msg-sub">Ежедневная сводка по филиалам приходит выбранным получателям в заданное время (по Минску). «Chat ID» — идентификатор чата получателя с ботом. «Тест» отправляет проверочное сообщение прямо сейчас.</p>
-      <div class="card" style="padding:0;overflow:hidden;max-width:820px"><table class="tg-tbl"><thead><tr><th>Получатель</th><th style="text-align:center">Получать</th><th>Telegram chat ID</th><th>Время (Минск)</th><th></th></tr></thead><tbody>${recips.map(r=>{const c=TG.recipients[r.login]||{};return `<tr><td class="tg-name">${escapeHtml(r.name)}</td><td data-label="Получать" style="text-align:center"><input type="checkbox" data-tgen="${escapeHtml(r.login)}" ${c.enabled?'checked':''}/></td><td data-label="Telegram chat ID"><input class="tg-inp" data-tgcid="${escapeHtml(r.login)}" value="${escapeHtml(c.chatId||'')}" placeholder="напр. 123456789"/></td><td data-label="Время (Минск)"><input type="time" data-tgtime="${escapeHtml(r.login)}" value="${escapeHtml(c.time||'23:00')}"/></td><td class="tg-test" data-label="Проверка"><button class="btn btn-sm" data-tgtest="${escapeHtml(r.login)}">Тест</button></td></tr>`;}).join('')}</tbody></table></div>
+    el.innerHTML=`<div class="section-title" style="margin-top:4px">📨 Telegram-уведомления</div>
+      <p class="msg-sub">Для каждого получателя можно отдельно включить ежедневные отчёты и напоминания календаря. Один Chat ID используется для обоих типов уведомлений. Время в таблице относится к ежедневному отчёту; время календарных напоминаний задаётся в разделе «Календарь → Напоминания».</p>
+      <div class="card" style="padding:0;overflow:hidden;max-width:980px"><table class="tg-tbl"><thead><tr><th>Получатель</th><th style="text-align:center">Отчёты</th><th style="text-align:center">Календарь</th><th>Telegram chat ID</th><th>Время отчёта</th><th></th></tr></thead><tbody>${recips.map(r=>{const c=TG.recipients[r.login]||{};const calOn=(c.calendar===true)||(c.calendar==null&&r.login===(ownerUser&&ownerUser.login));return `<tr><td class="tg-name">${escapeHtml(r.name)}</td><td data-label="Отчёты" style="text-align:center"><input type="checkbox" data-tgen="${escapeHtml(r.login)}" ${c.enabled?'checked':''}/></td><td data-label="Календарь" style="text-align:center"><input type="checkbox" data-tgcal="${escapeHtml(r.login)}" ${calOn?'checked':''}/></td><td data-label="Telegram chat ID"><input class="tg-inp" data-tgcid="${escapeHtml(r.login)}" value="${escapeHtml(c.chatId||'')}" placeholder="напр. 123456789"/></td><td data-label="Время отчёта"><input type="time" data-tgtime="${escapeHtml(r.login)}" value="${escapeHtml(c.time||'23:00')}"/></td><td class="tg-test" data-label="Проверка"><button class="btn btn-sm" data-tgtest="${escapeHtml(r.login)}">Тест</button></td></tr>`;}).join('')}</tbody></table></div>
       <div class="msg-actions"><button class="btn btn-primary" id="tgSave">Сохранить получателей</button><span id="tgInd" class="msg-ind"></span></div>`;
     function tgSet(login,k,v){ TG.recipients[login]=Object.assign({time:'23:00'},TG.recipients[login]||{}); TG.recipients[login][k]=v; markAppDirty('telegram'); }
     el.querySelectorAll('[data-tgen]').forEach(x=>x.onchange=()=>tgSet(x.dataset.tgen,'enabled',x.checked));
+    el.querySelectorAll('[data-tgcal]').forEach(x=>x.onchange=()=>tgSet(x.dataset.tgcal,'calendar',x.checked));
     el.querySelectorAll('[data-tgcid]').forEach(x=>x.onchange=()=>tgSet(x.dataset.tgcid,'chatId',x.value.trim()));
     el.querySelectorAll('[data-tgtime]').forEach(x=>x.onchange=()=>tgSet(x.dataset.tgtime,'time',x.value||'23:00'));
     el.querySelectorAll('[data-tgtest]').forEach(x=>x.onclick=async()=>{
