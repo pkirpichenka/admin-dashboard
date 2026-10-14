@@ -799,6 +799,11 @@ table th>*,table td>*{max-width:100%;box-sizing:border-box}
 .cal-legend{display:flex;gap:10px;flex-wrap:wrap;margin:9px 0 0;font-size:10px;color:var(--ink-soft)}
 .cal-legend span{display:flex;align-items:center;gap:4px}
 .cal-dot{width:8px;height:8px;border-radius:50%}
+.cal-reminder-state{display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);font-size:10px;font-weight:700;color:var(--ink-soft)}
+.cal-reminder-state.on{background:#edf8f2;color:#24513e;border-color:#b9ddcb}
+.reminder-days-preview{font-size:11px;color:var(--ink-soft);margin-top:5px}
+.reminder-settings-note{font-size:11px;color:var(--ink-soft);line-height:1.45;margin-top:8px}
+
 @media(max-width:900px){
   .cal-layout{grid-template-columns:1fr}
 }
@@ -829,7 +834,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '14.10.2026-w'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '14.10.2026-x'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -1450,6 +1455,8 @@ async function apiListCalendarBirthdays(){ return await rpc('app_list_calendar_b
 async function apiListCalendarEvents(){ return await rpc('app_list_calendar_events',{p_token:TOKEN})||[]; }
 async function apiSaveCalendarEvent(data){ return await rpc('app_save_calendar_event',{p_token:TOKEN,p_id:data.id||null,p_title:data.title||'',p_event_date:data.event_date||null,p_event_type:data.event_type||'other',p_repeat_yearly:!!data.repeat_yearly,p_note:data.note||'',p_active:data.active!==false}); }
 async function apiDeleteCalendarEvent(id){ return await rpc('app_delete_calendar_event',{p_token:TOKEN,p_id:id}); }
+async function apiGetCalendarReminderSettings(){ return await rpc('app_get_calendar_reminder_settings',{p_token:TOKEN})||{enabled:true,days:[7,1],time:'09:00'}; }
+async function apiSaveCalendarReminderSettings(cfg){ return await rpc('app_save_calendar_reminder_settings',{p_token:TOKEN,p_enabled:!!cfg.enabled,p_days:cfg.days||[7,1],p_time:cfg.time||'09:00'}); }
 async function apiSetStaffCalendarPermissions(login,p){ return await rpc('app_set_staff_calendar_permissions',{p_token:TOKEN,p_login:login,p_permissions:p||{}}); }
 async function apiGetStaffCalendarPermissions(login){ return await rpc('app_get_staff_calendar_permissions',{p_token:TOKEN,p_login:login})||{}; }
 async function apiGetSchedule(month){ return await rpc('app_get_schedule',{p_token:TOKEN,p_month:month}); }
@@ -2604,12 +2611,68 @@ function birthdayInfoModal(e){
     <div class="audit-detail-list"><div class="audit-detail-row"><div class="audit-detail-k">Дата рождения</div><div class="audit-detail-v">${escapeHtml(birthdayShort(e.birth_date))}</div></div>${e.phone?`<div class="audit-detail-row"><div class="audit-detail-k">Телефон</div><div class="audit-detail-v">${escapeHtml(e.phone)}</div></div>`:''}</div>
     <div class="actions"><button class="btn btn-primary" data-x>Закрыть</button></div>`);
 }
+
+function normalizeReminderDays(v){
+  const arr=(Array.isArray(v)?v:String(v||'').split(/[,\s;]+/))
+    .map(x=>Number(x)).filter(n=>Number.isInteger(n)&&n>=0&&n<=365);
+  return [...new Set(arr)].sort((a,b)=>b-a);
+}
+function reminderDaysLabel(days){
+  const a=normalizeReminderDays(days);
+  if(!a.length)return 'не настроено';
+  return a.map(n=>n===0?'в день события':n===1?'за 1 день':`за ${n} дн.`).join(', ');
+}
+async function calendarReminderSettingsModal(current,onSaved){
+  const cfg=Object.assign({enabled:true,days:[7,1],time:'09:00'},current||{});
+  cfg.days=normalizeReminderDays(cfg.days);
+  const el=modal(`<h3>🔔 Telegram-напоминания</h3>
+    <p>Напоминания приходят владельцу в Telegram по chat ID из раздела «Администраторы → Telegram».</p>
+    <label class="field" style="display:flex;align-items:center;gap:8px"><input id="crEnabled" type="checkbox" ${cfg.enabled!==false?'checked':''}/><b>Напоминания включены</b></label>
+    <div class="field"><div class="lbl">За сколько дней напоминать</div><input id="crDays" inputmode="numeric" value="${escapeHtml(cfg.days.join(', '))}" placeholder="7, 1"/>
+      <div class="reminder-days-preview" id="crDaysPreview">${escapeHtml(reminderDaysLabel(cfg.days))}</div>
+    </div>
+    <div class="field"><div class="lbl">Время отправки (Минск)</div><input id="crTime" type="time" value="${escapeHtml(cfg.time||'09:00')}"/></div>
+    <div class="reminder-settings-note">Можно указать несколько периодов через запятую, например <b>14, 7, 1</b>. Значение <b>0</b> означает напоминание в сам день события. Сервер проверяет календарь автоматически, даже если FAD никто не открыл.</div>
+    <div class="actions"><button class="btn" id="crTest">Тест Telegram</button><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="crSave">Сохранить</button></div>`);
+  const daysEl=el.querySelector('#crDays'),prev=el.querySelector('#crDaysPreview');
+  daysEl.oninput=()=>{prev.textContent=reminderDaysLabel(daysEl.value)};
+  el.querySelector('#crTest').onclick=async()=>{
+    const b=el.querySelector('#crTest'); b.disabled=true; const old=b.textContent;b.textContent='…';
+    try{
+      const r=await fetch(SUPABASE_URL+'/functions/v1/calendar-reminders',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON_KEY},
+        body:JSON.stringify({test:true,token:TOKEN})
+      });
+      const j=await r.json().catch(()=>({}));
+      if(r.ok&&j&&j.ok)toast('Тестовое напоминание отправлено ✓');
+      else toast((j&&j.error)||'Не удалось отправить тест',true);
+    }catch(e){toast('Функция calendar-reminders ещё не развёрнута',true);}
+    b.disabled=false;b.textContent=old;
+  };
+  el.querySelector('#crSave').onclick=async()=>{
+    const days=normalizeReminderDays(daysEl.value);
+    if(!days.length){toast('Укажите хотя бы один период: например 7, 1',true);return;}
+    const time=el.querySelector('#crTime').value||'09:00';
+    const data={enabled:el.querySelector('#crEnabled').checked,days,time};
+    try{
+      await apiSaveCalendarReminderSettings(data);
+      void auditAction('Изменены Telegram-напоминания календаря','calendar','reminders',{enabled:data.enabled,days:data.days,time:data.time});
+      closeModal(el);toast('Напоминания сохранены');onSaved&&onSaved(data);
+    }catch(e){handleErr(e);}
+  };
+}
+
 async function renderCalendar(body){
   const manage=session.role==='owner'||can('calendar.manage');
   const now=new Date(); if(!CAL_DATE)CAL_DATE=new Date(now.getFullYear(),now.getMonth(),1);
   body.innerHTML='<div class="empty">Загрузка календаря…</div>';
-  let birthdays=[],manual=[];
-  try{[birthdays,manual]=await Promise.all([apiListCalendarBirthdays(),apiListCalendarEvents()]);}
+  let birthdays=[],manual=[],reminderCfg={enabled:true,days:[7,1],time:'09:00'};
+  try{
+    [birthdays,manual]=await Promise.all([apiListCalendarBirthdays(),apiListCalendarEvents()]);
+    try{reminderCfg=Object.assign(reminderCfg,await apiGetCalendarReminderSettings());}catch(e){}
+    reminderCfg.days=normalizeReminderDays(reminderCfg.days);
+  }
   catch(e){return handleErr(e);}
   function draw(){
     const y=CAL_DATE.getFullYear(),m=CAL_DATE.getMonth(),today=todayStr();
@@ -2635,7 +2698,9 @@ async function renderCalendar(body){
     const upcoming=merged.map(ev=>({ev,date:nextOccurrence(ev,today)})).filter(x=>x.date&&daysUntil(today,x.date)<=30).sort((a,b)=>a.date.localeCompare(b.date)||String(a.ev.title).localeCompare(String(b.ev.title),'ru')).slice(0,20);
     body.innerHTML=`<div class="cal-toolbar fade-in">
       <button class="btn btn-sm" id="calPrev">‹</button><button class="btn btn-sm" id="calToday">Сегодня</button><button class="btn btn-sm" id="calNext">›</button>
-      <div class="cal-month-title">${CAL_MONTHS[m]} ${y}</div><div class="grow"></div>${manage?'<button class="btn btn-primary" id="calAdd">+ Добавить событие</button>':''}
+      <div class="cal-month-title">${CAL_MONTHS[m]} ${y}</div><div class="grow"></div>
+      <span class="cal-reminder-state ${reminderCfg.enabled!==false?'on':''}">🔔 ${reminderCfg.enabled!==false?escapeHtml(reminderDaysLabel(reminderCfg.days))+' · '+escapeHtml(reminderCfg.time||'09:00'):'выключены'}</span>
+      ${manage?'<button class="btn" id="calReminders">⚙ Напоминания</button><button class="btn btn-primary" id="calAdd">+ Добавить событие</button>':''}
     </div>
     <div class="cal-layout">
       <div><div class="cal-card"><div class="cal-week">${['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(x=>`<div>${x}</div>`).join('')}</div><div class="cal-grid">${cells.join('')}</div></div>
@@ -2645,6 +2710,7 @@ async function renderCalendar(body){
     body.querySelector('#calPrev').onclick=()=>{CAL_DATE=new Date(y,m-1,1);draw();};
     body.querySelector('#calNext').onclick=()=>{CAL_DATE=new Date(y,m+1,1);draw();};
     body.querySelector('#calToday').onclick=()=>{const d=new Date();CAL_DATE=new Date(d.getFullYear(),d.getMonth(),1);draw();};
+    const rem=body.querySelector('#calReminders'); if(rem)rem.onclick=()=>calendarReminderSettingsModal(reminderCfg,(x)=>{reminderCfg=Object.assign({},reminderCfg,x);draw();});
     const add=body.querySelector('#calAdd'); if(add)add.onclick=()=>eventModal(null,()=>renderCalendar(body));
     body.querySelectorAll('[data-ce]').forEach(b=>b.onclick=()=>{
       const id=b.dataset.ce;
