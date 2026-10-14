@@ -750,6 +750,65 @@ table th>*,table td>*{max-width:100%;box-sizing:border-box}
   .app-update-banner .btn{flex:1}
 }
 
+
+/* ================= Employees + Calendar 14.10.2026-w ================= */
+.staff-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 14px}
+.staff-toolbar .grow{flex:1}
+.staff-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:12px}
+.staff-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:var(--shadow);min-width:0}
+.staff-head{display:flex;gap:8px;align-items:flex-start}
+.staff-name{font-weight:800;font-size:15px;line-height:1.2;min-width:0;overflow-wrap:anywhere}
+.staff-role{display:inline-flex;padding:3px 7px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);font-size:10px;font-weight:800;white-space:nowrap}
+.staff-role.trainer{background:#fff7df;border-color:#e9cf7b}
+.staff-meta{display:grid;gap:7px;margin-top:12px;font-size:12px;color:var(--ink-soft)}
+.staff-meta b{color:var(--ink)}
+.staff-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.staff-muted{opacity:.62}
+.staff-studios{display:flex;gap:5px;flex-wrap:wrap}
+.staff-studio{display:inline-flex;align-items:center;gap:5px;padding:3px 7px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);font-size:10px;font-weight:700}
+.staff-form-studios{display:flex;gap:8px;flex-wrap:wrap}
+.staff-form-studios label{display:flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:9px;padding:7px 9px;background:var(--surface-2);font-size:12px}
+
+.cal-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.cal-toolbar .grow{flex:1}
+.cal-month-title{font-size:18px;font-weight:800}
+.cal-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;align-items:start}
+.cal-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+.cal-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));background:var(--surface-2);border-bottom:1px solid var(--line)}
+.cal-week>div{padding:8px 6px;text-align:center;font-size:10px;font-weight:800;text-transform:uppercase;color:var(--ink-faint)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+.cal-day{min-height:104px;padding:7px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-width:0}
+.cal-day:nth-child(7n){border-right:none}
+.cal-day.out{background:var(--surface-2);opacity:.42}
+.cal-day.today{box-shadow:inset 0 0 0 2px var(--green)}
+.cal-num{font-size:11px;font-weight:800;margin-bottom:5px}
+.cal-events{display:grid;gap:4px}
+.cal-event{display:block;border:0;border-radius:7px;padding:4px 5px;text-align:left;font-size:10px;line-height:1.2;font-weight:700;overflow-wrap:anywhere;cursor:pointer;width:100%}
+.cal-event.birthday{background:#f7e9ff;color:#6c3483}
+.cal-event.holiday{background:#fff0f0;color:#a93226}
+.cal-event.important{background:#fff7df;color:#7d6608}
+.cal-event.other{background:#edf4f0;color:#24513e}
+.cal-event[disabled]{cursor:default}
+.cal-side-title{font-weight:800;padding:12px 13px 8px}
+.cal-upcoming{display:grid}
+.cal-up-row{padding:10px 13px;border-top:1px solid var(--line);display:grid;gap:3px}
+.cal-up-date{font-size:10px;text-transform:uppercase;color:var(--ink-faint);font-weight:800}
+.cal-up-name{font-size:12px;font-weight:800}
+.cal-up-sub{font-size:11px;color:var(--ink-soft)}
+.cal-empty{padding:20px;text-align:center;color:var(--ink-faint);font-size:12px}
+.cal-legend{display:flex;gap:10px;flex-wrap:wrap;margin:9px 0 0;font-size:10px;color:var(--ink-soft)}
+.cal-legend span{display:flex;align-items:center;gap:4px}
+.cal-dot{width:8px;height:8px;border-radius:50%}
+@media(max-width:900px){
+  .cal-layout{grid-template-columns:1fr}
+}
+@media(max-width:650px){
+  .staff-grid{grid-template-columns:1fr}
+  .cal-card{overflow-x:auto}
+  .cal-week,.cal-grid{min-width:700px}
+  .cal-day{min-height:94px}
+}
+
 </style>
 
 <div id="root"></div>
@@ -770,7 +829,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '09.10.2026-v'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '14.10.2026-w'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -980,6 +1039,10 @@ const PERMISSION_DEFS = [
   {key:'admins.manage', group:'Администраторы', label:'Управлять администраторами', desc:'Добавление, увольнение, восстановление, удаление, пароль, филиал, телефон и другие поля.'},
   {key:'admins.permissions', group:'Администраторы', label:'Выдавать права доступа', desc:'Можно изменять права других администраторов. Не влияет на аккаунт руководителя.'},
   {key:'admins.audit', group:'Администраторы', label:'Видеть лог действий', desc:'Просмотр журнала действий пользователей, деталей изменений и выгрузка журнала в Excel.'},
+  {key:'employees.view', group:'Сотрудники', label:'Видеть сотрудников', desc:'Просмотр общего справочника администраторов и тренеров.'},
+  {key:'employees.manage', group:'Сотрудники', label:'Управлять сотрудниками', desc:'Добавлять и редактировать тренеров, даты рождения и данные сотрудников.'},
+  {key:'calendar.view', group:'Календарь', label:'Видеть календарь', desc:'Просмотр дней рождения и важных событий.'},
+  {key:'calendar.manage', group:'Календарь', label:'Управлять календарём', desc:'Добавлять, редактировать и удалять события календаря.'},
   {key:'telegram.manage', group:'Настройки', label:'Telegram', desc:'Получатели, chat ID, время и тестовая отправка.'},
   {key:'messages.manage', group:'Настройки', label:'Сообщения и чек-листы', desc:'Настройка сообщений при открытии и чек-листа закрытия смены.'}
 ];
@@ -1009,6 +1072,8 @@ function normalizePermissions(p){
   if(o['reports.edit_closed']||o['reports.delete']||o['reports.view_totals']||o['reports.period']||o['reports.period_totals']||o['reports.export'])o['reports.view_all']=true;
   if(o['reports.period_totals']||o['reports.export'])o['reports.period']=true;
   if(o['admins.manage']||o['admins.permissions'])o['admins.view']=true;
+  if(o['employees.manage'])o['employees.view']=true;
+  if(o['calendar.manage'])o['calendar.view']=true;
   if(!o['reports.view_all']){o['reports.view_totals']=false;o['reports.period']=false;o['reports.period_totals']=false;o['reports.export']=false;o['reports.days']=0;o['reports.anchor_date']='';}
   if(!o['reports.period']){o['reports.period_totals']=false;o['reports.export']=false;}
   if(o['reports.days']<=0)o['reports.anchor_date']='';
@@ -1068,6 +1133,10 @@ async function refreshPermissions(){
   try{
     const p=await rpc('app_my_permissions',{p_token:TOKEN})||{};
     try{ p['admins.audit']=!!(await rpc('app_my_audit_permission',{p_token:TOKEN})); }catch(e){}
+    try{
+      const x=await rpc('app_my_staff_calendar_permissions',{p_token:TOKEN})||{};
+      ['employees.view','employees.manage','calendar.view','calendar.manage'].forEach(k=>{ if(k in x)p[k]=!!x[k]; });
+    }catch(e){}
     session.permissions=normalizePermissions(p); session.permissionsLoaded=true; session.senior=false; session.canEdit=!!session.permissions['reports.edit_morning'];
   }catch(e){
     // До применения SQL-миграции сохраняем прежнее поведение старшего/правки кассы.
@@ -1144,7 +1213,7 @@ function auditFmtDateTime(ts){
   catch(e){return String(ts)}
 }
 function auditObjectLabel(r){
-  const t={report:'Отчёт',admin:'Администратор',schedule:'Расписание',settings:'Настройки',telegram:'Telegram',export:'Выгрузка',auth:'Авторизация'}[r.entity_type]||r.entity_type||'';
+  const t={report:'Отчёт',admin:'Администратор',employee:'Сотрудник',calendar:'Календарь',schedule:'Расписание',settings:'Настройки',telegram:'Telegram',export:'Выгрузка',auth:'Авторизация'}[r.entity_type]||r.entity_type||'';
   return [t,r.entity_key].filter(Boolean).join(' · ');
 }
 const AUDIT_DETAIL_LABELS={
@@ -1374,6 +1443,15 @@ async function apiSetAuditPermission(login,val){ return await rpc('app_set_audit
 async function apiSetHome(login,home){ return await rpc('app_perm_set_home',{p_token:TOKEN,p_login:login,p_home:home||''}); }
 async function apiSetHire(login,hire){ return await rpc('app_perm_set_hire',{p_token:TOKEN,p_login:login,p_hire:hire||''}); }
 async function apiSetCoffee(login,val){ return await rpc('app_perm_set_coffee',{p_token:TOKEN,p_login:login,p_val:!!val}); }
+async function apiListEmployees(){ return await rpc('app_list_employees',{p_token:TOKEN})||[]; }
+async function apiSaveEmployee(data){ return await rpc('app_save_employee',{p_token:TOKEN,p_id:data.id||null,p_full_name:data.full_name||'',p_phone:data.phone||'',p_birth_date:data.birth_date||null,p_hire_date:data.hire_date||null,p_primary_studio:data.primary_studio||'',p_studios:data.studios||[],p_is_active:data.is_active!==false,p_note:data.note||''}); }
+async function apiSetEmployeePhone(login,phone){ try{return await rpc('app_set_employee_phone',{p_token:TOKEN,p_login:login,p_phone:phone||''});}catch(e){return null;} }
+async function apiListCalendarBirthdays(){ return await rpc('app_list_calendar_birthdays',{p_token:TOKEN})||[]; }
+async function apiListCalendarEvents(){ return await rpc('app_list_calendar_events',{p_token:TOKEN})||[]; }
+async function apiSaveCalendarEvent(data){ return await rpc('app_save_calendar_event',{p_token:TOKEN,p_id:data.id||null,p_title:data.title||'',p_event_date:data.event_date||null,p_event_type:data.event_type||'other',p_repeat_yearly:!!data.repeat_yearly,p_note:data.note||'',p_active:data.active!==false}); }
+async function apiDeleteCalendarEvent(id){ return await rpc('app_delete_calendar_event',{p_token:TOKEN,p_id:id}); }
+async function apiSetStaffCalendarPermissions(login,p){ return await rpc('app_set_staff_calendar_permissions',{p_token:TOKEN,p_login:login,p_permissions:p||{}}); }
+async function apiGetStaffCalendarPermissions(login){ return await rpc('app_get_staff_calendar_permissions',{p_token:TOKEN,p_login:login})||{}; }
 async function apiGetSchedule(month){ return await rpc('app_get_schedule',{p_token:TOKEN,p_month:month}); }
 async function apiAllAbsences(){ return await rpc('app_all_absences',{p_token:TOKEN})||[]; }
 async function apiGetSettings(){ try{ return await rpc('app_get_settings',{p_token:TOKEN})||{}; }catch(e){ return {}; } }
@@ -1532,7 +1610,9 @@ function renderApp(){
   else tabs.push({label:'Смена',render:renderShift});
   tabs.push({label:'Расписание',render:renderSchedule});
   if(session.role!=='owner' && can('reports.view_all')) tabs.push({label:'Все отчёты',render:renderAllReports});
+  if(session.role==='owner' || can('employees.view') || can('employees.manage')) tabs.push({label:'Сотрудники',render:renderEmployees});
   if(session.role==='owner' || can('admins.view') || can('admins.manage') || can('admins.permissions') || can('admins.audit') || can('telegram.manage')) tabs.push({label:'Администраторы',render:renderUsers});
+  if(session.role==='owner' || can('calendar.view') || can('calendar.manage')) tabs.push({label:'Календарь',render:renderCalendar});
   if(session.role==='owner' || can('messages.manage')) tabs.push({label:'Сообщения',render:renderMessages});
   renderRoleUI(tabs);
 }
@@ -2364,6 +2444,223 @@ function exportExcel(entries){
 
 /* ================= User management (owner only) ================= */
 function defaultMessages(){ return {checklist:{all:[],byAdmin:{}}, openMsg:{all:'',byAdmin:{}}}; }
+
+/* ================= Employees ================= */
+let EMP_VIEW='all';
+function employeeRoleLabel(e){ return e.employee_type==='trainer'?'Тренер':'Администратор'; }
+function employeeStudios(e){
+  const a=Array.isArray(e.studios)?e.studios.filter(Boolean):[];
+  if(!a.length&&e.primary_studio)a.push(e.primary_studio);
+  return [...new Set(a)];
+}
+function birthdayShort(iso){
+  if(!iso)return 'не указана';
+  const [y,m,d]=iso.split('-').map(Number);
+  return `${String(d).padStart(2,'0')}.${String(m).padStart(2,'0')}.${y}`;
+}
+function employeeCard(e,manage){
+  const studios=employeeStudios(e);
+  return `<div class="staff-card${e.is_active?'':' staff-muted'}" data-eid="${e.id}">
+    <div class="staff-head"><div class="grow"><div class="staff-name">${escapeHtml(e.full_name||'')}</div></div><span class="staff-role ${e.employee_type==='trainer'?'trainer':''}">${escapeHtml(employeeRoleLabel(e))}</span></div>
+    <div class="staff-meta">
+      <div>🎂 <b>${escapeHtml(birthdayShort(e.birth_date))}</b></div>
+      ${e.phone?`<div>☎ <b>${escapeHtml(e.phone)}</b></div>`:''}
+      ${e.hire_date?`<div>Приём: <b>${escapeHtml(fmtLong(e.hire_date))}</b></div>`:''}
+      <div class="staff-studios">${studios.length?studios.map(s=>`<span class="staff-studio">${sdot(s)}${escapeHtml(studioName(s))}</span>`).join(''):'<span style="color:var(--ink-faint)">филиал не указан</span>'}</div>
+      ${e.note?`<div>${escapeHtml(e.note)}</div>`:''}
+      ${e.app_login?`<div style="color:var(--ink-faint)">логин: ${escapeHtml(e.app_login)}</div>`:''}
+    </div>
+    ${manage?`<div class="staff-actions"><button class="btn btn-sm" data-edit-employee="${e.id}">Изменить</button></div>`:''}
+  </div>`;
+}
+async function renderEmployees(body){
+  const manage=session.role==='owner'||can('employees.manage');
+  body.innerHTML='<div class="empty">Загрузка сотрудников…</div>';
+  let rows=[];
+  try{ rows=await apiListEmployees(); }catch(e){ return handleErr(e); }
+  rows.sort((a,b)=>{
+    if(a.is_active!==b.is_active)return a.is_active?-1:1;
+    if(a.employee_type!==b.employee_type)return a.employee_type==='admin'?-1:1;
+    return String(a.full_name||'').localeCompare(String(b.full_name||''),'ru');
+  });
+  const counts={
+    all:rows.filter(x=>x.is_active).length,
+    admin:rows.filter(x=>x.is_active&&x.employee_type==='admin').length,
+    trainer:rows.filter(x=>x.is_active&&x.employee_type==='trainer').length,
+    archive:rows.filter(x=>!x.is_active).length
+  };
+  if(!['all','admin','trainer','archive'].includes(EMP_VIEW))EMP_VIEW='all';
+  body.innerHTML=`<div class="staff-toolbar fade-in"><div class="grow"><div class="section-title" style="margin:0">Сотрудники</div></div>${manage?'<button class="btn btn-primary" id="addTrainer">+ Добавить тренера</button>':''}</div>
+    <div class="subtabs">
+      <button class="subtab${EMP_VIEW==='all'?' on':''}" data-empv="all">Все (${counts.all})</button>
+      <button class="subtab${EMP_VIEW==='admin'?' on':''}" data-empv="admin">Администраторы (${counts.admin})</button>
+      <button class="subtab${EMP_VIEW==='trainer'?' on':''}" data-empv="trainer">Тренеры (${counts.trainer})</button>
+      <button class="subtab${EMP_VIEW==='archive'?' on':''}" data-empv="archive">Архив (${counts.archive})</button>
+    </div>
+    <div id="empList" style="margin-top:12px"></div>`;
+  const list=body.querySelector('#empList');
+  function draw(){
+    let a=rows;
+    if(EMP_VIEW==='all')a=rows.filter(x=>x.is_active);
+    else if(EMP_VIEW==='admin')a=rows.filter(x=>x.is_active&&x.employee_type==='admin');
+    else if(EMP_VIEW==='trainer')a=rows.filter(x=>x.is_active&&x.employee_type==='trainer');
+    else if(EMP_VIEW==='archive')a=rows.filter(x=>!x.is_active);
+    list.innerHTML=a.length?`<div class="staff-grid">${a.map(x=>employeeCard(x,manage)).join('')}</div>`:'<div class="empty">Сотрудников в этом разделе нет.</div>';
+    list.querySelectorAll('[data-edit-employee]').forEach(b=>b.onclick=()=>{
+      const e=rows.find(x=>String(x.id)===String(b.dataset.editEmployee));
+      if(e)employeeModal(e,()=>renderEmployees(body));
+    });
+  }
+  body.querySelectorAll('[data-empv]').forEach(b=>b.onclick=()=>{
+    EMP_VIEW=b.dataset.empv;
+    body.querySelectorAll('[data-empv]').forEach(x=>x.classList.toggle('on',x.dataset.empv===EMP_VIEW));
+    draw();
+  });
+  const add=body.querySelector('#addTrainer'); if(add)add.onclick=()=>employeeModal(null,()=>renderEmployees(body));
+  draw();
+}
+function employeeModal(e,onDone){
+  const isNew=!e, isAdmin=!!(e&&e.employee_type==='admin');
+  const studios=e?employeeStudios(e):[];
+  const title=isNew?'Новый тренер':`Сотрудник · ${e.full_name}`;
+  const el=modal(`<h3>${escapeHtml(title)}</h3>
+    ${isAdmin?`<p>Администратор добавлен сюда автоматически. ФИО, рабочий статус и домашний филиал управляются в разделе «Администраторы».</p>`:''}
+    <div class="field"><div class="lbl">ФИО</div><input id="efName" value="${escapeHtml(e?e.full_name:'')}" ${isAdmin?'disabled':''}/></div>
+    <div class="field"><div class="lbl">Телефон</div><input id="efPhone" type="tel" inputmode="tel" value="${escapeHtml(e&&e.phone||'')}" placeholder="+375…"/></div>
+    <div class="field"><div class="lbl">Дата рождения</div><input id="efBirth" type="date" value="${e&&e.birth_date||''}"/></div>
+    ${isAdmin?'':`<div class="field"><div class="lbl">Дата начала работы</div><input id="efHire" type="date" value="${e&&e.hire_date||''}"/></div>
+    <div class="field"><div class="lbl">Филиалы</div><div class="staff-form-studios">${STUDIOS.map(s=>`<label><input type="checkbox" data-efs="${s.id}" ${studios.includes(s.id)?'checked':''}/>${sdot(s)}${escapeHtml(s.name)}</label>`).join('')}</div></div>
+    <label class="field" style="display:flex;align-items:center;gap:8px"><input id="efActive" type="checkbox" ${!e||e.is_active?'checked':''}/><b>Работает</b></label>`}
+    <div class="field"><div class="lbl">Комментарий</div><textarea id="efNote" rows="3" placeholder="Необязательно">${escapeHtml(e&&e.note||'')}</textarea></div>
+    <div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="efSave">Сохранить</button></div>`);
+  el.querySelector('#efSave').onclick=async()=>{
+    const full_name=(el.querySelector('#efName').value||'').trim();
+    if(!full_name){toast('Укажите ФИО',true);return;}
+    const payload={
+      id:e&&e.id||null,full_name,
+      phone:(el.querySelector('#efPhone').value||'').trim(),
+      birth_date:el.querySelector('#efBirth').value||null,
+      hire_date:isAdmin?(e.hire_date||null):(el.querySelector('#efHire').value||null),
+      primary_studio:isAdmin?(e.primary_studio||''):'',
+      studios:isAdmin?employeeStudios(e):[...el.querySelectorAll('[data-efs]:checked')].map(x=>x.dataset.efs),
+      is_active:isAdmin?e.is_active:el.querySelector('#efActive').checked,
+      note:(el.querySelector('#efNote').value||'').trim()
+    };
+    try{
+      await apiSaveEmployee(payload);
+      void auditAction(isNew?'Добавлен тренер':'Изменены данные сотрудника','employee',String(e&&e.id||''),{name:full_name,birth_date:payload.birth_date,phone:payload.phone});
+      closeModal(el);toast('Сотрудник сохранён');onDone&&onDone();
+    }catch(err){handleErr(err);}
+  };
+}
+
+/* ================= Calendar ================= */
+let CAL_DATE=null;
+const CAL_MONTHS=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+function calendarEventClass(t){return ['birthday','holiday','important','other'].includes(t)?t:'other';}
+function calendarTypeLabel(t){return ({birthday:'День рождения',holiday:'Праздник',important:'Важное событие',other:'Событие'})[t]||'Событие';}
+function calIso(y,m,d){return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;}
+function occurrenceForYear(ev,y){
+  const base=ev.event_date||ev.birth_date; if(!base)return '';
+  const [,mm,dd]=base.split('-').map(Number);
+  if(ev.repeat_yearly||ev.type==='birthday')return calIso(y,mm-1,dd);
+  return base.startsWith(String(y)+'-')?base:'';
+}
+function nextOccurrence(ev,fromIso){
+  const [fy]=fromIso.split('-').map(Number);
+  const candidates=[fy,fy+1].map(y=>occurrenceForYear(ev,y)).filter(Boolean).filter(x=>x>=fromIso).sort();
+  return candidates[0]||'';
+}
+function daysUntil(fromIso,toIso){
+  const a=new Date(fromIso+'T00:00:00'),b=new Date(toIso+'T00:00:00');
+  return Math.round((b-a)/86400000);
+}
+function eventModal(e,onDone){
+  const isNew=!e;
+  const el=modal(`<h3>${isNew?'Новое событие':'Событие'}</h3>
+    <div class="field"><div class="lbl">Название</div><input id="ceTitle" value="${escapeHtml(e&&e.title||'')}" placeholder="Например: День матери"/></div>
+    <div class="field"><div class="lbl">Дата</div><input id="ceDate" type="date" value="${e&&e.event_date||todayStr()}"/></div>
+    <div class="field"><div class="lbl">Тип</div><select id="ceType"><option value="holiday" ${e&&e.event_type==='holiday'?'selected':''}>Праздник</option><option value="important" ${e&&e.event_type==='important'?'selected':''}>Важное событие</option><option value="other" ${!e||e.event_type==='other'?'selected':''}>Другое</option></select></div>
+    <label class="field" style="display:flex;align-items:center;gap:8px"><input id="ceYearly" type="checkbox" ${!e||e.repeat_yearly?'checked':''}/><b>Повторять каждый год</b></label>
+    <div class="field"><div class="lbl">Комментарий</div><textarea id="ceNote" rows="3">${escapeHtml(e&&e.note||'')}</textarea></div>
+    <div class="actions">${e?'<button class="btn btn-ghost" id="ceDelete">Удалить</button>':''}<button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="ceSave">Сохранить</button></div>`);
+  el.querySelector('#ceSave').onclick=async()=>{
+    const data={
+      id:e&&e.id||null,title:(el.querySelector('#ceTitle').value||'').trim(),
+      event_date:el.querySelector('#ceDate').value||null,event_type:el.querySelector('#ceType').value,
+      repeat_yearly:el.querySelector('#ceYearly').checked,note:(el.querySelector('#ceNote').value||'').trim(),active:true
+    };
+    if(!data.title||!data.event_date){toast('Укажите название и дату',true);return;}
+    try{await apiSaveCalendarEvent(data);void auditAction(isNew?'Добавлено событие календаря':'Изменено событие календаря','calendar',String(e&&e.id||''),data);closeModal(el);toast('Событие сохранено');onDone&&onDone();}catch(err){handleErr(err);}
+  };
+  const del=el.querySelector('#ceDelete');
+  if(del)del.onclick=()=>confirmModal(`Удалить событие «${e.title}»?`,async()=>{
+    try{await apiDeleteCalendarEvent(e.id);void auditAction('Удалено событие календаря','calendar',String(e.id),{title:e.title});closeModal(el);toast('Событие удалено');onDone&&onDone();}catch(err){handleErr(err);}
+  });
+}
+function birthdayInfoModal(e){
+  const age=e.birth_date?new Date().getFullYear()-Number(e.birth_date.slice(0,4)):null;
+  return modal(`<h3>🎂 ${escapeHtml(e.title)}</h3><p>${escapeHtml(e.employee_type==='trainer'?'Тренер':'Администратор')}${e.primary_studio?' · '+escapeHtml(studioName(e.primary_studio)):''}</p>
+    <div class="audit-detail-list"><div class="audit-detail-row"><div class="audit-detail-k">Дата рождения</div><div class="audit-detail-v">${escapeHtml(birthdayShort(e.birth_date))}</div></div>${e.phone?`<div class="audit-detail-row"><div class="audit-detail-k">Телефон</div><div class="audit-detail-v">${escapeHtml(e.phone)}</div></div>`:''}</div>
+    <div class="actions"><button class="btn btn-primary" data-x>Закрыть</button></div>`);
+}
+async function renderCalendar(body){
+  const manage=session.role==='owner'||can('calendar.manage');
+  const now=new Date(); if(!CAL_DATE)CAL_DATE=new Date(now.getFullYear(),now.getMonth(),1);
+  body.innerHTML='<div class="empty">Загрузка календаря…</div>';
+  let birthdays=[],manual=[];
+  try{[birthdays,manual]=await Promise.all([apiListCalendarBirthdays(),apiListCalendarEvents()]);}
+  catch(e){return handleErr(e);}
+  function draw(){
+    const y=CAL_DATE.getFullYear(),m=CAL_DATE.getMonth(),today=todayStr();
+    const merged=[
+      ...birthdays.filter(x=>x.birth_date).map(x=>({type:'birthday',title:x.full_name,birth_date:x.birth_date,repeat_yearly:true,employee_type:x.employee_type,primary_studio:x.primary_studio,phone:x.phone||'',id:'b'+x.id,_birthday:x})),
+      ...manual.filter(x=>x.active!==false).map(x=>({...x,type:x.event_type||'other'}))
+    ];
+    const eventsByDate={};
+    merged.forEach(ev=>{
+      const iso=occurrenceForYear(ev,y); if(!iso)return;
+      if(Number(iso.slice(5,7))!==m+1)return;
+      (eventsByDate[iso]||(eventsByDate[iso]=[])).push(ev);
+    });
+    Object.values(eventsByDate).forEach(a=>a.sort((x,z)=>(x.type==='birthday'?-1:1)-(z.type==='birthday'?-1:1)||String(x.title).localeCompare(String(z.title),'ru')));
+    const first=new Date(y,m,1),offset=(first.getDay()+6)%7,days=new Date(y,m+1,0).getDate();
+    const cells=[];
+    for(let i=0;i<42;i++){
+      const day=i-offset+1;
+      const dt=new Date(y,m,day),cy=dt.getFullYear(),cm=dt.getMonth(),cd=dt.getDate();
+      const iso=calIso(cy,cm,cd),out=cm!==m, evs=eventsByDate[iso]||[];
+      cells.push(`<div class="cal-day${out?' out':''}${iso===today?' today':''}"><div class="cal-num">${cd}</div><div class="cal-events">${evs.map(ev=>`<button class="cal-event ${calendarEventClass(ev.type)}" data-ce="${escapeHtml(String(ev.id))}">${ev.type==='birthday'?'🎂 ':ev.type==='holiday'?'🎉 ':ev.type==='important'?'📌 ':''}${escapeHtml(ev.title)}</button>`).join('')}</div></div>`);
+    }
+    const upcoming=merged.map(ev=>({ev,date:nextOccurrence(ev,today)})).filter(x=>x.date&&daysUntil(today,x.date)<=30).sort((a,b)=>a.date.localeCompare(b.date)||String(a.ev.title).localeCompare(String(b.ev.title),'ru')).slice(0,20);
+    body.innerHTML=`<div class="cal-toolbar fade-in">
+      <button class="btn btn-sm" id="calPrev">‹</button><button class="btn btn-sm" id="calToday">Сегодня</button><button class="btn btn-sm" id="calNext">›</button>
+      <div class="cal-month-title">${CAL_MONTHS[m]} ${y}</div><div class="grow"></div>${manage?'<button class="btn btn-primary" id="calAdd">+ Добавить событие</button>':''}
+    </div>
+    <div class="cal-layout">
+      <div><div class="cal-card"><div class="cal-week">${['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(x=>`<div>${x}</div>`).join('')}</div><div class="cal-grid">${cells.join('')}</div></div>
+      <div class="cal-legend"><span><i class="cal-dot" style="background:#e2b6f0"></i>День рождения</span><span><i class="cal-dot" style="background:#efb0aa"></i>Праздник</span><span><i class="cal-dot" style="background:#e9cf7b"></i>Важное</span></div></div>
+      <div class="cal-card"><div class="cal-side-title">Ближайшие 30 дней</div>${upcoming.length?`<div class="cal-upcoming">${upcoming.map(x=>`<div class="cal-up-row"><div class="cal-up-date">${escapeHtml(fmtLong(x.date))}${x.date===today?' · сегодня':daysUntil(today,x.date)===1?' · завтра':' · через '+daysUntil(today,x.date)+' дн.'}</div><div class="cal-up-name">${x.ev.type==='birthday'?'🎂 ':x.ev.type==='holiday'?'🎉 ':x.ev.type==='important'?'📌 ':''}${escapeHtml(x.ev.title)}</div><div class="cal-up-sub">${escapeHtml(calendarTypeLabel(x.ev.type))}${x.ev.note?' · '+escapeHtml(x.ev.note):''}</div></div>`).join('')}</div>`:'<div class="cal-empty">В ближайшие 30 дней событий нет.</div>'}</div>
+    </div>`;
+    body.querySelector('#calPrev').onclick=()=>{CAL_DATE=new Date(y,m-1,1);draw();};
+    body.querySelector('#calNext').onclick=()=>{CAL_DATE=new Date(y,m+1,1);draw();};
+    body.querySelector('#calToday').onclick=()=>{const d=new Date();CAL_DATE=new Date(d.getFullYear(),d.getMonth(),1);draw();};
+    const add=body.querySelector('#calAdd'); if(add)add.onclick=()=>eventModal(null,()=>renderCalendar(body));
+    body.querySelectorAll('[data-ce]').forEach(b=>b.onclick=()=>{
+      const id=b.dataset.ce;
+      if(id.startsWith('b')){
+        const ev=merged.find(x=>String(x.id)===id); if(ev)birthdayInfoModal(ev);
+      }else if(manage){
+        const ev=manual.find(x=>String(x.id)===id); if(ev)eventModal(ev,()=>renderCalendar(body));
+      }else{
+        const ev=manual.find(x=>String(x.id)===id);
+        if(ev)modal(`<h3>${escapeHtml(ev.title)}</h3><p>${escapeHtml(fmtLong(ev.event_date))}${ev.repeat_yearly?' · ежегодно':''}</p>${ev.note?`<p>${escapeHtml(ev.note)}</p>`:''}<div class="actions"><button class="btn btn-primary" data-x>Закрыть</button></div>`);
+      }
+    });
+  }
+  draw();
+}
+
 async function renderMessages(body){
   if(!TEAM.length){ try{ TEAM=await apiListTeam(); }catch(e){} }
   body.innerHTML=`<div class="hintline" style="padding:12px">Загрузка…</div>`;
@@ -2465,7 +2762,7 @@ async function renderUsers(body){
         };
       });
       const pb=row.querySelector('[data-perms]');
-      if(pb&&managePerms) pb.onclick=()=>permissionsModal(u,()=>renderUsers(body));
+      if(pb&&managePerms) pb.onclick=()=>{ void permissionsModal(u,()=>renderUsers(body)); };
     });
     if(manageAdmins){
       listEl.querySelectorAll('select[data-home]').forEach(sel=>{ sel.onchange=async()=>{ try{ await apiSetHome(sel.dataset.home, sel.value); toast('Домашний филиал обновлён'); }catch(e){ handleErr(e); } }; });
@@ -2476,7 +2773,7 @@ async function renderUsers(body){
         settings.adminPhones=settings.adminPhones||{};
         if(v) settings.adminPhones[login]=v; else delete settings.adminPhones[login];
         ADMIN_PHONES=settings.adminPhones;
-        try{ await apiSaveSettings(settings); void auditAction('Изменён телефон администратора','admin',login,{phone:v}); toast('Телефон сохранён'); }catch(e){ handleErr(e); }
+        try{ await apiSaveSettings(settings); await apiSetEmployeePhone(login,v); void auditAction('Изменён телефон администратора','admin',login,{phone:v}); toast('Телефон сохранён'); }catch(e){ handleErr(e); }
       }; });
     }
   }
@@ -2591,8 +2888,13 @@ function userRow(u,phone,opts){
       ${opts.manage?`<button class="btn btn-sm u-reset" data-act="reset">Сбросить пароль</button><button class="btn btn-sm btn-ghost u-delete" data-act="del">Удалить</button>`:''}
     </div></div>`;
 }
-function permissionsModal(u,onDone){
+async function permissionsModal(u,onDone){
   let state=userPermissions(u);
+  try{
+    const x=await apiGetStaffCalendarPermissions(u.login);
+    ['employees.view','employees.manage','calendar.view','calendar.manage'].forEach(k=>{ if(k in x)state[k]=!!x[k]; });
+    state=normalizePermissions(state);
+  }catch(e){}
   const groups=[...new Set(PERMISSION_DEFS.map(x=>x.group))];
   const el=modal(`<h3>Права доступа</h3><p>${escapeHtml(u.name)} · ${escapeHtml(u.login)}</p>
     <div class="perm-presets"><button class="btn btn-sm" data-preset="basic">Обычный</button><button class="btn btn-sm" data-preset="senior">Старший</button><button class="btn btn-sm btn-primary" data-preset="full">Полный доступ</button></div>
@@ -2619,6 +2921,10 @@ function permissionsModal(u,onDone){
     try{
       await apiSetPermissions(u.login,p);
       await apiSetAuditPermission(u.login,!!p['admins.audit']);
+      await apiSetStaffCalendarPermissions(u.login,{
+        'employees.view':!!p['employees.view'],'employees.manage':!!p['employees.manage'],
+        'calendar.view':!!p['calendar.view'],'calendar.manage':!!p['calendar.manage']
+      });
       closeModal(el); toast('Права доступа сохранены');
       if(session.login===u.login){ session.permissions=normalizePermissions(p); session.senior=false; session.canEdit=!!p['reports.edit_morning']; persistSession(); renderApp(); }
       else onDone&&onDone();
