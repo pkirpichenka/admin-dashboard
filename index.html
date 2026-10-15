@@ -871,7 +871,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '14.10.2026-z'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '15.10.2026-a'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -2502,12 +2502,27 @@ function birthdayShort(iso){
   const [y,m,d]=iso.split('-').map(Number);
   return `${String(d).padStart(2,'0')}.${String(m).padStart(2,'0')}.${y}`;
 }
+function employeeAge(birthIso,onIso=todayStr()){
+  if(!birthIso||!onIso)return null;
+  const [by,bm,bd]=String(birthIso).split('-').map(Number);
+  const [y,m,d]=String(onIso).split('-').map(Number);
+  if(!by||!bm||!bd||!y||by>y)return null;
+  let age=y-by;
+  if(m<bm||(m===bm&&d<bd))age--;
+  return age>=0&&age<130?age:null;
+}
+function ageLabel(age){
+  if(age==null)return '';
+  const n=Math.abs(Number(age)),n10=n%10,n100=n%100;
+  const word=(n10===1&&n100!==11)?'год':(n10>=2&&n10<=4&&(n100<12||n100>14))?'года':'лет';
+  return `${n} ${word}`;
+}
 function employeeCard(e,manage){
   const studios=employeeStudios(e);
   return `<div class="staff-card${e.is_active?'':' staff-muted'}" data-eid="${e.id}">
     <div class="staff-head"><div class="grow"><div class="staff-name">${escapeHtml(e.full_name||'')}</div></div><span class="staff-role ${e.employee_type==='trainer'?'trainer':''}">${escapeHtml(employeeRoleLabel(e))}</span></div>
     <div class="staff-meta">
-      <div>🎂 <b>${escapeHtml(birthdayShort(e.birth_date))}</b></div>
+      <div>🎂 <b>${escapeHtml(birthdayShort(e.birth_date))}</b>${e.birth_date&&employeeAge(e.birth_date)!=null?` · <b>${escapeHtml(ageLabel(employeeAge(e.birth_date)))}</b>`:''}</div>
       ${e.phone?`<div>☎ <b>${escapeHtml(e.phone)}</b></div>`:''}
       ${e.hire_date?`<div>Приём: <b>${escapeHtml(fmtLong(e.hire_date))}</b></div>`:''}
       <div class="staff-studios">${studios.length?studios.map(s=>`<span class="staff-studio">${sdot(s)}${escapeHtml(studioName(s))}</span>`).join(''):'<span style="color:var(--ink-faint)">филиал не указан</span>'}</div>
@@ -2643,9 +2658,13 @@ function eventModal(e,onDone){
   });
 }
 function birthdayInfoModal(e){
-  const age=e.birth_date?new Date().getFullYear()-Number(e.birth_date.slice(0,4)):null;
+  const age=employeeAge(e.birth_date);
   return modal(`<h3>🎂 ${escapeHtml(e.title)}</h3><p>${escapeHtml(e.employee_type==='trainer'?'Тренер':'Администратор')}${e.primary_studio?' · '+escapeHtml(studioName(e.primary_studio)):''}</p>
-    <div class="audit-detail-list"><div class="audit-detail-row"><div class="audit-detail-k">Дата рождения</div><div class="audit-detail-v">${escapeHtml(birthdayShort(e.birth_date))}</div></div>${e.phone?`<div class="audit-detail-row"><div class="audit-detail-k">Телефон</div><div class="audit-detail-v">${escapeHtml(e.phone)}</div></div>`:''}</div>
+    <div class="audit-detail-list">
+      <div class="audit-detail-row"><div class="audit-detail-k">Дата рождения</div><div class="audit-detail-v">${escapeHtml(birthdayShort(e.birth_date))}</div></div>
+      ${age!=null?`<div class="audit-detail-row"><div class="audit-detail-k">Возраст</div><div class="audit-detail-v"><b>${escapeHtml(ageLabel(age))}</b></div></div>`:''}
+      ${e.phone?`<div class="audit-detail-row"><div class="audit-detail-k">Телефон</div><div class="audit-detail-v">${escapeHtml(e.phone)}</div></div>`:''}
+    </div>
     <div class="actions"><button class="btn btn-primary" data-x>Закрыть</button></div>`);
 }
 
@@ -2772,7 +2791,7 @@ async function renderCalendar(body){
     <div class="cal-layout">
       <div><div class="cal-card"><div class="cal-week">${['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(x=>`<div>${x}</div>`).join('')}</div><div class="cal-grid">${cells.join('')}</div></div>
       <div class="cal-legend"><span><i class="cal-dot" style="background:#e2b6f0"></i>День рождения</span><span><i class="cal-dot" style="background:#efb0aa"></i>Праздник</span><span><i class="cal-dot" style="background:#e9cf7b"></i>Важное</span></div></div>
-      <div class="cal-card"><div class="cal-side-title">Ближайшие 30 дней</div>${upcoming.length?`<div class="cal-upcoming">${upcoming.map(x=>`<div class="cal-up-row"><div class="cal-up-date">${escapeHtml(fmtLong(x.date))}${x.date===today?' · сегодня':daysUntil(today,x.date)===1?' · завтра':' · через '+daysUntil(today,x.date)+' дн.'}</div><div class="cal-up-name">${x.ev.type==='birthday'?'🎂 ':x.ev.type==='holiday'?'🎉 ':x.ev.type==='important'?'📌 ':''}${escapeHtml(x.ev.title)}</div><div class="cal-up-sub">${escapeHtml(calendarTypeLabel(x.ev.type))}${x.ev.note?' · '+escapeHtml(x.ev.note):''}</div></div>`).join('')}</div>`:'<div class="cal-empty">В ближайшие 30 дней событий нет.</div>'}</div>
+      <div class="cal-card"><div class="cal-side-title">Ближайшие 30 дней</div>${upcoming.length?`<div class="cal-upcoming">${upcoming.map(x=>`<div class="cal-up-row"><div class="cal-up-date">${escapeHtml(fmtLong(x.date))}${x.date===today?' · сегодня':daysUntil(today,x.date)===1?' · завтра':' · через '+daysUntil(today,x.date)+' дн.'}</div><div class="cal-up-name">${x.ev.type==='birthday'?'🎂 ':x.ev.type==='holiday'?'🎉 ':x.ev.type==='important'?'📌 ':''}${escapeHtml(x.ev.title)}</div><div class="cal-up-sub">${escapeHtml(calendarTypeLabel(x.ev.type))}${x.ev.type==='birthday'&&x.ev.birth_date&&employeeAge(x.ev.birth_date,x.date)!=null?' · исполнится '+escapeHtml(ageLabel(employeeAge(x.ev.birth_date,x.date))):''}${x.ev.note?' · '+escapeHtml(x.ev.note):''}</div></div>`).join('')}</div>`:'<div class="cal-empty">В ближайшие 30 дней событий нет.</div>'}</div>
     </div>`;
     body.querySelector('#calPrev').onclick=()=>{CAL_DATE=new Date(y,m-1,1);draw();};
     body.querySelector('#calNext').onclick=()=>{CAL_DATE=new Date(y,m+1,1);draw();};
