@@ -841,6 +841,51 @@ table th>*,table td>*{max-width:100%;box-sizing:border-box}
 }
 
 
+
+/* ================= Calendar reminder log 30.10.2026-a ================= */
+.cal-log-modal{max-width:920px;padding:0;overflow:hidden}
+.cal-log-modal .clog-head{display:flex;gap:12px;align-items:flex-start;padding:20px 22px 16px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#fff,var(--surface-2))}
+.cal-log-modal .clog-icon{width:38px;height:38px;border-radius:11px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:18px;flex:0 0 auto;box-shadow:0 6px 16px rgba(46,125,91,.18)}
+.cal-log-modal .clog-head h3{margin:1px 0 4px;font-size:17px}
+.cal-log-modal .clog-head p{margin:0;font-size:12.5px;line-height:1.45}
+.cal-log-modal .clog-body{padding:16px 22px 4px}
+.cal-log-toolbar{display:grid;grid-template-columns:repeat(2,minmax(130px,1fr)) minmax(150px,1.2fr) minmax(130px,.8fr) auto;gap:10px;align-items:end;margin-bottom:14px}
+.cal-log-toolbar .field{margin:0}
+.cal-log-toolbar .btn{height:42px}
+.cal-log-summary{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 10px}
+.cal-log-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);font-size:10.5px;font-weight:700;color:var(--ink-soft)}
+.cal-log-pill.sent{background:#edf8f2;border-color:#b9ddcb;color:#24513e}
+.cal-log-pill.pending{background:#fff7df;border-color:#e9cf7b;color:#7d6608}
+.cal-log-wrap{border:1px solid var(--line);border-radius:12px;overflow:auto;background:var(--surface)}
+.cal-log-tbl{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;min-width:780px}
+.cal-log-tbl th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.35px;color:var(--ink-faint);font-weight:700;padding:10px 11px;background:var(--surface-2);border-bottom:1px solid var(--line)}
+.cal-log-tbl td{padding:10px 11px;border-bottom:1px solid var(--line);vertical-align:top;overflow-wrap:anywhere}
+.cal-log-tbl tr:last-child td{border-bottom:none}
+.cal-log-tbl .clog-time{width:145px;white-space:nowrap}
+.cal-log-tbl .clog-event{width:210px;font-weight:700}
+.cal-log-tbl .clog-date{width:105px;white-space:nowrap}
+.cal-log-tbl .clog-period{width:90px}
+.cal-log-tbl .clog-person{width:150px}
+.cal-log-tbl .clog-status{width:105px}
+.cal-log-status{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:999px;font-size:10.5px;font-weight:800;white-space:nowrap}
+.cal-log-status.sent{background:#edf8f2;color:#24513e;border:1px solid #b9ddcb}
+.cal-log-status.pending{background:#fff7df;color:#7d6608;border:1px solid #e9cf7b}
+.cal-log-empty{padding:28px 16px;text-align:center;color:var(--ink-faint);font-size:12.5px}
+.cal-log-modal .actions{margin-top:14px;padding:12px 22px 18px;bottom:0;border-top:1px solid var(--line)}
+@media(max-width:760px){
+  .cal-log-modal{max-width:none}
+  .cal-log-modal .clog-head{padding:18px 18px 14px}
+  .cal-log-modal .clog-body{padding:14px 18px 2px}
+  .cal-log-toolbar{grid-template-columns:1fr 1fr}
+  .cal-log-toolbar .field:nth-child(3),.cal-log-toolbar .field:nth-child(4){grid-column:span 1}
+  .cal-log-toolbar .btn{grid-column:1/-1;width:100%}
+  .cal-log-modal .actions{padding:11px 18px calc(14px + env(safe-area-inset-bottom))}
+}
+@media(max-width:520px){
+  .cal-log-toolbar{grid-template-columns:1fr}
+  .cal-log-toolbar .field:nth-child(3),.cal-log-toolbar .field:nth-child(4){grid-column:auto}
+}
+
 @media(max-width:900px){
   .cal-layout{grid-template-columns:1fr}
 }
@@ -871,7 +916,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '15.10.2026-a'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '30.10.2026-a'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -1494,6 +1539,7 @@ async function apiSaveCalendarEvent(data){ return await rpc('app_save_calendar_e
 async function apiDeleteCalendarEvent(id){ return await rpc('app_delete_calendar_event',{p_token:TOKEN,p_id:id}); }
 async function apiGetCalendarReminderSettings(){ return await rpc('app_get_calendar_reminder_settings',{p_token:TOKEN})||{enabled:true,days:[7,1],time:'09:00'}; }
 async function apiSaveCalendarReminderSettings(cfg){ return await rpc('app_save_calendar_reminder_settings',{p_token:TOKEN,p_enabled:!!cfg.enabled,p_days:cfg.days||[7,1],p_time:cfg.time||'09:00'}); }
+async function apiListCalendarReminderLog(limit){ return await rpc('app_list_calendar_reminder_log',{p_token:TOKEN,p_limit:Math.max(1,Math.min(1000,Number(limit)||500))})||[]; }
 async function apiSetStaffCalendarPermissions(login,p){ return await rpc('app_set_staff_calendar_permissions',{p_token:TOKEN,p_login:login,p_permissions:p||{}}); }
 async function apiGetStaffCalendarPermissions(login){ return await rpc('app_get_staff_calendar_permissions',{p_token:TOKEN,p_login:login})||{}; }
 async function apiGetSchedule(month){ return await rpc('app_get_schedule',{p_token:TOKEN,p_month:month}); }
@@ -2748,6 +2794,105 @@ async function calendarReminderSettingsModal(current,onSaved){
   };
 }
 
+
+function calendarLogFmtDateTime(ts){
+  if(!ts)return '—';
+  try{
+    return new Intl.DateTimeFormat('ru-RU',{
+      timeZone:'Europe/Minsk',day:'2-digit',month:'2-digit',year:'numeric',
+      hour:'2-digit',minute:'2-digit'
+    }).format(new Date(ts));
+  }catch(e){return String(ts);}
+}
+function calendarLogLocalDate(ts){
+  if(!ts)return '';
+  try{
+    const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Minsk',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date(ts));
+    const get=t=>parts.find(x=>x.type===t)?.value||'';
+    return `${get('year')}-${get('month')}-${get('day')}`;
+  }catch(e){return '';}
+}
+function calendarReminderPeriodLabel(n){
+  n=Number(n);
+  if(n===0)return 'В день';
+  if(n===1)return 'За 1 день';
+  return `За ${n} дн.`;
+}
+async function calendarReminderLogModal(){
+  const el=modal(`<div class="clog-head">
+      <div class="clog-icon">🔔</div>
+      <div><h3>Журнал уведомлений</h3><p>История календарных напоминаний Telegram. Время отображается по Минску.</p></div>
+    </div>
+    <div class="clog-body">
+      <div class="cal-log-toolbar">
+        <label class="field"><div class="lbl">С даты</div><input id="clogFrom" type="date"/></label>
+        <label class="field"><div class="lbl">По дату</div><input id="clogTo" type="date"/></label>
+        <label class="field"><div class="lbl">Получатель</div><select id="clogRecipient"><option value="">Все получатели</option></select></label>
+        <label class="field"><div class="lbl">Статус</div><select id="clogStatus"><option value="">Все</option><option value="sent">Отправлено</option><option value="pending">Ожидает</option></select></label>
+        <button class="btn" id="clogRefresh">↻ Обновить</button>
+      </div>
+      <div class="cal-log-summary" id="clogSummary"></div>
+      <div class="cal-log-wrap"><div id="clogTable" class="cal-log-empty">Загрузка журнала…</div></div>
+    </div>
+    <div class="actions"><button class="btn btn-primary" data-x>Закрыть</button></div>`);
+  const box=el.querySelector('.modal'); if(box)box.classList.add('cal-log-modal');
+  const from=el.querySelector('#clogFrom'),to=el.querySelector('#clogTo'),recipient=el.querySelector('#clogRecipient'),status=el.querySelector('#clogStatus');
+  const table=el.querySelector('#clogTable'),summary=el.querySelector('#clogSummary'),refresh=el.querySelector('#clogRefresh');
+  const today=todayStr(); to.value=today; from.value=isoAddDays(today,-30);
+  let rows=[];
+
+  function drawRecipients(){
+    const cur=recipient.value;
+    const people=[...new Map(rows.map(r=>[String(r.recipient_login||''),String(r.recipient_name||r.recipient_login||'')])).entries()]
+      .filter(x=>x[0]).sort((a,b)=>a[1].localeCompare(b[1],'ru'));
+    recipient.innerHTML='<option value="">Все получатели</option>'+people.map(([login,name])=>`<option value="${escapeHtml(login)}">${escapeHtml(name)} · ${escapeHtml(login)}</option>`).join('');
+    if(people.some(x=>x[0]===cur))recipient.value=cur;
+  }
+  function filtered(){
+    const f=from.value,t=to.value,who=recipient.value,st=status.value;
+    return rows.filter(r=>{
+      const when=calendarLogLocalDate(r.sent_at||r.claimed_at);
+      if(f&&when&&when<f)return false;
+      if(t&&when&&when>t)return false;
+      if(who&&String(r.recipient_login||'')!==who)return false;
+      if(st&&String(r.status||'')!==st)return false;
+      return true;
+    });
+  }
+  function draw(){
+    const list=filtered();
+    const sent=list.filter(r=>r.status==='sent').length,pending=list.length-sent;
+    summary.innerHTML=`<span class="cal-log-pill">${list.length} записей</span><span class="cal-log-pill sent">✓ Отправлено: ${sent}</span>${pending?`<span class="cal-log-pill pending">⏳ Ожидает: ${pending}</span>`:''}`;
+    if(!list.length){table.className='cal-log-empty';table.innerHTML='По выбранным фильтрам записей нет.';return;}
+    table.className='';
+    table.innerHTML=`<table class="cal-log-tbl"><thead><tr><th class="clog-time">Время</th><th class="clog-event">Событие</th><th class="clog-date">Дата события</th><th class="clog-period">Срок</th><th class="clog-person">Получатель</th><th class="clog-status">Статус</th></tr></thead><tbody>${list.map(r=>`<tr>
+      <td class="clog-time">${escapeHtml(calendarLogFmtDateTime(r.sent_at||r.claimed_at))}</td>
+      <td class="clog-event">${r.event_type==='birthday'?'🎂 ':r.event_type==='holiday'?'🎉 ':r.event_type==='important'?'📌 ':'🗓 '}${escapeHtml(r.event_title||r.event_key||'Событие')}</td>
+      <td class="clog-date">${escapeHtml(r.occurrence_date?fmtLong(r.occurrence_date):'—')}</td>
+      <td class="clog-period">${escapeHtml(calendarReminderPeriodLabel(r.days_before))}</td>
+      <td class="clog-person"><b>${escapeHtml(r.recipient_name||r.recipient_login||'—')}</b>${r.recipient_name&&r.recipient_login?`<div class="u-login">${escapeHtml(r.recipient_login)}</div>`:''}</td>
+      <td class="clog-status"><span class="cal-log-status ${r.status==='sent'?'sent':'pending'}">${r.status==='sent'?'✓ Отправлено':'⏳ Ожидает'}</span></td>
+    </tr>`).join('')}</tbody></table>`;
+  }
+  async function load(){
+    refresh.disabled=true; const old=refresh.textContent;refresh.textContent='…';
+    table.className='cal-log-empty';table.innerHTML='Загрузка журнала…';
+    try{
+      rows=await apiListCalendarReminderLog(1000);
+      drawRecipients();
+      draw();
+    }catch(e){
+      table.className='cal-log-empty';table.innerHTML='Не удалось загрузить журнал.';
+      handleErr(e);
+    }finally{
+      refresh.disabled=false;refresh.textContent=old;
+    }
+  }
+  [from,to,recipient,status].forEach(x=>x.onchange=draw);
+  refresh.onclick=load;
+  await load();
+}
+
 async function renderCalendar(body){
   const manage=session.role==='owner'||can('calendar.manage');
   const now=new Date(); if(!CAL_DATE)CAL_DATE=new Date(now.getFullYear(),now.getMonth(),1);
@@ -2786,7 +2931,7 @@ async function renderCalendar(body){
       <div class="cal-month-title">${CAL_MONTHS[m]} ${y}</div><div class="grow"></div>
       <span class="cal-reminder-state on" title="Пасха и Радуница рассчитываются системой автоматически">♻ Пасха/Радуница · авто</span>
       <span class="cal-reminder-state ${reminderCfg.enabled!==false?'on':''}">🔔 ${reminderCfg.enabled!==false?escapeHtml(reminderDaysLabel(reminderCfg.days))+' · '+escapeHtml(reminderCfg.time||'09:00'):'выключены'}</span>
-      ${manage?'<button class="btn" id="calReminders">⚙ Напоминания</button><button class="btn btn-primary" id="calAdd">+ Добавить событие</button>':''}
+      ${manage?'<button class="btn" id="calReminderLog">☰ Журнал уведомлений</button><button class="btn" id="calReminders">⚙ Напоминания</button><button class="btn btn-primary" id="calAdd">+ Добавить событие</button>':''}
     </div>
     <div class="cal-layout">
       <div><div class="cal-card"><div class="cal-week">${['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(x=>`<div>${x}</div>`).join('')}</div><div class="cal-grid">${cells.join('')}</div></div>
@@ -2796,6 +2941,7 @@ async function renderCalendar(body){
     body.querySelector('#calPrev').onclick=()=>{CAL_DATE=new Date(y,m-1,1);draw();};
     body.querySelector('#calNext').onclick=()=>{CAL_DATE=new Date(y,m+1,1);draw();};
     body.querySelector('#calToday').onclick=()=>{const d=new Date();CAL_DATE=new Date(d.getFullYear(),d.getMonth(),1);draw();};
+    const logBtn=body.querySelector('#calReminderLog'); if(logBtn)logBtn.onclick=()=>calendarReminderLogModal();
     const rem=body.querySelector('#calReminders'); if(rem)rem.onclick=()=>calendarReminderSettingsModal(reminderCfg,(x)=>{reminderCfg=Object.assign({},reminderCfg,x);draw();});
     const add=body.querySelector('#calAdd'); if(add)add.onclick=()=>eventModal(null,()=>renderCalendar(body));
     body.querySelectorAll('[data-ce]').forEach(b=>b.onclick=()=>{
