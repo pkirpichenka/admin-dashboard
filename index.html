@@ -1079,7 +1079,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '01.11.2026-i'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '01.11.2026-j'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -1770,6 +1770,19 @@ async function apiGoalsImpulseSalesProbe(){
   const r=await fetch(SUPABASE_URL+'/functions/v1/impulse-goals-sync',{
     method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({token:TOKEN,mode:'sales_probe'})
+  });
+  const raw=await r.text();
+  let j={};try{j=raw?JSON.parse(raw):{}}catch(e){j={raw}}
+  if(!r.ok){
+    const err=new Error((j&&j.error)||(j&&j.message)||('HTTP '+r.status));
+    err.httpStatus=r.status;err.payload=j;throw err;
+  }
+  return j;
+}
+async function apiGoalsImpulseAutoMap(){
+  const r=await fetch(SUPABASE_URL+'/functions/v1/impulse-goals-sync',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({token:TOKEN,mode:'auto_map'})
   });
   const raw=await r.text();
   let j={};try{j=raw?JSON.parse(raw):{}}catch(e){j={raw}}
@@ -3341,18 +3354,15 @@ async function renderGoalsDashboard(body){
     <div class="goals-api" id="goalsApiStrip">
       <div class="goals-api-ic">🔌</div>
       <div class="goals-api-main">
-        <div class="goals-api-title">ImpulseCRM · факт по администраторам</div>
+        <div class="goals-api-title">ImpulseCRM · реальные продажи администраторов</div>
         <div class="goals-api-sub">
-          ${apiConnected?'Ключ Basic API задан. ':'Соединение Basic API ещё не подтверждено. '}
-          ${configured?'Метод продаж настроен.':'Метод продаж/абонементов ещё не настроен.'}
+          Источник: <b>product/list</b> · дата <b>created</b> · деньги <b>paid</b> · кассир <b>payBox.shift.userOpenedId</b>.
           Последняя синхронизация: <b>${escapeHtml(syncLabel)}</b>.
         </div>
         <div class="goal-api-result" id="goalsApiInlineResult"></div>
       </div>
-      <span class="goals-api-state ${configured?'ok':'warn'}"><i class="goals-api-dot"></i>${configured?'Продажи настроены':apiConnected?'Ключ API задан':'Нужна проверка API'}</span>
-      <button class="btn" id="goalsApiTestMain">Проверить API</button>
-      <button class="btn" id="goalsApiDiagnostic">Диагностика API</button>
-      <button class="btn" id="goalsProductProfile">Анализ product/list</button>
+      <span class="goals-api-state ${apiConnected||configured?'ok':'warn'}"><i class="goals-api-dot"></i>${apiConnected||configured?'API готов':'Нужна проверка API'}</span>
+      <button class="btn" id="goalsAutoMap">Сопоставить по ФИО</button>
       <button class="btn" id="goalsSalesProbe">Сверка продаж</button>
       <button class="btn" id="goalsApiInfo">Настройка</button>
       <button class="btn btn-primary" id="goalsSync">↻ Обновить факт</button>
@@ -3562,6 +3572,21 @@ async function renderGoalsDashboard(body){
   }
   const profBtn=body.querySelector('#goalsProductProfile'); if(profBtn)profBtn.onclick=runProductProfile;
 
+  const autoMapBtn=body.querySelector('#goalsAutoMap');
+  if(autoMapBtn)autoMapBtn.onclick=async()=>{
+    autoMapBtn.disabled=true;const old=autoMapBtn.textContent;autoMapBtn.textContent='Сопоставление…';
+    const result=body.querySelector('#goalsApiInlineResult');
+    try{
+      const r=await apiGoalsImpulseAutoMap();
+      const matched=Array.isArray(r.matched)?r.matched:[];
+      const unmatched=Array.isArray(r.unmatched)?r.unmatched:[];
+      if(result)result.innerHTML=`<div class="goal-alert ${unmatched.length?'warn':'ok'}"><b>Сопоставлено по ФИО: ${matched.length}</b><small>${unmatched.length?`Не найдено автоматически: ${escapeHtml(unmatched.join(', '))}. Их ID можно заполнить вручную в таблице.`:'Все активные администраторы с совпадающими ФИО связаны с ImpulseCRM.'}</small></div>`;
+      toast(`Сопоставлено: ${matched.length}`);
+      setTimeout(()=>renderGoalsDashboard(body),500);
+    }catch(e){handleErr(e)}
+    finally{autoMapBtn.disabled=false;autoMapBtn.textContent=old}
+  };
+
   async function runSalesProbe(){
     const result=body.querySelector('#goalsApiInlineResult');
     const btn=body.querySelector('#goalsSalesProbe');
@@ -3610,7 +3635,7 @@ async function renderGoalsDashboard(body){
         if(result)result.innerHTML=`<div class="goal-alert warn"><b>API доступен, но метод продаж не настроен</b><small>${escapeHtml((r.missing||[]).join(', '))}</small></div>`;
         toast('Нужно настроить метод продаж ImpulseCRM',true);
       }else{
-        toast(`Факт обновлён · строк: ${r.updated||0}`);
+        toast(`Факт обновлён из ImpulseCRM · планов: ${r.updated||0}`);
         renderGoalsDashboard(body);
       }
     }catch(e){handleErr(e)}
@@ -3620,34 +3645,14 @@ async function renderGoalsDashboard(body){
   const info=body.querySelector('#goalsApiInfo'); if(info)info.onclick=()=>goalsApiInfoModal(sync);
 }
 function goalsApiInfoModal(status){
-  const configured=!!(status&&status.configured);
-  const el=modal(`<h3>🔌 Подключение ImpulseCRM</h3>
-    <p>Подключаемся к вашему API через Supabase Edge Function. Ключ хранится только в Supabase Secrets.</p>
-    <div class="goal-alert ${configured?'ok':'warn'}"><b>${configured?'Синхронизация продаж настроена':'Подключение API подготовлено'}</b>
-      <small>${configured?'Можно обновлять факт продаж.':'Базовый адрес вашего ImpulseCRM уже задан. Сначала проверьте авторизацию кнопкой ниже. Для факта продаж затем нужен конкретный API-метод продаж/абонементов.'}</small></div>
-    <div class="goal-alert" style="margin-top:8px"><b>Тест соединения</b><small>Проверка использует официальный пример <b>client/list</b>, запрашивает только 1 запись и не сохраняет клиентские данные в FAD.</small></div>
-    <div class="goal-alert" style="margin-top:8px"><b>Факт администраторов</b><small>Для него client/list не подходит: он показывает клиентов, а не продажи. Поэтому количество клиентов не будет ошибочно засчитано как продажи абонементов.</small></div>
-    <div id="goalsApiTestResult" style="margin-top:10px"></div>
-    <div class="actions"><button class="btn" data-x>Закрыть</button><button class="btn btn-primary" id="goalsApiTest">Проверить API</button></div>`);
-  const test=el.querySelector('#goalsApiTest');
-  test.onclick=async()=>{
-    const result=el.querySelector('#goalsApiTestResult');
-    test.disabled=true;const old=test.textContent;test.textContent='Проверка…';
-    try{
-      const r=await apiGoalsImpulseTest();
-      if(r.connected){
-        result.innerHTML='<div class="goal-alert ok"><b>✅ Соединение с ImpulseCRM работает</b><small>Basic Authorization принят, POST-запрос client/list успешно выполнен. Теперь можно подключать метод продаж.</small></div>';
-      }else{
-        result.innerHTML=`<div class="goal-alert warn"><b>API пока не подключён</b><small>${escapeHtml((r.missing||[]).join(', ')||r.message||'Проверьте Secret IMPULSE_AUTHORIZATION')}</small></div>`;
-      }
-    }catch(e){
-      if(e&&e.httpStatus===401){
-        result.innerHTML='<div class="goal-alert bad"><b>Supabase Edge Function заблокирована</b><small>Получен HTTP 401 до запуска функции. В Supabase у <b>impulse-goals-sync</b> установите <b>Verify JWT = OFF</b> и заново Deploy.</small></div>';
-      }else{
-        result.innerHTML=`<div class="goal-alert bad"><b>Ошибка соединения</b><small>${escapeHtml(e.message||String(e))}</small></div>`;
-      }
-    }finally{test.disabled=false;test.textContent=old}
-  };
+  const el=modal(`<h3>🔌 ImpulseCRM → Цели</h3>
+    <p>Интеграция использует подтверждённые реальные методы вашего ImpulseCRM.</p>
+    <div class="goal-alert ok"><b>Источник факта подключён</b>
+      <small><b>product/list</b> · период по <b>created</b> · деньги по <b>paid</b> · администратор по <b>payBox.shift.userOpenedId</b> · имена сотрудников через <b>user/list</b>.</small></div>
+    <div class="goal-alert" style="margin-top:8px"><b>Абонементы, шт.</b><small>Считаются продажи с положительной стоимостью. Полностью возвращённые продажи исключаются.</small></div>
+    <div class="goal-alert" style="margin-top:8px"><b>Продажи, BYN</b><small>Суммируется фактическая оплата <b>paid</b>. Если ImpulseCRM возвращает числовой refund, он вычитается из суммы.</small></div>
+    <div class="goal-alert" style="margin-top:8px"><b>Безопасность</b><small>Basic Authorization хранится только в Supabase Secrets. Клиентские данные в FAD не сохраняются — только агрегированный факт по администратору.</small></div>
+    <div class="actions"><button class="btn btn-primary" data-x>Понятно</button></div>`);
 }
 function goalEditModal(goal,month,admins,onDone){
   const g=goal?Object.assign({},goal):{id:null,role:'trainer',employee_id:null,title:'',metric_key:'manual',unit:'шт.',target:0,manual_fact:0,fact_source:'manual',due_date:goalLastDay(month),note:'',active:true};
