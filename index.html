@@ -978,6 +978,19 @@ table th>*,table td>*{max-width:100%;box-sizing:border-box}
 .goal-plan-box{display:flex;gap:6px;align-items:center;min-width:225px}
 .goal-metric-select{width:126px;padding:7px 8px;font-size:11px;font-weight:750}
 .goal-api-result{width:100%;margin-top:8px}
+.goal-diag{margin-top:10px;border:1px solid var(--line);border-radius:11px;overflow:hidden;background:#fff}
+.goal-diag-h{display:flex;gap:8px;align-items:center;padding:9px 10px;background:var(--surface-2);border-bottom:1px solid var(--line);font-size:11px;font-weight:800}
+.goal-diag-table{width:100%;border-collapse:collapse;font-size:10.5px}
+.goal-diag-table th,.goal-diag-table td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.goal-diag-table th{font-size:9px;text-transform:uppercase;color:var(--ink-faint);background:#fbfcfb}
+.goal-diag-table tr:last-child td{border-bottom:0}
+.goal-diag-method{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:800}
+.goal-diag-fields{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink-soft);overflow-wrap:anywhere}
+.goal-diag-code{display:inline-flex;min-width:38px;justify-content:center;padding:2px 5px;border-radius:999px;font-size:9px;font-weight:850;background:var(--surface-2)}
+.goal-diag-code.ok{background:#edf8f2;color:#24513e}
+.goal-diag-code.warn{background:#fff7df;color:#7d6608}
+.goal-diag-code.bad{background:#fff0f0;color:#a93226}
+
 .goal-api-result .goal-alert{margin:0}
 .goal-money{font-variant-numeric:tabular-nums}
 
@@ -1043,7 +1056,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '01.11.2026-e'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '01.11.2026-f'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -1695,6 +1708,19 @@ async function apiGoalsImpulseTest(){
   const r=await fetch(SUPABASE_URL+'/functions/v1/impulse-goals-sync',{
     method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({token:TOKEN,mode:'test'})
+  });
+  const raw=await r.text();
+  let j={};try{j=raw?JSON.parse(raw):{}}catch(e){j={raw}}
+  if(!r.ok){
+    const err=new Error((j&&j.error)||(j&&j.message)||('HTTP '+r.status));
+    err.httpStatus=r.status;err.payload=j;throw err;
+  }
+  return j;
+}
+async function apiGoalsImpulseDiagnostic(){
+  const r=await fetch(SUPABASE_URL+'/functions/v1/impulse-goals-sync',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({token:TOKEN,mode:'diagnostic'})
   });
   const raw=await r.text();
   let j={};try{j=raw?JSON.parse(raw):{}}catch(e){j={raw}}
@@ -3276,6 +3302,7 @@ async function renderGoalsDashboard(body){
       </div>
       <span class="goals-api-state ${configured?'ok':'warn'}"><i class="goals-api-dot"></i>${configured?'Продажи настроены':apiConnected?'API подключён':'Нужна проверка API'}</span>
       <button class="btn" id="goalsApiTestMain">Проверить API</button>
+      <button class="btn" id="goalsApiDiagnostic">Диагностика API</button>
       <button class="btn" id="goalsApiInfo">Настройка</button>
       <button class="btn btn-primary" id="goalsSync">↻ Обновить факт</button>
     </div>
@@ -3419,6 +3446,41 @@ async function renderGoalsDashboard(body){
   }
 
   const testMain=body.querySelector('#goalsApiTestMain'); if(testMain)testMain.onclick=runApiTest;
+
+  async function runApiDiagnostic(){
+    const result=body.querySelector('#goalsApiInlineResult');
+    const btn=body.querySelector('#goalsApiDiagnostic');
+    if(btn){btn.disabled=true;btn.textContent='Диагностика…'}
+    if(result)result.innerHTML='<div class="goal-alert"><b>Проверяем read-only методы ImpulseCRM…</b><small>Запрашивается максимум 1 запись. Значения полей не выводятся и не сохраняются.</small></div>';
+    try{
+      const r=await apiGoalsImpulseDiagnostic();
+      const rows=Array.isArray(r.results)?r.results:[];
+      const useful=rows.filter(x=>x.ok&&Array.isArray(x.fields)&&x.fields.length);
+      const table=rows.map(x=>{
+        const code=Number(x.status)||0;
+        const cls=x.ok?'ok':(code===401||code===403?'bad':'warn');
+        const fields=(x.fields||[]).join(', ')||'—';
+        return `<tr>
+          <td class="goal-diag-method">${escapeHtml(x.action||'')}</td>
+          <td><span class="goal-diag-code ${cls}">${code||'ERR'}</span></td>
+          <td>${x.ok?'доступен':'нет'}</td>
+          <td class="goal-diag-fields">${escapeHtml(fields)}</td>
+          <td>${escapeHtml(x.note||'')}</td>
+        </tr>`;
+      }).join('');
+      if(result)result.innerHTML=`<div class="goal-alert ${useful.length?'ok':'warn'}"><b>${useful.length?'Диагностика завершена':'Доступные структуры пока не найдены'}</b><small>Проверено методов: ${rows.length}. С ответом и полями: ${useful.length}. Ищем поля сотрудника, даты, суммы и типа операции.</small></div>
+        <div class="goal-diag"><div class="goal-diag-h">Результаты read-only диагностики</div><div style="overflow:auto"><table class="goal-diag-table"><thead><tr><th>Action</th><th>HTTP</th><th>Доступ</th><th>Поля первой строки</th><th>Комментарий</th></tr></thead><tbody>${table||'<tr><td colspan="5">Нет результатов</td></tr>'}</tbody></table></div></div>`;
+    }catch(e){
+      if(e&&e.httpStatus===401){
+        if(result)result.innerHTML='<div class="goal-alert bad"><b>Supabase Edge Function заблокирована</b><small>Verify JWT должен быть OFF у impulse-goals-sync.</small></div>';
+      }else{
+        if(result)result.innerHTML=`<div class="goal-alert bad"><b>Ошибка диагностики</b><small>${escapeHtml(e.message||String(e))}</small></div>`;
+      }
+    }finally{
+      if(btn){btn.disabled=false;btn.textContent='Диагностика API'}
+    }
+  }
+  const diagBtn=body.querySelector('#goalsApiDiagnostic'); if(diagBtn)diagBtn.onclick=runApiDiagnostic;
 
   const syncBtn=body.querySelector('#goalsSync');
   if(syncBtn)syncBtn.onclick=async()=>{
