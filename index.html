@@ -801,6 +801,39 @@ table th>*,table td>*{max-width:100%;box-sizing:border-box}
 .cal-dot{width:8px;height:8px;border-radius:50%}
 .cal-reminder-state{display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);font-size:10px;font-weight:700;color:var(--ink-soft)}
 .cal-reminder-state.on{background:#edf8f2;color:#24513e;border-color:#b9ddcb}
+.cal-day.work-off{background:linear-gradient(180deg,#fff8f7,#fff)}
+.cal-day.work-shift{box-shadow:inset 0 0 0 2px rgba(197,138,46,.28)}
+.cal-day.work-short{background-image:linear-gradient(135deg,rgba(197,138,46,.06),transparent 45%)}
+.cal-work-badges{display:flex;gap:3px;flex-wrap:wrap;margin:-1px 0 5px}
+.cal-work-badge{border:0;border-radius:999px;padding:2px 5px;font-size:8.5px;font-weight:800;line-height:1.25;cursor:pointer;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal-work-badge.holiday,.cal-work-badge.day_off{background:#fde7e4;color:#9b2f26}
+.cal-work-badge.workday{background:#fff1cd;color:#7a5608}
+.cal-work-badge.shortened{background:#edf4f0;color:#24513e}
+.cal-work-legend{display:inline-flex;align-items:center;gap:4px}
+.cal-work-dot{width:8px;height:8px;border-radius:3px;display:inline-block}
+.workcal-modal{max-width:620px;padding:0;overflow:hidden}
+.workcal-modal .wc-head{display:flex;gap:12px;align-items:flex-start;padding:22px 24px 18px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#fff,var(--surface-2))}
+.workcal-modal .wc-icon{width:38px;height:38px;border-radius:11px;background:var(--gold-soft);color:var(--gold);display:grid;place-items:center;font-size:19px;flex:0 0 auto}
+.workcal-modal .wc-head h3{margin:1px 0 4px;font-size:17px}
+.workcal-modal .wc-head p{margin:0;font-size:12.5px;line-height:1.45}
+.workcal-modal .wc-body{padding:18px 24px 4px}
+.workcal-modal .wc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.workcal-modal .wc-card{border:1px solid var(--line);border-radius:11px;padding:11px 12px;background:var(--surface-2)}
+.workcal-modal .wc-card b{display:block;font-size:12px;margin-bottom:3px}
+.workcal-modal .wc-card span{font-size:11px;color:var(--ink-soft);line-height:1.4}
+.workcal-modal .actions{margin-top:16px;padding:12px 24px 18px;bottom:0;border-top:1px solid var(--line);background:#fff}
+.workcal-detail{display:grid;gap:8px;margin-top:12px}
+.workcal-detail-row{border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.workcal-detail-row b{display:block;font-size:12.5px}
+.workcal-detail-row small{display:block;color:var(--ink-soft);margin-top:3px;line-height:1.4}
+@media(max-width:640px){
+  .workcal-modal{max-width:none}
+  .workcal-modal .wc-head{padding:18px}
+  .workcal-modal .wc-body{padding:15px 18px 2px}
+  .workcal-modal .wc-grid{grid-template-columns:1fr}
+  .workcal-modal .actions{padding:11px 18px calc(14px + env(safe-area-inset-bottom));bottom:0}
+}
+
 .reminder-days-preview{font-size:11px;color:var(--ink-soft);margin-top:5px}
 .reminder-settings-note{font-size:11px;color:var(--ink-soft);line-height:1.45;margin-top:8px}
 .reminder-modal{max-width:560px;padding:0;overflow:hidden}
@@ -916,7 +949,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '30.10.2026-a'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '01.11.2026-a'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -1540,6 +1573,7 @@ async function apiDeleteCalendarEvent(id){ return await rpc('app_delete_calendar
 async function apiGetCalendarReminderSettings(){ return await rpc('app_get_calendar_reminder_settings',{p_token:TOKEN})||{enabled:true,days:[7,1],time:'09:00'}; }
 async function apiSaveCalendarReminderSettings(cfg){ return await rpc('app_save_calendar_reminder_settings',{p_token:TOKEN,p_enabled:!!cfg.enabled,p_days:cfg.days||[7,1],p_time:cfg.time||'09:00'}); }
 async function apiListCalendarReminderLog(limit){ return await rpc('app_list_calendar_reminder_log',{p_token:TOKEN,p_limit:Math.max(1,Math.min(1000,Number(limit)||500))})||[]; }
+async function apiListWorkCalendar(fromDate,toDate){ return await rpc('app_list_work_calendar',{p_token:TOKEN,p_from:fromDate||null,p_to:toDate||null})||[]; }
 async function apiSetStaffCalendarPermissions(login,p){ return await rpc('app_set_staff_calendar_permissions',{p_token:TOKEN,p_login:login,p_permissions:p||{}}); }
 async function apiGetStaffCalendarPermissions(login){ return await rpc('app_get_staff_calendar_permissions',{p_token:TOKEN,p_login:login})||{}; }
 async function apiGetSchedule(month){ return await rpc('app_get_schedule',{p_token:TOKEN,p_month:month}); }
@@ -2893,13 +2927,72 @@ async function calendarReminderLogModal(){
   await load();
 }
 
+
+function workCalendarKindLabel(kind){
+  return {holiday:'Праздничный выходной',day_off:'Перенесённый выходной',workday:'Рабочий день по переносу',shortened:'Сокращённый рабочий день'}[kind]||kind||'Особый день';
+}
+function workCalendarBadgeLabel(row){
+  if(row.kind==='holiday')return 'выходной';
+  if(row.kind==='day_off')return 'перенос';
+  if(row.kind==='workday')return 'рабочий';
+  if(row.kind==='shortened')return '−1 ч';
+  return 'день';
+}
+function workCalendarDetailsModal(date,rows){
+  const sorted=[...(rows||[])].sort((a,b)=>String(a.kind).localeCompare(String(b.kind)));
+  const content=sorted.map(r=>`<div class="workcal-detail-row"><b>${escapeHtml(workCalendarKindLabel(r.kind))}${r.title?' · '+escapeHtml(r.title):''}</b>${r.note?`<small>${escapeHtml(r.note)}</small>`:''}${r.source?`<small>Источник: ${escapeHtml(r.source)}</small>`:''}</div>`).join('');
+  return modal(`<h3>🏛 ${escapeHtml(fmtLong(date))}</h3><p>Производственный календарь Республики Беларусь · пятидневная рабочая неделя.</p><div class="workcal-detail">${content||'<div class="audit-empty">Особых отметок нет.</div>'}</div><div class="actions"><button class="btn btn-primary" data-x>Закрыть</button></div>`);
+}
+async function syncWorkCalendarYears(years){
+  const r=await fetch(SUPABASE_URL+'/functions/v1/work-calendar-sync',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({token:TOKEN,years:(years||[]).map(Number)})
+  });
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok||!j||j.ok!==true) throw new Error((j&&j.error)||('HTTP '+r.status));
+  return j;
+}
+function workCalendarSyncModal(selectedYear,onDone){
+  const y=Number(selectedYear)||new Date().getFullYear();
+  const el=modal(`<div class="wc-head">
+      <div class="wc-icon">🏛</div>
+      <div><h3>Производственный календарь</h3><p>Праздничные выходные, переносы рабочих дней и сокращённые дни для пятидневной рабочей недели в Беларуси.</p></div>
+    </div>
+    <div class="wc-body">
+      <div class="wc-grid">
+        <div class="wc-card"><b>${y} год</b><span>Обновить выбранный год из внешнего производственного календаря.</span></div>
+        <div class="wc-card"><b>${y+1} год</b><span>Одновременно проверим следующий год, если данные уже опубликованы.</span></div>
+      </div>
+      <div class="reminder-settings-note" style="margin-top:14px">Если внешний сервис ещё не содержит новый год, FAD использует утверждённые известные переносы и официальный список праздничных нерабочих дней. Автоматическая серверная проверка выполняется раз в неделю.</div>
+    </div>
+    <div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="wcSync">↻ Обновить</button></div>`);
+  const box=el.querySelector('.modal'); if(box)box.classList.add('workcal-modal');
+  el.querySelector('#wcSync').onclick=async()=>{
+    const b=el.querySelector('#wcSync'),old=b.textContent;b.disabled=true;b.textContent='Обновление…';
+    try{
+      const res=await syncWorkCalendarYears([y,y+1]);
+      closeModal(el);
+      const src=(res.results||[]).map(x=>`${x.year}: ${x.source||'обновлено'}`).join(' · ');
+      toast('Производственный календарь обновлён'+(src?' · '+src:''));
+      void auditAction('Обновлён производственный календарь','calendar','work-calendar',{years:[y,y+1]});
+      onDone&&onDone();
+    }catch(e){handleErr(e);b.disabled=false;b.textContent=old;}
+  };
+}
+
 async function renderCalendar(body){
   const manage=session.role==='owner'||can('calendar.manage');
   const now=new Date(); if(!CAL_DATE)CAL_DATE=new Date(now.getFullYear(),now.getMonth(),1);
   body.innerHTML='<div class="empty">Загрузка календаря…</div>';
-  let birthdays=[],manual=[],reminderCfg={enabled:true,days:[7,1],time:'09:00'};
+  let birthdays=[],manual=[],workDays=[],reminderCfg={enabled:true,days:[7,1],time:'09:00'};
   try{
-    [birthdays,manual]=await Promise.all([apiListCalendarBirthdays(),apiListCalendarEvents()]);
+    const loadYear=CAL_DATE.getFullYear();
+    [birthdays,manual,workDays]=await Promise.all([
+      apiListCalendarBirthdays(),
+      apiListCalendarEvents(),
+      apiListWorkCalendar(`${loadYear}-01-01`,`${loadYear}-12-31`)
+    ]);
     try{reminderCfg=Object.assign(reminderCfg,await apiGetCalendarReminderSettings());}catch(e){}
     reminderCfg.days=normalizeReminderDays(reminderCfg.days);
   }
@@ -2917,33 +3010,40 @@ async function renderCalendar(body){
       (eventsByDate[iso]||(eventsByDate[iso]=[])).push(ev);
     });
     Object.values(eventsByDate).forEach(a=>a.sort((x,z)=>(x.type==='birthday'?-1:1)-(z.type==='birthday'?-1:1)||String(x.title).localeCompare(String(z.title),'ru')));
+    const workByDate={};
+    workDays.forEach(r=>{ if(r&&r.day_date)(workByDate[r.day_date]||(workByDate[r.day_date]=[])).push(r); });
     const first=new Date(y,m,1),offset=(first.getDay()+6)%7,days=new Date(y,m+1,0).getDate();
     const cells=[];
     for(let i=0;i<42;i++){
       const day=i-offset+1;
       const dt=new Date(y,m,day),cy=dt.getFullYear(),cm=dt.getMonth(),cd=dt.getDate();
-      const iso=calIso(cy,cm,cd),out=cm!==m, evs=eventsByDate[iso]||[];
-      cells.push(`<div class="cal-day${out?' out':''}${iso===today?' today':''}"><div class="cal-num">${cd}</div><div class="cal-events">${evs.map(ev=>`<button class="cal-event ${calendarEventClass(ev.type)}" data-ce="${escapeHtml(String(ev.id))}">${ev.type==='birthday'?'🎂 ':ev.type==='holiday'?'🎉 ':ev.type==='important'?'📌 ':''}${escapeHtml(ev.title)}</button>`).join('')}</div></div>`);
+      const iso=calIso(cy,cm,cd),out=cm!==m, evs=eventsByDate[iso]||[], wr=workByDate[iso]||[];
+      const hasOff=wr.some(x=>x.kind==='holiday'||x.kind==='day_off'),hasWork=wr.some(x=>x.kind==='workday'),hasShort=wr.some(x=>x.kind==='shortened');
+      const wbadges=wr.map(r=>`<button class="cal-work-badge ${escapeHtml(r.kind||'')}" data-work-date="${iso}" title="${escapeHtml((r.title||workCalendarKindLabel(r.kind))+(r.note?' · '+r.note:''))}">${escapeHtml(workCalendarBadgeLabel(r))}</button>`).join('');
+      cells.push(`<div class="cal-day${out?' out':''}${iso===today?' today':''}${hasOff?' work-off':''}${hasWork?' work-shift':''}${hasShort?' work-short':''}"><div class="cal-num">${cd}</div>${wbadges?`<div class="cal-work-badges">${wbadges}</div>`:''}<div class="cal-events">${evs.map(ev=>`<button class="cal-event ${calendarEventClass(ev.type)}" data-ce="${escapeHtml(String(ev.id))}">${ev.type==='birthday'?'🎂 ':ev.type==='holiday'?'🎉 ':ev.type==='important'?'📌 ':''}${escapeHtml(ev.title)}</button>`).join('')}</div></div>`);
     }
     const upcoming=merged.map(ev=>({ev,date:nextOccurrence(ev,today)})).filter(x=>x.date&&daysUntil(today,x.date)<=30).sort((a,b)=>a.date.localeCompare(b.date)||String(a.ev.title).localeCompare(String(b.ev.title),'ru')).slice(0,20);
     body.innerHTML=`<div class="cal-toolbar fade-in">
       <button class="btn btn-sm" id="calPrev">‹</button><button class="btn btn-sm" id="calToday">Сегодня</button><button class="btn btn-sm" id="calNext">›</button>
       <div class="cal-month-title">${CAL_MONTHS[m]} ${y}</div><div class="grow"></div>
       <span class="cal-reminder-state on" title="Пасха и Радуница рассчитываются системой автоматически">♻ Пасха/Радуница · авто</span>
+      <span class="cal-reminder-state on" title="Праздничные выходные, переносы и сокращённые дни">🏛 Производственный календарь</span>
       <span class="cal-reminder-state ${reminderCfg.enabled!==false?'on':''}">🔔 ${reminderCfg.enabled!==false?escapeHtml(reminderDaysLabel(reminderCfg.days))+' · '+escapeHtml(reminderCfg.time||'09:00'):'выключены'}</span>
-      ${manage?'<button class="btn" id="calReminderLog">☰ Журнал уведомлений</button><button class="btn" id="calReminders">⚙ Напоминания</button><button class="btn btn-primary" id="calAdd">+ Добавить событие</button>':''}
+      ${manage?'<button class="btn" id="calWorkSync">↻ Выходные</button><button class="btn" id="calReminderLog">☰ Журнал уведомлений</button><button class="btn" id="calReminders">⚙ Напоминания</button><button class="btn btn-primary" id="calAdd">+ Добавить событие</button>':''}
     </div>
     <div class="cal-layout">
       <div><div class="cal-card"><div class="cal-week">${['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(x=>`<div>${x}</div>`).join('')}</div><div class="cal-grid">${cells.join('')}</div></div>
-      <div class="cal-legend"><span><i class="cal-dot" style="background:#e2b6f0"></i>День рождения</span><span><i class="cal-dot" style="background:#efb0aa"></i>Праздник</span><span><i class="cal-dot" style="background:#e9cf7b"></i>Важное</span></div></div>
+      <div class="cal-legend"><span><i class="cal-dot" style="background:#e2b6f0"></i>День рождения</span><span><i class="cal-dot" style="background:#efb0aa"></i>Событие/праздник</span><span><i class="cal-dot" style="background:#e9cf7b"></i>Важное</span><span class="cal-work-legend"><i class="cal-work-dot" style="background:#fde7e4"></i>Официальный выходной</span><span class="cal-work-legend"><i class="cal-work-dot" style="background:#fff1cd"></i>Рабочая суббота</span><span class="cal-work-legend"><i class="cal-work-dot" style="background:#edf4f0"></i>Сокращённый день</span></div></div>
       <div class="cal-card"><div class="cal-side-title">Ближайшие 30 дней</div>${upcoming.length?`<div class="cal-upcoming">${upcoming.map(x=>`<div class="cal-up-row"><div class="cal-up-date">${escapeHtml(fmtLong(x.date))}${x.date===today?' · сегодня':daysUntil(today,x.date)===1?' · завтра':' · через '+daysUntil(today,x.date)+' дн.'}</div><div class="cal-up-name">${x.ev.type==='birthday'?'🎂 ':x.ev.type==='holiday'?'🎉 ':x.ev.type==='important'?'📌 ':''}${escapeHtml(x.ev.title)}</div><div class="cal-up-sub">${escapeHtml(calendarTypeLabel(x.ev.type))}${x.ev.type==='birthday'&&x.ev.birth_date&&employeeAge(x.ev.birth_date,x.date)!=null?' · исполнится '+escapeHtml(ageLabel(employeeAge(x.ev.birth_date,x.date))):''}${x.ev.note?' · '+escapeHtml(x.ev.note):''}</div></div>`).join('')}</div>`:'<div class="cal-empty">В ближайшие 30 дней событий нет.</div>'}</div>
     </div>`;
-    body.querySelector('#calPrev').onclick=()=>{CAL_DATE=new Date(y,m-1,1);draw();};
-    body.querySelector('#calNext').onclick=()=>{CAL_DATE=new Date(y,m+1,1);draw();};
-    body.querySelector('#calToday').onclick=()=>{const d=new Date();CAL_DATE=new Date(d.getFullYear(),d.getMonth(),1);draw();};
+    body.querySelector('#calPrev').onclick=()=>{const ny=new Date(y,m-1,1);CAL_DATE=ny;if(ny.getFullYear()!==y)renderCalendar(body);else draw();};
+    body.querySelector('#calNext').onclick=()=>{const ny=new Date(y,m+1,1);CAL_DATE=ny;if(ny.getFullYear()!==y)renderCalendar(body);else draw();};
+    body.querySelector('#calToday').onclick=()=>{const d=new Date();const ny=new Date(d.getFullYear(),d.getMonth(),1);CAL_DATE=ny;if(ny.getFullYear()!==y)renderCalendar(body);else draw();};
+    const wcBtn=body.querySelector('#calWorkSync'); if(wcBtn)wcBtn.onclick=()=>workCalendarSyncModal(y,()=>renderCalendar(body));
     const logBtn=body.querySelector('#calReminderLog'); if(logBtn)logBtn.onclick=()=>calendarReminderLogModal();
     const rem=body.querySelector('#calReminders'); if(rem)rem.onclick=()=>calendarReminderSettingsModal(reminderCfg,(x)=>{reminderCfg=Object.assign({},reminderCfg,x);draw();});
     const add=body.querySelector('#calAdd'); if(add)add.onclick=()=>eventModal(null,()=>renderCalendar(body));
+    body.querySelectorAll('[data-work-date]').forEach(b=>b.onclick=(ev)=>{ev.stopPropagation();const d=b.dataset.workDate;workCalendarDetailsModal(d,workByDate[d]||[]);});
     body.querySelectorAll('[data-ce]').forEach(b=>b.onclick=()=>{
       const id=b.dataset.ce;
       if(id.startsWith('b')){
