@@ -1056,7 +1056,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '01.11.2026-f'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '01.11.2026-g'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -3294,13 +3294,13 @@ async function renderGoalsDashboard(body){
       <div class="goals-api-main">
         <div class="goals-api-title">ImpulseCRM · факт по администраторам</div>
         <div class="goals-api-sub">
-          ${apiConnected?'Basic API доступен. ':'Проверка Basic API ещё не подтверждена. '}
+          ${apiConnected?'Ключ Basic API задан. ':'Соединение Basic API ещё не подтверждено. '}
           ${configured?'Метод продаж настроен.':'Метод продаж/абонементов ещё не настроен.'}
           Последняя синхронизация: <b>${escapeHtml(syncLabel)}</b>.
         </div>
         <div class="goal-api-result" id="goalsApiInlineResult"></div>
       </div>
-      <span class="goals-api-state ${configured?'ok':'warn'}"><i class="goals-api-dot"></i>${configured?'Продажи настроены':apiConnected?'API подключён':'Нужна проверка API'}</span>
+      <span class="goals-api-state ${configured?'ok':'warn'}"><i class="goals-api-dot"></i>${configured?'Продажи настроены':apiConnected?'Ключ API задан':'Нужна проверка API'}</span>
       <button class="btn" id="goalsApiTestMain">Проверить API</button>
       <button class="btn" id="goalsApiDiagnostic">Диагностика API</button>
       <button class="btn" id="goalsApiInfo">Настройка</button>
@@ -3432,7 +3432,7 @@ async function renderGoalsDashboard(body){
       if(r.connected){
         if(result)result.innerHTML='<div class="goal-alert ok"><b>✅ Соединение с ImpulseCRM работает</b><small>Basic Authorization принят. Теперь нужен только метод продаж/абонементов для расчёта факта.</small></div>';
       }else{
-        if(result)result.innerHTML=`<div class="goal-alert warn"><b>API пока не подключён</b><small>${escapeHtml((r.missing||[]).join(', ')||r.message||'Проверьте IMPULSE_AUTHORIZATION')}</small></div>`;
+        if(result)result.innerHTML=`<div class="goal-alert warn"><b>ImpulseCRM не принял авторизацию</b><small>${escapeHtml((r.missing||[]).join(', ')||r.message||'Проверьте IMPULSE_AUTHORIZATION')}</small></div>`;
       }
     }catch(e){
       if(e&&e.httpStatus===401){
