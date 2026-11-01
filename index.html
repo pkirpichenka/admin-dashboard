@@ -1044,6 +1044,37 @@ table th>*,table td>*{max-width:100%;box-sizing:border-box}
 .goal-source{font-size:9px;font-weight:800;padding:2px 6px;border-radius:999px;background:var(--surface-2);color:var(--ink-soft);display:inline-flex}
 .goal-source.impulse{background:#edf8f2;color:#24513e}
 .goal-empty{padding:22px;text-align:center;color:var(--ink-faint);font-size:12px}
+.admin-goal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:12px}
+.admin-goal-card{border:1px solid var(--line);border-radius:13px;background:var(--surface);padding:13px;display:grid;gap:11px;min-width:0}
+.admin-goal-top{display:flex;align-items:flex-start;gap:9px}
+.admin-goal-top .goal-person{flex:1;min-width:0}
+.admin-goal-mapstate{display:inline-flex;align-items:center;gap:5px;padding:3px 7px;border-radius:999px;font-size:9px;font-weight:800;background:#edf8f2;color:#24513e;white-space:nowrap}
+.admin-goal-mapstate.missing{background:#fff7df;color:#7d6608}
+.admin-goal-form{display:grid;grid-template-columns:minmax(145px,1.25fr) minmax(110px,.75fr);gap:8px}
+.admin-goal-field{display:grid;gap:4px}
+.admin-goal-field label{font-size:9px;text-transform:uppercase;letter-spacing:.25px;color:var(--ink-faint);font-weight:800}
+.admin-goal-field select,.admin-goal-field input{width:100%;min-width:0}
+.admin-goal-plan-input{font-family:'Unbounded';font-size:15px;font-weight:700;text-align:right}
+.admin-goal-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.admin-goal-stat{background:var(--surface-2);border-radius:9px;padding:8px 9px}
+.admin-goal-stat small{display:block;font-size:9px;color:var(--ink-faint);text-transform:uppercase;font-weight:800;margin-bottom:3px}
+.admin-goal-stat b{font-size:13px}
+.admin-goal-progress{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
+.admin-goal-actions{display:flex;align-items:center;gap:8px;border-top:1px solid var(--line);padding-top:9px}
+.admin-goal-actions .grow{flex:1}
+.admin-goal-id{font-size:9px;color:var(--ink-faint)}
+.admin-goal-id input{width:72px;padding:5px 6px;margin-left:4px;font-size:10px}
+.admin-goal-card.changed{box-shadow:inset 0 0 0 2px rgba(47,125,91,.22)}
+.goals-save-all{display:flex;align-items:center;gap:8px}
+@media(max-width:900px){.admin-goal-grid{grid-template-columns:1fr}}
+@media(max-width:600px){
+  .admin-goal-form{grid-template-columns:1fr}
+  .admin-goal-stats{grid-template-columns:1fr 1fr}
+  .admin-goal-actions{align-items:flex-end;flex-wrap:wrap}
+  .admin-goal-actions .btn{width:100%}
+  .admin-goal-id{width:100%}
+}
+
 .goal-modal{max-width:620px}
 .goal-modal .gform{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .goal-modal .gfull{grid-column:1/-1}
@@ -1079,7 +1110,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '01.11.2026-j'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '01.11.2026-k'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -3378,36 +3409,72 @@ async function renderGoalsDashboard(body){
     <div class="goals-grid">
       <div>
         <div class="goals-card">
-          <div class="goals-card-h"><h3>План и выполнение администраторов</h3><div class="grow"></div><span class="goals-api-state ${mapped===admins.length&&admins.length?'ok':'warn'}">${mapped===admins.length&&admins.length?'сопоставление готово':'нужно сопоставление'}</span></div>
-          <div class="goals-table-wrap">
-            <table class="goals-table">
-              <thead><tr><th>Администратор</th><th>Тип и план FAD</th><th>Факт API</th><th>Выполнение</th><th>Статус</th><th>ImpulseCRM ID</th><th></th></tr></thead>
-              <tbody>
-                ${admins.map(a=>{
-                  const g=adminGoalByEmp[String(a.id)]||null,m=mapByEmp[String(a.id)]||{};
-                  const metric=(g&&g.metric_key==='membership_sales_amount')?'membership_sales_amount':'membership_sales_count';
-                  const unit=metric==='membership_sales_amount'?'BYN':'шт.';
-                  const target=Number(g&&g.target||0),actual=Number(g&&g.actual||0),p=goalPct(target,actual,false),st=goalStatus(p);
-                  return `<tr>
-                    <td><div class="goal-person"><span class="goal-avatar">${escapeHtml(goalInitials(a.full_name))}</span><div><div class="goal-person-name">${escapeHtml(a.full_name||'')}</div><div class="goal-person-sub">${escapeHtml(studioName(a.primary_studio||''))}${a.app_login?' · '+escapeHtml(a.app_login):''}</div></div></div></td>
-                    <td>
-                      <div class="goal-plan-box">
-                        <select class="goal-metric-select" data-goal-metric="${a.id}">
-                          <option value="membership_sales_count" ${metric==='membership_sales_count'?'selected':''}>Абонементы, шт.</option>
-                          <option value="membership_sales_amount" ${metric==='membership_sales_amount'?'selected':''}>Продажи, BYN</option>
-                        </select>
-                        <input class="goal-plan-input" type="number" min="0" step="${metric==='membership_sales_amount'?'0.01':'1'}" data-goal-plan="${a.id}" value="${target||''}" placeholder="0">
-                      </div>
-                    </td>
-                    <td><span class="goal-fact">${actual.toLocaleString('ru-RU',{maximumFractionDigits:2})} ${unit}</span></td>
-                    <td><div class="goal-progress"><span class="goal-progress-bar"><i class="${st.cls==='risk'?'risk':st.cls==='bad'?'bad':''}" style="width:${Math.min(100,p)}%"></i></span><span class="goal-pct">${p}%</span></div></td>
-                    <td><span class="goal-status ${st.cls}">${target>0?st.label:'План не задан'}</span></td>
-                    <td><input class="goal-map-input" data-goal-map="${a.id}" value="${escapeHtml(m.impulse_user_id||'')}" placeholder="ID пользователя"></td>
-                    <td><button class="btn btn-sm" data-goal-save="${a.id}">Сохранить</button></td>
-                  </tr>`
-                }).join('')||'<tr><td colspan="7"><div class="goal-empty">Активные администраторы не найдены.</div></td></tr>'}
-              </tbody>
-            </table>
+          <div class="goals-card-h">
+            <h3>План и выполнение администраторов</h3>
+            <div class="grow"></div>
+            <div class="goals-save-all">
+              <span class="goals-api-state ${mapped===admins.length&&admins.length?'ok':'warn'}">${mapped===admins.length&&admins.length?'сопоставление готово':'нужно сопоставление'}</span>
+              <button class="btn btn-primary" id="goalsSaveAll">Сохранить все планы</button>
+            </div>
+          </div>
+          <div class="admin-goal-grid">
+            ${admins.map(a=>{
+              const g=adminGoalByEmp[String(a.id)]||null,m=mapByEmp[String(a.id)]||{};
+              const metric=(g&&g.metric_key==='membership_sales_amount')?'membership_sales_amount':'membership_sales_count';
+              const unit=metric==='membership_sales_amount'?'BYN':'шт.';
+              const target=Number(g&&g.target||0),actual=Number(g&&g.actual||0),p=goalPct(target,actual,false),st=goalStatus(p);
+              const mappedOk=!!m.impulse_user_id;
+              return `<div class="admin-goal-card" data-admin-card="${a.id}">
+                <div class="admin-goal-top">
+                  <div class="goal-person">
+                    <span class="goal-avatar">${escapeHtml(goalInitials(a.full_name))}</span>
+                    <div>
+                      <div class="goal-person-name">${escapeHtml(a.full_name||'')}</div>
+                      <div class="goal-person-sub">${escapeHtml(studioName(a.primary_studio||''))}${a.app_login?' · '+escapeHtml(a.app_login):''}</div>
+                    </div>
+                  </div>
+                  <span class="admin-goal-mapstate ${mappedOk?'':'missing'}">${mappedOk?'ImpulseCRM ✓':'нет ID'}</span>
+                </div>
+
+                <div class="admin-goal-form">
+                  <div class="admin-goal-field">
+                    <label>Тип плана</label>
+                    <select data-goal-metric="${a.id}">
+                      <option value="membership_sales_count" ${metric==='membership_sales_count'?'selected':''}>Абонементы, шт.</option>
+                      <option value="membership_sales_amount" ${metric==='membership_sales_amount'?'selected':''}>Продажи, BYN</option>
+                    </select>
+                  </div>
+                  <div class="admin-goal-field">
+                    <label>План на месяц</label>
+                    <input class="admin-goal-plan-input" type="number" min="0" step="${metric==='membership_sales_amount'?'0.01':'1'}" data-goal-plan="${a.id}" value="${target||''}" placeholder="0">
+                  </div>
+                </div>
+
+                <div class="admin-goal-stats">
+                  <div class="admin-goal-stat">
+                    <small>Факт ImpulseCRM</small>
+                    <b>${actual.toLocaleString('ru-RU',{maximumFractionDigits:2})} ${unit}</b>
+                  </div>
+                  <div class="admin-goal-stat">
+                    <small>Статус</small>
+                    <span class="goal-status ${st.cls}">${target>0?st.label:'План не задан'}</span>
+                  </div>
+                </div>
+
+                <div class="admin-goal-progress">
+                  <span class="goal-progress-bar"><i class="${st.cls==='risk'?'risk':st.cls==='bad'?'bad':''}" style="width:${Math.min(100,p)}%"></i></span>
+                  <span class="goal-pct">${p}%</span>
+                </div>
+
+                <div class="admin-goal-actions">
+                  <div class="admin-goal-id">ImpulseCRM ID
+                    <input data-goal-map="${a.id}" value="${escapeHtml(m.impulse_user_id||'')}" placeholder="ID">
+                  </div>
+                  <div class="grow"></div>
+                  <button class="btn btn-sm" data-goal-save="${a.id}">Сохранить</button>
+                </div>
+              </div>`
+            }).join('')||'<div class="goal-empty">Активные администраторы не найдены.</div>'}
           </div>
         </div>
 
@@ -3450,20 +3517,27 @@ async function renderGoalsDashboard(body){
   if(add1)add1.onclick=()=>goalEditModal(null,GOALS_MONTH,employees,()=>renderGoalsDashboard(body));
   if(add2)add2.onclick=()=>goalEditModal(null,GOALS_MONTH,employees,()=>renderGoalsDashboard(body));
 
+  function markAdminGoalChanged(id){
+    const card=body.querySelector(`[data-admin-card="${CSS.escape(String(id))}"]`);
+    if(card)card.classList.add('changed');
+  }
+
   body.querySelectorAll('[data-goal-metric]').forEach(sel=>sel.onchange=()=>{
     const id=sel.dataset.goalMetric;
     const inp=body.querySelector(`[data-goal-plan="${CSS.escape(String(id))}"]`);
     if(inp)inp.step=sel.value==='membership_sales_amount'?'0.01':'1';
+    markAdminGoalChanged(id);
   });
+  body.querySelectorAll('[data-goal-plan]').forEach(inp=>inp.oninput=()=>markAdminGoalChanged(inp.dataset.goalPlan));
+  body.querySelectorAll('[data-goal-map]').forEach(inp=>inp.oninput=()=>markAdminGoalChanged(inp.dataset.goalMap));
 
-  body.querySelectorAll('[data-goal-save]').forEach(btn=>btn.onclick=async()=>{
-    const id=btn.dataset.goalSave;
-    const a=admins.find(x=>String(x.id)===String(id)); if(!a)return;
+  async function saveAdminGoal(id,button){
+    const a=admins.find(x=>String(x.id)===String(id)); if(!a)return false;
     const metric=body.querySelector(`[data-goal-metric="${CSS.escape(String(id))}"]`).value;
     const plan=Number(body.querySelector(`[data-goal-plan="${CSS.escape(String(id))}"]`).value)||0;
     const impulseId=body.querySelector(`[data-goal-map="${CSS.escape(String(id))}"]`).value.trim();
     const existing=adminGoalByEmp[String(id)]||{};
-    btn.disabled=true;
+    if(button)button.disabled=true;
     try{
       await apiGoalsSave({
         id:existing.id||null,month:GOALS_MONTH,role:'admin',employee_id:a.id,
@@ -3473,10 +3547,33 @@ async function renderGoalsDashboard(body){
         note:'Факт автоматически из ImpulseCRM',active:true
       });
       await apiGoalsSaveMapping(a.id,impulseId,a.full_name||'');
-      toast('План и тип показателя сохранены');
-      renderGoalsDashboard(body);
-    }catch(e){handleErr(e)}finally{btn.disabled=false}
+      const card=body.querySelector(`[data-admin-card="${CSS.escape(String(id))}"]`);
+      if(card)card.classList.remove('changed');
+      return true;
+    }catch(e){handleErr(e);return false}
+    finally{if(button)button.disabled=false}
+  }
+
+  body.querySelectorAll('[data-goal-save]').forEach(btn=>btn.onclick=async()=>{
+    const ok=await saveAdminGoal(btn.dataset.goalSave,btn);
+    if(ok){toast('План сохранён');renderGoalsDashboard(body)}
   });
+
+  const saveAllBtn=body.querySelector('#goalsSaveAll');
+  if(saveAllBtn)saveAllBtn.onclick=async()=>{
+    saveAllBtn.disabled=true;const old=saveAllBtn.textContent;saveAllBtn.textContent='Сохраняю…';
+    let saved=0;
+    try{
+      for(const a of admins){
+        const ok=await saveAdminGoal(String(a.id),null);
+        if(ok)saved++;
+      }
+      toast(`Сохранено планов: ${saved}`);
+      renderGoalsDashboard(body);
+    }finally{
+      saveAllBtn.disabled=false;saveAllBtn.textContent=old;
+    }
+  };
 
   body.querySelectorAll('[data-goal-edit]').forEach(btn=>btn.onclick=()=>{
     const g=goals.find(x=>String(x.id)===String(btn.dataset.goalEdit));
