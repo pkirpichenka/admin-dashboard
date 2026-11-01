@@ -1028,7 +1028,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '01.11.2026-b'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '01.11.2026-c'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -1671,6 +1671,15 @@ async function apiGoalsImpulseSync(month){
   const r=await fetch(SUPABASE_URL+'/functions/v1/impulse-goals-sync',{
     method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({token:TOKEN,month})
+  });
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error((j&&j.error)||('HTTP '+r.status));
+  return j;
+}
+async function apiGoalsImpulseTest(){
+  const r=await fetch(SUPABASE_URL+'/functions/v1/impulse-goals-sync',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({token:TOKEN,mode:'test'})
   });
   const j=await r.json().catch(()=>({}));
   if(!r.ok) throw new Error((j&&j.error)||('HTTP '+r.status));
@@ -3351,13 +3360,29 @@ async function renderGoalsDashboard(body){
 function goalsApiInfoModal(status){
   const configured=!!(status&&status.configured);
   const el=modal(`<h3>🔌 Подключение ImpulseCRM</h3>
-    <p>Ключ API хранится только в Supabase Secrets. В браузер и index.html он не попадает.</p>
-    <div class="goal-alert ${configured?'ok':'warn'}"><b>${configured?'Интеграция настроена':'Нужно завершить настройку'}</b>
-      <small>${configured?'Можно запускать синхронизацию факта.':'Откройте в impulseCRM профиль → «Настройка API» → «Пример запроса». Нужны URL рабочего запроса и формат ответа. После этого параметры один раз добавляются в Secrets Supabase.'}</small></div>
-    <div class="goal-alert" style="margin-top:8px"><b>Как работает</b><small>FAD хранит план. Edge Function запрашивает продажи в ImpulseCRM, группирует их по ID администратора и сохраняет только агрегированный факт за месяц.</small></div>
-    <div class="actions"><button class="btn btn-primary" data-x>Понятно</button></div>`);
+    <p>Подключаемся к вашему API через Supabase Edge Function. Ключ хранится только в Supabase Secrets.</p>
+    <div class="goal-alert ${configured?'ok':'warn'}"><b>${configured?'Синхронизация продаж настроена':'Подключение API подготовлено'}</b>
+      <small>${configured?'Можно обновлять факт продаж.':'Базовый адрес вашего ImpulseCRM уже задан. Сначала проверьте авторизацию кнопкой ниже. Для факта продаж затем нужен конкретный API-метод продаж/абонементов.'}</small></div>
+    <div class="goal-alert" style="margin-top:8px"><b>Тест соединения</b><small>Проверка использует официальный пример <b>client/list</b>, запрашивает только 1 запись и не сохраняет клиентские данные в FAD.</small></div>
+    <div class="goal-alert" style="margin-top:8px"><b>Факт администраторов</b><small>Для него client/list не подходит: он показывает клиентов, а не продажи. Поэтому количество клиентов не будет ошибочно засчитано как продажи абонементов.</small></div>
+    <div id="goalsApiTestResult" style="margin-top:10px"></div>
+    <div class="actions"><button class="btn" data-x>Закрыть</button><button class="btn btn-primary" id="goalsApiTest">Проверить API</button></div>`);
+  const test=el.querySelector('#goalsApiTest');
+  test.onclick=async()=>{
+    const result=el.querySelector('#goalsApiTestResult');
+    test.disabled=true;const old=test.textContent;test.textContent='Проверка…';
+    try{
+      const r=await apiGoalsImpulseTest();
+      if(r.connected){
+        result.innerHTML='<div class="goal-alert ok"><b>✅ Соединение с ImpulseCRM работает</b><small>Basic Authorization принят, POST-запрос client/list успешно выполнен. Теперь можно подключать метод продаж.</small></div>';
+      }else{
+        result.innerHTML=`<div class="goal-alert warn"><b>API пока не подключён</b><small>${escapeHtml((r.missing||[]).join(', ')||r.message||'Проверьте Secret IMPULSE_AUTHORIZATION')}</small></div>`;
+      }
+    }catch(e){
+      result.innerHTML=`<div class="goal-alert bad"><b>Ошибка соединения</b><small>${escapeHtml(e.message||String(e))}</small></div>`;
+    }finally{test.disabled=false;test.textContent=old}
+  };
 }
-
 function goalEditModal(goal,month,admins,onDone){
   const g=goal?Object.assign({},goal):{id:null,role:'trainer',employee_id:null,title:'',metric_key:'manual',unit:'шт.',target:0,manual_fact:0,fact_source:'manual',due_date:goalLastDay(month),note:'',active:true};
   const employees=(admins||[]);
