@@ -929,6 +929,85 @@ table th>*,table td>*{max-width:100%;box-sizing:border-box}
   .cal-day{min-height:94px}
 }
 
+
+/* ================= Goals dashboard 01.11.2026-b ================= */
+.goals-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.goals-head .grow{flex:1;min-width:20px}
+.goals-title{font-family:'Unbounded';font-size:18px;font-weight:700}
+.goals-sub{font-size:12px;color:var(--ink-soft);margin-top:3px}
+.goals-month{width:165px}
+.goals-api{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px 14px;margin-bottom:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+.goals-api-ic{width:36px;height:36px;border-radius:11px;background:#edf8f2;display:grid;place-items:center;font-size:18px;flex:0 0 auto}
+.goals-api-main{min-width:220px;flex:1}
+.goals-api-title{font-size:13px;font-weight:800}
+.goals-api-sub{font-size:11px;color:var(--ink-soft);margin-top:2px;line-height:1.4}
+.goals-api-state{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 9px;font-size:10.5px;font-weight:800;border:1px solid var(--line);background:var(--surface-2);color:var(--ink-soft)}
+.goals-api-state.ok{background:#edf8f2;border-color:#b9ddcb;color:#24513e}
+.goals-api-state.warn{background:#fff7df;border-color:#e9cf7b;color:#7d6608}
+.goals-api-dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+.goals-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.goals-kpi{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:13px 14px;box-shadow:var(--shadow);min-width:0}
+.goals-kpi-k{font-size:10px;text-transform:uppercase;letter-spacing:.3px;color:var(--ink-faint);font-weight:800}
+.goals-kpi-v{font-family:'Unbounded';font-size:21px;font-weight:700;margin-top:4px;overflow-wrap:anywhere}
+.goals-kpi-s{font-size:10.5px;color:var(--ink-soft);margin-top:3px}
+.goals-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(260px,.65fr);gap:14px;align-items:start}
+.goals-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+.goals-card-h{display:flex;align-items:center;gap:10px;padding:13px 15px;border-bottom:1px solid var(--line)}
+.goals-card-h h3{font-size:14px;margin:0}
+.goals-card-h .grow{flex:1}
+.goals-card-b{padding:14px 15px}
+.goals-table-wrap{overflow:auto}
+.goals-table{border-collapse:collapse;width:100%;font-size:12px;min-width:810px}
+.goals-table th{text-align:left;background:var(--surface-2);padding:9px 10px;color:var(--ink-faint);font-size:10px;text-transform:uppercase;letter-spacing:.25px;border-bottom:1px solid var(--line)}
+.goals-table td{padding:10px;border-bottom:1px solid var(--line);vertical-align:middle}
+.goals-table tr:last-child td{border-bottom:none}
+.goal-person{display:flex;gap:8px;align-items:center}
+.goal-avatar{width:30px;height:30px;border-radius:50%;background:#edf8f2;color:var(--accent-deep);display:grid;place-items:center;font-size:10px;font-weight:800;flex:0 0 auto}
+.goal-person-name{font-weight:800}
+.goal-person-sub{font-size:10px;color:var(--ink-faint);margin-top:2px}
+.goal-plan-input{width:92px;padding:7px 8px;font-weight:800;text-align:right}
+.goal-map-input{width:145px;padding:7px 8px;font-size:12px}
+.goal-fact{display:inline-flex;align-items:center;gap:5px;font-weight:900}
+.goal-fact::after{content:'API';font-size:8px;background:#edf8f2;color:#24513e;padding:2px 5px;border-radius:999px}
+.goal-progress{display:flex;align-items:center;gap:8px;min-width:135px}
+.goal-progress-bar{height:7px;background:#e6ebe7;border-radius:999px;overflow:hidden;flex:1;min-width:70px}
+.goal-progress-bar i{height:100%;display:block;background:var(--accent);border-radius:999px}
+.goal-progress-bar i.risk{background:var(--gold)}
+.goal-progress-bar i.bad{background:var(--clay)}
+.goal-pct{font-weight:900;min-width:35px;text-align:right}
+.goal-status{display:inline-flex;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:800;white-space:nowrap}
+.goal-status.ok{background:#edf8f2;color:#24513e}
+.goal-status.risk{background:#fff7df;color:#7d6608}
+.goal-status.bad{background:#fff0f0;color:#a93226}
+.goal-alerts{display:grid;gap:8px}
+.goal-alert{border:1px solid var(--line);border-radius:11px;padding:10px 11px}
+.goal-alert b{font-size:12px}
+.goal-alert small{display:block;color:var(--ink-soft);font-size:10.5px;margin-top:3px;line-height:1.4}
+.goal-alert.bad{background:#fff8f7;border-color:#efc9c1}
+.goal-alert.warn{background:#fffaf0;border-color:#eddca8}
+.goal-alert.ok{background:#f4fbf7;border-color:#cce6d7}
+.goal-manual-list{display:grid;gap:8px}
+.goal-manual-row{display:grid;grid-template-columns:minmax(0,1fr) 110px 110px 90px;gap:10px;align-items:center;border:1px solid var(--line);border-radius:11px;padding:10px 11px}
+.goal-manual-title{font-size:12.5px;font-weight:800}
+.goal-manual-meta{font-size:10.5px;color:var(--ink-soft);margin-top:2px}
+.goal-source{font-size:9px;font-weight:800;padding:2px 6px;border-radius:999px;background:var(--surface-2);color:var(--ink-soft);display:inline-flex}
+.goal-source.impulse{background:#edf8f2;color:#24513e}
+.goal-empty{padding:22px;text-align:center;color:var(--ink-faint);font-size:12px}
+.goal-modal{max-width:620px}
+.goal-modal .gform{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.goal-modal .gfull{grid-column:1/-1}
+.goal-modal .source-note{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:9px 10px;font-size:11px;color:var(--ink-soft)}
+@media(max-width:980px){.goals-kpis{grid-template-columns:1fr 1fr}.goals-grid{grid-template-columns:1fr}}
+@media(max-width:640px){
+  .goals-kpis{grid-template-columns:1fr 1fr}
+  .goals-head .btn,.goals-head .goals-month{flex:1}
+  .goals-api .btn{flex:1}
+  .goal-manual-row{grid-template-columns:1fr 1fr}
+  .goal-manual-row>div:first-child{grid-column:1/-1}
+  .goal-modal .gform{grid-template-columns:1fr}
+  .goal-modal .gfull{grid-column:auto}
+}
+
 </style>
 
 <div id="root"></div>
@@ -949,7 +1028,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '01.11.2026-a'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '01.11.2026-b'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -1574,6 +1653,29 @@ async function apiGetCalendarReminderSettings(){ return await rpc('app_get_calen
 async function apiSaveCalendarReminderSettings(cfg){ return await rpc('app_save_calendar_reminder_settings',{p_token:TOKEN,p_enabled:!!cfg.enabled,p_days:cfg.days||[7,1],p_time:cfg.time||'09:00'}); }
 async function apiListCalendarReminderLog(limit){ return await rpc('app_list_calendar_reminder_log',{p_token:TOKEN,p_limit:Math.max(1,Math.min(1000,Number(limit)||500))})||[]; }
 async function apiListWorkCalendar(fromDate,toDate){ return await rpc('app_list_work_calendar',{p_token:TOKEN,p_from:fromDate||null,p_to:toDate||null})||[]; }
+async function apiGoalsAdmins(){ return await rpc('app_goals_active_admins',{p_token:TOKEN})||[]; }
+async function apiGoalsList(month){ return await rpc('app_goals_list',{p_token:TOKEN,p_month:month+'-01'})||[]; }
+async function apiGoalsSave(g){
+  return await rpc('app_goals_save',{
+    p_token:TOKEN,p_id:g.id||null,p_month:g.month+'-01',p_role:g.role||'other',
+    p_employee_id:g.employee_id||null,p_title:g.title||'',p_metric_key:g.metric_key||'manual',
+    p_unit:g.unit||'',p_target:Number(g.target)||0,p_manual_fact:Number(g.manual_fact)||0,
+    p_fact_source:g.fact_source||'manual',p_due_date:g.due_date||null,p_note:g.note||'',p_active:g.active!==false
+  });
+}
+async function apiGoalsDelete(id){ return await rpc('app_goals_delete',{p_token:TOKEN,p_id:id}); }
+async function apiGoalsMappings(){ return await rpc('app_goals_impulse_mappings',{p_token:TOKEN})||[]; }
+async function apiGoalsSaveMapping(employeeId,impulseId,impulseName){ return await rpc('app_goals_save_impulse_mapping',{p_token:TOKEN,p_employee_id:employeeId,p_impulse_user_id:impulseId||'',p_impulse_user_name:impulseName||''}); }
+async function apiGoalsSyncStatus(){ return await rpc('app_goals_sync_status',{p_token:TOKEN})||null; }
+async function apiGoalsImpulseSync(month){
+  const r=await fetch(SUPABASE_URL+'/functions/v1/impulse-goals-sync',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({token:TOKEN,month})
+  });
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error((j&&j.error)||('HTTP '+r.status));
+  return j;
+}
 async function apiSetStaffCalendarPermissions(login,p){ return await rpc('app_set_staff_calendar_permissions',{p_token:TOKEN,p_login:login,p_permissions:p||{}}); }
 async function apiGetStaffCalendarPermissions(login){ return await rpc('app_get_staff_calendar_permissions',{p_token:TOKEN,p_login:login})||{}; }
 async function apiGetSchedule(month){ return await rpc('app_get_schedule',{p_token:TOKEN,p_month:month}); }
@@ -1737,6 +1839,7 @@ function renderApp(){
   if(session.role==='owner' || can('employees.view') || can('employees.manage')) tabs.push({label:'Сотрудники',render:renderEmployees});
   if(session.role==='owner' || can('admins.view') || can('admins.manage') || can('admins.permissions') || can('admins.audit') || can('telegram.manage')) tabs.push({label:'Администраторы',render:renderUsers});
   if(session.role==='owner' || can('calendar.view') || can('calendar.manage')) tabs.push({label:'Календарь',render:renderCalendar});
+  if(session.role==='owner') tabs.push({label:'Цели',render:renderGoalsDashboard});
   if(session.role==='owner' || can('messages.manage')) tabs.push({label:'Сообщения',render:renderMessages});
   renderRoleUI(tabs);
 }
@@ -3057,6 +3160,252 @@ async function renderCalendar(body){
     });
   }
   draw();
+}
+
+
+/* ================= Goals dashboard ================= */
+let GOALS_MONTH=(new Date()).toISOString().slice(0,7);
+function goalMonthLabel(m){
+  const [y,mo]=String(m||'').split('-').map(Number);
+  if(!y||!mo)return m||'';
+  return new Intl.DateTimeFormat('ru-RU',{month:'long',year:'numeric'}).format(new Date(y,mo-1,1)).replace(/^./,c=>c.toUpperCase());
+}
+function goalInitials(name){
+  return String(name||'').trim().split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]||'').join('').toUpperCase();
+}
+function goalPct(target,actual,lowerBetter){
+  target=Number(target)||0;actual=Number(actual)||0;
+  if(target<=0)return 0;
+  if(lowerBetter)return Math.max(0,Math.round((actual<=target?1:target/Math.max(actual,.0001))*100));
+  return Math.max(0,Math.round(actual/target*100));
+}
+function goalStatus(p){
+  if(p>=90)return {cls:'ok',label:'В плане'};
+  if(p>=70)return {cls:'risk',label:'Риск'};
+  return {cls:'bad',label:'Отставание'};
+}
+function goalRoleLabel(r){return {admin:'Администраторы',trainer:'Тренеры',smm:'SMM',target:'Таргетолог',other:'Другое'}[r]||r||'Другое'}
+function goalFmtActual(v,unit){
+  const n=Number(v)||0;
+  return `${n.toLocaleString('ru-RU',{maximumFractionDigits:2})}${unit?' '+unit:''}`;
+}
+function goalLastDay(month){
+  const [y,m]=month.split('-').map(Number);
+  const d=new Date(y,m,0).getDate();
+  return `${month}-${String(d).padStart(2,'0')}`;
+}
+async function renderGoalsDashboard(body){
+  if(!session||session.role!=='owner'){body.innerHTML='<div class="empty">Раздел доступен руководителю.</div>';return}
+  body.innerHTML='<div class="empty">Загрузка целей…</div>';
+  let admins=[],employees=[],goals=[],maps=[],sync=null;
+  try{
+    [admins,employees,goals,maps,sync]=await Promise.all([apiGoalsAdmins(),apiListEmployees(),apiGoalsList(GOALS_MONTH),apiGoalsMappings(),apiGoalsSyncStatus()]);
+  }catch(e){handleErr(e);return}
+
+  const mapByEmp=Object.fromEntries(maps.map(x=>[String(x.employee_id),x]));
+  const adminGoalByEmp={};
+  goals.filter(g=>g.role==='admin'&&g.metric_key==='membership_sales'&&g.employee_id).forEach(g=>adminGoalByEmp[String(g.employee_id)]=g);
+  const adminGoals=admins.map(a=>adminGoalByEmp[String(a.id)]).filter(Boolean);
+  const totalPlan=adminGoals.reduce((s,g)=>s+Number(g.target||0),0);
+  const totalFact=adminGoals.reduce((s,g)=>s+Number(g.actual||0),0);
+  const totalPct=goalPct(totalPlan,totalFact,false);
+  const mapped=admins.filter(a=>mapByEmp[String(a.id)]&&mapByEmp[String(a.id)].impulse_user_id).length;
+  const manualGoals=goals.filter(g=>!(g.role==='admin'&&g.metric_key==='membership_sales'&&g.employee_id));
+  const atRisk=goals.filter(g=>goalPct(g.target,g.actual,!!g.lower_better)<70).length;
+  const configured=!!(sync&&sync.configured);
+  const syncLabel=sync&&sync.finished_at?auditFmtDateTime(sync.finished_at):'ещё не запускалась';
+
+  body.innerHTML=`
+    <div class="goals-head fade-in">
+      <div><div class="goals-title">🎯 Цели</div><div class="goals-sub">План задаём в FAD · факт администраторов получаем из ImpulseCRM</div></div>
+      <div class="grow"></div>
+      <input class="goals-month" id="goalsMonth" type="month" value="${escapeHtml(GOALS_MONTH)}"/>
+      <button class="btn" id="goalsAddManual">+ Цель команды</button>
+    </div>
+
+    <div class="goals-api">
+      <div class="goals-api-ic">🔌</div>
+      <div class="goals-api-main">
+        <div class="goals-api-title">ImpulseCRM · продажи абонементов по администраторам</div>
+        <div class="goals-api-sub">${configured?'Интеграция настроена.':'Серверная интеграция установлена, но параметры ImpulseCRM ещё не заполнены.'} Последняя синхронизация: <b>${escapeHtml(syncLabel)}</b>.</div>
+      </div>
+      <span class="goals-api-state ${configured?'ok':'warn'}"><i class="goals-api-dot"></i>${configured?'API настроен':'Нужна настройка API'}</span>
+      <button class="btn" id="goalsApiInfo">Настройка</button>
+      <button class="btn btn-primary" id="goalsSync">↻ Обновить факт</button>
+    </div>
+
+    <div class="goals-kpis">
+      <div class="goals-kpi"><div class="goals-kpi-k">План администраторов</div><div class="goals-kpi-v">${totalPlan.toLocaleString('ru-RU')}</div><div class="goals-kpi-s">продаж абонементов</div></div>
+      <div class="goals-kpi"><div class="goals-kpi-k">Факт ImpulseCRM</div><div class="goals-kpi-v">${totalFact.toLocaleString('ru-RU')}</div><div class="goals-kpi-s">за ${escapeHtml(goalMonthLabel(GOALS_MONTH))}</div></div>
+      <div class="goals-kpi"><div class="goals-kpi-k">Выполнение</div><div class="goals-kpi-v">${totalPct}%</div><div class="goals-kpi-s">${goalStatus(totalPct).label}</div></div>
+      <div class="goals-kpi"><div class="goals-kpi-k">Связано с ImpulseCRM</div><div class="goals-kpi-v">${mapped}/${admins.length}</div><div class="goals-kpi-s">администраторов · рисков: ${atRisk}</div></div>
+    </div>
+
+    <div class="goals-grid">
+      <div>
+        <div class="goals-card">
+          <div class="goals-card-h"><h3>План и выполнение администраторов</h3><div class="grow"></div><span class="goals-api-state ${mapped===admins.length&&admins.length?'ok':'warn'}">${mapped===admins.length&&admins.length?'сопоставление готово':'нужно сопоставление'}</span></div>
+          <div class="goals-table-wrap">
+            <table class="goals-table">
+              <thead><tr><th>Администратор</th><th>План FAD</th><th>Факт API</th><th>Выполнение</th><th>Статус</th><th>ImpulseCRM ID</th><th></th></tr></thead>
+              <tbody>
+                ${admins.map(a=>{
+                  const g=adminGoalByEmp[String(a.id)]||null,m=mapByEmp[String(a.id)]||{};
+                  const target=Number(g&&g.target||0),actual=Number(g&&g.actual||0),p=goalPct(target,actual,false),st=goalStatus(p);
+                  return `<tr>
+                    <td><div class="goal-person"><span class="goal-avatar">${escapeHtml(goalInitials(a.full_name))}</span><div><div class="goal-person-name">${escapeHtml(a.full_name||'')}</div><div class="goal-person-sub">${escapeHtml(studioName(a.primary_studio||''))}${a.app_login?' · '+escapeHtml(a.app_login):''}</div></div></div></td>
+                    <td><input class="goal-plan-input" type="number" min="0" step="1" data-goal-plan="${a.id}" value="${target||''}" placeholder="0"></td>
+                    <td><span class="goal-fact">${actual.toLocaleString('ru-RU')}</span></td>
+                    <td><div class="goal-progress"><span class="goal-progress-bar"><i class="${st.cls==='risk'?'risk':st.cls==='bad'?'bad':''}" style="width:${Math.min(100,p)}%"></i></span><span class="goal-pct">${p}%</span></div></td>
+                    <td><span class="goal-status ${st.cls}">${st.label}</span></td>
+                    <td><input class="goal-map-input" data-goal-map="${a.id}" value="${escapeHtml(m.impulse_user_id||'')}" placeholder="ID пользователя"></td>
+                    <td><button class="btn btn-sm" data-goal-save="${a.id}">Сохранить</button></td>
+                  </tr>`
+                }).join('')||'<tr><td colspan="7"><div class="goal-empty">Активные администраторы не найдены.</div></td></tr>'}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="goals-card" style="margin-top:14px">
+          <div class="goals-card-h"><h3>Цели команды</h3><div class="grow"></div><button class="btn btn-sm" id="goalsAddManual2">+ Добавить</button></div>
+          <div class="goals-card-b">
+            <div class="goal-manual-list">
+              ${manualGoals.map(g=>{
+                const p=goalPct(g.target,g.actual,!!g.lower_better),st=goalStatus(p);
+                return `<div class="goal-manual-row">
+                  <div><div class="goal-manual-title">${escapeHtml(g.title||'')}</div><div class="goal-manual-meta">${escapeHtml(goalRoleLabel(g.role))}${g.employee_name?' · '+escapeHtml(g.employee_name):''} · срок ${escapeHtml(g.due_date||'—')} · <span class="goal-source ${g.fact_source==='impulse'?'impulse':''}">${g.fact_source==='impulse'?'ImpulseCRM':'ручной факт'}</span></div></div>
+                  <div><b>${goalFmtActual(g.actual,g.unit)}</b><div class="goal-manual-meta">из ${goalFmtActual(g.target,g.unit)}</div></div>
+                  <div><div class="goal-progress"><span class="goal-progress-bar"><i class="${st.cls==='risk'?'risk':st.cls==='bad'?'bad':''}" style="width:${Math.min(100,p)}%"></i></span><span class="goal-pct">${p}%</span></div></div>
+                  <div><button class="btn btn-sm" data-goal-edit="${g.id}">Изменить</button></div>
+                </div>`
+              }).join('')||'<div class="goal-empty">Добавьте цели для тренеров, SMM, таргетолога или общие задачи команды.</div>'}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="goals-card">
+        <div class="goals-card-h"><h3>Что требует внимания</h3></div>
+        <div class="goals-card-b"><div class="goal-alerts">
+          ${admins.map(a=>{
+            const g=adminGoalByEmp[String(a.id)]; if(!g||!Number(g.target))return '';
+            const p=goalPct(g.target,g.actual,false),st=goalStatus(p);
+            if(st.cls==='ok')return '';
+            return `<div class="goal-alert ${st.cls==='bad'?'bad':'warn'}"><b>${escapeHtml(a.full_name||'')}</b><small>Продажи: ${Number(g.actual||0).toLocaleString('ru-RU')} из ${Number(g.target||0).toLocaleString('ru-RU')} · ${p}% · ${st.label}</small></div>`;
+          }).join('')||'<div class="goal-alert ok"><b>Критичных отклонений нет</b><small>После заполнения планов здесь автоматически появятся сотрудники с риском или отставанием.</small></div>'}
+          ${mapped<admins.length?`<div class="goal-alert warn"><b>Не все администраторы связаны с ImpulseCRM</b><small>Заполнено ${mapped} из ${admins.length}. Для несопоставленных сотрудников факт из CRM определить нельзя.</small></div>`:''}
+          ${!configured?`<div class="goal-alert warn"><b>ImpulseCRM API ещё не подключён</b><small>Планы уже можно заполнять. Для факта нужно один раз настроить серверные параметры API.</small></div>`:''}
+        </div></div>
+      </div>
+    </div>`;
+
+  body.querySelector('#goalsMonth').onchange=e=>{GOALS_MONTH=e.target.value||GOALS_MONTH;renderGoalsDashboard(body)};
+  const add1=body.querySelector('#goalsAddManual'),add2=body.querySelector('#goalsAddManual2');
+  if(add1)add1.onclick=()=>goalEditModal(null,GOALS_MONTH,employees,()=>renderGoalsDashboard(body));
+  if(add2)add2.onclick=()=>goalEditModal(null,GOALS_MONTH,employees,()=>renderGoalsDashboard(body));
+
+  body.querySelectorAll('[data-goal-save]').forEach(btn=>btn.onclick=async()=>{
+    const id=btn.dataset.goalSave;
+    const a=admins.find(x=>String(x.id)===String(id)); if(!a)return;
+    const plan=Number(body.querySelector(`[data-goal-plan="${CSS.escape(String(id))}"]`).value)||0;
+    const impulseId=body.querySelector(`[data-goal-map="${CSS.escape(String(id))}"]`).value.trim();
+    const existing=adminGoalByEmp[String(id)]||{};
+    btn.disabled=true;
+    try{
+      await apiGoalsSave({
+        id:existing.id||null,month:GOALS_MONTH,role:'admin',employee_id:a.id,
+        title:'Продажи абонементов',metric_key:'membership_sales',unit:'шт.',
+        target:plan,manual_fact:0,fact_source:'impulse',due_date:goalLastDay(GOALS_MONTH),
+        note:'Факт автоматически из ImpulseCRM',active:true
+      });
+      await apiGoalsSaveMapping(a.id,impulseId,a.full_name||'');
+      toast('План и сопоставление сохранены');
+      renderGoalsDashboard(body);
+    }catch(e){handleErr(e)}finally{btn.disabled=false}
+  });
+
+  body.querySelectorAll('[data-goal-edit]').forEach(btn=>btn.onclick=()=>{
+    const g=goals.find(x=>String(x.id)===String(btn.dataset.goalEdit));
+    if(g)goalEditModal(g,GOALS_MONTH,employees,()=>renderGoalsDashboard(body));
+  });
+
+  const syncBtn=body.querySelector('#goalsSync');
+  if(syncBtn)syncBtn.onclick=async()=>{
+    syncBtn.disabled=true;const old=syncBtn.textContent;syncBtn.textContent='Синхронизация…';
+    try{
+      const r=await apiGoalsImpulseSync(GOALS_MONTH);
+      if(r.configured===false){
+        toast('ImpulseCRM API ещё не настроен',true);
+        goalsApiInfoModal(r);
+      }else{
+        toast(`Факт обновлён · строк: ${r.updated||0}`);
+        renderGoalsDashboard(body);
+      }
+    }catch(e){handleErr(e)}
+    finally{syncBtn.disabled=false;syncBtn.textContent=old}
+  };
+  const info=body.querySelector('#goalsApiInfo'); if(info)info.onclick=()=>goalsApiInfoModal(sync);
+}
+
+function goalsApiInfoModal(status){
+  const configured=!!(status&&status.configured);
+  const el=modal(`<h3>🔌 Подключение ImpulseCRM</h3>
+    <p>Ключ API хранится только в Supabase Secrets. В браузер и index.html он не попадает.</p>
+    <div class="goal-alert ${configured?'ok':'warn'}"><b>${configured?'Интеграция настроена':'Нужно завершить настройку'}</b>
+      <small>${configured?'Можно запускать синхронизацию факта.':'Откройте в impulseCRM профиль → «Настройка API» → «Пример запроса». Нужны URL рабочего запроса и формат ответа. После этого параметры один раз добавляются в Secrets Supabase.'}</small></div>
+    <div class="goal-alert" style="margin-top:8px"><b>Как работает</b><small>FAD хранит план. Edge Function запрашивает продажи в ImpulseCRM, группирует их по ID администратора и сохраняет только агрегированный факт за месяц.</small></div>
+    <div class="actions"><button class="btn btn-primary" data-x>Понятно</button></div>`);
+}
+
+function goalEditModal(goal,month,admins,onDone){
+  const g=goal?Object.assign({},goal):{id:null,role:'trainer',employee_id:null,title:'',metric_key:'manual',unit:'шт.',target:0,manual_fact:0,fact_source:'manual',due_date:goalLastDay(month),note:'',active:true};
+  const employees=(admins||[]);
+  const el=modal(`<div class="goal-modal"><h3>${g.id?'Изменить цель':'Новая цель команды'}</h3><p>Для администраторов основной показатель «Продажи абонементов» настраивается в таблице выше. Здесь — остальные цели команды.</p>
+    <div class="gform">
+      <label class="field"><div class="lbl">Роль</div><select id="geRole">
+        ${[['trainer','Тренеры'],['smm','SMM'],['target','Таргетолог'],['admin','Администраторы'],['other','Другое']].map(x=>`<option value="${x[0]}" ${g.role===x[0]?'selected':''}>${x[1]}</option>`).join('')}
+      </select></label>
+      <label class="field"><div class="lbl">Сотрудник <small>необязательно</small></div><select id="geEmp"><option value="">Общая цель роли</option>${employees.filter(a=>a.is_active!==false).map(a=>`<option value="${a.id}" data-etype="${escapeHtml(a.employee_type||'')}" ${String(g.employee_id||'')===String(a.id)?'selected':''}>${escapeHtml(a.full_name||'')}</option>`).join('')}</select></label>
+      <label class="field gfull"><div class="lbl">Цель / KPI</div><input id="geTitle" value="${escapeHtml(g.title||'')}" placeholder="Например: Опубликовать 16 постов"></label>
+      <label class="field"><div class="lbl">План</div><input id="geTarget" type="number" step="0.01" value="${Number(g.target||0)}"></label>
+      <label class="field"><div class="lbl">Факт</div><input id="geFact" type="number" step="0.01" value="${Number(g.manual_fact!=null?g.manual_fact:g.actual||0)}"></label>
+      <label class="field"><div class="lbl">Единица</div><input id="geUnit" value="${escapeHtml(g.unit||'шт.')}"></label>
+      <label class="field"><div class="lbl">Срок</div><input id="geDue" type="date" value="${escapeHtml(g.due_date||goalLastDay(month))}"></label>
+      <label class="field gfull"><div class="lbl">Комментарий</div><textarea id="geNote">${escapeHtml(g.note||'')}</textarea></label>
+      <div class="source-note gfull">Источник факта этой цели: <b>ручной</b>. Автоматический ImpulseCRM в первой версии используется для продаж абонементов по администраторам.</div>
+    </div>
+    <div class="actions">${g.id?'<button class="btn btn-ghost" id="geDelete">Удалить</button>':''}<button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="geSave">Сохранить</button></div></div>`);
+  const modalBox=el.querySelector('.modal'); if(modalBox)modalBox.classList.add('goal-modal');
+  const roleSel=el.querySelector('#geRole'),empSel=el.querySelector('#geEmp');
+  function syncGoalEmployees(){
+    const r=roleSel.value;
+    Array.from(empSel.options).forEach((o,i)=>{
+      if(i===0)return;
+      const et=o.dataset.etype||'';
+      o.hidden=(r==='admin'&&et!=='admin')||(r==='trainer'&&et!=='trainer');
+    });
+    if(empSel.selectedOptions[0]&&empSel.selectedOptions[0].hidden)empSel.value='';
+  }
+  roleSel.onchange=syncGoalEmployees;syncGoalEmployees();
+  el.querySelector('#geSave').onclick=async()=>{
+    const title=el.querySelector('#geTitle').value.trim();
+    if(!title){toast('Укажите цель',true);return}
+    const btn=el.querySelector('#geSave');btn.disabled=true;
+    try{
+      await apiGoalsSave({
+        id:g.id||null,month,role:el.querySelector('#geRole').value,employee_id:el.querySelector('#geEmp').value||null,
+        title,metric_key:g.metric_key&&g.metric_key!=='membership_sales'?g.metric_key:'manual',
+        unit:el.querySelector('#geUnit').value.trim(),target:Number(el.querySelector('#geTarget').value)||0,
+        manual_fact:Number(el.querySelector('#geFact').value)||0,fact_source:'manual',
+        due_date:el.querySelector('#geDue').value||goalLastDay(month),note:el.querySelector('#geNote').value.trim(),active:true
+      });
+      closeModal(el);toast('Цель сохранена');onDone&&onDone();
+    }catch(e){handleErr(e)}finally{btn.disabled=false}
+  };
+  const del=el.querySelector('#geDelete'); if(del)del.onclick=async()=>{
+    try{await apiGoalsDelete(g.id);closeModal(el);toast('Цель удалена');onDone&&onDone()}catch(e){handleErr(e)}
+  };
 }
 
 async function renderMessages(body){
