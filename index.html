@@ -997,6 +997,20 @@ table th>*,table td>*{max-width:100%;box-sizing:border-box}
 .goal-prof-row:first-of-type{border-top:0}
 .goal-prof-path{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;overflow-wrap:anywhere}
 .goal-prof-sample{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink-soft);overflow-wrap:anywhere;text-align:right}
+.goal-sales-probe{margin-top:10px;display:grid;gap:9px}
+.goal-sales-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.goal-sales-stat{border:1px solid var(--line);border-radius:10px;padding:9px 10px;background:#fff}
+.goal-sales-stat small{display:block;color:var(--ink-soft);font-size:9.5px;margin-bottom:3px}
+.goal-sales-stat b{font-size:14px}
+.goal-sales-staff{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+.goal-sales-staff table{width:100%;border-collapse:collapse;font-size:10.5px}
+.goal-sales-staff th,.goal-sales-staff td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left}
+.goal-sales-staff th{background:var(--surface-2);font-size:9px;text-transform:uppercase;color:var(--ink-faint)}
+.goal-sales-staff tr:last-child td{border-bottom:0}
+.goal-match-ok{color:#24513e;font-weight:800}
+.goal-match-warn{color:#7d6608;font-weight:800}
+@media(max-width:760px){.goal-sales-grid{grid-template-columns:1fr 1fr}}
+
 @media(max-width:760px){.goal-prof-grid{grid-template-columns:1fr}}
 
 
@@ -1065,7 +1079,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '01.11.2026-h'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '01.11.2026-i'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -1743,6 +1757,19 @@ async function apiGoalsImpulseProductProfile(){
   const r=await fetch(SUPABASE_URL+'/functions/v1/impulse-goals-sync',{
     method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({token:TOKEN,mode:'product_profile'})
+  });
+  const raw=await r.text();
+  let j={};try{j=raw?JSON.parse(raw):{}}catch(e){j={raw}}
+  if(!r.ok){
+    const err=new Error((j&&j.error)||(j&&j.message)||('HTTP '+r.status));
+    err.httpStatus=r.status;err.payload=j;throw err;
+  }
+  return j;
+}
+async function apiGoalsImpulseSalesProbe(){
+  const r=await fetch(SUPABASE_URL+'/functions/v1/impulse-goals-sync',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({token:TOKEN,mode:'sales_probe'})
   });
   const raw=await r.text();
   let j={};try{j=raw?JSON.parse(raw):{}}catch(e){j={raw}}
@@ -3326,6 +3353,7 @@ async function renderGoalsDashboard(body){
       <button class="btn" id="goalsApiTestMain">Проверить API</button>
       <button class="btn" id="goalsApiDiagnostic">Диагностика API</button>
       <button class="btn" id="goalsProductProfile">Анализ product/list</button>
+      <button class="btn" id="goalsSalesProbe">Сверка продаж</button>
       <button class="btn" id="goalsApiInfo">Настройка</button>
       <button class="btn btn-primary" id="goalsSync">↻ Обновить факт</button>
     </div>
@@ -3533,6 +3561,44 @@ async function renderGoalsDashboard(body){
     }
   }
   const profBtn=body.querySelector('#goalsProductProfile'); if(profBtn)profBtn.onclick=runProductProfile;
+
+  async function runSalesProbe(){
+    const result=body.querySelector('#goalsApiInlineResult');
+    const btn=body.querySelector('#goalsSalesProbe');
+    if(btn){btn.disabled=true;btn.textContent='Сверка…'}
+    if(result)result.innerHTML='<div class="goal-alert"><b>Сверяем product/list с пользователями ImpulseCRM…</b><small>Проверяем created, paid, total, refund и кассовую смену. Клиентские данные не выводятся.</small></div>';
+    try{
+      const r=await apiGoalsImpulseSalesProbe();
+      const s=r.stats||{};
+      const staff=Array.isArray(r.staff)?r.staff:[];
+      const rows=staff.map(x=>`<tr>
+        <td><b>${escapeHtml(x.name||'Неизвестный пользователь')}</b><br><small>ID ${escapeHtml(String(x.id||''))}</small></td>
+        <td>${Number(x.rows||0)}</td>
+        <td>${Number(x.paid||0).toLocaleString('ru-RU',{maximumFractionDigits:2})} BYN</td>
+        <td>${Number(x.total||0).toLocaleString('ru-RU',{maximumFractionDigits:2})} BYN</td>
+        <td>${x.matchedUser?'<span class="goal-match-ok">user/list ✓</span>':'<span class="goal-match-warn">имя не найдено</span>'}</td>
+      </tr>`).join('');
+      const userNote=r.userListAvailable
+        ? `user/list доступен · пользователей прочитано: ${Number(r.usersDetected||0)}`
+        : `user/list недоступен (${escapeHtml(String(r.userListStatus||'ERR'))})`;
+      if(result)result.innerHTML=`<div class="goal-alert ${r.ready?'ok':'warn'}"><b>${r.ready?'Структура продаж готова к подключению':'Нужна ещё одна проверка привязки администратора'}</b><small>Рекомендуемая схема: дата <b>created</b> · деньги <b>paid</b> · кассир смены <b>payBox.shift.userOpenedId</b>. ${userNote}.</small></div>
+        <div class="goal-sales-probe">
+          <div class="goal-sales-grid">
+            <div class="goal-sales-stat"><small>Строк product/list</small><b>${Number(s.rows||0)}</b></div>
+            <div class="goal-sales-stat"><small>С paid &gt; 0</small><b>${Number(s.paidPositive||0)}</b></div>
+            <div class="goal-sales-stat"><small>Сумма paid</small><b>${Number(s.paidSum||0).toLocaleString('ru-RU',{maximumFractionDigits:2})} BYN</b></div>
+            <div class="goal-sales-stat"><small>Возвратов / refund</small><b>${Number(s.refundPresent||0)}</b></div>
+          </div>
+          <div class="goal-alert"><b>Диапазон created</b><small>${escapeHtml(s.createdFrom||'—')} → ${escapeHtml(s.createdTo||'—')} · уникальных userOpenedId: ${Number(s.distinctOpenUsers||0)}</small></div>
+          <div class="goal-sales-staff"><table><thead><tr><th>Пользователь ImpulseCRM</th><th>Строк</th><th>paid</th><th>total</th><th>Связь</th></tr></thead><tbody>${rows||'<tr><td colspan="5">userOpenedId в пробе не найден</td></tr>'}</tbody></table></div>
+        </div>`;
+    }catch(e){
+      if(result)result.innerHTML=`<div class="goal-alert bad"><b>Ошибка сверки продаж</b><small>${escapeHtml(e.message||String(e))}</small></div>`;
+    }finally{
+      if(btn){btn.disabled=false;btn.textContent='Сверка продаж'}
+    }
+  }
+  const salesProbeBtn=body.querySelector('#goalsSalesProbe'); if(salesProbeBtn)salesProbeBtn.onclick=runSalesProbe;
 
   const syncBtn=body.querySelector('#goalsSync');
   if(syncBtn)syncBtn.onclick=async()=>{
