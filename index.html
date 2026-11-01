@@ -990,6 +990,15 @@ table th>*,table td>*{max-width:100%;box-sizing:border-box}
 .goal-diag-code.ok{background:#edf8f2;color:#24513e}
 .goal-diag-code.warn{background:#fff7df;color:#7d6608}
 .goal-diag-code.bad{background:#fff0f0;color:#a93226}
+.goal-prof-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.goal-prof-card{border:1px solid var(--line);border-radius:10px;padding:9px 10px;background:#fff}
+.goal-prof-card h4{margin:0 0 7px;font-size:11px}
+.goal-prof-row{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(80px,.6fr);gap:7px;padding:5px 0;border-top:1px solid var(--line);font-size:10px}
+.goal-prof-row:first-of-type{border-top:0}
+.goal-prof-path{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;overflow-wrap:anywhere}
+.goal-prof-sample{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink-soft);overflow-wrap:anywhere;text-align:right}
+@media(max-width:760px){.goal-prof-grid{grid-template-columns:1fr}}
+
 
 .goal-api-result .goal-alert{margin:0}
 .goal-money{font-variant-numeric:tabular-nums}
@@ -1056,7 +1065,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '01.11.2026-g'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '01.11.2026-h'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -1721,6 +1730,19 @@ async function apiGoalsImpulseDiagnostic(){
   const r=await fetch(SUPABASE_URL+'/functions/v1/impulse-goals-sync',{
     method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({token:TOKEN,mode:'diagnostic'})
+  });
+  const raw=await r.text();
+  let j={};try{j=raw?JSON.parse(raw):{}}catch(e){j={raw}}
+  if(!r.ok){
+    const err=new Error((j&&j.error)||(j&&j.message)||('HTTP '+r.status));
+    err.httpStatus=r.status;err.payload=j;throw err;
+  }
+  return j;
+}
+async function apiGoalsImpulseProductProfile(){
+  const r=await fetch(SUPABASE_URL+'/functions/v1/impulse-goals-sync',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({token:TOKEN,mode:'product_profile'})
   });
   const raw=await r.text();
   let j={};try{j=raw?JSON.parse(raw):{}}catch(e){j={raw}}
@@ -3303,6 +3325,7 @@ async function renderGoalsDashboard(body){
       <span class="goals-api-state ${configured?'ok':'warn'}"><i class="goals-api-dot"></i>${configured?'Продажи настроены':apiConnected?'Ключ API задан':'Нужна проверка API'}</span>
       <button class="btn" id="goalsApiTestMain">Проверить API</button>
       <button class="btn" id="goalsApiDiagnostic">Диагностика API</button>
+      <button class="btn" id="goalsProductProfile">Анализ product/list</button>
       <button class="btn" id="goalsApiInfo">Настройка</button>
       <button class="btn btn-primary" id="goalsSync">↻ Обновить факт</button>
     </div>
@@ -3481,6 +3504,35 @@ async function renderGoalsDashboard(body){
     }
   }
   const diagBtn=body.querySelector('#goalsApiDiagnostic'); if(diagBtn)diagBtn.onclick=runApiDiagnostic;
+
+  async function runProductProfile(){
+    const result=body.querySelector('#goalsApiInlineResult');
+    const btn=body.querySelector('#goalsProductProfile');
+    if(btn){btn.disabled=true;btn.textContent='Анализ…'}
+    if(result)result.innerHTML='<div class="goal-alert"><b>Анализируем product/list…</b><small>Берём несколько последних записей и показываем только технические кандидаты: дата, сумма и ID сотрудника. ФИО/телефоны клиентов не выводятся.</small></div>';
+    try{
+      const r=await apiGoalsImpulseProductProfile();
+      const renderGroup=(title,arr)=>`<div class="goal-prof-card"><h4>${title}</h4>${(arr||[]).map(x=>`<div class="goal-prof-row"><span class="goal-prof-path">${escapeHtml(x.path||'')}</span><span class="goal-prof-sample">${escapeHtml(String(x.sample??'—'))}</span></div>`).join('')||'<div class="goal-empty">Кандидаты не найдены</div>'}</div>`;
+      const best=r.suggestion||{};
+      const summary=[
+        best.datePath?`дата: ${best.datePath}`:'',
+        best.amountPath?`сумма: ${best.amountPath}`:'',
+        best.employeePath?`администратор: ${best.employeePath}`:''
+      ].filter(Boolean).join(' · ');
+      if(result)result.innerHTML=`<div class="goal-alert ${best.ready?'ok':'warn'}"><b>${best.ready?'Есть полный кандидат для подключения продаж':'product/list найден, уточняем поля'}</b><small>${escapeHtml(summary||'Нужно выбрать кандидаты ниже.')}</small></div>
+        <div class="goal-prof-grid">
+          ${renderGroup('📅 Кандидаты даты',r.dateCandidates)}
+          ${renderGroup('💰 Кандидаты суммы',r.amountCandidates)}
+          ${renderGroup('👤 Кандидаты администратора',r.employeeCandidates)}
+        </div>
+        <div class="goal-alert" style="margin-top:8px"><b>Структура product/list</b><small>Записей в пробе: ${Number(r.rowsDetected||0)}. Полей найдено: ${Number(r.fieldCount||0)}. Анализ не сохраняет значения клиентов.</small></div>`;
+    }catch(e){
+      if(result)result.innerHTML=`<div class="goal-alert bad"><b>Ошибка анализа product/list</b><small>${escapeHtml(e.message||String(e))}</small></div>`;
+    }finally{
+      if(btn){btn.disabled=false;btn.textContent='Анализ product/list'}
+    }
+  }
+  const profBtn=body.querySelector('#goalsProductProfile'); if(profBtn)profBtn.onclick=runProductProfile;
 
   const syncBtn=body.querySelector('#goalsSync');
   if(syncBtn)syncBtn.onclick=async()=>{
