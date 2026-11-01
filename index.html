@@ -957,7 +957,16 @@ table th>*,table td>*{max-width:100%;box-sizing:border-box}
 .goals-card-h .grow{flex:1}
 .goals-card-b{padding:14px 15px}
 .goals-table-wrap{overflow:auto}
-.goals-table{border-collapse:collapse;width:100%;font-size:12px;min-width:810px}
+.goals-table{border-collapse:collapse;width:100%;font-size:12px;min-width:980px;table-layout:auto}
+.goals-table th:first-child,.goals-table td:first-child{min-width:210px;width:210px}
+.goals-table th:nth-child(2),.goals-table td:nth-child(2){min-width:235px}
+.goals-table th:nth-child(3),.goals-table td:nth-child(3){min-width:120px}
+.goals-table th:nth-child(4),.goals-table td:nth-child(4){min-width:155px}
+.goals-table th:nth-child(5),.goals-table td:nth-child(5){min-width:110px}
+.goals-table th:nth-child(6),.goals-table td:nth-child(6){min-width:165px}
+.goal-person{min-width:190px}
+.goal-person-name{white-space:normal;word-break:normal;overflow-wrap:normal;line-height:1.25}
+
 .goals-table th{text-align:left;background:var(--surface-2);padding:9px 10px;color:var(--ink-faint);font-size:10px;text-transform:uppercase;letter-spacing:.25px;border-bottom:1px solid var(--line)}
 .goals-table td{padding:10px;border-bottom:1px solid var(--line);vertical-align:middle}
 .goals-table tr:last-child td{border-bottom:none}
@@ -1034,7 +1043,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '01.11.2026-d'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '01.11.2026-e'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -1687,8 +1696,12 @@ async function apiGoalsImpulseTest(){
     method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({token:TOKEN,mode:'test'})
   });
-  const j=await r.json().catch(()=>({}));
-  if(!r.ok) throw new Error((j&&j.error)||('HTTP '+r.status));
+  const raw=await r.text();
+  let j={};try{j=raw?JSON.parse(raw):{}}catch(e){j={raw}}
+  if(!r.ok){
+    const err=new Error((j&&j.error)||(j&&j.message)||('HTTP '+r.status));
+    err.httpStatus=r.status;err.payload=j;throw err;
+  }
   return j;
 }
 async function apiSetStaffCalendarPermissions(login,p){ return await rpc('app_set_staff_calendar_permissions',{p_token:TOKEN,p_login:login,p_permissions:p||{}}); }
@@ -3395,7 +3408,11 @@ async function renderGoalsDashboard(body){
         if(result)result.innerHTML=`<div class="goal-alert warn"><b>API пока не подключён</b><small>${escapeHtml((r.missing||[]).join(', ')||r.message||'Проверьте IMPULSE_AUTHORIZATION')}</small></div>`;
       }
     }catch(e){
-      if(result)result.innerHTML=`<div class="goal-alert bad"><b>Ошибка соединения</b><small>${escapeHtml(e.message||String(e))}</small></div>`;
+      if(e&&e.httpStatus===401){
+        if(result)result.innerHTML='<div class="goal-alert bad"><b>Supabase не пропускает запрос к Edge Function</b><small>HTTP 401 получен до выполнения кода интеграции. Откройте Supabase → Edge Functions → impulse-goals-sync и выключите <b>Verify JWT</b>, затем обязательно нажмите Deploy. После этого повторите проверку.</small></div>';
+      }else{
+        if(result)result.innerHTML=`<div class="goal-alert bad"><b>Ошибка соединения</b><small>${escapeHtml(e.message||String(e))}</small></div>`;
+      }
     }finally{
       if(btn){btn.disabled=false;btn.textContent='Проверить API'}
     }
@@ -3444,7 +3461,11 @@ function goalsApiInfoModal(status){
         result.innerHTML=`<div class="goal-alert warn"><b>API пока не подключён</b><small>${escapeHtml((r.missing||[]).join(', ')||r.message||'Проверьте Secret IMPULSE_AUTHORIZATION')}</small></div>`;
       }
     }catch(e){
-      result.innerHTML=`<div class="goal-alert bad"><b>Ошибка соединения</b><small>${escapeHtml(e.message||String(e))}</small></div>`;
+      if(e&&e.httpStatus===401){
+        result.innerHTML='<div class="goal-alert bad"><b>Supabase Edge Function заблокирована</b><small>Получен HTTP 401 до запуска функции. В Supabase у <b>impulse-goals-sync</b> установите <b>Verify JWT = OFF</b> и заново Deploy.</small></div>';
+      }else{
+        result.innerHTML=`<div class="goal-alert bad"><b>Ошибка соединения</b><small>${escapeHtml(e.message||String(e))}</small></div>`;
+      }
     }finally{test.disabled=false;test.textContent=old}
   };
 }
