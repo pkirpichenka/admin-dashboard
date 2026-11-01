@@ -966,6 +966,12 @@ table th>*,table td>*{max-width:100%;box-sizing:border-box}
 .goal-person-name{font-weight:800}
 .goal-person-sub{font-size:10px;color:var(--ink-faint);margin-top:2px}
 .goal-plan-input{width:92px;padding:7px 8px;font-weight:800;text-align:right}
+.goal-plan-box{display:flex;gap:6px;align-items:center;min-width:225px}
+.goal-metric-select{width:126px;padding:7px 8px;font-size:11px;font-weight:750}
+.goal-api-result{width:100%;margin-top:8px}
+.goal-api-result .goal-alert{margin:0}
+.goal-money{font-variant-numeric:tabular-nums}
+
 .goal-map-input{width:145px;padding:7px 8px;font-size:12px}
 .goal-fact{display:inline-flex;align-items:center;gap:5px;font-weight:900}
 .goal-fact::after{content:'API';font-size:8px;background:#edf8f2;color:#24513e;padding:2px 5px;border-radius:999px}
@@ -1028,7 +1034,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '01.11.2026-c'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '01.11.2026-d'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -3206,22 +3212,34 @@ function goalLastDay(month){
 async function renderGoalsDashboard(body){
   if(!session||session.role!=='owner'){body.innerHTML='<div class="empty">Раздел доступен руководителю.</div>';return}
   body.innerHTML='<div class="empty">Загрузка целей…</div>';
+
   let admins=[],employees=[],goals=[],maps=[],sync=null;
   try{
-    [admins,employees,goals,maps,sync]=await Promise.all([apiGoalsAdmins(),apiListEmployees(),apiGoalsList(GOALS_MONTH),apiGoalsMappings(),apiGoalsSyncStatus()]);
+    [admins,employees,goals,maps,sync]=await Promise.all([
+      apiGoalsAdmins(),apiListEmployees(),apiGoalsList(GOALS_MONTH),apiGoalsMappings(),apiGoalsSyncStatus()
+    ]);
   }catch(e){handleErr(e);return}
 
   const mapByEmp=Object.fromEntries(maps.map(x=>[String(x.employee_id),x]));
+  const adminMetricKeys=new Set(['membership_sales_count','membership_sales_amount','membership_sales']);
   const adminGoalByEmp={};
-  goals.filter(g=>g.role==='admin'&&g.metric_key==='membership_sales'&&g.employee_id).forEach(g=>adminGoalByEmp[String(g.employee_id)]=g);
+  goals.filter(g=>g.role==='admin'&&adminMetricKeys.has(g.metric_key)&&g.employee_id)
+    .forEach(g=>adminGoalByEmp[String(g.employee_id)]=g);
+
   const adminGoals=admins.map(a=>adminGoalByEmp[String(a.id)]).filter(Boolean);
-  const totalPlan=adminGoals.reduce((s,g)=>s+Number(g.target||0),0);
-  const totalFact=adminGoals.reduce((s,g)=>s+Number(g.actual||0),0);
-  const totalPct=goalPct(totalPlan,totalFact,false);
+  const countGoals=adminGoals.filter(g=>(g.metric_key==='membership_sales_count'||g.metric_key==='membership_sales'));
+  const moneyGoals=adminGoals.filter(g=>g.metric_key==='membership_sales_amount');
+
+  const countPlan=countGoals.reduce((s,g)=>s+Number(g.target||0),0);
+  const countFact=countGoals.reduce((s,g)=>s+Number(g.actual||0),0);
+  const moneyPlan=moneyGoals.reduce((s,g)=>s+Number(g.target||0),0);
+  const moneyFact=moneyGoals.reduce((s,g)=>s+Number(g.actual||0),0);
+
   const mapped=admins.filter(a=>mapByEmp[String(a.id)]&&mapByEmp[String(a.id)].impulse_user_id).length;
-  const manualGoals=goals.filter(g=>!(g.role==='admin'&&g.metric_key==='membership_sales'&&g.employee_id));
-  const atRisk=goals.filter(g=>goalPct(g.target,g.actual,!!g.lower_better)<70).length;
+  const manualGoals=goals.filter(g=>!(g.role==='admin'&&adminMetricKeys.has(g.metric_key)&&g.employee_id));
+  const atRisk=adminGoals.filter(g=>goalPct(g.target,g.actual,false)<70).length;
   const configured=!!(sync&&sync.configured);
+  const apiConnected=!!(sync&&sync.api_connected);
   const syncLabel=sync&&sync.finished_at?auditFmtDateTime(sync.finished_at):'ещё не запускалась';
 
   body.innerHTML=`
@@ -3232,22 +3250,28 @@ async function renderGoalsDashboard(body){
       <button class="btn" id="goalsAddManual">+ Цель команды</button>
     </div>
 
-    <div class="goals-api">
+    <div class="goals-api" id="goalsApiStrip">
       <div class="goals-api-ic">🔌</div>
       <div class="goals-api-main">
-        <div class="goals-api-title">ImpulseCRM · продажи абонементов по администраторам</div>
-        <div class="goals-api-sub">${configured?'Интеграция настроена.':'Серверная интеграция установлена, но параметры ImpulseCRM ещё не заполнены.'} Последняя синхронизация: <b>${escapeHtml(syncLabel)}</b>.</div>
+        <div class="goals-api-title">ImpulseCRM · факт по администраторам</div>
+        <div class="goals-api-sub">
+          ${apiConnected?'Basic API доступен. ':'Проверка Basic API ещё не подтверждена. '}
+          ${configured?'Метод продаж настроен.':'Метод продаж/абонементов ещё не настроен.'}
+          Последняя синхронизация: <b>${escapeHtml(syncLabel)}</b>.
+        </div>
+        <div class="goal-api-result" id="goalsApiInlineResult"></div>
       </div>
-      <span class="goals-api-state ${configured?'ok':'warn'}"><i class="goals-api-dot"></i>${configured?'API настроен':'Нужна настройка API'}</span>
+      <span class="goals-api-state ${configured?'ok':'warn'}"><i class="goals-api-dot"></i>${configured?'Продажи настроены':apiConnected?'API подключён':'Нужна проверка API'}</span>
+      <button class="btn" id="goalsApiTestMain">Проверить API</button>
       <button class="btn" id="goalsApiInfo">Настройка</button>
       <button class="btn btn-primary" id="goalsSync">↻ Обновить факт</button>
     </div>
 
     <div class="goals-kpis">
-      <div class="goals-kpi"><div class="goals-kpi-k">План администраторов</div><div class="goals-kpi-v">${totalPlan.toLocaleString('ru-RU')}</div><div class="goals-kpi-s">продаж абонементов</div></div>
-      <div class="goals-kpi"><div class="goals-kpi-k">Факт ImpulseCRM</div><div class="goals-kpi-v">${totalFact.toLocaleString('ru-RU')}</div><div class="goals-kpi-s">за ${escapeHtml(goalMonthLabel(GOALS_MONTH))}</div></div>
-      <div class="goals-kpi"><div class="goals-kpi-k">Выполнение</div><div class="goals-kpi-v">${totalPct}%</div><div class="goals-kpi-s">${goalStatus(totalPct).label}</div></div>
-      <div class="goals-kpi"><div class="goals-kpi-k">Связано с ImpulseCRM</div><div class="goals-kpi-v">${mapped}/${admins.length}</div><div class="goals-kpi-s">администраторов · рисков: ${atRisk}</div></div>
+      <div class="goals-kpi"><div class="goals-kpi-k">Абонементы · план</div><div class="goals-kpi-v">${countPlan.toLocaleString('ru-RU')}</div><div class="goals-kpi-s">факт ${countFact.toLocaleString('ru-RU')} шт.</div></div>
+      <div class="goals-kpi"><div class="goals-kpi-k">Продажи · план</div><div class="goals-kpi-v goal-money">${moneyPlan.toLocaleString('ru-RU',{maximumFractionDigits:2})} BYN</div><div class="goals-kpi-s">факт ${moneyFact.toLocaleString('ru-RU',{maximumFractionDigits:2})} BYN</div></div>
+      <div class="goals-kpi"><div class="goals-kpi-k">Связано с ImpulseCRM</div><div class="goals-kpi-v">${mapped}/${admins.length}</div><div class="goals-kpi-s">администраторов</div></div>
+      <div class="goals-kpi"><div class="goals-kpi-k">Требуют внимания</div><div class="goals-kpi-v">${atRisk}</div><div class="goals-kpi-s">выполнение ниже 70%</div></div>
     </div>
 
     <div class="goals-grid">
@@ -3256,17 +3280,27 @@ async function renderGoalsDashboard(body){
           <div class="goals-card-h"><h3>План и выполнение администраторов</h3><div class="grow"></div><span class="goals-api-state ${mapped===admins.length&&admins.length?'ok':'warn'}">${mapped===admins.length&&admins.length?'сопоставление готово':'нужно сопоставление'}</span></div>
           <div class="goals-table-wrap">
             <table class="goals-table">
-              <thead><tr><th>Администратор</th><th>План FAD</th><th>Факт API</th><th>Выполнение</th><th>Статус</th><th>ImpulseCRM ID</th><th></th></tr></thead>
+              <thead><tr><th>Администратор</th><th>Тип и план FAD</th><th>Факт API</th><th>Выполнение</th><th>Статус</th><th>ImpulseCRM ID</th><th></th></tr></thead>
               <tbody>
                 ${admins.map(a=>{
                   const g=adminGoalByEmp[String(a.id)]||null,m=mapByEmp[String(a.id)]||{};
+                  const metric=(g&&g.metric_key==='membership_sales_amount')?'membership_sales_amount':'membership_sales_count';
+                  const unit=metric==='membership_sales_amount'?'BYN':'шт.';
                   const target=Number(g&&g.target||0),actual=Number(g&&g.actual||0),p=goalPct(target,actual,false),st=goalStatus(p);
                   return `<tr>
                     <td><div class="goal-person"><span class="goal-avatar">${escapeHtml(goalInitials(a.full_name))}</span><div><div class="goal-person-name">${escapeHtml(a.full_name||'')}</div><div class="goal-person-sub">${escapeHtml(studioName(a.primary_studio||''))}${a.app_login?' · '+escapeHtml(a.app_login):''}</div></div></div></td>
-                    <td><input class="goal-plan-input" type="number" min="0" step="1" data-goal-plan="${a.id}" value="${target||''}" placeholder="0"></td>
-                    <td><span class="goal-fact">${actual.toLocaleString('ru-RU')}</span></td>
+                    <td>
+                      <div class="goal-plan-box">
+                        <select class="goal-metric-select" data-goal-metric="${a.id}">
+                          <option value="membership_sales_count" ${metric==='membership_sales_count'?'selected':''}>Абонементы, шт.</option>
+                          <option value="membership_sales_amount" ${metric==='membership_sales_amount'?'selected':''}>Продажи, BYN</option>
+                        </select>
+                        <input class="goal-plan-input" type="number" min="0" step="${metric==='membership_sales_amount'?'0.01':'1'}" data-goal-plan="${a.id}" value="${target||''}" placeholder="0">
+                      </div>
+                    </td>
+                    <td><span class="goal-fact">${actual.toLocaleString('ru-RU',{maximumFractionDigits:2})} ${unit}</span></td>
                     <td><div class="goal-progress"><span class="goal-progress-bar"><i class="${st.cls==='risk'?'risk':st.cls==='bad'?'bad':''}" style="width:${Math.min(100,p)}%"></i></span><span class="goal-pct">${p}%</span></div></td>
-                    <td><span class="goal-status ${st.cls}">${st.label}</span></td>
+                    <td><span class="goal-status ${st.cls}">${target>0?st.label:'План не задан'}</span></td>
                     <td><input class="goal-map-input" data-goal-map="${a.id}" value="${escapeHtml(m.impulse_user_id||'')}" placeholder="ID пользователя"></td>
                     <td><button class="btn btn-sm" data-goal-save="${a.id}">Сохранить</button></td>
                   </tr>`
@@ -3301,10 +3335,11 @@ async function renderGoalsDashboard(body){
             const g=adminGoalByEmp[String(a.id)]; if(!g||!Number(g.target))return '';
             const p=goalPct(g.target,g.actual,false),st=goalStatus(p);
             if(st.cls==='ok')return '';
-            return `<div class="goal-alert ${st.cls==='bad'?'bad':'warn'}"><b>${escapeHtml(a.full_name||'')}</b><small>Продажи: ${Number(g.actual||0).toLocaleString('ru-RU')} из ${Number(g.target||0).toLocaleString('ru-RU')} · ${p}% · ${st.label}</small></div>`;
+            const unit=g.metric_key==='membership_sales_amount'?'BYN':'шт.';
+            return `<div class="goal-alert ${st.cls==='bad'?'bad':'warn'}"><b>${escapeHtml(a.full_name||'')}</b><small>${g.metric_key==='membership_sales_amount'?'Продажи':'Абонементы'}: ${Number(g.actual||0).toLocaleString('ru-RU',{maximumFractionDigits:2})} из ${Number(g.target||0).toLocaleString('ru-RU',{maximumFractionDigits:2})} ${unit} · ${p}% · ${st.label}</small></div>`;
           }).join('')||'<div class="goal-alert ok"><b>Критичных отклонений нет</b><small>После заполнения планов здесь автоматически появятся сотрудники с риском или отставанием.</small></div>'}
           ${mapped<admins.length?`<div class="goal-alert warn"><b>Не все администраторы связаны с ImpulseCRM</b><small>Заполнено ${mapped} из ${admins.length}. Для несопоставленных сотрудников факт из CRM определить нельзя.</small></div>`:''}
-          ${!configured?`<div class="goal-alert warn"><b>ImpulseCRM API ещё не подключён</b><small>Планы уже можно заполнять. Для факта нужно один раз настроить серверные параметры API.</small></div>`:''}
+          ${!configured?`<div class="goal-alert warn"><b>Метод продаж ImpulseCRM ещё не настроен</b><small>Планы уже можно заполнять. Проверка Basic API вынесена отдельной кнопкой выше.</small></div>`:''}
         </div></div>
       </div>
     </div>`;
@@ -3314,9 +3349,16 @@ async function renderGoalsDashboard(body){
   if(add1)add1.onclick=()=>goalEditModal(null,GOALS_MONTH,employees,()=>renderGoalsDashboard(body));
   if(add2)add2.onclick=()=>goalEditModal(null,GOALS_MONTH,employees,()=>renderGoalsDashboard(body));
 
+  body.querySelectorAll('[data-goal-metric]').forEach(sel=>sel.onchange=()=>{
+    const id=sel.dataset.goalMetric;
+    const inp=body.querySelector(`[data-goal-plan="${CSS.escape(String(id))}"]`);
+    if(inp)inp.step=sel.value==='membership_sales_amount'?'0.01':'1';
+  });
+
   body.querySelectorAll('[data-goal-save]').forEach(btn=>btn.onclick=async()=>{
     const id=btn.dataset.goalSave;
     const a=admins.find(x=>String(x.id)===String(id)); if(!a)return;
+    const metric=body.querySelector(`[data-goal-metric="${CSS.escape(String(id))}"]`).value;
     const plan=Number(body.querySelector(`[data-goal-plan="${CSS.escape(String(id))}"]`).value)||0;
     const impulseId=body.querySelector(`[data-goal-map="${CSS.escape(String(id))}"]`).value.trim();
     const existing=adminGoalByEmp[String(id)]||{};
@@ -3324,12 +3366,13 @@ async function renderGoalsDashboard(body){
     try{
       await apiGoalsSave({
         id:existing.id||null,month:GOALS_MONTH,role:'admin',employee_id:a.id,
-        title:'Продажи абонементов',metric_key:'membership_sales',unit:'шт.',
+        title:metric==='membership_sales_amount'?'Продажи в деньгах':'Продажи абонементов',
+        metric_key:metric,unit:metric==='membership_sales_amount'?'BYN':'шт.',
         target:plan,manual_fact:0,fact_source:'impulse',due_date:goalLastDay(GOALS_MONTH),
         note:'Факт автоматически из ImpulseCRM',active:true
       });
       await apiGoalsSaveMapping(a.id,impulseId,a.full_name||'');
-      toast('План и сопоставление сохранены');
+      toast('План и тип показателя сохранены');
       renderGoalsDashboard(body);
     }catch(e){handleErr(e)}finally{btn.disabled=false}
   });
@@ -3339,14 +3382,36 @@ async function renderGoalsDashboard(body){
     if(g)goalEditModal(g,GOALS_MONTH,employees,()=>renderGoalsDashboard(body));
   });
 
+  async function runApiTest(){
+    const result=body.querySelector('#goalsApiInlineResult');
+    const btn=body.querySelector('#goalsApiTestMain');
+    if(btn){btn.disabled=true;btn.textContent='Проверка…'}
+    if(result)result.innerHTML='<div class="goal-alert"><b>Проверяем ImpulseCRM…</b><small>POST client/list · без сохранения клиентских данных.</small></div>';
+    try{
+      const r=await apiGoalsImpulseTest();
+      if(r.connected){
+        if(result)result.innerHTML='<div class="goal-alert ok"><b>✅ Соединение с ImpulseCRM работает</b><small>Basic Authorization принят. Теперь нужен только метод продаж/абонементов для расчёта факта.</small></div>';
+      }else{
+        if(result)result.innerHTML=`<div class="goal-alert warn"><b>API пока не подключён</b><small>${escapeHtml((r.missing||[]).join(', ')||r.message||'Проверьте IMPULSE_AUTHORIZATION')}</small></div>`;
+      }
+    }catch(e){
+      if(result)result.innerHTML=`<div class="goal-alert bad"><b>Ошибка соединения</b><small>${escapeHtml(e.message||String(e))}</small></div>`;
+    }finally{
+      if(btn){btn.disabled=false;btn.textContent='Проверить API'}
+    }
+  }
+
+  const testMain=body.querySelector('#goalsApiTestMain'); if(testMain)testMain.onclick=runApiTest;
+
   const syncBtn=body.querySelector('#goalsSync');
   if(syncBtn)syncBtn.onclick=async()=>{
     syncBtn.disabled=true;const old=syncBtn.textContent;syncBtn.textContent='Синхронизация…';
     try{
       const r=await apiGoalsImpulseSync(GOALS_MONTH);
       if(r.configured===false){
-        toast('ImpulseCRM API ещё не настроен',true);
-        goalsApiInfoModal(r);
+        const result=body.querySelector('#goalsApiInlineResult');
+        if(result)result.innerHTML=`<div class="goal-alert warn"><b>API доступен, но метод продаж не настроен</b><small>${escapeHtml((r.missing||[]).join(', '))}</small></div>`;
+        toast('Нужно настроить метод продаж ImpulseCRM',true);
       }else{
         toast(`Факт обновлён · строк: ${r.updated||0}`);
         renderGoalsDashboard(body);
@@ -3354,9 +3419,9 @@ async function renderGoalsDashboard(body){
     }catch(e){handleErr(e)}
     finally{syncBtn.disabled=false;syncBtn.textContent=old}
   };
+
   const info=body.querySelector('#goalsApiInfo'); if(info)info.onclick=()=>goalsApiInfoModal(sync);
 }
-
 function goalsApiInfoModal(status){
   const configured=!!(status&&status.configured);
   const el=modal(`<h3>🔌 Подключение ImpulseCRM</h3>
