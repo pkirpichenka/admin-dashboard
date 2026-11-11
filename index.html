@@ -1157,6 +1157,14 @@ table th>*,table td>*{max-width:100%;box-sizing:border-box}
 .bonus-page .bp-settings-trigger{border:0;color:inherit;background:none;padding:0;font-weight:inherit;cursor:pointer}.bonus-page .bp-settings-trigger:hover{text-decoration:underline}
 .bonus-page .bp-mode{border:1px solid #cbd5e2;border-radius:7px;background:white;color:#39495b;font-size:11px;padding:6px}
 .bonus-page .bp-editing{opacity:.6;pointer-events:none}
+.bonus-page .bp-branches-single{grid-template-columns:minmax(280px,400px)}
+.bonus-page .bp-access{border:1px solid #d7dfeb;border-radius:10px;background:#fff;margin:-3px 0 24px;padding:16px 18px}
+.bonus-page .bp-access-head{margin-bottom:12px}
+.bonus-page .bp-access-list{display:grid;grid-template-columns:1fr 1fr;gap:0 24px}
+.bonus-page .bp-access-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;border-top:1px solid #e5eaf0}
+.bonus-page .bp-access-name{font-size:12px;font-weight:600;line-height:1.4}
+.bonus-page .bp-access-row .bp-toggle-container{font-size:11px;flex-shrink:0}
+@media(max-width:760px){.bonus-page .bp-access-list{grid-template-columns:1fr}.bonus-page .bp-branches-single{grid-template-columns:1fr}}
 @media(max-width:980px){.bonus-page{padding:24px 17px}.bonus-page .bp-branches{grid-template-columns:1fr 1fr}.bonus-page .bp-totals{grid-template-columns:1fr 1fr}.bonus-page .bp-total:nth-child(2){border-right:0}.bonus-page .bp-total:nth-child(-n+2){border-bottom:1px solid #d7dfeb}.bonus-page .bp-tier-list{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:640px){.bonus-page{padding:18px 12px}.bonus-page .bp-head{align-items:flex-start}.bonus-page .bp-h1{font-size:23px}.bonus-page .bp-branches{grid-template-columns:1fr}.bonus-page .bp-totals{grid-template-columns:1fr 1fr}.bonus-page .bp-total{padding:13px 10px;min-height:104px}.bonus-page .bp-total-value{font-size:23px}.bonus-page .bp-tier-list{grid-template-columns:repeat(2,1fr)}.bonus-page .bp-table-hint{display:none}}
 
@@ -1180,7 +1188,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '11.11.2026-bonus-live'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '11.11.2026-bonus-access'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -5104,18 +5112,18 @@ function calcBonuses(period,snapshot){
     // Cross-branch rule: the bonus tier is determined by the studio with the most memberships;
     // ties favor the employee's home studio, then the studio display order.
     const chosen=[...facts].sort((a,b)=>b.count-a.count||Number(b.studio===s.home)-Number(a.studio===s.home)||BONUS_BRANCHES.findIndex(v=>v.id===a.studio)-BONUS_BRANCHES.findIndex(v=>v.id===b.studio))[0];
-    const studio=(chosen&&chosen.count>0?chosen.studio:s.home)||data.myStudio||'tolbuhina';
+    const studio=(chosen&&chosen.count>0?chosen.studio:s.studio||s.home)||data.myStudio||'tolbuhina';
     const studioCount=facts.filter(f=>f.studio===studio).reduce((z,f)=>z+f.count,0);
     const fullCount=facts.reduce((z,f)=>z+f.count,0);
     return {id:s.id,name:s.name,studio,studioCount,count:fullCount,quality:qualityMap.get(String(s.id))===true};
   });
   const branchMemberCounts=new Map(BONUS_BRANCHES.map(b=>[b.id,staff.filter(a=>a.studio===b.id).length]));
-  if(!data.owner)for(const b of data.branchMembers||[])branchMemberCounts.set(b.studio,Number(b.count)||1);
+  for(const b of data.branchMembers||[])branchMemberCounts.set(b.studio,Number(b.count)||1);
   for(const s of staff){const branch=branchById[s.studio];const members=Math.max(1,branchMemberCounts.get(s.studio)||1);
     let bonus=branch?branch.bonus:0;
     if(branch && cfg.bonus_mode==='split'){
       const fellows=staff.filter(x=>x.studio===s.studio).sort((a,b)=>Number(a.id)-Number(b.id));
-      const rank=data.owner?fellows.findIndex(x=>x.id===s.id):Math.max(0,Number(data.mySplitRank||1)-1);
+      const rank=Math.max(0,fellows.findIndex(x=>String(x.id)===String(s.id)));
       const cents=Math.round(branch.bonus*100),base=Math.floor(cents/members),remainder=cents%members;
       bonus=(base+(rank<remainder?1:0))/100;
     }
@@ -5125,10 +5133,12 @@ function calcBonuses(period,snapshot){
   }
   const order=Object.fromEntries(BONUS_BRANCHES.map((b,i)=>[b.id,i]));
   staff.sort((a,b)=>(order[a.studio]??9)-(order[b.studio]??9)||bonusFormatStaffOrder(a)-bonusFormatStaffOrder(b)||String(a.name).localeCompare(String(b.name),'ru'));
+  const viewAll=data.owner===true||data.viewAll===true;
   const allBranches=BONUS_BRANCHES.map(b=>branchById[b.id]);
-  const planTotal=allBranches.reduce((s,b)=>s+(b.target||0),0),factTotal=allBranches.reduce((s,b)=>s+b.fact,0);
+  const visibleBranches=viewAll?allBranches:allBranches.filter(b=>b.id===data.myStudio);
+  const planTotal=visibleBranches.reduce((s,b)=>s+(b.target||0),0),factTotal=visibleBranches.reduce((s,b)=>s+b.fact,0);
   const flexicoTotal=staff.reduce((z,s)=>z+s.flexico,0),qualityTotal=staff.reduce((z,s)=>z+s.qualityBonus,0);
-  return {period,settings:cfg,tiers,branches:allBranches,staff,planTotal,factTotal,pct:planTotal?factTotal/planTotal*100:null,flexicoTotal,qualityTotal,payout:flexicoTotal+qualityTotal,owner:!!data.owner,updatedAt:data.updatedAt||null};
+  return {period,settings:cfg,tiers,branches:visibleBranches,staff,planTotal,factTotal,pct:planTotal?factTotal/planTotal*100:null,flexicoTotal,qualityTotal,payout:flexicoTotal+qualityTotal,owner:!!data.owner,viewAll,myStudio:data.myStudio||null,accessGrants:data.accessGrants||[],updatedAt:data.updatedAt||null};
 }
 async function bonusSnapshot(month){return await rpc('app_bonus_snapshot',{p_token:TOKEN,p_period:month});}
 function bonusSyncErrorMessage(code){
@@ -5174,25 +5184,27 @@ function bonusCard(b,model){
       <div class="bp-branch-bottom">${tierText}</div><div class="bp-next">${nextText}</div>
     </article>`;
 }
-function bonusRenderHtml(model){const owner=model.owner,branches=owner?model.branches:model.branches.filter(b=>model.staff.some(s=>s.studio===b.id));
+function bonusRenderHtml(model){const owner=model.owner,branches=model.branches;
   const currentTiers=new Map(model.branches.map(b=>[b.tier?.pct,b]).filter(([pct])=>pct!==undefined));
   const ownText=model.updatedAt?`ImpulseCRM · обновлено ${new Intl.DateTimeFormat('ru-RU',{timeZone:'Europe/Minsk',dateStyle:'short',timeStyle:'short'}).format(new Date(model.updatedAt))}`:'ImpulseCRM · данные ещё не синхронизированы';
   return `<div class="bonus-page fade-in">
     <div class="bp-head"><div><div class="bp-eyebrow">FLEXICO · АДМИНИСТРАТОРЫ</div><h1 class="bp-h1">План и бонусы</h1></div><div class="bp-month-row"><span>Период</span><select class="bp-month" id="bp-month">${bonusMonthOptions(model.period)}</select></div></div>
-    ${owner?`<section class="bp-totals">
-      <div class="bp-total"><div class="bp-label">План, все филиалы</div><div class="bp-total-value">${bonusFormat(model.planTotal)}</div><div class="bp-sub">${model.branches.map(b=>bonusHtml(b.name)+' '+(b.target??'—')).join(' · ')}</div></div>
+    <section class="bp-totals">
+      <div class="bp-total"><div class="bp-label">${model.viewAll?'План, все филиалы':'План своего филиала'}</div><div class="bp-total-value">${bonusFormat(model.planTotal)}</div><div class="bp-sub">${model.branches.map(b=>bonusHtml(b.name)+' '+(b.target??'—')).join(' · ')}</div></div>
       <div class="bp-total"><div class="bp-label">Факт</div><div class="bp-total-value">${bonusFormat(model.factTotal)}</div><div class="bp-sub">${model.branches.map(b=>bonusHtml(b.name)+' '+bonusFormat(b.fact)).join(' · ')}</div></div>
-      <div class="bp-total"><div class="bp-label">Выполнение</div><div class="bp-total-value">${bonusPct(model.pct)}</div><div class="bp-sub">общий план и факт трёх филиалов</div></div>
-      <div class="bp-total"><div class="bp-label">К выплате администраторам</div><div class="bp-total-value">${bonusMoney(model.payout)}</div><div class="bp-sub">Бонус Flexico ${bonusMoney(model.flexicoTotal)} + качество ${bonusMoney(model.qualityTotal)}</div></div>
-    </section>`:''}
-    <h2 class="bp-section-title">Выполнение плана по филиалам</h2>
-    <div class="bp-branches">${branches.map(b=>bonusCard(b,model)).join('')}</div>
+      <div class="bp-total"><div class="bp-label">Выполнение</div><div class="bp-total-value">${bonusPct(model.pct)}</div><div class="bp-sub">${model.viewAll?'общий план и факт трёх филиалов':'план и факт своего филиала'}</div></div>
+      <div class="bp-total"><div class="bp-label">${model.viewAll?'К выплате администраторам':'К выплате по филиалу'}</div><div class="bp-total-value">${bonusMoney(model.payout)}</div><div class="bp-sub">Бонус Flexico ${bonusMoney(model.flexicoTotal)} + качество ${bonusMoney(model.qualityTotal)}</div></div>
+    </section>
+    <h2 class="bp-section-title">${model.viewAll?'Выполнение плана по филиалам':'Выполнение плана своего филиала'}</h2>
+    <div class="bp-branches${model.viewAll?'':' bp-branches-single'}">${branches.map(b=>bonusCard(b,model)).join('')}</div>
     <div class="bp-table-head"><h2 class="bp-section-title" style="margin:0">Администраторы</h2><div class="bp-table-hint">Бонус Flexico зависит от плана своего филиала. Качество отмечает владелец.</div></div>
     <div class="bp-table-scroll"><table class="bp-table"><thead><tr><th>Администратор</th><th>Филиал</th><th class="bp-num">Факт</th><th class="bp-num">Доля филиала</th><th class="bp-num">Бонус Flexico</th><th class="bp-num">Качество, ${bonusMoney(model.settings.quality_amount)}</th><th class="bp-num">Итого</th></tr></thead>
      <tbody>${model.staff.map(s=>{const b=BONUS_BRANCHES.find(x=>x.id===s.studio)||BONUS_BRANCHES[0];return `<tr><td class="bp-name">${bonusHtml(s.name)}</td><td><span class="bp-branch-tag">${bonusLabel(b)}</span></td>
       <td class="bp-num">${bonusFormat(s.studioCount)}</td><td class="bp-num"><span class="bp-small-muted">${Math.round(s.share)}%</span></td><td class="bp-num">${bonusMoney(s.flexico)}</td>
       <td><div class="bp-toggle-container"><span>${s.quality?'Платить':'Не платить'}</span><button type="button" class="bp-toggle" role="switch" aria-label="Качество: ${bonusHtml(s.name)}" aria-checked="${s.quality}" ${owner?`data-bp-quality="${s.id}"`:'disabled'}></button></div></td><td class="bp-num"><b>${bonusMoney(s.total)}</b></td></tr>`}).join('')}
-     ${owner?`<tr class="bp-total-row"><td colspan="2">Всего</td><td class="bp-num">${bonusFormat(model.factTotal)}</td><td></td><td class="bp-num">${bonusMoney(model.flexicoTotal)}</td><td class="bp-num">${bonusMoney(model.qualityTotal)}</td><td class="bp-num">${bonusMoney(model.payout)}</td></tr>`:''}</tbody></table></div>
+     <tr class="bp-total-row"><td colspan="2">${model.viewAll?'Всего':'Итого по филиалу'}</td><td class="bp-num">${bonusFormat(model.factTotal)}</td><td></td><td class="bp-num">${bonusMoney(model.flexicoTotal)}</td><td class="bp-num">${bonusMoney(model.qualityTotal)}</td><td class="bp-num">${bonusMoney(model.payout)}</td></tr></tbody></table></div>
+    ${owner?`<section class="bp-access"><div class="bp-access-head"><div><h2 class="bp-section-title" style="margin:0">Доступ к планам и бонусам</h2><div class="bp-note" style="margin-top:4px">По умолчанию администратор видит весь свой филиал и коллег по нему. Разрешение действует для всех месяцев.</div></div></div>
+       <div class="bp-access-list">${model.staff.map(s=>{const full=model.accessGrants.some(a=>String(a.employee_id)===String(s.id)&&a.scope==='all');return `<div class="bp-access-row"><div class="bp-access-name">${bonusHtml(s.name)}<span class="bp-small-muted"> · ${bonusHtml((BONUS_BRANCHES.find(b=>b.id===s.studio)||{}).name||'')}</span></div><div class="bp-toggle-container"><span>${full?'Все филиалы':'Свой филиал'}</span><button type="button" class="bp-toggle" role="switch" aria-label="Доступ ко всем филиалам: ${bonusHtml(s.name)}" aria-checked="${full}" data-bp-access="${s.id}"></button></div></div>`}).join('')}</div></section>`:''}
     <div class="bp-footer-head"><h2 class="bp-section-title" style="margin:0">${owner?`<button class="bp-settings-trigger" id="bp-settings-trigger" type="button" title="Настроить бонусы">Шкала бонуса Flexico</button>`:'Шкала бонуса Flexico'}</h2><div class="bp-table-hint">Выплата за выполнение плана своего филиала. Ниже 90% бонус не начисляется.</div></div>
     <div class="bp-tier-list">${model.tiers.map(t=>{
       const badges=model.branches.filter(b=>b.tier&&b.tier.pct===t.pct);
@@ -5244,8 +5256,17 @@ async function renderBonusDashboard(body){
       btn.disabled=true;const id=Number(btn.dataset.bpQuality),next=btn.getAttribute('aria-checked')!=='true';
       try{await rpc('app_bonus_set_quality',{p_token:TOKEN,p_period:month,p_employee_id:id,p_payable:next});await renderBonusDashboard(body)}catch(e){btn.disabled=false;handleErr(e)}
     });
+    body.querySelectorAll('[data-bp-access]').forEach(btn=>btn.onclick=async()=>{
+      const id=Number(btn.dataset.bpAccess),scope=btn.getAttribute('aria-checked')==='true'?'branch':'all';
+      btn.disabled=true;
+      try{
+        await rpc('app_bonus_set_view_scope',{p_token:TOKEN,p_employee_id:id,p_scope:scope});
+        toast(scope==='all'?'Разрешён просмотр всех филиалов':'Оставлен просмотр своего филиала');
+        await renderBonusDashboard(body);
+      }catch(e){btn.disabled=false;handleErr(e)}
+    });
     const cfg=body.querySelector('#bp-settings-trigger');if(cfg)cfg.onclick=()=>bonusSettingsEditor(model,()=>renderBonusDashboard(body));
-    // The owner can return here at any time; administrators receive their own restricted RPC snapshot only.
+    // Rights are enforced in app_bonus_snapshot; readonly UI is not an authorization boundary.
   }catch(e){if(!stillCurrent())return;body.innerHTML='<div class="bonus-page"><div class="bp-alert">Не удалось загрузить «План и бонусы». Проверьте, что SQL из пакета установлен в Supabase.</div></div>';handleErr(e);}
 }
 
