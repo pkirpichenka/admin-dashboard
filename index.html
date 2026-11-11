@@ -1090,6 +1090,76 @@ table th>*,table td>*{max-width:100%;box-sizing:border-box}
   .goal-modal .gfull{grid-column:auto}
 }
 
+
+/* FLEXICO / План и бонусы — scoped styles (no changes to other tabs) */
+.wrap:has(> #tabbody > .bonus-page){max-width:1152px;padding-left:20px;padding-right:20px}
+.bonus-page{font-family:Inter,'Segoe UI',Arial,sans-serif;background:#f2f4f7;color:#202938;border-radius:10px;padding:31px 24px 52px;min-height:900px;font-size:14px;line-height:1.45}
+.bonus-page *{box-sizing:border-box}.bonus-page button,.bonus-page input,.bonus-page select{font:inherit}
+.bonus-page .bp-eyebrow{font-size:11px;color:#667487;font-weight:650;letter-spacing:1px;text-transform:uppercase}
+.bonus-page .bp-h1{font-weight:760;font-size:28px;letter-spacing:-.7px;line-height:1.2;margin:3px 0 0}
+.bonus-page .bp-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:25px}
+.bonus-page .bp-month-row{display:flex;align-items:center;gap:10px;font-size:11px;color:#667487}
+.bonus-page .bp-month{border:1px solid #cfd7e3;color:#243142;background:white;border-radius:8px;padding:10px 16px;min-width:140px;min-height:41px}
+.bonus-page .bp-totals{background:white;border:1px solid #d7dfeb;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-radius:11px;overflow:hidden;margin-bottom:30px;box-shadow:0 1px 0 #edf1f7}
+.bonus-page .bp-total{padding:17px 18px 18px;min-height:126px;border-right:1px solid #d7dfeb}
+.bonus-page .bp-total:last-child{border-right:none}.bonus-page .bp-label{font-size:11px;color:#6c788a;line-height:1.35;margin-bottom:7px}
+.bonus-page .bp-total-value{font-size:29px;font-weight:730;line-height:1.14;letter-spacing:-.7px;white-space:nowrap}
+.bonus-page .bp-sub{font-size:11px;color:#677488;line-height:1.55;margin-top:7px}
+.bonus-page .bp-section-title{font-size:16px;font-weight:730;letter-spacing:-.2px;margin:0 0 12px}
+.bonus-page .bp-branches{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:26px}
+.bonus-page .bp-branch{border:1px solid #d7dfeb;background:#fff;border-radius:11px;padding:19px 18px 17px;min-height:260px;display:flex;flex-direction:column;gap:0}
+.bonus-page .bp-branch-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:17px}
+.bonus-page .bp-branch-name{display:flex;align-items:center;gap:9px;font-weight:700;font-size:14px;white-space:nowrap}
+.bonus-page .bp-dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex-shrink:0}
+.bonus-page .bp-branch-pct{font-size:25px;font-weight:730;letter-spacing:-.6px;white-space:nowrap}
+.bonus-page .bp-branch-fields{display:grid;grid-template-columns:1fr .52fr 1.44fr;gap:11px;align-items:end;margin-bottom:16px}
+.bonus-page .bp-field-label{font-size:11px;color:#667487;white-space:nowrap;margin-bottom:5px}
+.bonus-page .bp-field-value{font-size:19px;font-weight:700;line-height:39px;white-space:nowrap}
+.bonus-page .bp-target{width:100%;min-width:0;height:40px;padding:5px 10px;background:#fff;border:1px solid #cbd5e2;border-radius:8px;color:#243142;font-size:16px;font-weight:500}
+.bonus-page .bp-target:disabled{background:#f6f8fa;color:#3b4755}
+.bonus-page .bp-progress-track{background:#e3e8ef;border-radius:999px;height:9px;overflow:hidden;position:relative;margin:0 0 3px}
+.bonus-page .bp-progress-fill{border-radius:999px;height:100%;transition:width .25s ease}
+.bonus-page .bp-ticks{height:34px;display:flex;justify-content:space-between;margin:0 12px 10px;font-size:10px;color:#7a8699}
+.bonus-page .bp-tick{position:relative;align-self:flex-end;min-width:27px;text-align:center;line-height:16px}
+.bonus-page .bp-tick:before{content:'';height:7px;width:1px;position:absolute;top:-7px;left:50%;background:#aeb9c9}
+.bonus-page .bp-tick.bp-active{font-weight:700;color:#344151}
+.bonus-page .bp-branch-bottom{margin-top:auto;font-size:12px;color:#263245;font-weight:650;line-height:1.45}
+.bonus-page .bp-next{font-size:11px;color:#728095;margin-top:4px}
+.bonus-page .bp-table-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-end;margin-bottom:12px}
+.bonus-page .bp-table-hint{font-size:11px;color:#697689;text-align:right}
+.bonus-page .bp-table-scroll{overflow-x:auto;border-radius:10px;border:1px solid #d7dfeb;background:#fff;margin-bottom:24px}
+.bonus-page .bp-table{width:100%;min-width:810px;border-collapse:collapse;text-align:left;font-size:12px}
+.bonus-page .bp-table th{font-size:11px;letter-spacing:.2px;color:#687589;background:#fff;font-weight:650;padding:12px 16px}
+.bonus-page .bp-table td{border-top:1px solid #dce3eb;padding:12px 16px;height:54px;color:#222f40}
+.bonus-page .bp-table th.bp-num,.bonus-page .bp-table td.bp-num{text-align:right;white-space:nowrap}
+.bonus-page .bp-table .bp-total-row td{font-weight:730;background:#f2f4f7;border-top:1px solid #cbd5e2;height:58px}
+.bonus-page .bp-small-muted{color:#6c788d}.bonus-page .bp-name{font-weight:560;white-space:nowrap}
+.bonus-page .bp-branch-tag{display:inline-flex;align-items:center;gap:7px;white-space:nowrap}.bonus-page .bp-branch-tag .bp-dot{width:8px;height:8px}
+.bonus-page .bp-toggle-container{display:flex;align-items:center;justify-content:flex-end;gap:8px;white-space:nowrap;color:#667487}
+.bonus-page .bp-toggle{border:0;position:relative;width:42px;height:25px;border-radius:40px;background:#d4dbe6;cursor:pointer;padding:0;transition:background .2s}
+.bonus-page .bp-toggle:before{content:'';position:absolute;top:3px;left:3px;width:19px;height:19px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #0002;transition:left .2s}
+.bonus-page .bp-toggle[aria-checked=true]{background:#202938}.bonus-page .bp-toggle[aria-checked=true]:before{left:20px}
+.bonus-page .bp-toggle:disabled{cursor:default;opacity:.65}
+.bonus-page .bp-footer-head{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:12px}
+.bonus-page .bp-tier-list{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+.bonus-page .bp-tier{border:1px solid #d7dfeb;border-radius:10px;background:white;min-height:120px;padding:15px 11px 12px}
+.bonus-page .bp-tier.highlight{background:#eaf0f8;border-color:#afbed5}
+.bonus-page .bp-tier.quality{border:1px dashed #a8bbd2}
+.bonus-page .bp-tier-label{font-size:11px;color:#667487;margin-bottom:7px;line-height:1.45}
+.bonus-page .bp-tier-value{font-size:20px;color:#243040;font-weight:730;letter-spacing:-.3px}
+.bonus-page .bp-tier-input{display:inline-block;width:65px;font-size:19px;background:transparent;border:0;border-bottom:1px solid transparent;color:#243040;font-weight:730;outline:0}
+.bonus-page .bp-tier-input:focus{border-bottom-color:#516d92;background:#fff}
+.bonus-page .bp-tier-branch{display:flex;gap:5px;align-items:center;color:#56677c;font-size:10px;margin-top:7px}
+.bonus-page .bp-caption{font-size:10px;line-height:1.4;color:#6e7b8d;margin-top:7px}
+.bonus-page .bp-note{font-size:11px;color:#65758a;margin-top:15px}
+.bonus-page .bp-status{font-size:11px;color:#65758a;margin:0 0 10px}
+.bonus-page .bp-alert{border:1px solid #d7dfeb;background:#fff;border-radius:9px;padding:13px 16px;color:#5e6a78;font-size:12px}
+.bonus-page .bp-settings-trigger{border:0;color:inherit;background:none;padding:0;font-weight:inherit;cursor:pointer}.bonus-page .bp-settings-trigger:hover{text-decoration:underline}
+.bonus-page .bp-mode{border:1px solid #cbd5e2;border-radius:7px;background:white;color:#39495b;font-size:11px;padding:6px}
+.bonus-page .bp-editing{opacity:.6;pointer-events:none}
+@media(max-width:980px){.bonus-page{padding:24px 17px}.bonus-page .bp-branches{grid-template-columns:1fr 1fr}.bonus-page .bp-totals{grid-template-columns:1fr 1fr}.bonus-page .bp-total:nth-child(2){border-right:0}.bonus-page .bp-total:nth-child(-n+2){border-bottom:1px solid #d7dfeb}.bonus-page .bp-tier-list{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:640px){.bonus-page{padding:18px 12px}.bonus-page .bp-head{align-items:flex-start}.bonus-page .bp-h1{font-size:23px}.bonus-page .bp-branches{grid-template-columns:1fr}.bonus-page .bp-totals{grid-template-columns:1fr 1fr}.bonus-page .bp-total{padding:13px 10px;min-height:104px}.bonus-page .bp-total-value{font-size:23px}.bonus-page .bp-tier-list{grid-template-columns:repeat(2,1fr)}.bonus-page .bp-table-hint{display:none}}
+
 </style>
 
 <div id="root"></div>
@@ -1110,7 +1180,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '01.11.2026-k'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '11.11.2026-bonus-live'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -1135,6 +1205,11 @@ function appHasUnsavedWork(){
   if(a && a!==document.body && a.matches && a.matches('input,textarea,select,[contenteditable="true"]')) return true;
   return false;
 }
+window.addEventListener('beforeunload',function(e){
+  let reportDirty=false;
+  try{ reportDirty=!!(APP_REPORT_UNSAVED_CHECK && APP_REPORT_UNSAVED_CHECK()); }catch(_){}
+  if(reportDirty || APP_DIRTY_REASONS.size>0){e.preventDefault();e.returnValue='';}
+});
 function appUpdateBanner(){
   let b=document.getElementById('appUpdateBanner');
   if(!APP_UPDATE_AVAILABLE){ if(b) b.remove(); return; }
@@ -1629,6 +1704,10 @@ function saveSession(s){
   persistSession();
 }
 async function doLogout(){
+  if(appHasUnsavedWork()){
+    toast('Есть несохранённые данные — сначала сохраните изменения',true);
+    return;
+  }
   try{ if(TOKEN) await auditAction('Выход из системы','auth','',{}); }catch(e){}
   try{ if(TOKEN) await rpc('app_logout', {p_token:TOKEN}); }catch(e){}
   TOKEN = null; session = null; REPORTS = null; ALL_REPORTS = null;
@@ -1737,6 +1816,7 @@ async function apiListCalendarReminderLog(limit){ return await rpc('app_list_cal
 async function apiListWorkCalendar(fromDate,toDate){ return await rpc('app_list_work_calendar',{p_token:TOKEN,p_from:fromDate||null,p_to:toDate||null})||[]; }
 async function apiGoalsAdmins(){ return await rpc('app_goals_active_admins',{p_token:TOKEN})||[]; }
 async function apiGoalsList(month){ return await rpc('app_goals_list',{p_token:TOKEN,p_month:month+'-01'})||[]; }
+async function apiSalesMetrics(month){ return await rpc('app_sales_metrics_list',{p_token:TOKEN,p_month:month+'-01'})||[]; }
 async function apiGoalsSave(g){
   return await rpc('app_goals_save',{
     p_token:TOKEN,p_id:g.id||null,p_month:g.month+'-01',p_role:g.role||'other',
@@ -1749,6 +1829,15 @@ async function apiGoalsDelete(id){ return await rpc('app_goals_delete',{p_token:
 async function apiGoalsMappings(){ return await rpc('app_goals_impulse_mappings',{p_token:TOKEN})||[]; }
 async function apiGoalsSaveMapping(employeeId,impulseId,impulseName){ return await rpc('app_goals_save_impulse_mapping',{p_token:TOKEN,p_employee_id:employeeId,p_impulse_user_id:impulseId||'',p_impulse_user_name:impulseName||''}); }
 async function apiGoalsSyncStatus(){ return await rpc('app_goals_sync_status',{p_token:TOKEN})||null; }
+async function apiGoalsImpulseLive(month,mode='sync'){
+  const r=await fetch(SUPABASE_URL+'/functions/v1/impulse-goals-sync',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({token:TOKEN,mode,month})
+  });
+  const data=await r.json().catch(()=>({}));
+  if(!r.ok || data.ok===false)throw new Error(data.error||('HTTP '+r.status));
+  return data;
+}
 async function apiGoalsImpulseSync(month){
   const r=await fetch(SUPABASE_URL+'/functions/v1/impulse-goals-sync',{
     method:'POST',headers:{'Content-Type':'application/json'},
@@ -1809,6 +1898,37 @@ async function apiGoalsImpulseSalesProbe(){
     err.httpStatus=r.status;err.payload=j;throw err;
   }
   return j;
+}
+async function apiGoalsBalanceStatus(month){
+  const r=await fetch(SUPABASE_URL+'/functions/v1/impulse-goals-sync',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({token:TOKEN,mode:'balance_status',month})
+  });
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(j.error||('HTTP '+r.status));
+  return j;
+}
+async function apiGoalsBalanceAggregate(mode, month, rows, periodEnd){
+  const r=await fetch(SUPABASE_URL+'/functions/v1/impulse-goals-sync',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({token:TOKEN,mode,month,rows,period_end:periodEnd,
+      ...(mode==='balance_apply'?{confirm:'APPLY_VERIFIED_BALANCE'}:{})})
+  });
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(j.error||('HTTP '+r.status));
+  return j;
+}
+function fadParseBalanceAggregates(text){
+  const lines=String(text||'').replace(/^\uFEFF/,'').replace(/\r/g,'').split('\n').map(x=>x.trim()).filter(Boolean);
+  if(lines.length<2)throw new Error('CSV пустой');
+  const head=lines.shift().split(';').map(x=>x.trim().toLowerCase());
+  for(const h of ['login','sales_count','amount_byn','payment_rows','period_end'])if(!head.includes(h))throw new Error('Нет столбца '+h);
+  return lines.map(line=>{
+    const cells=line.split(';');
+    if(cells.length!==head.length)throw new Error('Неверное число колонок CSV');
+    const row=Object.fromEntries(head.map((h,i)=>[h,cells[i].trim()]));
+    return {login:row.login,sales_count:Number(row.sales_count),amount_byn:Number(row.amount_byn.replace(',','.')),payment_rows:Number(row.payment_rows),period_end:row.period_end};
+  });
 }
 async function apiGoalsImpulseAutoMap(){
   const r=await fetch(SUPABASE_URL+'/functions/v1/impulse-goals-sync',{
@@ -1987,6 +2107,7 @@ function renderApp(){
   if(session.role==='owner' || can('admins.view') || can('admins.manage') || can('admins.permissions') || can('admins.audit') || can('telegram.manage')) tabs.push({label:'Администраторы',render:renderUsers});
   if(session.role==='owner' || can('calendar.view') || can('calendar.manage')) tabs.push({label:'Календарь',render:renderCalendar});
   if(session.role==='owner') tabs.push({label:'Цели',render:renderGoalsDashboard});
+  tabs.push({label:'План и бонусы',render:renderBonusDashboard});
   if(session.role==='owner' || can('messages.manage')) tabs.push({label:'Сообщения',render:renderMessages});
   renderRoleUI(tabs);
 }
@@ -2000,7 +2121,17 @@ function renderRoleUI(tabs){
     if(APP_UPDATE_AVAILABLE) reloadToLatestVersion(); else location.reload();
   };
   const body=root.querySelector('#tabbody');
-  function show(i){root.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',+b.dataset.i===i));tabs[i].render(body);}
+  let currentTab=-1;
+  function show(i){
+    if(currentTab!==-1 && currentTab!==i && appHasUnsavedWork()){
+      toast('Есть несохранённые данные — сначала сохраните изменения',true);
+      return;
+    }
+    currentTab=i;
+    root.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',+b.dataset.i===i));
+    body.removeAttribute('data-bonus-token');
+    tabs[i].render(body);
+  }
   root.querySelectorAll('.tab').forEach(b=>b.onclick=()=>show(+b.dataset.i));
   show(0);
 }
@@ -2026,7 +2157,7 @@ async function renderShift(body){
         <div class="t">${s.name}${s.id===myToday?' <span class="st-today">вы сегодня здесь</span>':''}</div><div class="a">${s.address}</div></button>`).join('')}</div>
     <div id="shiftbody"></div>`;
   fillBanner(body.querySelector('#banner'), (s,d)=>openShiftEditor(body,s,d,()=>renderShift(body)));
-  body.querySelectorAll('.st-btn').forEach(b=>b.onclick=()=>{shiftStudio=b.dataset.id;renderShift(body);});
+  body.querySelectorAll('.st-btn').forEach(b=>b.onclick=()=>{if(appHasUnsavedWork()){toast('Сначала сохраните изменения в отчёте',true);return;}shiftStudio=b.dataset.id;renderShift(body);});
   const sb=body.querySelector('#shiftbody');
   if(!shiftStudio){sb.innerHTML=`<div class="empty">Выберите студию, в которой вы сегодня работаете.</div>`;return;}
   const existing=await getEntry(shiftStudio,today)||{};
@@ -3351,6 +3482,22 @@ async function renderGoalsDashboard(body){
       apiGoalsAdmins(),apiListEmployees(),apiGoalsList(GOALS_MONTH),apiGoalsMappings(),apiGoalsSyncStatus()
     ]);
   }catch(e){handleErr(e);return}
+  let verifiedBalance=null;
+  try{verifiedBalance=await apiGoalsBalanceStatus(GOALS_MONTH)}catch(e){}
+  // Отдельные реальные показатели, не зависящие от типа премиальной цели.
+  let salesMetrics=[],salesMetricsLoaded=false;
+  try{ salesMetrics=await apiSalesMetrics(GOALS_MONTH); salesMetricsLoaded=true; }
+  catch(e){console.warn('FAD sales metrics unavailable',e);}
+  const salesByEmployee=Object.fromEntries(salesMetrics.map(r=>[String(r.employee_id),r]));
+  const salesCountRows=salesMetrics.filter(r=>r.membership_count!==null&&r.membership_count!==undefined);
+  const salesCashRows=salesMetrics.filter(r=>r.cash_amount_byn!==null&&r.cash_amount_byn!==undefined);
+  const salesTotalCount=salesCountRows.reduce((sum,r)=>sum+Number(r.membership_count),0);
+  const salesTotalCash=salesCashRows.reduce((sum,r)=>sum+Number(r.cash_amount_byn),0);
+  const verifiedMinskDate=t=>t?new Intl.DateTimeFormat('ru-RU',{
+    timeZone:'Europe/Minsk',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'
+  }).format(new Date(t)):'—';
+  const countDate=salesCountRows.length?verifiedMinskDate(salesCountRows[0].count_as_of):'—';
+  const cashDate=salesCashRows.length?verifiedMinskDate(salesCashRows[0].cash_as_of):'—';
 
   const mapByEmp=Object.fromEntries(maps.map(x=>[String(x.employee_id),x]));
   const adminMetricKeys=new Set(['membership_sales_count','membership_sales_amount','membership_sales']);
@@ -3370,8 +3517,8 @@ async function renderGoalsDashboard(body){
   const mapped=admins.filter(a=>mapByEmp[String(a.id)]&&mapByEmp[String(a.id)].impulse_user_id).length;
   const manualGoals=goals.filter(g=>!(g.role==='admin'&&adminMetricKeys.has(g.metric_key)&&g.employee_id));
   const atRisk=adminGoals.filter(g=>goalPct(g.target,g.actual,false)<70).length;
-  const configured=!!(sync&&sync.configured);
-  const apiConnected=!!(sync&&sync.api_connected);
+  const configured=!!(sync&&sync.configured)||salesMetrics.length>0;
+  const apiConnected=!!(sync&&sync.api_connected)||salesMetrics.length>0;
   const syncLabel=sync&&sync.finished_at?auditFmtDateTime(sync.finished_at):'ещё не запускалась';
 
   body.innerHTML=`
@@ -3387,23 +3534,32 @@ async function renderGoalsDashboard(body){
       <div class="goals-api-main">
         <div class="goals-api-title">ImpulseCRM · реальные продажи администраторов</div>
         <div class="goals-api-sub">
-          Источник: <b>product/list</b> · дата <b>created</b> · деньги <b>paid</b> · кассир <b>payBox.shift.userOpenedId</b>.
+          Автосинхронизация <b>приостановлена</b>: источник <b>product/list</b> не подтверждён. Загрузите проверенную сводку баланса.
           Последняя синхронизация: <b>${escapeHtml(syncLabel)}</b>.
         </div>
+        ${verifiedBalance&&verifiedBalance.found?`<div class="goal-alert ok"><b>Проверенная кассовая сводка по ${escapeHtml(verifiedBalance.periodEnd||GOALS_MONTH)}</b><small>
+          ${Number(verifiedBalance.count||0).toLocaleString('ru-RU')} уникальных продаж · ${Number(verifiedBalance.amount||0).toLocaleString('ru-RU',{maximumFractionDigits:2})} BYN · ${Number(verifiedBalance.payments||0)} платежей.
+          Показатели ниже зависят от того, какие метрики назначены каждому сотруднику.</small></div>`:''}
         <div class="goal-api-result" id="goalsApiInlineResult"></div>
       </div>
-      <span class="goals-api-state ${apiConnected||configured?'ok':'warn'}"><i class="goals-api-dot"></i>${apiConnected||configured?'API готов':'Нужна проверка API'}</span>
+      <span class="goals-api-state ${apiConnected||configured?'ok':'warn'}"><i class="goals-api-dot"></i>${apiConnected||configured?'Доступ подтверждён':'Данные обновляются из ImpulseCRM'}</span>
       <button class="btn" id="goalsAutoMap">Сопоставить по ФИО</button>
-      <button class="btn" id="goalsSalesProbe">Сверка продаж</button>
+      <button class="btn btn-primary" id="goalsLiveSync">🔄 Обновить факт из ImpulseCRM</button>
       <button class="btn" id="goalsApiInfo">Настройка</button>
-      <button class="btn btn-primary" id="goalsSync">↻ Обновить факт</button>
     </div>
 
-    <div class="goals-kpis">
-      <div class="goals-kpi"><div class="goals-kpi-k">Абонементы · план</div><div class="goals-kpi-v">${countPlan.toLocaleString('ru-RU')}</div><div class="goals-kpi-s">факт ${countFact.toLocaleString('ru-RU')} шт.</div></div>
-      <div class="goals-kpi"><div class="goals-kpi-k">Продажи · план</div><div class="goals-kpi-v goal-money">${moneyPlan.toLocaleString('ru-RU',{maximumFractionDigits:2})} BYN</div><div class="goals-kpi-s">факт ${moneyFact.toLocaleString('ru-RU',{maximumFractionDigits:2})} BYN</div></div>
-      <div class="goals-kpi"><div class="goals-kpi-k">Связано с ImpulseCRM</div><div class="goals-kpi-v">${mapped}/${admins.length}</div><div class="goals-kpi-s">администраторов</div></div>
-      <div class="goals-kpi"><div class="goals-kpi-k">Требуют внимания</div><div class="goals-kpi-v">${atRisk}</div><div class="goals-kpi-s">выполнение ниже 70%</div></div>
+    <div class="goals-card" style="margin-top:12px;margin-bottom:14px">
+      <div class="goals-card-h"><h3>📊 Продажи из ImpulseCRM · ${escapeHtml(goalMonthLabel(GOALS_MONTH))}</h3></div>
+      <div class="goals-card-b">
+        <div class="goals-kpis">
+          <div class="goals-kpi"><div class="goals-kpi-k">Оформлено абонементов</div><div class="goals-kpi-v">${salesCountRows.length?salesTotalCount.toLocaleString('ru-RU'):'—'}</div><div class="goals-kpi-s">Источник: group_account/list · на ${escapeHtml(countDate)}</div></div>
+          <div class="goals-kpi"><div class="goals-kpi-k">Кассовые оплаты абонементов</div><div class="goals-kpi-v goal-money">${salesCashRows.length?salesTotalCash.toLocaleString('ru-RU',{maximumFractionDigits:2})+' BYN':'—'}</div><div class="goals-kpi-s">Источник: deposit/list · тип 11 · на ${escapeHtml(cashDate)}</div></div>
+          <div class="goals-kpi"><div class="goals-kpi-k">Данные по сотрудникам</div><div class="goals-kpi-v">${salesMetrics.length}/${admins.length}</div><div class="goals-kpi-s">Число записей в отдельном реестре</div></div>
+          <div class="goals-kpi"><div class="goals-kpi-k">Состояние</div><div class="goals-kpi-v" style="font-size:15px">${salesMetrics.length?'Синхронизировано':'Нет данных'}</div><div class="goals-kpi-s">${salesMetrics.length?'Оба показателя из API':'Факт ещё не загружен'}</div></div>
+        </div>
+        ${!salesMetricsLoaded?'<div class="goal-alert warn" style="margin-top:10px"><b>Не удалось прочитать сверенные показатели</b><small>Сначала установите SQL-миграцию из пакета, затем обновите страницу.</small></div>':''}
+        ${salesMetrics.length?'<div style="font-size:12px;color:var(--ink-soft);margin-top:8px">Количество = оформленные групповые абонементы (group_account/list). Сумма = положительные операции типа 11, связанные с групповыми абонементами (deposit/list). Это валовые оплаты, не сумма paid и не остаток депозита.</div>':''}
+      </div>
     </div>
 
     <div class="goals-grid">
@@ -3422,7 +3578,12 @@ async function renderGoalsDashboard(body){
               const g=adminGoalByEmp[String(a.id)]||null,m=mapByEmp[String(a.id)]||{};
               const metric=(g&&g.metric_key==='membership_sales_amount')?'membership_sales_amount':'membership_sales_count';
               const unit=metric==='membership_sales_amount'?'BYN':'шт.';
-              const target=Number(g&&g.target||0),actual=Number(g&&g.actual||0),p=goalPct(target,actual,false),st=goalStatus(p);
+              const target=Number(g&&g.target||0);
+              const verified=salesByEmployee[String(a.id)]||null;
+              const v=(verified?(metric==='membership_sales_amount'?verified.cash_amount_byn:verified.membership_count):null);
+              const hasVerified=v!==null&&v!==undefined;
+              const actual=hasVerified?Number(v):null;
+              const p=goalPct(target,actual===null?0:actual,false),st=goalStatus(p);
               const mappedOk=!!m.impulse_user_id;
               return `<div class="admin-goal-card" data-admin-card="${a.id}">
                 <div class="admin-goal-top">
@@ -3452,11 +3613,15 @@ async function renderGoalsDashboard(body){
 
                 <div class="admin-goal-stats">
                   <div class="admin-goal-stat">
-                    <small>Факт ImpulseCRM</small>
-                    <b>${actual.toLocaleString('ru-RU',{maximumFractionDigits:2})} ${unit}</b>
+                    <small>Абонементы · ImpulseCRM</small>
+                    <b>${verified?.membership_count!=null?Number(verified.membership_count).toLocaleString('ru-RU')+' шт.':'—'}</b>
                   </div>
                   <div class="admin-goal-stat">
-                    <small>Статус</small>
+                    <small>Оплаты · ImpulseCRM</small>
+                    <b>${verified?.cash_amount_byn!=null?Number(verified.cash_amount_byn).toLocaleString('ru-RU',{maximumFractionDigits:2})+' BYN':'—'}</b>
+                  </div>
+                  <div class="admin-goal-stat">
+                    <small>Статус плана</small>
                     <span class="goal-status ${st.cls}">${target>0?st.label:'План не задан'}</span>
                   </div>
                 </div>
@@ -3501,10 +3666,13 @@ async function renderGoalsDashboard(body){
         <div class="goals-card-b"><div class="goal-alerts">
           ${admins.map(a=>{
             const g=adminGoalByEmp[String(a.id)]; if(!g||!Number(g.target))return '';
-            const p=goalPct(g.target,g.actual,false),st=goalStatus(p);
+            const verified=salesByEmployee[String(a.id)]||null;
+            const value=g.metric_key==='membership_sales_amount'?verified?.cash_amount_byn:verified?.membership_count;
+            if(value==null)return '';
+            const p=goalPct(g.target,Number(value),false),st=goalStatus(p);
             if(st.cls==='ok')return '';
             const unit=g.metric_key==='membership_sales_amount'?'BYN':'шт.';
-            return `<div class="goal-alert ${st.cls==='bad'?'bad':'warn'}"><b>${escapeHtml(a.full_name||'')}</b><small>${g.metric_key==='membership_sales_amount'?'Продажи':'Абонементы'}: ${Number(g.actual||0).toLocaleString('ru-RU',{maximumFractionDigits:2})} из ${Number(g.target||0).toLocaleString('ru-RU',{maximumFractionDigits:2})} ${unit} · ${p}% · ${st.label}</small></div>`;
+            return `<div class="goal-alert ${st.cls==='bad'?'bad':'warn'}"><b>${escapeHtml(a.full_name||'')}</b><small>${g.metric_key==='membership_sales_amount'?'Продажи':'Абонементы'}: ${Number(value).toLocaleString('ru-RU',{maximumFractionDigits:2})} из ${Number(g.target||0).toLocaleString('ru-RU',{maximumFractionDigits:2})} ${unit} · ${p}% · ${st.label}</small></div>`;
           }).join('')||'<div class="goal-alert ok"><b>Критичных отклонений нет</b><small>После заполнения планов здесь автоматически появятся сотрудники с риском или отставанием.</small></div>'}
           ${mapped<admins.length?`<div class="goal-alert warn"><b>Не все администраторы связаны с ImpulseCRM</b><small>Заполнено ${mapped} из ${admins.length}. Для несопоставленных сотрудников факт из CRM определить нельзя.</small></div>`:''}
           ${!configured?`<div class="goal-alert warn"><b>Метод продаж ImpulseCRM ещё не настроен</b><small>Планы уже можно заполнять. Проверка Basic API вынесена отдельной кнопкой выше.</small></div>`:''}
@@ -3512,6 +3680,21 @@ async function renderGoalsDashboard(body){
       </div>
     </div>`;
 
+  const liveBtn=body.querySelector('#goalsLiveSync');
+  if(liveBtn)liveBtn.onclick=async()=>{
+    if(!confirm('Обновить фактическое количество и валовые оплаты из ImpulseCRM за '+GOALS_MONTH+'?'))return;
+    liveBtn.disabled=true;liveBtn.textContent='Получаем данные ImpulseCRM…';
+    const result=body.querySelector('#goalsApiInlineResult');
+    try{
+      const out=await apiGoalsImpulseLive(GOALS_MONTH,'sync');
+      if(result)result.innerHTML=`<div class="goal-alert ok"><b>Данные из ImpulseCRM сохранены</b><small>${Number(out.totals?.memberships||0)} абонементов · ${Number(out.totals?.payments||0)} оплат · ${Number(out.totals?.amountByn||0).toLocaleString('ru-RU',{maximumFractionDigits:2})} BYN</small></div>`;
+      toast('Факт продаж обновлён из ImpulseCRM');
+      await renderGoalsDashboard(body);
+    }catch(e){
+      if(result)result.innerHTML=`<div class="goal-alert bad"><b>Не удалось обновить факт</b><small>${escapeHtml(e?.message||String(e))}. Старые показатели не изменены.</small></div>`;
+      liveBtn.disabled=false;liveBtn.textContent='🔄 Обновить факт из ImpulseCRM';
+    }
+  };
   body.querySelector('#goalsMonth').onchange=e=>{GOALS_MONTH=e.target.value||GOALS_MONTH;renderGoalsDashboard(body)};
   const add1=body.querySelector('#goalsAddManual'),add2=body.querySelector('#goalsAddManual2');
   if(add1)add1.onclick=()=>goalEditModal(null,GOALS_MONTH,employees,()=>renderGoalsDashboard(body));
@@ -3717,17 +3900,88 @@ async function renderGoalsDashboard(body){
     }catch(e){
       if(result)result.innerHTML=`<div class="goal-alert bad"><b>Ошибка сверки продаж</b><small>${escapeHtml(e.message||String(e))}</small></div>`;
     }finally{
-      if(btn){btn.disabled=false;btn.textContent='Сверка продаж'}
+      if(btn){btn.disabled=false;btn.textContent='Сверка product/list'}
     }
   }
   const salesProbeBtn=body.querySelector('#goalsSalesProbe'); if(salesProbeBtn)salesProbeBtn.onclick=runSalesProbe;
+  // Data sent to the server contains employee logins and totals only, never client names.
+  const balanceBtn=body.querySelector('#goalsBalanceImport');
+  const balanceFile=body.querySelector('#goalsBalanceFile');
+  if(balanceBtn&&balanceFile){
+    balanceBtn.onclick=()=>balanceFile.click();
+    balanceFile.onchange=async()=>{
+      const file=balanceFile.files&&balanceFile.files[0]; if(!file)return;
+      const result=body.querySelector('#goalsApiInlineResult');
+      balanceBtn.disabled=true;balanceBtn.textContent='Проверка CSV…';
+      try{
+        const rows=fadParseBalanceAggregates(await file.text());
+        const periodEnd=String(rows[0]?.period_end||'');
+        if(!/^\d{4}-\d{2}-\d{2}$/.test(periodEnd) ||
+           rows.some(x=>x.period_end!==periodEnd)||!periodEnd.startsWith(GOALS_MONTH+'-')){
+          throw new Error('Все строки должны иметь одну дату period_end в выбранном месяце');
+        }
+        async function showPreview(){
+          const preview=await apiGoalsBalanceAggregate('balance_preview',GOALS_MONTH,rows,periodEnd);
+          const matched=(preview.matched||[]).map(x=>`<tr><td>${escapeHtml(x.login)}</td><td>${escapeHtml((x.metrics||[]).join(', '))}</td></tr>`).join('');
+          const issue=[...(preview.missingLogins||[]).map(x=>'Не найден login: '+x),
+                       ...(preview.noGoals||[]).map(x=>'Нет цели: '+x),
+                       ...(preview.duplicateEmployees||[]).map(x=>'Один сотрудник выбран дважды: '+x)];
+          const roster=(admins||[]).map(a=>({id:String(a.id||''),name:String(a.full_name||a.name||a.id||'')}))
+            .filter(a=>/^\d+$/.test(a.id));
+          const optionList=roster.map(a=>`<option value="${escapeHtml(a.id)}">${escapeHtml(a.name)}</option>`).join('');
+          const assignments=rows.map(r=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><span style="min-width:110px">${escapeHtml(r.login)}</span>
+            <select class="input goal-balance-emp" data-login="${escapeHtml(r.login)}" style="min-width:180px">
+              <option value="">Определить по API</option>${optionList}
+            </select></div>`).join('');
+          if(result)result.innerHTML=`<div class="goal-alert ${preview.ready?'ok':'warn'}"><b>${preview.ready?'Сводка готова к подтверждению':'Нужно сопоставить сотрудников — запись заблокирована'}</b>
+            <small>${escapeHtml(GOALS_MONTH)} по ${escapeHtml(periodEnd)}: ${Number(preview.totals?.count||0)} уникальных продаж · ${Number(preview.totals?.amount||0).toLocaleString('ru-RU')} BYN · ${Number(preview.totals?.payments||0)} платежей.
+            Пользователей: ${Number(preview.usersInFile||0)}; целей к обновлению: ${Number(preview.goalsToUpdate||0)}.</small>
+            ${issue.length?'<small>'+escapeHtml(issue.join(' | '))+'</small>':''}</div>
+            <div style="overflow:auto"><table class="goal-diag-table"><thead><tr><th>Login</th><th>Цели FAD</th></tr></thead><tbody>${matched}</tbody></table></div>
+            <div class="goal-alert"><b>Ручное сопоставление (при необходимости)</b><small>Выбирай только того администратора FAD, кому принадлежат продажи по данному login. Это не изменяет постоянные привязки ImpulseCRM.</small></div>
+            <div style="margin:8px 0">${assignments}</div>
+            <button class="btn" id="goalsBalanceRecheck">Проверить привязки</button>
+            ${preview.ready?'<button class="btn btn-primary" id="goalsBalanceCommit">Подтвердить запись сводки</button>':''}`;
+          const selects=[...(result?.querySelectorAll('.goal-balance-emp')||[])];
+          for(const s of selects){
+            const r=rows.find(x=>x.login===s.dataset.login);if(r)s.value=r.employee_id||'';
+            s.onchange=()=>{const commit=body.querySelector('#goalsBalanceCommit');if(commit)commit.disabled=true;};
+          }
+          const recheck=body.querySelector('#goalsBalanceRecheck');
+          if(recheck)recheck.onclick=async()=>{
+            for(const s of selects){const r=rows.find(x=>x.login===s.dataset.login);if(r)r.employee_id=s.value;}
+            recheck.disabled=true;
+            try{await showPreview();}catch(e){handleErr(e);recheck.disabled=false;}
+          };
+          const commit=body.querySelector('#goalsBalanceCommit');
+          if(commit)commit.onclick=async()=>{
+            const accepted=confirm('Записать проверенные показатели из CSV в Supabase? Автоматическая синхронизация останется отключена до проверки API.');
+            if(!accepted)return;
+            commit.disabled=true;
+            try{
+              const applied=await apiGoalsBalanceAggregate('balance_apply',GOALS_MONTH,rows,periodEnd);
+              toast(`По балансу обновлено целей: ${applied.updated||0}`);
+              renderGoalsDashboard(body);
+            }catch(e){handleErr(e);commit.disabled=false;}
+          };
+        }
+        await showPreview();
+      }catch(e){
+        if(result)result.innerHTML=`<div class="goal-alert bad"><b>Ошибка сводки CSV</b><small>${escapeHtml(e.message||String(e))}</small></div>`;
+      }finally{balanceBtn.disabled=false;balanceBtn.textContent='Загрузить баланс CSV';balanceFile.value='';}
+    };
+  }
 
   const syncBtn=body.querySelector('#goalsSync');
   if(syncBtn)syncBtn.onclick=async()=>{
     syncBtn.disabled=true;const old=syncBtn.textContent;syncBtn.textContent='Синхронизация…';
     try{
       const r=await apiGoalsImpulseSync(GOALS_MONTH);
-      if(r.configured===false){
+      if(r.skipped){
+        const result=body.querySelector('#goalsApiInlineResult');
+        if(result)result.innerHTML=`<div class="goal-alert warn"><b>Автоматический факт не записан</b><small>${escapeHtml(r.message||'Источник продаж ещё не подтверждён.')}</small></div>`;
+        toast('Автосинхронизация не меняла показатели',true);
+      }else if(r.configured===false){
         const result=body.querySelector('#goalsApiInlineResult');
         if(result)result.innerHTML=`<div class="goal-alert warn"><b>API доступен, но метод продаж не настроен</b><small>${escapeHtml((r.missing||[]).join(', '))}</small></div>`;
         toast('Нужно настроить метод продаж ImpulseCRM',true);
@@ -3742,13 +3996,11 @@ async function renderGoalsDashboard(body){
   const info=body.querySelector('#goalsApiInfo'); if(info)info.onclick=()=>goalsApiInfoModal(sync);
 }
 function goalsApiInfoModal(status){
-  const el=modal(`<h3>🔌 ImpulseCRM → Цели</h3>
-    <p>Интеграция использует подтверждённые реальные методы вашего ImpulseCRM.</p>
-    <div class="goal-alert ok"><b>Источник факта подключён</b>
-      <small><b>product/list</b> · период по <b>created</b> · деньги по <b>paid</b> · администратор по <b>payBox.shift.userOpenedId</b> · имена сотрудников через <b>user/list</b>.</small></div>
-    <div class="goal-alert" style="margin-top:8px"><b>Абонементы, шт.</b><small>Считаются продажи с положительной стоимостью. Полностью возвращённые продажи исключаются.</small></div>
-    <div class="goal-alert" style="margin-top:8px"><b>Продажи, BYN</b><small>Суммируется фактическая оплата <b>paid</b>. Если ImpulseCRM возвращает числовой refund, он вычитается из суммы.</small></div>
-    <div class="goal-alert" style="margin-top:8px"><b>Безопасность</b><small>Basic Authorization хранится только в Supabase Secrets. Клиентские данные в FAD не сохраняются — только агрегированный факт по администратору.</small></div>
+  modal(`<h3>🔌 ImpulseCRM → Цели</h3>
+    <p>Количество и кассовая сумма считаются отдельно — они не обязаны совпадать с типом премиальной цели.</p>
+    <div class="goal-alert ok"><b>Количество абонементов</b><small>Проверенный источник: <b>group_account/list</b>; группировка по времени создания и автору. Возвраты требуют отдельной обработки.</small></div>
+    <div class="goal-alert" style="margin-top:8px"><b>Кассовая сумма</b><small>Проверенная выгрузка «Баланс» на 11.11.2026, 13:27 по Минску. <b>paid</b> включает активацию баллов; сумма из API пока не подтверждена.</small></div>
+    <div class="goal-alert" style="margin-top:8px"><b>Автосинхронизация</b><small>Старый метод <b>product/list</b> отключён от кнопки обновления, чтобы исключить запись ошибочных нулей. Подтверждённые суммы хранятся отдельно.</small></div>
     <div class="actions"><button class="btn btn-primary" data-x>Понятно</button></div>`);
 }
 function goalEditModal(goal,month,admins,onDone){
@@ -4813,4 +5065,168 @@ async function toggleApprove(){
 /* ================= Start ================= */
 initSafeAutoUpdate();
 boot();
+
+/* ================= FAD · План и бонусы · 11.11.2026 ================= */
+const BONUS_BRANCHES=[
+  {id:'tolbuhina',name:'Толбухина',color:'#E2711D'},
+  {id:'masherova',name:'Машерова',color:'#2F6FB5'},
+  {id:'kuibysheva',name:'Куйбышева',color:'#E6A700'}
+];
+const BONUS_DEFAULT_SETTINGS={tiers:[{pct:90,amount:50},{pct:95,amount:120},{pct:100,amount:300},{pct:105,amount:350},{pct:110,amount:400}],quality_amount:100,bonus_mode:'per_admin',primary_branch_rule:'max_fact'};
+let BONUS_MONTH=new Intl.DateTimeFormat('en-CA',{year:'numeric',month:'2-digit',timeZone:'Europe/Minsk'}).format(new Date());
+let BONUS_OPEN_SEQUENCE=0;
+const BONUS_LAST_ATTEMPT=new Map();
+const bonusFormat=n=>Number(n||0).toLocaleString('ru-RU',{maximumFractionDigits:2});
+const bonusMoney=n=>bonusFormat(n)+' Br';
+const bonusPct=n=>n===null?'—':Number(n).toLocaleString('ru-RU',{minimumFractionDigits:1,maximumFractionDigits:1})+'%';
+const bonusHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const bonusPeriodTitle=p=>{const [y,m]=p.split('-').map(Number);return new Intl.DateTimeFormat('ru-RU',{month:'long',year:'numeric'}).format(new Date(y,m-1,1)).replace(/^./,c=>c.toUpperCase());};
+function bonusMonthOptions(selected){const [y,m]=selected.split('-').map(Number),months=[];for(let i=-24;i<=12;i++){const d=new Date(y,m-1+i,1);const p=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');months.push(`<option value="${p}"${p===selected?' selected':''}>${bonusPeriodTitle(p)}</option>`)}return months.join('');}
+function bonusFormatStaffOrder(a){const n=String(a.name||'').toLowerCase();for(const [q,i] of [['горов',1],['черкас',2],['колесникевич',3],['гис',4],['полхов',5],['шаревич',6]])if(n.includes(q))return i;return 100;}
+/** All amounts and eligibility are derived ONLY here; rendering is presentation-only. */
+function calcBonuses(period,snapshot){
+  const data=snapshot||{},cfg={...BONUS_DEFAULT_SETTINGS,...(data.settings||{})};
+  const tiers=[...(cfg.tiers||BONUS_DEFAULT_SETTINGS.tiers)].map(t=>({pct:Number(t.pct),amount:Number(t.amount)})).sort((a,b)=>a.pct-b.pct);
+  const branchById=Object.fromEntries(BONUS_BRANCHES.map(x=>[x.id,{...x,target:null,fact:0,pct:null,tier:null,next:null,bonus:0}]));
+  for(const p of data.plans||[])if(branchById[p.studio]){const t=Number(p.target);branchById[p.studio].target=Number.isFinite(t)&&t>0?t:null;}
+  for(const f of data.branches||[])if(branchById[f.studio])branchById[f.studio].fact=Number(f.fact)||0;
+  // RPC returns branch-wide counts even in restricted staff view.
+  const factsByEmployee=new Map();
+  for(const f of data.facts||[]){const k=String(f.employee_id);if(!factsByEmployee.has(k))factsByEmployee.set(k,[]);factsByEmployee.get(k).push({studio:f.studio,count:Number(f.count)||0,amount:Number(f.amount)||0});}
+  for(const b of BONUS_BRANCHES){const x=branchById[b.id];if(!x.target)continue;x.pct=x.fact/x.target*100;
+    for(const t of tiers)if(x.pct+1e-9>=t.pct)x.tier=t;
+    x.bonus=x.tier?x.tier.amount:0;
+    const next=tiers.find(t=>x.pct+1e-9<t.pct);if(next)x.next={...next,need:Math.max(0,Math.ceil(next.pct*x.target/100-x.fact-1e-9))};
+  }
+  const qualityMap=new Map((data.quality||[]).map(q=>[String(q.employee_id),q.payable===true]));
+  const staff=(data.staff||[]).map(s=>{
+    const facts=factsByEmployee.get(String(s.id))||[];
+    // Cross-branch rule: the bonus tier is determined by the studio with the most memberships;
+    // ties favor the employee's home studio, then the studio display order.
+    const chosen=[...facts].sort((a,b)=>b.count-a.count||Number(b.studio===s.home)-Number(a.studio===s.home)||BONUS_BRANCHES.findIndex(v=>v.id===a.studio)-BONUS_BRANCHES.findIndex(v=>v.id===b.studio))[0];
+    const studio=(chosen&&chosen.count>0?chosen.studio:s.home)||data.myStudio||'tolbuhina';
+    const studioCount=facts.filter(f=>f.studio===studio).reduce((z,f)=>z+f.count,0);
+    const fullCount=facts.reduce((z,f)=>z+f.count,0);
+    return {id:s.id,name:s.name,studio,studioCount,count:fullCount,quality:qualityMap.get(String(s.id))===true};
+  });
+  const branchMemberCounts=new Map(BONUS_BRANCHES.map(b=>[b.id,staff.filter(a=>a.studio===b.id).length]));
+  if(!data.owner)for(const b of data.branchMembers||[])branchMemberCounts.set(b.studio,Number(b.count)||1);
+  for(const s of staff){const branch=branchById[s.studio];const members=Math.max(1,branchMemberCounts.get(s.studio)||1);
+    let bonus=branch?branch.bonus:0;
+    if(branch && cfg.bonus_mode==='split'){
+      const fellows=staff.filter(x=>x.studio===s.studio).sort((a,b)=>Number(a.id)-Number(b.id));
+      const rank=data.owner?fellows.findIndex(x=>x.id===s.id):Math.max(0,Number(data.mySplitRank||1)-1);
+      const cents=Math.round(branch.bonus*100),base=Math.floor(cents/members),remainder=cents%members;
+      bonus=(base+(rank<remainder?1:0))/100;
+    }
+    s.branchFact=branch?branch.fact:0;
+    s.share=s.branchFact>0?s.studioCount/s.branchFact*100:0;
+    s.flexico=bonus;s.qualityBonus=s.quality?Number(cfg.quality_amount)||0:0;s.total=bonus+s.qualityBonus;
+  }
+  const order=Object.fromEntries(BONUS_BRANCHES.map((b,i)=>[b.id,i]));
+  staff.sort((a,b)=>(order[a.studio]??9)-(order[b.studio]??9)||bonusFormatStaffOrder(a)-bonusFormatStaffOrder(b)||String(a.name).localeCompare(String(b.name),'ru'));
+  const allBranches=BONUS_BRANCHES.map(b=>branchById[b.id]);
+  const planTotal=allBranches.reduce((s,b)=>s+(b.target||0),0),factTotal=allBranches.reduce((s,b)=>s+b.fact,0);
+  const flexicoTotal=staff.reduce((z,s)=>z+s.flexico,0),qualityTotal=staff.reduce((z,s)=>z+s.qualityBonus,0);
+  return {period,settings:cfg,tiers,branches:allBranches,staff,planTotal,factTotal,pct:planTotal?factTotal/planTotal*100:null,flexicoTotal,qualityTotal,payout:flexicoTotal+qualityTotal,owner:!!data.owner,updatedAt:data.updatedAt||null};
+}
+async function bonusSnapshot(month){return await rpc('app_bonus_snapshot',{p_token:TOKEN,p_period:month});}
+async function bonusSyncLive(month){
+  const endpoint=SUPABASE_URL+'/functions/v1/fad-bonus-sync';
+  const result=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY},body:JSON.stringify({mode:'sync',month,token:TOKEN})});
+  const body=await result.json();if(!result.ok||body.ok!==true||body.saved!==true)throw new Error((body&&body.error)||'sales_sync_failed');return body;
+}
+function bonusDot(b){return `<span class="bp-dot" style="background:${b.color}"></span>`;}
+function bonusLabel(b){return bonusDot(b)+bonusHtml(b.name);}
+function bonusCard(b,model){
+  const owner=model.owner,pct=b.pct,level=b.tier,progress=pct===null?0:Math.max(0,Math.min(100,(pct-90)*5));
+  const target=owner?`<input class="bp-target" aria-label="План ${bonusHtml(b.name)}" data-bp-plan="${b.id}" inputmode="numeric" type="number" min="0" step="1" placeholder="не задан" value="${b.target||''}">`:
+    `<div class="bp-target" style="line-height:28px">${b.target??'не задан'}</div>`;
+  const tierText=!b.target?'План не задан, бонус не считается':level?`Уровень ${level.pct}%: ${bonusMoney(b.bonus)} каждому`:'Пока ниже 90% — бонус не начисляется';
+  const nextText=!b.target?'':b.next?`До ${b.next.pct}% не хватает ${b.next.need} (${bonusMoney(b.next.amount)})`:'Максимальный уровень достигнут';
+  return `<article class="bp-branch" data-bp-studio="${b.id}">
+      <div class="bp-branch-head"><div class="bp-branch-name">${bonusLabel(b)}</div><div class="bp-branch-pct">${bonusPct(pct)}</div></div>
+      <div class="bp-branch-fields"><div><div class="bp-field-label">План</div>${target}</div>
+      <div><div class="bp-field-label">Факт</div><div class="bp-field-value">${bonusFormat(b.fact)}</div></div>
+      <div><div class="bp-field-label">Бонус Flexico</div><div class="bp-field-value">${bonusMoney(b.bonus)}</div></div></div>
+      <div class="bp-progress-track"><div class="bp-progress-fill" style="background:${b.color};width:${progress}%"></div></div>
+      <div class="bp-ticks">${model.tiers.map(t=>`<div class="bp-tick${level&&level.pct===t.pct?' bp-active':''}">${t.pct}%</div>`).join('')}</div>
+      <div class="bp-branch-bottom">${tierText}</div><div class="bp-next">${nextText}</div>
+    </article>`;
+}
+function bonusRenderHtml(model){const owner=model.owner,branches=owner?model.branches:model.branches.filter(b=>model.staff.some(s=>s.studio===b.id));
+  const currentTiers=new Map(model.branches.map(b=>[b.tier?.pct,b]).filter(([pct])=>pct!==undefined));
+  const ownText=model.updatedAt?`ImpulseCRM · обновлено ${new Intl.DateTimeFormat('ru-RU',{timeZone:'Europe/Minsk',dateStyle:'short',timeStyle:'short'}).format(new Date(model.updatedAt))}`:'ImpulseCRM · данные ещё не синхронизированы';
+  return `<div class="bonus-page fade-in">
+    <div class="bp-head"><div><div class="bp-eyebrow">FLEXICO · АДМИНИСТРАТОРЫ</div><h1 class="bp-h1">План и бонусы</h1></div><div class="bp-month-row"><span>Период</span><select class="bp-month" id="bp-month">${bonusMonthOptions(model.period)}</select></div></div>
+    ${owner?`<section class="bp-totals">
+      <div class="bp-total"><div class="bp-label">План, все филиалы</div><div class="bp-total-value">${bonusFormat(model.planTotal)}</div><div class="bp-sub">${model.branches.map(b=>bonusHtml(b.name)+' '+(b.target??'—')).join(' · ')}</div></div>
+      <div class="bp-total"><div class="bp-label">Факт</div><div class="bp-total-value">${bonusFormat(model.factTotal)}</div><div class="bp-sub">${model.branches.map(b=>bonusHtml(b.name)+' '+bonusFormat(b.fact)).join(' · ')}</div></div>
+      <div class="bp-total"><div class="bp-label">Выполнение</div><div class="bp-total-value">${bonusPct(model.pct)}</div><div class="bp-sub">общий план и факт трёх филиалов</div></div>
+      <div class="bp-total"><div class="bp-label">К выплате администраторам</div><div class="bp-total-value">${bonusMoney(model.payout)}</div><div class="bp-sub">Бонус Flexico ${bonusMoney(model.flexicoTotal)} + качество ${bonusMoney(model.qualityTotal)}</div></div>
+    </section>`:''}
+    <h2 class="bp-section-title">Выполнение плана по филиалам</h2>
+    <div class="bp-branches">${branches.map(b=>bonusCard(b,model)).join('')}</div>
+    <div class="bp-table-head"><h2 class="bp-section-title" style="margin:0">Администраторы</h2><div class="bp-table-hint">Бонус Flexico зависит от плана своего филиала. Качество отмечает владелец.</div></div>
+    <div class="bp-table-scroll"><table class="bp-table"><thead><tr><th>Администратор</th><th>Филиал</th><th class="bp-num">Факт</th><th class="bp-num">Доля филиала</th><th class="bp-num">Бонус Flexico</th><th class="bp-num">Качество, ${bonusMoney(model.settings.quality_amount)}</th><th class="bp-num">Итого</th></tr></thead>
+     <tbody>${model.staff.map(s=>{const b=BONUS_BRANCHES.find(x=>x.id===s.studio)||BONUS_BRANCHES[0];return `<tr><td class="bp-name">${bonusHtml(s.name)}</td><td><span class="bp-branch-tag">${bonusLabel(b)}</span></td>
+      <td class="bp-num">${bonusFormat(s.studioCount)}</td><td class="bp-num"><span class="bp-small-muted">${Math.round(s.share)}%</span></td><td class="bp-num">${bonusMoney(s.flexico)}</td>
+      <td><div class="bp-toggle-container"><span>${s.quality?'Платить':'Не платить'}</span><button type="button" class="bp-toggle" role="switch" aria-label="Качество: ${bonusHtml(s.name)}" aria-checked="${s.quality}" ${owner?`data-bp-quality="${s.id}"`:'disabled'}></button></div></td><td class="bp-num"><b>${bonusMoney(s.total)}</b></td></tr>`}).join('')}
+     ${owner?`<tr class="bp-total-row"><td colspan="2">Всего</td><td class="bp-num">${bonusFormat(model.factTotal)}</td><td></td><td class="bp-num">${bonusMoney(model.flexicoTotal)}</td><td class="bp-num">${bonusMoney(model.qualityTotal)}</td><td class="bp-num">${bonusMoney(model.payout)}</td></tr>`:''}</tbody></table></div>
+    <div class="bp-footer-head"><h2 class="bp-section-title" style="margin:0">${owner?`<button class="bp-settings-trigger" id="bp-settings-trigger" type="button" title="Настроить бонусы">Шкала бонуса Flexico</button>`:'Шкала бонуса Flexico'}</h2><div class="bp-table-hint">Выплата за выполнение плана своего филиала. Ниже 90% бонус не начисляется.</div></div>
+    <div class="bp-tier-list">${model.tiers.map(t=>{
+      const badges=model.branches.filter(b=>b.tier&&b.tier.pct===t.pct);
+      return `<div class="bp-tier${badges.length?' highlight':''}"><div class="bp-tier-label">от ${t.pct}% плана</div><div class="bp-tier-value">${bonusMoney(t.amount)}</div>${badges.map(b=>`<div class="bp-tier-branch">${bonusLabel(b)}</div>`).join('')}</div>`;
+    }).join('')}<div class="bp-tier quality"><div class="bp-tier-label">Качество работы</div><div class="bp-tier-value">${bonusMoney(model.settings.quality_amount)}</div><div class="bp-caption">за CRM, отмечает владелец</div></div></div>
+    <div class="bp-note">${ownText}${model.settings.bonus_mode==='split'?' · Режим: делить бонус между администраторами':' · Режим: каждому в полном размере'}</div>
+  </div>`;
+}
+function bonusSettingsEditor(model,callback){
+  if(!model.owner)return;
+  const current=model.settings,labels=model.tiers.map(t=>t.pct+'%: '+t.amount+' Br').join(' · ');
+  const price=prompt('Шкала бонусов (в Br). Текущая: '+labels+'\nВведите пять сумм через запятую (90%,95%,100%,105%,110%):',model.tiers.map(t=>t.amount).join(', '));
+  if(price===null)return;
+  const nums=price.split(',').map(x=>Number(x.trim()));
+  if(nums.length!==5||nums.some(x=>!Number.isInteger(x)||x<0||x>100000)){toast('Нужно указать 5 целых сумм',true);return;}
+  const q=prompt('Бонус за качество (Br):',String(current.quality_amount));if(q===null)return;
+  const amount=Number(q);if(!Number.isInteger(amount)||amount<0||amount>99999){toast('Некорректная сумма качества',true);return;}
+  const mode=prompt('Режим выплаты: per_admin (каждому полностью) или split (делить):',current.bonus_mode||'per_admin');if(mode===null)return;
+  if(!['per_admin','split'].includes(mode)){toast('Неизвестный режим бонуса',true);return;}
+  const config={tiers:model.tiers.map((t,i)=>({pct:t.pct,amount:nums[i]})),quality_amount:amount,bonus_mode:mode,primary_branch_rule:'max_fact'};
+  rpc('app_bonus_set_settings',{p_token:TOKEN,p_config:config}).then(()=>{toast('Шкала сохранена');callback()}).catch(e=>handleErr(e));
+}
+async function renderBonusDashboard(body){
+  if(!session){body.innerHTML='<div class="empty">Требуется вход</div>';return;}
+  const current=++BONUS_OPEN_SEQUENCE,month=BONUS_MONTH;
+  body.dataset.bonusToken=String(current);
+  const stillCurrent=()=>current===BONUS_OPEN_SEQUENCE&&body.dataset.bonusToken===String(current);
+  body.innerHTML='<div class="bonus-page"><div class="bp-alert">Загружаем план и бонусы…</div></div>';
+  try{
+    let snapshot=await bonusSnapshot(month);
+    if(!stillCurrent())return;
+    const owner=snapshot.owner===true;
+    const last=BONUS_LAST_ATTEMPT.get(month)||0;
+    if(owner && Date.now()-last>10*60*1000){
+      BONUS_LAST_ATTEMPT.set(month,Date.now());
+      try{await bonusSyncLive(month);snapshot=await bonusSnapshot(month);}catch(e){console.warn('FAD bonus sync:',e.message);toast('ImpulseCRM: обновление не завершено; предыдущие данные сохранены',true);}
+    }
+    if(!stillCurrent())return;
+    const model=calcBonuses(month,snapshot);
+    body.innerHTML=bonusRenderHtml(model);
+    const sel=body.querySelector('#bp-month');if(sel)sel.onchange=e=>{BONUS_MONTH=e.target.value;renderBonusDashboard(body)};
+    body.querySelectorAll('[data-bp-plan]').forEach(input=>{const before=input.value;const commit=async()=>{
+      if(input.value===before)return;
+      const value=input.value.trim()===''?0:Number(input.value);
+      if(!Number.isInteger(value)||value<0||value>100000){toast('План должен быть целым неотрицательным числом',true);input.value=before;return;}
+      input.disabled=true;try{await rpc('app_bonus_set_plan',{p_token:TOKEN,p_period:month,p_studio:input.dataset.bpPlan,p_target:value});toast('План сохранён');await renderBonusDashboard(body)}catch(e){input.disabled=false;input.value=before;handleErr(e)}
+    };input.addEventListener('blur',commit);input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();input.blur();}});});
+    body.querySelectorAll('[data-bp-quality]').forEach(btn=>btn.onclick=async()=>{
+      btn.disabled=true;const id=Number(btn.dataset.bpQuality),next=btn.getAttribute('aria-checked')!=='true';
+      try{await rpc('app_bonus_set_quality',{p_token:TOKEN,p_period:month,p_employee_id:id,p_payable:next});await renderBonusDashboard(body)}catch(e){btn.disabled=false;handleErr(e)}
+    });
+    const cfg=body.querySelector('#bp-settings-trigger');if(cfg)cfg.onclick=()=>bonusSettingsEditor(model,()=>renderBonusDashboard(body));
+    // The owner can return here at any time; administrators receive their own restricted RPC snapshot only.
+  }catch(e){if(!stillCurrent())return;body.innerHTML='<div class="bonus-page"><div class="bp-alert">Не удалось загрузить «План и бонусы». Проверьте, что SQL из пакета установлен в Supabase.</div></div>';handleErr(e);}
+}
+
 </script>
