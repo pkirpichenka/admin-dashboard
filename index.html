@@ -1046,7 +1046,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '12.11.2026-staff-unified'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '12.11.2026-bonus-autosync'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -1870,6 +1870,16 @@ function renderRoleUI(tabs){
   root.querySelectorAll('.tab').forEach(b=>b.onclick=()=>show(+b.dataset.i));
   show(0);
 }
+
+// Refresh visible figures automatically for every role, without touching ImpulseCRM.
+// No overlapping refreshes; existing render guard discards outdated snapshots.
+setInterval(()=>{
+  if(document.hidden||!session||appHasUnsavedWork())return;
+  const panel=document.getElementById('tabbody');
+  if(!panel||!panel.dataset.bonusToken||!panel.querySelector('.bonus-page'))return;
+  if(panel.querySelector('input[data-bp-plan]:focus')||panel.querySelector('button.bp-toggle:focus'))return;
+  renderBonusDashboard(panel);
+}, 120000);
 
 /* ================= Field builders ================= */
 function moneyField(id,label,sub,val){return `<label class="field"><div class="lbl">${label} ${sub?`<small>${sub}</small>`:''}</div>
@@ -4287,7 +4297,8 @@ const BONUS_BRANCHES=[
 const BONUS_DEFAULT_SETTINGS={tiers:[{pct:90,amount:50},{pct:95,amount:120},{pct:100,amount:300},{pct:105,amount:350},{pct:110,amount:400}],quality_amount:100,bonus_mode:'per_admin',primary_branch_rule:'max_fact'};
 let BONUS_MONTH=new Intl.DateTimeFormat('en-CA',{year:'numeric',month:'2-digit',timeZone:'Europe/Minsk'}).format(new Date());
 let BONUS_OPEN_SEQUENCE=0;
-const BONUS_LAST_ATTEMPT=new Map();
+// Sales sync now runs in Supabase Cron independently of the current viewer.
+// Browser clients only read scoped data through app_bonus_snapshot.
 const bonusFormat=n=>Number(n||0).toLocaleString('ru-RU',{maximumFractionDigits:2});
 const bonusMoney=n=>bonusFormat(n)+' Br';
 const bonusPct=n=>n===null?'—':Number(n).toLocaleString('ru-RU',{minimumFractionDigits:1,maximumFractionDigits:1})+'%';
@@ -4345,31 +4356,6 @@ function calcBonuses(period,snapshot){
   return {period,settings:cfg,tiers,branches:visibleBranches,staff,planTotal,factTotal,pct:planTotal?factTotal/planTotal*100:null,flexicoTotal,qualityTotal,payout:flexicoTotal+qualityTotal,owner:!!data.owner,viewAll,myStudio:data.myStudio||null,accessGrants:data.accessGrants||[],updatedAt:data.updatedAt||null};
 }
 async function bonusSnapshot(month){return await rpc('app_bonus_snapshot',{p_token:TOKEN,p_period:month});}
-function bonusSyncErrorMessage(code){
- const messages={
-  forbidden:'Не удалось подтвердить роль руководителя. Выйдите из FAD и войдите снова.',
-  owner_auth_unavailable:'Не удалось проверить доступ через Supabase. Проверьте журнал fad-bonus-sync.',
-  employee_mapping_unavailable:'Не удалось прочитать сопоставление сотрудников ImpulseCRM.',
-  supabase_service_unavailable:'Серверный ключ Supabase недоступен функции.',
-  unmapped_membership_branch:'У абонемента не определён филиал; данные не изменены.',
-  unmapped_membership_seller:'У абонемента не определён администратор; данные не изменены.',
-  unmapped_payment_branch:'У оплаты не определён филиал; данные не изменены.',
-  unmapped_payment_creator:'У оплаты не определён администратор; данные не изменены.',
-  api_network_error:'Ошибка соединения с ImpulseCRM. Данные не изменены.',
-  cannot_complete_page:'ИмпульсCRM вернула неполную выборку. Данные не изменены.',
-  database_save_failed:'Не удалось сохранить показатели в Supabase. Данные не изменены.',
-  refund_requires_review:'Обнаружен возврат, нужна отдельная обработка. Данные не изменены.',
-  unpaid_requires_review:'Обнаружен неоплаченный абонемент, нужны правила учёта. Данные не изменены.'
- };
- if(messages[code])return messages[code];
- const safe=String(code||'').replace(/[^a-z0-9_ -]/gi,'').slice(0,72);
- return 'обновление не завершено ('+(safe||'неизвестная ошибка')+'). Данные не изменены.';
-}
-async function bonusSyncLive(month){
-  const endpoint=SUPABASE_URL+'/functions/v1/fad-bonus-sync';
-  const result=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY},body:JSON.stringify({mode:'sync',month,token:TOKEN})});
-  const body=await result.json();if(!result.ok||body.ok!==true||body.saved!==true)throw new Error((body&&body.error)||'sales_sync_failed');return body;
-}
 function bonusDot(b){return `<span class="bp-dot" style="background:${b.color}"></span>`;}
 function bonusLabel(b){return bonusDot(b)+bonusHtml(b.name);}
 function bonusCard(b,model){
@@ -4391,6 +4377,10 @@ function bonusCard(b,model){
 function bonusRenderHtml(model){const owner=model.owner,branches=model.branches;
   const currentTiers=new Map(model.branches.map(b=>[b.tier?.pct,b]).filter(([pct])=>pct!==undefined));
   const ownText=model.updatedAt?`ImpulseCRM · обновлено ${new Intl.DateTimeFormat('ru-RU',{timeZone:'Europe/Minsk',dateStyle:'short',timeStyle:'short'}).format(new Date(model.updatedAt))}`:'ImpulseCRM · данные ещё не синхронизированы';
+  const liveMonth=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Minsk',year:'numeric',month:'2-digit'}).format(new Date());
+  const minskHour=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Minsk',hour:'2-digit',hourCycle:'h23'}).format(new Date()));
+  const stale=model.period===liveMonth && minskHour>=8 && minskHour<=23 && (!model.updatedAt || Date.now()-new Date(model.updatedAt).getTime()>90*60*1000);
+  const freshnessNotice=stale?'<span style="color:#ae4529;font-weight:600"> · ⚠️ Автоматическое обновление задерживается — последние подтверждённые данные сохранены</span>':'';
   return `<div class="bonus-page fade-in">
     <div class="bp-head"><div><div class="bp-eyebrow">FLEXICO · АДМИНИСТРАТОРЫ</div><h1 class="bp-h1">План и бонусы</h1></div><div class="bp-month-row"><span>Период</span><select class="bp-month" id="bp-month">${bonusMonthOptions(model.period)}</select></div></div>
     <section class="bp-totals">
@@ -4414,7 +4404,7 @@ function bonusRenderHtml(model){const owner=model.owner,branches=model.branches;
       const badges=model.branches.filter(b=>b.tier&&b.tier.pct===t.pct);
       return `<div class="bp-tier${badges.length?' highlight':''}"><div class="bp-tier-label">от ${t.pct}% плана</div><div class="bp-tier-value">${bonusMoney(t.amount)}</div>${badges.map(b=>`<div class="bp-tier-branch">${bonusLabel(b)}</div>`).join('')}</div>`;
     }).join('')}<div class="bp-tier quality"><div class="bp-tier-label">Качество работы</div><div class="bp-tier-value">${bonusMoney(model.settings.quality_amount)}</div><div class="bp-caption">за CRM, отмечает владелец</div></div></div>
-    <div class="bp-note">${ownText}${model.settings.bonus_mode==='split'?' · Режим: делить бонус между администраторами':' · Режим: каждому в полном размере'}</div>
+    <div class="bp-note">${ownText}${freshnessNotice}${model.settings.bonus_mode==='split'?' · Режим: делить бонус между администраторами':' · Режим: каждому в полном размере'}</div>
   </div>`;
 }
 function bonusSettingsEditor(model,callback){
@@ -4440,12 +4430,8 @@ async function renderBonusDashboard(body){
   try{
     let snapshot=await bonusSnapshot(month);
     if(!stillCurrent())return;
-    const owner=snapshot.owner===true;
-    const last=BONUS_LAST_ATTEMPT.get(month)||0;
-    if(owner && Date.now()-last>10*60*1000){
-      BONUS_LAST_ATTEMPT.set(month,Date.now());
-      try{await bonusSyncLive(month);snapshot=await bonusSnapshot(month);}catch(e){console.warn('FAD bonus sync:',e.message);toast('ImpulseCRM: '+bonusSyncErrorMessage(e.message),true);}
-    }
+    // No role triggers an ImpulseCRM write from the browser. All viewers read the
+    // same server-maintained facts, filtered by their own access scope in Supabase.
     if(!stillCurrent())return;
     const model=calcBonuses(month,snapshot);
     body.innerHTML=bonusRenderHtml(model);
