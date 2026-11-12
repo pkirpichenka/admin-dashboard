@@ -973,6 +973,9 @@ table th>*,table td>*{max-width:100%;box-sizing:border-box}
 .bonus-page .bp-branch-fields{display:grid;grid-template-columns:1fr .52fr 1.44fr;gap:11px;align-items:end;margin-bottom:16px}
 .bonus-page .bp-field-label{font-size:11px;color:#667487;white-space:nowrap;margin-bottom:5px}
 .bonus-page .bp-field-value{font-size:19px;font-weight:700;line-height:39px;white-space:nowrap}
+.bonus-page .bp-physical-note{font-size:11px;color:#718095;line-height:1.4;margin:-8px 0 12px;font-weight:500}
+.bonus-page .bp-admin-count{font-weight:650}
+.bonus-page .bp-admin-places{display:block;font-size:10px;line-height:1.4;color:#738092;margin-top:3px;white-space:normal;max-width:230px}
 .bonus-page .bp-target{width:100%;min-width:0;height:40px;padding:5px 10px;background:#fff;border:1px solid #cbd5e2;border-radius:8px;color:#243142;font-size:16px;font-weight:500}
 .bonus-page .bp-target:disabled{background:#f6f8fa;color:#3b4755}
 .bonus-page .bp-progress-track{background:#e3e8ef;border-radius:999px;height:9px;overflow:hidden;position:relative;margin:0 0 3px}
@@ -1230,7 +1233,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '12.11.2026-y'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '13.11.2026-a'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -4479,7 +4482,7 @@ const BONUS_BRANCHES=[
   {id:'masherova',name:'Машерова',color:'#2F6FB5'},
   {id:'kuibysheva',name:'Куйбышева',color:'#E6A700'}
 ];
-const BONUS_DEFAULT_SETTINGS={tiers:[{pct:90,amount:50},{pct:95,amount:120},{pct:100,amount:300},{pct:105,amount:350},{pct:110,amount:400}],quality_amount:100,bonus_mode:'per_admin',primary_branch_rule:'max_fact'};
+const BONUS_DEFAULT_SETTINGS={tiers:[{pct:90,amount:50},{pct:95,amount:120},{pct:100,amount:300},{pct:105,amount:350},{pct:110,amount:400}],quality_amount:100,bonus_mode:'per_admin',primary_branch_rule:'home'};
 let BONUS_MONTH=new Intl.DateTimeFormat('en-CA',{year:'numeric',month:'2-digit',timeZone:'Europe/Minsk'}).format(new Date());
 let BONUS_OPEN_SEQUENCE=0;
 // Sales sync now runs in Supabase Cron independently of the current viewer.
@@ -4494,10 +4497,13 @@ function bonusFormatStaffOrder(a){const n=String(a.name||'').toLowerCase();for(c
 /** All amounts and eligibility are derived ONLY here; rendering is presentation-only. */
 function calcBonuses(period,snapshot){
   const data=snapshot||{},cfg={...BONUS_DEFAULT_SETTINGS,...(data.settings||{})};
+  if(data.bonusBasis!=='employee_primary_studio')throw new Error('Сначала выполните SQL-обновление мотивации 13.11.2026-a. Показатели премирования не рассчитаны.');
   const tiers=[...(cfg.tiers||BONUS_DEFAULT_SETTINGS.tiers)].map(t=>({pct:Number(t.pct),amount:Number(t.amount)})).sort((a,b)=>a.pct-b.pct);
-  const branchById=Object.fromEntries(BONUS_BRANCHES.map(x=>[x.id,{...x,target:null,fact:0,pct:null,tier:null,next:null,bonus:0}]));
+  const branchById=Object.fromEntries(BONUS_BRANCHES.map(x=>[x.id,{...x,target:null,fact:0,physicalFact:0,pct:null,tier:null,next:null,bonus:0}]));
   for(const p of data.plans||[])if(branchById[p.studio]){const t=Number(p.target);branchById[p.studio].target=Number.isFinite(t)&&t>0?t:null;}
   for(const f of data.branches||[])if(branchById[f.studio])branchById[f.studio].fact=Number(f.fact)||0;
+  for(const f of data.physicalBranches||[])if(branchById[f.studio])branchById[f.studio].physicalFact=Number(f.fact)||0;
+  // physicalBranches is strictly reference-only; it NEVER contributes to the bonus tier.
   // RPC returns branch-wide counts even in restricted staff view.
   const factsByEmployee=new Map();
   for(const f of data.facts||[]){const k=String(f.employee_id);if(!factsByEmployee.has(k))factsByEmployee.set(k,[]);factsByEmployee.get(k).push({studio:f.studio,count:Number(f.count)||0,amount:Number(f.amount)||0});}
@@ -4509,13 +4515,14 @@ function calcBonuses(period,snapshot){
   const qualityMap=new Map((data.quality||[]).map(q=>[String(q.employee_id),q.payable===true]));
   const staff=(data.staff||[]).map(s=>{
     const facts=factsByEmployee.get(String(s.id))||[];
-    // Cross-branch rule: the bonus tier is determined by the studio with the most memberships;
-    // ties favor the employee's home studio, then the studio display order.
-    const chosen=[...facts].sort((a,b)=>b.count-a.count||Number(b.studio===s.home)-Number(a.studio===s.home)||BONUS_BRANCHES.findIndex(v=>v.id===a.studio)-BONUS_BRANCHES.findIndex(v=>v.id===b.studio))[0];
-    const studio=(chosen&&chosen.count>0?chosen.studio:s.studio||s.home)||data.myStudio||'tolbuhina';
-    const studioCount=facts.filter(f=>f.studio===studio).reduce((z,f)=>z+f.count,0);
+    // Fixed ownership: every membership belongs to the seller's FAD home studio,
+    // even when the sale was physically entered at a different studio.
+    const studio=s.home||s.studio;
+    if(!branchById[studio])throw new Error('У администратора не указан основной филиал FAD: '+String(s.name||s.id));
     const fullCount=facts.reduce((z,f)=>z+f.count,0);
-    return {id:s.id,name:s.name,studio,studioCount,count:fullCount,quality:qualityMap.get(String(s.id))===true};
+    const physicalSummary=facts.filter(f=>f.count>0).sort((a,b)=>BONUS_BRANCHES.findIndex(x=>x.id===a.studio)-BONUS_BRANCHES.findIndex(x=>x.id===b.studio))
+      .map(f=>({studio:f.studio,count:f.count}));
+    return {id:s.id,name:s.name,studio,studioCount:fullCount,count:fullCount,physicalSummary,quality:qualityMap.get(String(s.id))===true};
   });
   const branchMemberCounts=new Map(BONUS_BRANCHES.map(b=>[b.id,staff.filter(a=>a.studio===b.id).length]));
   for(const b of data.branchMembers||[])branchMemberCounts.set(b.studio,Number(b.count)||1);
@@ -4538,7 +4545,7 @@ function calcBonuses(period,snapshot){
   const visibleBranches=viewAll?allBranches:allBranches.filter(b=>b.id===data.myStudio);
   const planTotal=visibleBranches.reduce((s,b)=>s+(b.target||0),0),factTotal=visibleBranches.reduce((s,b)=>s+b.fact,0);
   const flexicoTotal=staff.reduce((z,s)=>z+s.flexico,0),qualityTotal=staff.reduce((z,s)=>z+s.qualityBonus,0);
-  return {period,settings:cfg,tiers,branches:visibleBranches,staff,planTotal,factTotal,pct:planTotal?factTotal/planTotal*100:null,flexicoTotal,qualityTotal,payout:flexicoTotal+qualityTotal,owner:!!data.owner,viewAll,myStudio:data.myStudio||null,accessGrants:data.accessGrants||[],updatedAt:data.updatedAt||null};
+  return {period,settings:cfg,tiers,branches:visibleBranches,staff,planTotal,factTotal,physicalFactTotal:visibleBranches.reduce((s,b)=>s+b.physicalFact,0),pct:planTotal?factTotal/planTotal*100:null,flexicoTotal,qualityTotal,payout:flexicoTotal+qualityTotal,owner:!!data.owner,viewAll,myStudio:data.myStudio||null,accessGrants:data.accessGrants||[],updatedAt:data.updatedAt||null};
 }
 async function bonusSnapshot(month){return await rpc('app_bonus_snapshot',{p_token:TOKEN,p_period:month});}
 function bonusDot(b){return `<span class="bp-dot" style="background:${b.color}"></span>`;}
@@ -4554,6 +4561,7 @@ function bonusCard(b,model){
       <div class="bp-branch-fields"><div><div class="bp-field-label">План</div>${target}</div>
       <div><div class="bp-field-label">Факт</div><div class="bp-field-value">${bonusFormat(b.fact)}</div></div>
       <div><div class="bp-field-label">Бонус Flexico</div><div class="bp-field-value">${bonusMoney(b.bonus)}</div></div></div>
+      <div class="bp-physical-note" title="Справочно: продажи по месту оформления">(в студии ${bonusFormat(b.physicalFact)})</div>
       <div class="bp-progress-track"><div class="bp-progress-fill" style="background:${b.color};width:${progress}%"></div></div>
       <div class="bp-ticks">${model.tiers.map(t=>`<div class="bp-tick${level&&level.pct===t.pct?' bp-active':''}">${t.pct}%</div>`).join('')}</div>
       <div class="bp-branch-bottom">${tierText}</div><div class="bp-next">${nextText}</div>
@@ -4570,16 +4578,17 @@ function bonusRenderHtml(model){const owner=model.owner,branches=model.branches;
     <div class="bp-head"><div><div class="bp-eyebrow">FLEXICO · АДМИНИСТРАТОРЫ</div><h1 class="bp-h1">План и бонусы</h1></div><div class="bp-month-row"><span>Период</span><select class="bp-month" id="bp-month">${bonusMonthOptions(model.period)}</select></div></div>
     <section class="bp-totals">
       <div class="bp-total"><div class="bp-label">${model.viewAll?'План, все филиалы':'План своего филиала'}</div><div class="bp-total-value">${bonusFormat(model.planTotal)}</div><div class="bp-sub">${model.branches.map(b=>bonusHtml(b.name)+' '+(b.target??'—')).join(' · ')}</div></div>
-      <div class="bp-total"><div class="bp-label">Факт</div><div class="bp-total-value">${bonusFormat(model.factTotal)}</div><div class="bp-sub">${model.branches.map(b=>bonusHtml(b.name)+' '+bonusFormat(b.fact)).join(' · ')}</div></div>
+      <div class="bp-total"><div class="bp-label">Факт</div><div class="bp-total-value">${bonusFormat(model.factTotal)}</div><div class="bp-sub">${model.branches.map(b=>bonusHtml(b.name)+' '+bonusFormat(b.fact)+' (в студии '+bonusFormat(b.physicalFact)+')').join(' · ')}</div></div>
       <div class="bp-total"><div class="bp-label">Выполнение</div><div class="bp-total-value">${bonusPct(model.pct)}</div><div class="bp-sub">${model.viewAll?'общий план и факт трёх филиалов':'план и факт своего филиала'}</div></div>
       <div class="bp-total"><div class="bp-label">${model.viewAll?'К выплате администраторам':'К выплате по филиалу'}</div><div class="bp-total-value">${bonusMoney(model.payout)}</div><div class="bp-sub">Бонус Flexico ${bonusMoney(model.flexicoTotal)} + качество ${bonusMoney(model.qualityTotal)}</div></div>
     </section>
     <h2 class="bp-section-title">${model.viewAll?'Выполнение плана по филиалам':'Выполнение плана своего филиала'}</h2>
     <div class="bp-branches${model.viewAll?'':' bp-branches-single'}">${branches.map(b=>bonusCard(b,model)).join('')}</div>
-    <div class="bp-table-head"><h2 class="bp-section-title" style="margin:0">Администраторы</h2><div class="bp-table-hint">Бонус Flexico зависит от плана своего филиала. Качество отмечает владелец.</div></div>
+    <div class="bp-note" style="margin:-12px 0 24px">Факт для премирования — продажи администраторов, закреплённых за филиалом. В скобках — продажи, оформленные на адресе студии всеми администраторами.</div>
+    <div class="bp-table-head"><h2 class="bp-section-title" style="margin:0">Администраторы</h2><div class="bp-table-hint">Все продажи администратора идут в его основной филиал FAD. В скобках — фактическое место оформления.</div></div>
     <div class="bp-table-scroll"><table class="bp-table"><thead><tr><th>Администратор</th><th>Филиал</th><th class="bp-num">Факт</th><th class="bp-num">Доля филиала</th><th class="bp-num">Бонус Flexico</th><th class="bp-num">Качество, ${bonusMoney(model.settings.quality_amount)}</th><th class="bp-num">Итого</th></tr></thead>
      <tbody>${model.staff.map(s=>{const b=BONUS_BRANCHES.find(x=>x.id===s.studio)||BONUS_BRANCHES[0];return `<tr><td class="bp-name">${bonusHtml(s.name)}</td><td><span class="bp-branch-tag">${bonusLabel(b)}</span></td>
-      <td class="bp-num">${bonusFormat(s.studioCount)}</td><td class="bp-num"><span class="bp-small-muted">${Math.round(s.share)}%</span></td><td class="bp-num">${bonusMoney(s.flexico)}</td>
+      <td class="bp-num"><span class="bp-admin-count">${bonusFormat(s.count)}</span><span class="bp-admin-places">(${s.physicalSummary.length?s.physicalSummary.map(f=>bonusHtml((BONUS_BRANCHES.find(b=>b.id===f.studio)||{}).name||'Неизвестный филиал')+' '+bonusFormat(f.count)).join(' · '):'нет продаж'})</span></td><td class="bp-num"><span class="bp-small-muted">${Math.round(s.share)}%</span></td><td class="bp-num">${bonusMoney(s.flexico)}</td>
       <td><div class="bp-toggle-container"><span>${s.quality?'Платить':'Не платить'}</span><button type="button" class="bp-toggle" role="switch" aria-label="Качество: ${bonusHtml(s.name)}" aria-checked="${s.quality}" ${owner?`data-bp-quality="${s.id}"`:'disabled'}></button></div></td><td class="bp-num"><b>${bonusMoney(s.total)}</b></td></tr>`}).join('')}
      <tr class="bp-total-row"><td colspan="2">${model.viewAll?'Всего':'Итого по филиалу'}</td><td class="bp-num">${bonusFormat(model.factTotal)}</td><td></td><td class="bp-num">${bonusMoney(model.flexicoTotal)}</td><td class="bp-num">${bonusMoney(model.qualityTotal)}</td><td class="bp-num">${bonusMoney(model.payout)}</td></tr></tbody></table></div>
     ${owner?`<section class="bp-access"><div class="bp-access-head"><div><h2 class="bp-section-title" style="margin:0">Доступ к планам и бонусам</h2><div class="bp-note" style="margin-top:4px">По умолчанию администратор видит весь свой филиал и коллег по нему. Разрешение действует для всех месяцев.</div></div></div>
@@ -4603,7 +4612,7 @@ function bonusSettingsEditor(model,callback){
   const amount=Number(q);if(!Number.isInteger(amount)||amount<0||amount>99999){toast('Некорректная сумма качества',true);return;}
   const mode=prompt('Режим выплаты: per_admin (каждому полностью) или split (делить):',current.bonus_mode||'per_admin');if(mode===null)return;
   if(!['per_admin','split'].includes(mode)){toast('Неизвестный режим бонуса',true);return;}
-  const config={tiers:model.tiers.map((t,i)=>({pct:t.pct,amount:nums[i]})),quality_amount:amount,bonus_mode:mode,primary_branch_rule:'max_fact'};
+  const config={tiers:model.tiers.map((t,i)=>({pct:t.pct,amount:nums[i]})),quality_amount:amount,bonus_mode:mode,primary_branch_rule:'home'};
   rpc('app_bonus_set_settings',{p_token:TOKEN,p_config:config}).then(()=>{toast('Шкала сохранена');callback()}).catch(e=>handleErr(e));
 }
 /* ================= Маркетинг · 12.11.2026-x =================
