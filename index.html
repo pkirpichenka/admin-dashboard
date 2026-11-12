@@ -1145,6 +1145,71 @@ table th>*,table td>*{max-width:100%;box-sizing:border-box}
 /* Только при открытой вкладке допускаем макетную ширину 1280px */
 .wrap:has(#mk-app){max-width:1320px;}
 
+
+/* FAD Marketing layout fix · 12.11.2026-y
+   Scoped to marketing only. FAD global input width:100% previously broke checkbox layout. */
+.mk-app .mk-chk{
+  display:grid;
+  grid-template-columns:18px minmax(0,1fr);
+  align-items:start;
+  justify-content:start;
+  gap:10px;
+  width:100%;
+  margin:0;
+  padding:5px 0;
+  cursor:pointer;
+  text-align:left;
+}
+.mk-app .mk-chk > span{
+  display:block;
+  min-width:0;
+  overflow-wrap:break-word;
+  line-height:1.45;
+  text-align:left;
+}
+.mk-app .mk-chk > input[type="checkbox"],
+.mk-app .mk-studs input[type="checkbox"]{
+  width:16px;
+  min-width:16px;
+  max-width:16px;
+  height:16px;
+  min-height:16px;
+  flex:0 0 16px;
+  margin:2px 0 0;
+  padding:0;
+  appearance:auto;
+  border:initial;
+  border-radius:3px;
+  background:initial;
+  box-shadow:none;
+  accent-color:var(--accent);
+  vertical-align:middle;
+}
+.mk-app .mk-studs label{
+  display:inline-flex;
+  width:auto;
+  align-items:center;
+  justify-content:flex-start;
+  gap:6px;
+  white-space:nowrap;
+}
+/* Keep calendar details below FAD's sticky top bar instead of behind it. */
+@media (min-width:961px){
+  .mk-app .mk-side{
+    top:160px;
+    max-height:calc(100vh - 250px);
+    overscroll-behavior:contain;
+  }
+}
+@media (max-width:960px){
+  .mk-app .mk-side{
+    position:static;
+    top:auto;
+    max-height:none;
+    overflow:visible;
+  }
+}
+
 </style>
 
 <div id="root"></div>
@@ -1165,7 +1230,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '12.11.2026-x'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '12.11.2026-y'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
