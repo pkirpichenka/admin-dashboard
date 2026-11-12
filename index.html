@@ -930,6 +930,25 @@ table th>*,table td>*{max-width:100%;box-sizing:border-box}
 }
 
 
+/* FLEXICO / единый раздел сотрудников. Права и учётная запись в карточке. */
+.staff-account-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,390px),1fr));gap:12px;align-items:start}
+.staff-account-box{min-width:0;border-radius:14px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);overflow:hidden}
+.staff-account-box>.staff-card{border:0;box-shadow:none;border-radius:0}
+.staff-account-details{border-top:1px solid var(--line);padding:0 14px 12px}
+.staff-account-details>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:12px 0;color:var(--accent-deep);font-size:12px;font-weight:750}
+.staff-account-details>summary::-webkit-details-marker{display:none}
+.staff-account-details>summary:before{content:'▸';font-size:13px}
+.staff-account-details[open]>summary:before{content:'▾'}
+.staff-account-details .urow{border:0;border-radius:9px;background:var(--surface-2);padding:10px;margin:0;box-shadow:none;display:block}
+.staff-account-details .u-main{margin-bottom:8px}
+.staff-account-details .u-ctl{margin-left:0;gap:9px}
+.staff-account-details .u-ctl>*{max-width:100%}
+.staff-account-details .u-name{font-size:12px}
+.staff-account-details .u-login{font-size:11px}
+.staff-hub-empty{color:var(--ink-soft);font-size:13px;padding:12px 0}
+.staff-archive-grid{margin-top:12px}
+@media(max-width:560px){.staff-account-grid{grid-template-columns:1fr}.staff-account-details .u-ctl{display:flex}}
+
 /* FLEXICO / План и бонусы — scoped styles (no changes to other tabs) */
 .wrap:has(> #tabbody > .bonus-page){max-width:1152px;padding-left:20px;padding-right:20px}
 .bonus-page{font-family:Inter,'Segoe UI',Arial,sans-serif;background:#f2f4f7;color:#202938;border-radius:10px;padding:31px 24px 52px;min-height:900px;font-size:14px;line-height:1.45}
@@ -1027,7 +1046,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '12.11.2026-telegram-reliable'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '12.11.2026-staff-unified'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -1238,10 +1257,10 @@ const PERMISSION_DEFS = [
   {key:'schedule.absences', group:'Расписание', label:'Отпуска / больничные', desc:'Добавлять, менять и удалять отсутствия.'},
   {key:'schedule.leave_norms', group:'Расписание', label:'Нормы отсутствий', desc:'Менять годовые нормы отпуска, больничных и отгулов.'},
   {key:'schedule.coffee', group:'Расписание', label:'Кофе+снеки', desc:'Назначать и снимать график кофе+снеки.'},
-  {key:'admins.view', group:'Администраторы', label:'Видеть администраторов', desc:'Просмотр карточек активных и уволенных сотрудников.'},
-  {key:'admins.manage', group:'Администраторы', label:'Управлять администраторами', desc:'Добавление, увольнение, восстановление, удаление, пароль, филиал, телефон и другие поля.'},
-  {key:'admins.permissions', group:'Администраторы', label:'Выдавать права доступа', desc:'Можно изменять права других администраторов. Не влияет на аккаунт руководителя.'},
-  {key:'admins.audit', group:'Администраторы', label:'Видеть лог действий', desc:'Просмотр журнала действий пользователей, деталей изменений и выгрузка журнала в Excel.'},
+  {key:'admins.view', group:'Сотрудники · доступ', label:'Видеть администраторов', desc:'Просмотр карточек активных и уволенных сотрудников.'},
+  {key:'admins.manage', group:'Сотрудники · доступ', label:'Управлять администраторами', desc:'Добавление, увольнение, восстановление, удаление, пароль, филиал, телефон и другие поля.'},
+  {key:'admins.permissions', group:'Сотрудники · доступ', label:'Выдавать права доступа', desc:'Можно изменять права других администраторов. Не влияет на аккаунт руководителя.'},
+  {key:'admins.audit', group:'Сотрудники · доступ', label:'Видеть лог действий', desc:'Просмотр журнала действий пользователей, деталей изменений и выгрузка журнала в Excel.'},
   {key:'employees.view', group:'Сотрудники', label:'Видеть сотрудников', desc:'Просмотр общего справочника администраторов и тренеров.'},
   {key:'employees.manage', group:'Сотрудники', label:'Управлять сотрудниками', desc:'Добавлять и редактировать тренеров, даты рождения и данные сотрудников.'},
   {key:'calendar.view', group:'Календарь', label:'Видеть календарь', desc:'Просмотр дней рождения и важных событий.'},
@@ -1820,11 +1839,10 @@ function renderApp(){
   if(session.role==='owner') tabs.push({label:'Отчёты',render:renderAllReports});
   else tabs.push({label:'Смена',render:renderShift});
   tabs.push({label:'Расписание',render:renderSchedule});
-  if(session.role!=='owner' && can('reports.view_all')) tabs.push({label:'Все отчёты',render:renderAllReports});
-  if(session.role==='owner' || can('employees.view') || can('employees.manage')) tabs.push({label:'Сотрудники',render:renderEmployees});
-  if(session.role==='owner' || can('admins.view') || can('admins.manage') || can('admins.permissions') || can('admins.audit') || can('telegram.manage')) tabs.push({label:'Администраторы',render:renderUsers});
-  if(session.role==='owner' || can('calendar.view') || can('calendar.manage')) tabs.push({label:'Календарь',render:renderCalendar});
   tabs.push({label:'План и бонусы',render:renderBonusDashboard});
+  if(session.role!=='owner' && can('reports.view_all')) tabs.push({label:'Все отчёты',render:renderAllReports});
+  if(session.role==='owner' || ['employees.view','employees.manage','admins.view','admins.manage','admins.permissions','admins.audit','telegram.manage'].some(k=>can(k))) tabs.push({label:'Сотрудники',render:renderEmployees});
+  if(session.role==='owner' || can('calendar.view') || can('calendar.manage')) tabs.push({label:'Календарь',render:renderCalendar});
   if(session.role==='owner' || can('messages.manage')) tabs.push({label:'Сообщения',render:renderMessages});
   renderRoleUI(tabs);
 }
@@ -2711,50 +2729,99 @@ function employeeCard(e,manage){
   </div>`;
 }
 async function renderEmployees(body){
-  const manage=session.role==='owner'||can('employees.manage');
+  const canEmployees=session.role==='owner'||can('employees.view')||can('employees.manage');
+  const manageEmployees=session.role==='owner'||can('employees.manage');
+  const canAdmins=session.role==='owner'||can('admins.view')||can('admins.manage')||can('admins.permissions');
+  const canManagePermissions=session.role==='owner'||can('admins.permissions');
+  const canTelegram=session.role==='owner'||can('telegram.manage');
+  const canAudit=session.role==='owner'||can('admins.audit');
   body.innerHTML='<div class="empty">Загрузка сотрудников…</div>';
-  let rows=[];
-  try{ rows=await apiListEmployees(); }catch(e){ return handleErr(e); }
+  let rows=[],adminAccounts=[];
+  if(canEmployees){
+    try{ rows=await apiListEmployees(); }
+    catch(e){return handleErr(e);}
+  }
   rows.sort((a,b)=>{
     if(a.is_active!==b.is_active)return a.is_active?-1:1;
     if(a.employee_type!==b.employee_type)return a.employee_type==='admin'?-1:1;
     return String(a.full_name||'').localeCompare(String(b.full_name||''),'ru');
   });
-  const counts={
-    all:rows.filter(x=>x.is_active).length,
+  if(canManagePermissions){
+    try{adminAccounts=(await apiListUsers()||[]).filter(u=>u.role!=='owner');}
+    catch(e){ /* каталог сотрудников должен работать даже при недоступном RPC аккаунтов */ }
+  }
+  const byLogin=Object.fromEntries(adminAccounts.map(x=>[x.login,x]));
+  const counts={all:rows.filter(x=>x.is_active).length,
     admin:rows.filter(x=>x.is_active&&x.employee_type==='admin').length,
     trainer:rows.filter(x=>x.is_active&&x.employee_type==='trainer').length,
-    archive:rows.filter(x=>!x.is_active).length
-  };
-  if(!['all','admin','trainer','archive'].includes(EMP_VIEW))EMP_VIEW='all';
-  body.innerHTML=`<div class="staff-toolbar fade-in"><div class="grow"><div class="section-title" style="margin:0">Сотрудники</div></div>${manage?'<button class="btn btn-primary" id="addTrainer">+ Добавить тренера</button>':''}</div>
-    <div class="subtabs">
-      <button class="subtab${EMP_VIEW==='all'?' on':''}" data-empv="all">Все (${counts.all})</button>
-      <button class="subtab${EMP_VIEW==='admin'?' on':''}" data-empv="admin">Администраторы (${counts.admin})</button>
-      <button class="subtab${EMP_VIEW==='trainer'?' on':''}" data-empv="trainer">Тренеры (${counts.trainer})</button>
-      <button class="subtab${EMP_VIEW==='archive'?' on':''}" data-empv="archive">Архив (${counts.archive})</button>
-    </div>
-    <div id="empList" style="margin-top:12px"></div>`;
+    archive:rows.filter(x=>!x.is_active).length};
+  const sections=[];
+  if(canEmployees)sections.push(['all',`Все (${counts.all})`]);
+  if(canEmployees||canAdmins)sections.push(['admin',`Администраторы${canEmployees?' ('+counts.admin+')':''}`]);
+  if(canEmployees)sections.push(['trainer',`Тренеры (${counts.trainer})`]);
+  if(canTelegram)sections.push(['telegram','Telegram']);
+  if(canAudit)sections.push(['log','Лог']);
+  if(canEmployees||canAdmins)sections.push(['archive','Архив']);
+  if(!sections.length){body.innerHTML='<div class="empty">Нет доступных разделов.</div>';return;}
+  if(!sections.some(([key])=>key===EMP_VIEW))EMP_VIEW=sections[0][0];
+  body.innerHTML=`<div class="staff-toolbar fade-in"><div class="grow"><div class="section-title" style="margin:0">Сотрудники</div></div>
+    ${manageEmployees?'<button class="btn btn-primary" id="addTrainer">+ Добавить тренера</button>':''}
+    ${(session.role==='owner'||can('admins.manage'))?'<button class="btn" id="addEmployeeAdmin">+ Добавить администратора</button>':''}</div>
+    <div class="subtabs">${sections.map(([v,label])=>`<button class="subtab${EMP_VIEW===v?' on':''}" data-empv="${v}">${label}</button>`).join('')}</div>
+    <div id="empList"></div>`;
   const list=body.querySelector('#empList');
-  function draw(){
-    let a=rows;
-    if(EMP_VIEW==='all')a=rows.filter(x=>x.is_active);
-    else if(EMP_VIEW==='admin')a=rows.filter(x=>x.is_active&&x.employee_type==='admin');
-    else if(EMP_VIEW==='trainer')a=rows.filter(x=>x.is_active&&x.employee_type==='trainer');
-    else if(EMP_VIEW==='archive')a=rows.filter(x=>!x.is_active);
-    list.innerHTML=a.length?`<div class="staff-grid">${a.map(x=>employeeCard(x,manage)).join('')}</div>`:'<div class="empty">Сотрудников в этом разделе нет.</div>';
+  let displayRequest=0;
+  async function draw(){
+    const ticket=++displayRequest;
+    const view=EMP_VIEW;
+    if((view==='admin'||view==='archive')&&canEmployees&&!canAdmins){
+      const plain=rows.filter(e=>view==='admin'?e.is_active&&e.employee_type==='admin':!e.is_active);
+      list.innerHTML=plain.length?`<div class="staff-grid">${plain.map(e=>employeeCard(e,manageEmployees)).join('')}</div>`:'<div class="empty">Сотрудников в этом разделе нет.</div>';
+      list.querySelectorAll('[data-edit-employee]').forEach(b=>b.onclick=()=>{
+        const e=rows.find(x=>String(x.id)===String(b.dataset.editEmployee));
+        if(e)employeeModal(e,()=>renderEmployees(body));
+      });
+      return;
+    }
+    if(['admin','telegram','log','archive'].includes(view)){
+      // Прежний обработчик администраторов используется как встроенный модуль.
+      // Его RPC, логика Telegram, аудит и защита серверных прав не изменяются.
+      list.innerHTML='<div class="empty">Загрузка…</div>';
+      await renderUsers(list,{embedded:true,view:view==='admin'?'admins':view,employeeRows:rows,manageEmployees});
+      return;
+    }
+    const selected=rows.filter(x=>x.is_active&&(view==='all'||x.employee_type==='trainer'));
+    if(ticket!==displayRequest)return;
+    list.innerHTML=selected.length?`<div class="staff-grid">${selected.map(x=>{
+      const a=x.employee_type==='admin' && canManagePermissions && byLogin[x.app_login];
+      return employeeCard(x,manageEmployees);
+    }).join('')}</div>`:'<div class="empty">Сотрудников в этом разделе нет.</div>';
+    // Каждому администратору доступна настройка прав прямо в его карточке.
+    if(canManagePermissions){
+      selected.filter(e=>e.employee_type==='admin').forEach(e=>{
+        const u=byLogin[e.app_login];if(!u)return;
+        const card=[...list.querySelectorAll('.staff-card')].find(x=>x.dataset.eid===String(e.id));
+        if(!card)return;
+        let actions=card.querySelector('.staff-actions');
+        if(!actions){actions=document.createElement('div');actions.className='staff-actions';card.appendChild(actions);}
+        const b=document.createElement('button');b.className='btn btn-sm';b.textContent='Настроить права';
+        b.onclick=()=>permissionsModal(u,()=>renderEmployees(body));actions.appendChild(b);
+      });
+    }
     list.querySelectorAll('[data-edit-employee]').forEach(b=>b.onclick=()=>{
       const e=rows.find(x=>String(x.id)===String(b.dataset.editEmployee));
       if(e)employeeModal(e,()=>renderEmployees(body));
     });
   }
   body.querySelectorAll('[data-empv]').forEach(b=>b.onclick=()=>{
+    if(appHasUnsavedWork()){toast('Сначала сохраните изменения',true);return;}
     EMP_VIEW=b.dataset.empv;
     body.querySelectorAll('[data-empv]').forEach(x=>x.classList.toggle('on',x.dataset.empv===EMP_VIEW));
-    draw();
+    void draw();
   });
-  const add=body.querySelector('#addTrainer'); if(add)add.onclick=()=>employeeModal(null,()=>renderEmployees(body));
-  draw();
+  const add=body.querySelector('#addTrainer');if(add)add.onclick=()=>employeeModal(null,()=>renderEmployees(body));
+  const addAdmin=body.querySelector('#addEmployeeAdmin');if(addAdmin)addAdmin.onclick=()=>addAdminModal(()=>{EMP_VIEW='admin';renderEmployees(body);});
+  await draw();
 }
 function employeeModal(e,onDone){
   const isNew=!e, isAdmin=!!(e&&e.employee_type==='admin');
@@ -3211,8 +3278,8 @@ async function renderMessages(body){
   }
   draw();
 }
-let USERS_VIEW='admins';
-async function renderUsers(body){
+async function renderUsers(body,options={}){
+  // Настройки аккаунтов, Telegram, лог и архив встроены в «Сотрудники».
   const viewAdmins=session.role==='owner'||can('admins.view')||can('admins.manage')||can('admins.permissions');
   const manageAdmins=session.role==='owner'||can('admins.manage');
   const managePerms=session.role==='owner'||can('admins.permissions');
@@ -3241,10 +3308,13 @@ async function renderUsers(body){
   if(viewAdmins) subs.push(['archive','Уволенные ('+archived.length+')']);
   if(viewAudit) subs.push(['log','Лог']);
   if(!subs.length){ body.innerHTML='<div class="empty">Нет доступных разделов.</div>'; return; }
-  if(!subs.some(x=>x[0]===USERS_VIEW)) USERS_VIEW=subs[0][0];
-  body.innerHTML=`<div class="subtabs">${subs.map(x=>`<button class="subtab${USERS_VIEW===x[0]?' on':''}" data-uv="${x[0]}">${x[1]}</button>`).join('')}</div><div id="uBody"></div>`;
-  body.querySelectorAll('[data-uv]').forEach(b=>b.onclick=()=>{ USERS_VIEW=b.dataset.uv; body.querySelectorAll('[data-uv]').forEach(x=>x.classList.toggle('on',x.dataset.uv===USERS_VIEW)); drawU(); });
-
+  const selectedView=String(options.view||'admins');
+  if(!subs.some(x=>x[0]===selectedView)){body.innerHTML='<div class="empty">Нет доступа к этому разделу.</div>';return;}
+  body.innerHTML='<div id="uBody"></div>';
+  const refreshPanel=()=>{
+    const host=document.getElementById('tabbody');
+    if(host&&host.contains(body))return renderEmployees(host);
+  };
   function wireRows(listEl){
     listEl.querySelectorAll('.urow').forEach(row=>{
       const login=row.dataset.login; const u=byLogin[login]; if(!u) return;
@@ -3252,14 +3322,13 @@ async function renderUsers(body){
         el.onclick=async()=>{
           const act=el.dataset.act;
           try{
-            if(act==='active' && manageAdmins){ await apiSetActive(login,!u.active); toast(!u.active?'Доступ включён':'Перемещён в «Уволенные»'); renderUsers(body); }
-            else if(act==='reset' && manageAdmins){ resetPwModal(u,()=>renderUsers(body)); }
-            else if(act==='del' && manageAdmins){ confirmModal(`Удалить администратора «${u.name}»? Он больше не сможет войти. Его отчёты сохранятся в логе.`, async()=>{ try{ await apiDeleteAdmin(login); toast('Администратор удалён'); renderUsers(body); }catch(e){ handleErr(e); } }); }
+            if(act==='active' && manageAdmins){ await apiSetActive(login,!u.active); toast(!u.active?'Доступ включён':'Перемещён в «Уволенные»'); refreshPanel(); }
+            else if(act==='reset' && manageAdmins){ resetPwModal(u,()=>refreshPanel()); }
           }catch(e){ handleErr(e); }
         };
       });
       const pb=row.querySelector('[data-perms]');
-      if(pb&&managePerms) pb.onclick=()=>{ void permissionsModal(u,()=>renderUsers(body)); };
+      if(pb&&managePerms) pb.onclick=()=>{ void permissionsModal(u,()=>refreshPanel()); };
     });
     if(manageAdmins){
       listEl.querySelectorAll('select[data-home]').forEach(sel=>{ sel.onchange=async()=>{ try{ await apiSetHome(sel.dataset.home, sel.value); toast('Домашний филиал обновлён'); }catch(e){ handleErr(e); } }; });
@@ -3275,22 +3344,42 @@ async function renderUsers(body){
     }
   }
   function drawAdmins(el){
-    el.innerHTML=`<div class="bar fade-in"><div class="grow"><div class="section-title" style="margin:0">Администраторы (${active.length})</div></div>${manageAdmins?'<button class="btn btn-primary" id="add">+ Добавить администратора</button>':''}</div>
-      <p style="color:var(--ink-soft);font-size:13px;margin:0 0 16px">Права задаются отдельно для каждого сотрудника: отчёты, расписание, администраторы, лог действий, Telegram и сообщения. «Полный доступ» даёт все рабочие возможности дашборда, но аккаунт руководителя изменить нельзя.</p>
-      <div id="ulist">${active.length?active.map(u=>userRow(u,(settings.adminPhones||{})[u.login]||'',{manage:manageAdmins,permissions:managePerms})).join(''):'<div class="empty">Активных администраторов нет.</div>'}</div>`;
-    wireRows(el.querySelector('#ulist'));
-    const add=el.querySelector('#add'); if(add) add.onclick=()=>addAdminModal(()=>renderUsers(body));
+    const staffRows=Array.isArray(options.employeeRows)?options.employeeRows:[];
+    const staffByLogin=Object.fromEntries(staffRows.filter(e=>e.app_login).map(e=>[e.app_login,e]));
+    const canEditStaff=!!options.manageEmployees;
+    el.innerHTML=`<div class="bar fade-in"><div class="grow"><div class="section-title" style="margin:0">Администраторы (${active.length})</div></div></div>
+      <p class="msg-sub">Данные сотрудника и настройки учётной записи объединены. Права, филиал, телефон и доступ находятся внутри карточки.</p>
+      <div id="ulist" class="staff-account-grid">${active.length?active.map(u=>{
+        const e=staffByLogin[u.login];
+        const profile=e?employeeCard(e,canEditStaff):`<div class="staff-card"><div class="staff-head"><b class="staff-name">${escapeHtml(u.name)}</b><span class="staff-role">Администратор</span></div><div class="staff-meta">Логин: ${escapeHtml(u.login)}</div></div>`;
+        return `<div class="staff-account-box">${profile}<details class="staff-account-details"><summary>Учётная запись и права</summary>${userRow(u,(settings.adminPhones||{})[u.login]||'',{manage:manageAdmins,permissions:managePerms})}</details></div>`;
+      }).join(''):'<div class="empty">Активных администраторов нет.</div>'}</div>`;
+    const main=el.querySelector('#ulist');
+    wireRows(main);
+    main.querySelectorAll('[data-edit-employee]').forEach(b=>b.onclick=()=>{
+      const e=staffRows.find(x=>String(x.id)===String(b.dataset.editEmployee));
+      if(e)employeeModal(e,refreshPanel);
+    });
   }
   function drawArchive(el){
-    el.innerHTML=`<p class="msg-sub">Уволенные (доступ отключён).${manageAdmins?' Можно вернуть в работу или удалить окончательно.':''} Их отчёты сохраняются в логе.</p>
-      <div id="ulist">${archived.length?archived.map(u=>archRow(u,manageAdmins)).join(''):'<div class="empty">Здесь пусто — уволенных нет.</div>'}</div>`;
+    const staffRows=Array.isArray(options.employeeRows)?options.employeeRows:[];
+    const archivedLogins=new Set(archived.map(u=>u.login));
+    const inactiveStaff=staffRows.filter(e=>!e.is_active&&!archivedLogins.has(e.app_login));
+    el.innerHTML=`<div class="section-title" style="margin-top:0">Архив сотрудников</div>
+      <p class="msg-sub">Неактивные тренеры и уволенные администраторы в одном месте. Удаление аккаунта необратимо; восстановление возвращает доступ к FAD.</p>
+      <div id="empArchived" class="staff-grid staff-archive-grid">${inactiveStaff.map(e=>employeeCard(e,!!options.manageEmployees)).join('')}</div>
+      <div id="ulist" style="margin-top:12px">${archived.length?archived.map(u=>archRow(u,manageAdmins)).join(''):'<div class="staff-hub-empty">Уволенных администраторов нет.</div>'}</div>
+      ${!archived.length&&!inactiveStaff.length?'<div class="empty">Архив пуст.</div>':''}`;
+    el.querySelectorAll('[data-edit-employee]').forEach(b=>b.onclick=()=>{
+      const e=inactiveStaff.find(x=>String(x.id)===String(b.dataset.editEmployee));
+      if(e)employeeModal(e,refreshPanel);
+    });
     const listEl=el.querySelector('#ulist');
     if(manageAdmins){
-      listEl.querySelectorAll('[data-restore]').forEach(b=>b.onclick=async()=>{ const u=byLogin[b.dataset.restore]; try{ await apiSetActive(u.login,true); toast('Сотрудник возвращён в работу'); renderUsers(body); }catch(e){ handleErr(e); } });
-      listEl.querySelectorAll('[data-del2]').forEach(b=>b.onclick=()=>{ const u=byLogin[b.dataset.del2]; confirmModal(`Удалить «${u.name}» окончательно? Он исчезнет из списков. Отчёты останутся в логе.`, async()=>{ try{ await apiDeleteAdmin(u.login); toast('Удалён'); renderUsers(body); }catch(e){ handleErr(e); } }); });
+      listEl.querySelectorAll('[data-restore]').forEach(b=>b.onclick=async()=>{ const u=byLogin[b.dataset.restore]; try{ await apiSetActive(u.login,true); toast('Сотрудник возвращён в работу'); refreshPanel(); }catch(e){ handleErr(e); } });
+      listEl.querySelectorAll('[data-del2]').forEach(b=>b.onclick=()=>{ const u=byLogin[b.dataset.del2]; confirmModal(`Удалить «${u.name}» окончательно? Он исчезнет из списков. Отчёты останутся в логе.`, async()=>{ try{ await apiDeleteAdmin(u.login); toast('Удалён'); refreshPanel(); }catch(e){ handleErr(e); } }); });
     }
   }
-
   async function drawAudit(el){
     const today=todayStr(), from=isoAddDays(today,-29);
     el.innerHTML=`<div class="bar fade-in"><div class="grow"><div class="section-title" style="margin:0">Лог действий пользователей</div></div></div>
@@ -3373,7 +3462,7 @@ async function renderUsers(body){
     };
     el.querySelector('#tgSave').onclick=async()=>{ const ind=el.querySelector('#tgInd'); try{ await apiSaveSettings(Object.assign({},settings,{telegram:TG})); settings.telegram=TG; void auditAction('Изменены настройки Telegram','telegram','recipients',{recipients:TG.recipients}); clearAppDirty('telegram'); ind.textContent='✓ Сохранено'; setTimeout(()=>{ if(ind) ind.textContent=''; },2500); }catch(e){ handleErr(e); } };
   }
-  function drawU(){ const el=body.querySelector('#uBody'); if(USERS_VIEW==='telegram') drawTelegram(el); else if(USERS_VIEW==='archive') drawArchive(el); else if(USERS_VIEW==='log') void drawAudit(el); else drawAdmins(el); }
+  function drawU(){ const el=body.querySelector('#uBody'); if(selectedView==='telegram') drawTelegram(el); else if(selectedView==='archive') drawArchive(el); else if(selectedView==='log') void drawAudit(el); else drawAdmins(el); }
   drawU();
 }
 function userPermissions(u){
@@ -3401,7 +3490,7 @@ function userRow(u,phone,opts){
       ${opts.manage?`<span class="ctl-item u-access">Доступ <button class="sw ${u.active?'on':''}" data-act="active" aria-label="Доступ"></button></span>`:''}
       <span class="u-perms-info">Права: <b>${escapeHtml(pName)}</b></span>
       ${opts.permissions?`<button class="btn btn-sm u-perm-btn" data-perms="${escapeHtml(u.login)}">Настроить права</button>`:''}
-      ${opts.manage?`<button class="btn btn-sm u-reset" data-act="reset">Сбросить пароль</button><button class="btn btn-sm btn-ghost u-delete" data-act="del">Удалить</button>`:''}
+      ${opts.manage?`<button class="btn btn-sm u-reset" data-act="reset">Сбросить пароль</button>`:''}
     </div></div>`;
 }
 async function permissionsModal(u,onDone){
