@@ -1026,6 +1026,125 @@ table th>*,table td>*{max-width:100%;box-sizing:border-box}
 @media(max-width:980px){.bonus-page{padding:24px 17px}.bonus-page .bp-branches{grid-template-columns:1fr 1fr}.bonus-page .bp-totals{grid-template-columns:1fr 1fr}.bonus-page .bp-total:nth-child(2){border-right:0}.bonus-page .bp-total:nth-child(-n+2){border-bottom:1px solid #d7dfeb}.bonus-page .bp-tier-list{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:640px){.bonus-page{padding:18px 12px}.bonus-page .bp-head{align-items:flex-start}.bonus-page .bp-h1{font-size:23px}.bonus-page .bp-branches{grid-template-columns:1fr}.bonus-page .bp-totals{grid-template-columns:1fr 1fr}.bonus-page .bp-total{padding:13px 10px;min-height:104px}.bonus-page .bp-total-value{font-size:23px}.bonus-page .bp-tier-list{grid-template-columns:repeat(2,1fr)}.bonus-page .bp-table-hint{display:none}}
 
+/* Маркетинг Flexico · из визуального прототипа, имена классов изолированы */
+.mk-app{
+  --fg:var(--ink);--muted:var(--ink-soft);--accent-fg:#fff;--accent-soft:var(--surface-2);
+  --c-mash:#2F6FB5;--c-kuib:#E6A700;--c-tolb:#E2711D;
+  --st-plan:#6B7872;--st-work:#B26B00;--st-live:#1F8A55;--st-done:#4F6AA8;--danger:var(--clay);
+  --font-head:'Unbounded',system-ui,sans-serif;--font-body:'Golos Text',system-ui,sans-serif;
+  max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:14px;
+  color:var(--fg);font-family:var(--font-body);font-size:14px;line-height:1.45;
+}
+.mk-app *{box-sizing:border-box}
+.mk-app button,.mk-app input,.mk-app select,.mk-app textarea{font:inherit;color:inherit}
+.mk-app button{cursor:pointer}
+.mk-app :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mk-app{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.mk-app h1,.mk-app h2,.mk-app h3{font-family:var(--font-head);margin:0;text-wrap:balance}
+.mk-top{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between}
+.mk-eyebrow{margin:0 0 2px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.mk-app h1{font-size:26px;line-height:1.15;font-weight:700}
+.mk-top-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.mk-notice{margin:0;padding:8px 12px;border:1px dashed var(--line);border-radius:8px;color:var(--muted);font-size:12.5px;background:var(--surface-2)}
+.mk-btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 12px;font-weight:500;line-height:1.2}
+.mk-btn:hover{border-color:var(--muted)}
+.mk-btn.mk-primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.mk-btn.mk-danger{color:var(--danger)}
+.mk-btn:disabled{opacity:.5;cursor:default}
+.mk-app select,.mk-app input[type=text],.mk-app input[type=date],.mk-app input[type=number],.mk-app textarea{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:7px 10px;width:100%;min-width:0}
+.mk-app select{width:auto}
+.mk-app textarea{resize:vertical;min-height:70px}
+.mk-sum{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.mk-tile{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0}
+.mk-tile .mk-k{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.mk-tile .mk-v{font-family:var(--font-head);font-size:22px;font-weight:600;margin-top:2px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.mk-tile .mk-s{font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+.mk-tile .mk-v.mk-sm{font-size:15px;line-height:1.25}
+.mk-filters{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.mk-seg{display:inline-flex;flex-wrap:wrap;gap:4px;padding:3px;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.mk-seg button{border:0;background:transparent;border-radius:7px;padding:5px 10px;display:inline-flex;align-items:center;gap:6px;font-weight:500;color:var(--muted)}
+.mk-seg button[aria-pressed=true]{background:var(--accent-soft);color:var(--fg)}
+.mk-dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
+.mk-sp{flex:1}
+.mk-layout{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:16px;align-items:start}
+.mk-card{background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.mk-mainhead{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.mk-mainhead h2{font-size:19px;font-weight:600;min-width:9ch}
+.mk-mainhead .mk-btn{padding:5px 10px}
+.mk-wk,.mk-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+.mk-wk div{padding:7px 8px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;border-bottom:1px solid var(--line)}
+.mk-cell{min-height:112px;padding:6px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:4px;min-width:0;cursor:pointer}
+.mk-cell:nth-child(7n){border-right:0}
+.mk-cell.mk-out{background:var(--surface-2)}
+.mk-cell.mk-out .mk-dn{color:var(--muted);opacity:.6}
+.mk-cell.mk-sel{box-shadow:inset 0 0 0 2px var(--accent)}
+.mk-dn{font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;width:22px;height:22px;display:grid;place-items:center;border-radius:50%}
+.mk-cell.mk-today .mk-dn{background:var(--accent);color:var(--accent-fg)}
+.mk-chips{display:flex;flex-direction:column;gap:3px;min-width:0}
+.mk-chip{position:relative;display:block;width:100%;text-align:left;border:1px solid transparent;border-radius:5px;padding:2px 6px 2px 9px;font-size:11.5px;line-height:1.3;
+  background:color-mix(in srgb,var(--tint,var(--muted)) 15%,var(--surface));white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mk-chip::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--stripe)}
+.mk-chip[data-st=plan]{border-color:var(--line);border-style:dashed;border-left-color:transparent}
+.mk-chip[data-st=done]{opacity:.55}
+.mk-chip.mk-cont{opacity:.8}
+.mk-more{font-size:11px;color:var(--muted);padding-left:4px}
+.mk-dots{display:none;gap:3px;flex-wrap:wrap}
+.mk-dots i{width:7px;height:7px;border-radius:50%;background:var(--stripe);display:block}
+.mk-list{display:flex;flex-direction:column}
+.mk-row{display:grid;grid-template-columns:120px minmax(0,1fr) auto auto;gap:6px 12px;align-items:center;padding:10px 14px;border:0;border-bottom:1px solid var(--line);background:transparent;text-align:left;width:100%}
+.mk-row:hover{background:var(--surface-2)}
+.mk-row .mk-t{font-weight:600;min-width:0;overflow-wrap:anywhere}
+.mk-row .mk-d{color:var(--muted);font-variant-numeric:tabular-nums;font-size:12.5px}
+.mk-empty{padding:28px 16px;color:var(--muted);text-align:center}
+.mk-pill{display:inline-flex;align-items:center;gap:5px;border:1px solid currentColor;border-radius:999px;padding:1px 8px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.mk-pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.mk-pill.mk-plan{color:var(--st-plan)}
+.mk-pill.mk-work{color:var(--st-work)}
+.mk-pill.mk-live{color:var(--st-live)}
+.mk-pill.mk-done{color:var(--st-done)}
+.mk-tag{display:inline-block;border-radius:5px;background:var(--surface-2);border:1px solid var(--line);padding:1px 7px;font-size:11.5px;color:var(--muted);white-space:nowrap}
+.mk-sdot{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;white-space:nowrap}
+.mk-side{position:sticky;top:12px;padding:14px;display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - 24px);overflow:auto}
+.mk-side h2{font-size:18px;font-weight:600;overflow-wrap:anywhere}
+.mk-side .mk-sub{color:var(--muted);font-size:12.5px;text-transform:capitalize}
+.mk-ev{display:flex;flex-direction:column;gap:6px;text-align:left;width:100%;padding:10px 12px 10px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);position:relative;overflow:hidden}
+.mk-ev::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--stripe)}
+.mk-ev:hover{border-color:var(--muted)}
+.mk-ev b{font-weight:600;overflow-wrap:anywhere}
+.mk-ev .mk-meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.mk-link{border:0;background:none;padding:0;color:var(--accent);font-weight:600;text-align:left;width:max-content}
+.mk-kv{display:grid;grid-template-columns:96px minmax(0,1fr);gap:6px 10px;margin:0;font-size:13px}
+.mk-kv dt{color:var(--muted)}
+.mk-kv dd{margin:0;overflow-wrap:anywhere}
+.mk-sect{display:flex;flex-direction:column;gap:6px;padding-top:10px;border-top:1px solid var(--line)}
+.mk-sect h3{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600;font-family:var(--font-body)}
+.mk-bar{height:8px;border-radius:99px;background:var(--surface-2);border:1px solid var(--line);overflow:hidden}
+.mk-bar i{display:block;height:100%;background:var(--accent)}
+.mk-kpi{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end}
+.mk-kpi label,.mk-fld label{font-size:12px;color:var(--muted);display:block;margin-bottom:2px}
+.mk-chk{display:flex;gap:8px;align-items:flex-start}
+.mk-chk input{margin-top:3px;accent-color:var(--accent)}
+.mk-chk.mk-done span{color:var(--muted);text-decoration:line-through}
+.mk-acts{display:flex;flex-wrap:wrap;gap:8px}
+.mk-fld{display:flex;flex-direction:column;min-width:0}
+.mk-frow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mk-studs{display:flex;flex-wrap:wrap;gap:6px 12px}
+.mk-studs label{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--fg);margin:0}
+.mk-err{color:var(--danger);font-size:12.5px;min-height:1em}
+.mk-ro{font-size:12.5px;color:var(--muted);background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+@media (max-width:960px){.mk-layout{grid-template-columns:minmax(0,1fr)}
+.mk-side{position:static;max-height:none}
+.mk-sum{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:720px){.mk-chips{display:none}
+.mk-dots{display:flex}
+.mk-cell{min-height:56px;padding:4px}
+.mk-row{grid-template-columns:minmax(0,1fr) auto}
+.mk-row .mk-d{grid-column:1/-1}
+.mk-app h1{font-size:22px}}
+@media (prefers-reduced-motion:reduce){.mk-app *{transition:none!important;animation:none!important}}
+/* Только при открытой вкладке допускаем макетную ширину 1280px */
+.wrap:has(#mk-app){max-width:1320px;}
+
 </style>
 
 <div id="root"></div>
@@ -1046,7 +1165,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '12.11.2026-bonus-autosync'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '12.11.2026-x'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -1840,6 +1959,7 @@ function renderApp(){
   else tabs.push({label:'Смена',render:renderShift});
   tabs.push({label:'Расписание',render:renderSchedule});
   tabs.push({label:'План и бонусы',render:renderBonusDashboard});
+  if(session && (session.role==='owner'||session.role==='admin')) tabs.push({label:'Маркетинг',render:renderMarketing});
   if(session.role!=='owner' && can('reports.view_all')) tabs.push({label:'Все отчёты',render:renderAllReports});
   if(session.role==='owner' || ['employees.view','employees.manage','admins.view','admins.manage','admins.permissions','admins.audit','telegram.manage'].some(k=>can(k))) tabs.push({label:'Сотрудники',render:renderEmployees});
   if(session.role==='owner' || can('calendar.view') || can('calendar.manage')) tabs.push({label:'Календарь',render:renderCalendar});
@@ -4421,6 +4541,362 @@ function bonusSettingsEditor(model,callback){
   const config={tiers:model.tiers.map((t,i)=>({pct:t.pct,amount:nums[i]})),quality_amount:amount,bonus_mode:mode,primary_branch_rule:'max_fact'};
   rpc('app_bonus_set_settings',{p_token:TOKEN,p_config:config}).then(()=>{toast('Шкала сохранена');callback()}).catch(e=>handleErr(e));
 }
+/* ================= Маркетинг · 12.11.2026-x =================
+   Вставить ПЕРЕД `async function renderBonusDashboard(body){`.
+   Использует существующие `rpc`, `TOKEN`, `session`, `toast`, `handleErr`,
+   `markAppDirty`, `clearAppDirty`. Нет локального хранилища активностей. */
+let MK_RENDER_SEQ=0;
+async function renderMarketing(body){
+  if(!session||!TOKEN){body.innerHTML='<div class="empty">Требуется вход</div>';return;}
+  const seq=++MK_RENDER_SEQ;
+  const owner=session.role==='owner';
+  const page=document.createElement('div');
+  page.className='mk-app'; page.id='mk-app';
+  body.replaceChildren(page);
+  const active=()=>seq===MK_RENDER_SEQ&&page.isConnected&&body.contains(page);
+  const STUD={mash:{n:'Машерова',c:'#2F6FB5'},kuib:{n:'Куйбышева',c:'#E6A700'},tolb:{n:'Толбухина',c:'#E2711D'}};
+  const SK=['mash','kuib','tolb'];
+  const CH={promo:'Акция',social:'Соцсети',mailing:'Рассылка',event:'Событие в студии',partner:'Партнёрство',referral:'Рефералы',reputation:'Репутация'};
+  const ST={plan:'План',work:'Готовим',live:'Идёт',done:'Завершено'};
+  const MONTHS=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  const MS=['янв.','февр.','мар.','апр.','мая','июн.','июл.','авг.','сент.','окт.','нояб.','дек.'];
+  const WD=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+  const DEFAULT_CHECK=['Утвердить макет и текст','Объяснить механику администраторам','Настроить в кассе / CRM','Запустить и проверить'];
+  const $=sel=>page.querySelector(sel);
+  const esc=s=>String(s===null||s===undefined?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const pad=n=>String(n).padStart(2,'0');
+  const iso=(y,m,d)=>`${y}-${pad(m+1)}-${pad(d)}`;
+  const fromDate=d=>iso(d.getFullYear(),d.getMonth(),d.getDate());
+  const minskToday=()=>{
+    const parts=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{
+      timeZone:'Europe/Minsk',year:'numeric',month:'2-digit',day:'2-digit'
+    }).formatToParts(new Date()).map(x=>[x.type,x.value]));
+    return `${parts.year}-${parts.month}-${parts.day}`;
+  };
+  const fmt=s=>{const p=String(s).split('-');return Number(p[2])+' '+MS[Number(p[1])-1]};
+  const range=(a,b)=>a===b?fmt(a):fmt(a)+' – '+fmt(b);
+  const money=n=>Number(n||0).toLocaleString('ru-RU',{maximumFractionDigits:2})+' BYN';
+  const daysBetween=(a,b)=>Math.round((Date.parse(b+'T00:00:00Z')-Date.parse(a+'T00:00:00Z'))/86400000);
+  const clone=v=>JSON.parse(JSON.stringify(v));
+  const num=v=>{const n=Number(v);return Number.isFinite(n)&&n>=0?n:0};
+  const dateValue=v=>/^20\d\d-\d\d-\d\d$/.test(String(v||''))?String(v):minskToday();
+  const normalizedStudios=a=>Array.isArray(a)?[...new Set(a.filter(k=>SK.includes(k)))]:[];
+  function fromDB(r){
+    return {id:String(r.id),title:String(r.title||''),studios:normalizedStudios(r.studios),
+      channel:CH[r.channel]?r.channel:'promo',status:ST[r.status]?r.status:'plan',
+      start:dateValue(r.start_date),end:dateValue(r.end_date),budget:num(r.budget),
+      goal:r.goal||'',mech:r.mechanics||'',kl:r.kpi_label||'',kp:num(r.kpi_plan),kf:num(r.kpi_fact),
+      check:Array.isArray(r.checklist)?r.checklist.map(x=>({t:String(x.t||''),done:!!x.done})):[]};
+  }
+  function toDB(e,includeId=true){
+    const o={title:e.title,studios:e.studios,channel:e.channel,status:e.status,
+      start_date:e.start,end_date:e.end,budget:e.budget,goal:e.goal,mechanics:e.mech,
+      kpi_label:e.kl,kpi_plan:e.kp,kpi_fact:e.kf,checklist:e.check};
+    if(includeId&&!String(e.id).startsWith('mk-tmp-'))o.id=e.id;
+    return o;
+  }
+  const today=minskToday(),tparts=today.split('-').map(Number);
+  const S={y:tparts[0],m:tparts[1]-1,view:'month',studio:'all',channel:'all',status:'all',
+    sel:today,panel:{type:'day'},delId:null,events:[],busy:false,draft:null};
+  const get=id=>S.events.find(e=>e.id===id);
+  const sortEv=(a,b)=>a.start.localeCompare(b.start)||a.title.localeCompare(b.title,'ru');
+  const visible=()=>S.events.filter(e=>(S.studio==='all'||e.studios.includes(S.studio))&&
+     (S.channel==='all'||e.channel===S.channel)&&(S.status==='all'||e.status===S.status));
+  const onDay=d=>visible().filter(e=>e.start<=d&&d<=e.end).sort(sortEv);
+  const stripe=e=>{
+    const colors=e.studios.map(k=>STUD[k]?.c).filter(Boolean);
+    if(!colors.length)return '#66726B';
+    if(colors.length===1)return colors[0];
+    return 'linear-gradient(to bottom,'+colors.map((c,i)=>`${c} ${i*100/colors.length}% ${(i+1)*100/colors.length}%`).join(',')+')';
+  };
+  const tint=e=>e.studios.length===1?(STUD[e.studios[0]]?.c||'#66726B'):'#66726B';
+  const studioDots=e=>e.studios.map(k=>`<span class="mk-sdot"><i class="mk-dot" style="background:${STUD[k].c}"></i>${STUD[k].n}</span>`).join(' ');
+  const pill=st=>`<span class="mk-pill ${esc(st)}">${ST[st]||'План'}</span>`;
+  page.innerHTML=`
+    <header class="mk-top"><div><p class="mk-eyebrow">Flexico · Дашборд администраторов</p><h1>Маркетинг-календарь</h1></div>
+      <div class="mk-top-actions">${owner?'<button class="mk-btn mk-primary" id="mk-addTop" data-mk-act="add" type="button">+ Активность</button>':'<span class="mk-ro">Режим просмотра</span>'}</div>
+    </header>
+    <section class="mk-sum" id="mk-sum" aria-label="Сводка месяца"></section>
+    <section class="mk-filters" aria-label="Фильтры">
+      <div class="mk-seg" id="mk-studioSeg" role="group" aria-label="Филиал"></div>
+      <select id="mk-fChannel" aria-label="Канал"></select>
+      <select id="mk-fStatus" aria-label="Статус"></select>
+      <span class="mk-sp"></span>
+      <div class="mk-seg" role="group" aria-label="Вид">
+        <button type="button" data-mk-act="view" data-v="month" aria-pressed="true">Месяц</button>
+        <button type="button" data-mk-act="view" data-v="list" aria-pressed="false">Список</button>
+      </div>
+    </section>
+    <div class="mk-layout"><main class="mk-card" id="mk-main"></main>
+      <aside class="mk-card mk-side" id="mk-side" aria-live="polite"></aside></div>`;
+
+  function controls(){
+    $('#mk-studioSeg').innerHTML='<button type="button" data-mk-act="studio" data-v="all" aria-pressed="true">Все</button>'+
+      SK.map(k=>`<button type="button" data-mk-act="studio" data-v="${k}" aria-pressed="false"><i class="mk-dot" style="background:${STUD[k].c}"></i>${STUD[k].n}</button>`).join('');
+    $('#mk-fChannel').innerHTML='<option value="all">Все каналы</option>'+Object.keys(CH).map(k=>`<option value="${k}">${CH[k]}</option>`).join('');
+    $('#mk-fStatus').innerHTML='<option value="all">Все статусы</option>'+Object.keys(ST).map(k=>`<option value="${k}">${ST[k]}</option>`).join('');
+  }
+  function syncControls(){
+    page.querySelectorAll('[data-mk-act="studio"]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===S.studio)));
+    page.querySelectorAll('[data-mk-act="view"]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===S.view)));
+    $('#mk-fChannel').value=S.channel;
+    $('#mk-fStatus').value=S.status;
+  }
+  function summary(){
+    const ms=iso(S.y,S.m,1),me=iso(S.y,S.m,new Date(S.y,S.m+1,0).getDate());
+    const vis=visible(),inM=vis.filter(e=>e.start<=me&&e.end>=ms);
+    const starts=inM.filter(e=>e.start>=ms&&e.start<=me);
+    const live=inM.filter(e=>e.status==='live').length;
+    const budget=starts.reduce((n,e)=>n+e.budget,0);
+    const next=vis.filter(e=>e.start>=minskToday()&&e.status!=='done').sort(sortEv)[0];
+    const nx=next?`<div class="mk-v mk-sm">${esc(next.title)}</div><div class="mk-s">${fmt(next.start)}${daysBetween(minskToday(),next.start)===0?', сегодня':', через '+daysBetween(minskToday(),next.start)+' дн.'}</div>`:
+      '<div class="mk-v mk-sm">Нет запланированных</div>';
+    $('#mk-sum').innerHTML=`
+      <div class="mk-tile"><div class="mk-k">Активностей в месяце</div><div class="mk-v">${inM.length}</div><div class="mk-s">${MONTHS[S.m]} ${S.y}</div></div>
+      <div class="mk-tile"><div class="mk-k">Идут сейчас</div><div class="mk-v">${live}</div><div class="mk-s">статус «Идёт»</div></div>
+      <div class="mk-tile"><div class="mk-k">Бюджет запусков</div><div class="mk-v">${money(budget)}</div><div class="mk-s">стартуют в этом месяце</div></div>
+      <div class="mk-tile"><div class="mk-k">Ближайшая</div>${nx}</div>`;
+  }
+  const monthHead=()=>`<div class="mk-mainhead">
+    <button class="mk-btn" type="button" data-mk-act="prev" aria-label="Предыдущий месяц">‹</button>
+    <h2>${MONTHS[S.m]} ${S.y}</h2><button class="mk-btn" type="button" data-mk-act="next" aria-label="Следующий месяц">›</button>
+    <button class="mk-btn" type="button" data-mk-act="today">Сегодня</button></div>`;
+  function main(){
+    let h=monthHead();
+    if(S.view==='list'){
+      const ms=iso(S.y,S.m,1),me=iso(S.y,S.m,new Date(S.y,S.m+1,0).getDate());
+      const list=visible().filter(e=>e.start<=me&&e.end>=ms).sort(sortEv);
+      h+='<div class="mk-list">';
+      if(!list.length)h+='<div class="mk-empty">В этом месяце нет активностей по выбранным фильтрам.</div>';
+      list.forEach(e=>{
+        h+=`<button type="button" class="mk-row" data-mk-act="open" data-id="${esc(e.id)}">
+          <span class="mk-d">${range(e.start,e.end)}</span><span class="mk-t">${esc(e.title)}<br>
+          <span class="mk-sdot" style="font-weight:400">${studioDots(e)}</span></span>
+          <span class="mk-tag">${CH[e.channel]}</span>${pill(e.status)}</button>`;
+      });
+      $('#mk-main').innerHTML=h+'</div>';return;
+    }
+    h+='<div class="mk-wk">'+WD.map(d=>`<div>${d}</div>`).join('')+'</div><div class="mk-grid">';
+    const first=new Date(S.y,S.m,1),off=(first.getDay()+6)%7,
+          dim=new Date(S.y,S.m+1,0).getDate(),total=Math.ceil((off+dim)/7)*7;
+    for(let i=0;i<total;i++){
+      const d=new Date(S.y,S.m,1-off+i),key=fromDate(d),evs=onDay(key),out=d.getMonth()!==S.m;
+      h+=`<div class="mk-cell${out?' mk-out':''}${key===minskToday()?' mk-today':''}${key===S.sel?' mk-sel':''}"
+        data-mk-act="day" data-date="${key}" tabindex="0" role="button"
+        aria-label="${d.getDate()} ${MONTHS[d.getMonth()]}, активностей: ${evs.length}">
+        <span class="mk-dn">${d.getDate()}</span><div class="mk-chips">`;
+      evs.slice(0,3).forEach(e=>{
+        h+=`<button type="button" class="mk-chip${e.start!==key?' mk-cont':''}" data-mk-act="open" data-id="${esc(e.id)}"
+          data-st="${e.status}" style="--stripe:${stripe(e)};--tint:${tint(e)}" title="${esc(e.title)}">${esc(e.title)}</button>`;
+      });
+      if(evs.length>3)h+=`<span class="mk-more">+${evs.length-3} ещё</span>`;
+      h+='</div><div class="mk-dots">'+evs.slice(0,4).map(e=>`<i style="--stripe:${stripe(e)}"></i>`).join('')+'</div></div>';
+    }
+    $('#mk-main').innerHTML=h+'</div>';
+  }
+  function card(e){return `<button type="button" class="mk-ev" data-mk-act="open" data-id="${esc(e.id)}" style="--stripe:${stripe(e)}">
+    <b>${esc(e.title)}</b><span class="mk-meta">${pill(e.status)}<span class="mk-tag">${CH[e.channel]}</span></span>
+    <span class="mk-meta">${studioDots(e)}</span><span style="color:var(--muted);font-size:12.5px">${range(e.start,e.end)}</span></button>`;}
+  function daySide(){
+    const [y,m,d]=S.sel.split('-').map(Number),dt=new Date(y,m-1,d),evs=onDay(S.sel);
+    let h=`<div><h2>${dt.toLocaleDateString('ru-RU',{day:'numeric',month:'long'})}</h2>
+      <div class="mk-sub">${dt.toLocaleDateString('ru-RU',{weekday:'long'})}${S.sel===minskToday()?' · сегодня':''}</div></div>`;
+    if(!evs.length)h+='<div class="mk-empty" style="padding:18px 4px">На этот день ничего не запланировано.</div>';
+    h+=evs.map(card).join('');
+    if(owner)h+='<button class="mk-btn mk-primary" type="button" data-mk-act="add">+ Активность на этот день</button>';
+    return h;
+  }
+  function detailSide(){
+    const e=get(S.panel.id);if(!e){S.panel={type:'day'};return daySide();}
+    const disabled=!owner||S.busy?' disabled':'',pct=e.kp>0?Math.min(100,Math.round(e.kf/e.kp*100)):0;
+    const done=e.check.filter(x=>x.done).length;
+    let h=`<button type="button" class="mk-link" data-mk-act="back">← К дню</button>
+      <div><h2>${esc(e.title)}</h2><div class="mk-meta" style="display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin-top:6px">
+      ${pill(e.status)}<span class="mk-tag">${CH[e.channel]}</span></div></div>`;
+    if(!owner)h+='<div class="mk-ro">Режим просмотра: правка доступна владельцу.</div>';
+    h+=`<dl class="mk-kv"><dt>Филиалы</dt><dd style="display:flex;flex-wrap:wrap;gap:4px 10px">${studioDots(e)}</dd>
+      <dt>Даты</dt><dd>${range(e.start,e.end)}</dd><dt>Бюджет</dt><dd>${money(e.budget)}</dd>
+      <dt>Цель</dt><dd>${esc(e.goal||'—')}</dd></dl>
+      <div class="mk-sect"><h3>Механика</h3><div>${esc(e.mech||'—')}</div></div>
+      <div class="mk-sect"><h3>Статус</h3><select data-mk-field="status" id="mk-dStatus" aria-label="Статус"${disabled}>
+        ${Object.keys(ST).map(k=>`<option value="${k}"${k===e.status?' selected':''}>${ST[k]}</option>`).join('')}</select></div>
+      <div class="mk-sect"><h3>Результат</h3><div class="mk-kpi">
+        <div class="mk-fld"><label>${esc(e.kl||'Показатель')}, план</label><input type="number" value="${e.kp}" disabled></div>
+        <div class="mk-fld"><label for="mk-dFact">Факт</label><input type="number" id="mk-dFact" data-mk-field="fact" min="0" value="${e.kf}"${disabled}></div>
+        </div><div class="mk-bar" role="img" aria-label="Выполнено ${pct}%"><i style="width:${pct}%"></i></div>
+        <div style="font-size:12.5px;color:var(--muted)">${pct}% от плана</div></div>`;
+    h+=`<div class="mk-sect"><h3>Подготовка · ${done} из ${e.check.length}</h3>`+
+      e.check.map((x,i)=>`<label class="mk-chk${x.done?' mk-done':''}"><input type="checkbox" data-mk-field="check" data-i="${i}"${x.done?' checked':''}${disabled}><span>${esc(x.t)}</span></label>`).join('')+'</div>';
+    if(owner){
+      h+='<div class="mk-acts">';
+      h+=S.delId===e.id?'<span style="align-self:center">Удалить активность?</span><button class="mk-btn mk-danger" data-mk-act="delyes" type="button">Да, удалить</button><button class="mk-btn" data-mk-act="delno" type="button">Отмена</button>':
+        '<button class="mk-btn" data-mk-act="edit" type="button">Изменить</button><button class="mk-btn mk-danger" data-mk-act="del" type="button">Удалить</button>';
+      h+='</div>';
+    }
+    return h;
+  }
+  function formSide(){
+    const e=S.panel.id?get(S.panel.id):null;
+    const v=S.draft||e||{title:'',studios:['mash'],channel:'promo',status:'plan',start:S.sel,end:S.sel,
+      budget:0,goal:'',mech:'',kl:'',kp:0};
+    let h=`<button type="button" class="mk-link" data-mk-act="cancel">← Отмена</button>
+      <h2>${e?'Изменить активность':'Новая активность'}</h2>
+      <div class="mk-fld"><label for="mk-f-title">Название</label><input type="text" id="mk-f-title" value="${esc(v.title)}" placeholder="Например, «Весенний абонемент»"></div>
+      <div class="mk-fld"><label>Филиалы</label><div class="mk-studs">${SK.map(k=>`<label><input type="checkbox" class="mk-fs" value="${k}"${v.studios.includes(k)?' checked':''}><i class="mk-dot" style="background:${STUD[k].c}"></i>${STUD[k].n}</label>`).join('')}</div></div>
+      <div class="mk-frow"><div class="mk-fld"><label for="mk-f-ch">Канал</label><select id="mk-f-ch" style="width:100%">${Object.keys(CH).map(k=>`<option value="${k}"${k===v.channel?' selected':''}>${CH[k]}</option>`).join('')}</select></div>
+      <div class="mk-fld"><label for="mk-f-st">Статус</label><select id="mk-f-st" style="width:100%">${Object.keys(ST).map(k=>`<option value="${k}"${k===v.status?' selected':''}>${ST[k]}</option>`).join('')}</select></div></div>
+      <div class="mk-frow"><div class="mk-fld"><label for="mk-f-start">Начало</label><input type="date" id="mk-f-start" value="${esc(v.start)}"></div>
+      <div class="mk-fld"><label for="mk-f-end">Конец</label><input type="date" id="mk-f-end" value="${esc(v.end)}"></div></div>
+      <div class="mk-fld"><label for="mk-f-budget">Бюджет, BYN</label><input type="number" min="0" id="mk-f-budget" value="${v.budget}"></div>
+      <div class="mk-fld"><label for="mk-f-goal">Цель</label><input type="text" id="mk-f-goal" value="${esc(v.goal)}"></div>
+      <div class="mk-frow"><div class="mk-fld"><label for="mk-f-kl">Что считаем</label><input type="text" id="mk-f-kl" value="${esc(v.kl)}" placeholder="Новых клиентов"></div>
+      <div class="mk-fld"><label for="mk-f-kp">План</label><input type="number" min="0" id="mk-f-kp" value="${v.kp}"></div></div>
+      <div class="mk-fld"><label for="mk-f-mech">Механика</label><textarea id="mk-f-mech">${esc(v.mech)}</textarea></div>
+      <div class="mk-err" id="mk-f-err"></div><div class="mk-acts"><button class="mk-btn mk-primary" data-mk-act="save" type="button"${S.busy?' disabled':''}>Сохранить</button>
+      <button class="mk-btn" data-mk-act="cancel" type="button"${S.busy?' disabled':''}>Отмена</button></div>`;
+    return h;
+  }
+  function side(){
+    $('#mk-side').innerHTML=S.panel.type==='detail'?detailSide():S.panel.type==='form'?formSide():daySide();
+  }
+  function renderAll(){if(!active())return;syncControls();summary();main();side();}
+  function monthShift(n){S.m+=n;if(S.m<0){S.m=11;S.y--;}if(S.m>11){S.m=0;S.y++;}summary();main();}
+  function showError(err){
+    const msg=String(err?.message||err||'Неизвестная ошибка');
+    const friendly=msg.includes('forbidden')?'Недостаточно прав или сессия завершена.':
+      msg.includes('network')||msg.includes('fetch')?'Нет связи с Supabase. Повторите действие.':
+      msg.includes('schema cache')||msg.includes('Could not find')?'RPC маркетинга недоступен. Установите SQL-блок.':msg;
+    toast('Маркетинг: '+friendly,true);
+  }
+  async function patchRow(id,mutate){
+    if(!owner||S.busy)return;
+    const before=clone(S.events),e=get(id);if(!e)return;
+    mutate(e);S.busy=true;markAppDirty('marketing-write');renderAll();
+    try{
+      const saved=await rpc('app_marketing_save',{p_token:TOKEN,p_data:toDB(e)});
+      if(!active())return;
+      S.events=S.events.map(x=>x.id===id?fromDB(saved):x);
+    }catch(err){S.events=before;showError(err);}
+    finally{S.busy=false;clearAppDirty('marketing-write');renderAll();}
+  }
+  async function saveForm(){
+    if(!owner||S.busy)return;
+    const title=$('#mk-f-title').value.trim(),start=$('#mk-f-start').value,end=$('#mk-f-end').value;
+    const studios=[...page.querySelectorAll('.mk-fs:checked')].map(x=>x.value);
+    const b=$('#mk-f-budget').value,p=$('#mk-f-kp').value;
+    const bad=!title?'Введите название.':title.length>220?'Название слишком длинное.':
+      !studios.length?'Выберите хотя бы один филиал.':!start||!end?'Укажите даты.':end<start?'Конец раньше начала.':
+      !Number.isFinite(Number(b))||Number(b)<0||!Number.isFinite(Number(p))||Number(p)<0?'Бюджет и план не могут быть отрицательными.':'';
+    if(bad){$('#mk-f-err').textContent=bad;return;}
+    const old=clone(S.events),oldPanel=clone(S.panel);
+    const e=oldPanel.id?get(oldPanel.id):null;
+    const draft={id:e?e.id:'mk-tmp-'+Date.now()+'-'+Math.random().toString(16).slice(2),title,studios,
+      channel:$('#mk-f-ch').value,status:$('#mk-f-st').value,start,end,budget:num(b),
+      goal:$('#mk-f-goal').value.trim(),mech:$('#mk-f-mech').value.trim(),
+      kl:$('#mk-f-kl').value.trim(),kp:num(p),kf:e?e.kf:0,
+      check:e?clone(e.check):DEFAULT_CHECK.map(t=>({t,done:false}))};
+    S.draft=clone(draft);
+    S.events=e?S.events.map(x=>x.id===e.id?draft:x):[...S.events,draft];
+    S.panel={type:'detail',id:draft.id};S.sel=draft.start;
+    [S.y,S.m]=draft.start.split('-').slice(0,2).map((x,i)=>Number(x)-(i===1?1:0));
+    S.busy=true;markAppDirty('marketing-write');renderAll();
+    try{
+      const saved=await rpc('app_marketing_save',{p_token:TOKEN,p_data:toDB(draft,!!e)});
+      if(!active())return;
+      const out=fromDB(saved);
+      S.events=S.events.map(x=>x.id===draft.id?out:x);S.panel={type:'detail',id:out.id};S.draft=null;
+      clearAppDirty('marketing-form');toast('Активность сохранена');
+    }catch(err){
+      S.events=old;S.panel=oldPanel;showError(err);
+      // Оставляем введённые поля в форме для исправления/повтора.
+      S.draft=draft;
+    }finally{S.busy=false;clearAppDirty('marketing-write');renderAll();}
+  }
+  async function deleteRow(){
+    if(!owner||S.busy||!S.delId)return;
+    const id=S.delId,old=clone(S.events);S.busy=true;
+    S.events=S.events.filter(e=>e.id!==id);S.delId=null;S.panel={type:'day'};
+    markAppDirty('marketing-write');renderAll();
+    try{await rpc('app_marketing_delete',{p_token:TOKEN,p_id:id});toast('Активность удалена');}
+    catch(err){S.events=old;S.panel={type:'detail',id};showError(err);}
+    finally{S.busy=false;clearAppDirty('marketing-write');renderAll();}
+  }
+  function action(t){
+    const a=t.dataset.mkAct;if(S.busy)return;
+    if(S.panel.type==='form' && ['prev','next','today','day','open','studio','view'].includes(a)){
+      toast('Сначала сохраните активность или нажмите «Отмена»',true);return;
+    }
+    if(a==='prev')return monthShift(-1);
+    if(a==='next')return monthShift(1);
+    if(a==='today'){
+      const x=minskToday().split('-').map(Number);S.y=x[0];S.m=x[1]-1;S.sel=minskToday();S.panel={type:'day'};return renderAll();
+    }
+    if(a==='day'){
+      const day=t.dataset.date;const x=day.split('-').map(Number);S.sel=day;S.y=x[0];S.m=x[1]-1;S.panel={type:'day'};S.delId=null;return renderAll();
+    }
+    if(a==='open'){S.panel={type:'detail',id:t.dataset.id};S.delId=null;return side();}
+    if(a==='back'||a==='cancel'){
+      S.panel={type:'day'};S.delId=null;S.draft=null;clearAppDirty('marketing-form');return side();
+    }
+    if(a==='studio'){S.studio=t.dataset.v;return renderAll();}
+    if(a==='view'){S.view=t.dataset.v;return renderAll();}
+    if(!owner)return;
+    if(a==='add'){S.draft=null;S.panel={type:'form',id:null};markAppDirty('marketing-form');return side();}
+    if(a==='edit'){S.draft=null;S.panel={type:'form',id:S.panel.id};markAppDirty('marketing-form');return side();}
+    if(a==='save')return void saveForm();
+    if(a==='del'){S.delId=S.panel.id;return side();}
+    if(a==='delno'){S.delId=null;return side();}
+    if(a==='delyes')return void deleteRow();
+  }
+  page.addEventListener('click',event=>{
+    const t=event.target.closest('[data-mk-act]');if(t&&page.contains(t))action(t);
+  });
+  page.addEventListener('keydown',event=>{
+    if((event.key==='Enter'||event.key===' ')&&event.target.classList.contains('mk-cell')){
+      event.preventDefault();action(event.target);
+    }
+  });
+  page.addEventListener('change',event=>{
+    const t=event.target;
+    if(t.id==='mk-fChannel'){if(S.panel.type==='form'){syncControls();toast('Сначала сохраните активность или нажмите «Отмена»',true);return;}S.channel=t.value;return renderAll();}
+    if(t.id==='mk-fStatus'){if(S.panel.type==='form'){syncControls();toast('Сначала сохраните активность или нажмите «Отмена»',true);return;}S.status=t.value;return renderAll();}
+    const field=t.dataset.mkField;
+    if(!field||!owner||S.busy||S.panel.type!=='detail')return;
+    const e=get(S.panel.id);if(!e)return;
+    if(field==='status'&&ST[t.value])void patchRow(e.id,x=>{x.status=t.value});
+    if(field==='fact'){
+      if(!Number.isFinite(Number(t.value))||Number(t.value)<0){toast('Факт KPI не может быть отрицательным',true);return side();}
+      void patchRow(e.id,x=>{x.kf=Number(t.value)});
+    }
+    if(field==='check'){
+      const i=Number(t.dataset.i);if(i>=0&&i<e.check.length)void patchRow(e.id,x=>{x.check[i].done=t.checked});
+    }
+  });
+  page.addEventListener('input',event=>{
+    if(S.panel.type==='form'&&owner&&event.target.matches('input,textarea,select'))markAppDirty('marketing-form');
+  });
+  page.innerHTML+='<div class="mk-notice" id="mk-loading" role="status">Загружаем активности из Supabase…</div>';
+  try{
+    const rows=await rpc('app_marketing_list',{p_token:TOKEN});
+    if(!active())return;
+    if(!Array.isArray(rows))throw new Error('Неверный ответ app_marketing_list');
+    S.events=rows.map(fromDB);$('#mk-loading')?.remove();controls();renderAll();
+  }catch(err){
+    if(!active())return;
+    $('#mk-loading').textContent='Не удалось загрузить маркетинг-календарь. Проверьте RPC и подключение к Supabase.';
+    showError(err);return;
+  }
+  // Данные общие для всех устройств. Пока вкладка открыта, перечитываем базу.
+  const timer=setInterval(async()=>{
+    if(!active()){clearInterval(timer);return;}
+    if(document.hidden||S.busy||S.panel.type==='form'||appHasUnsavedWork())return;
+    try{
+      const rows=await rpc('app_marketing_list',{p_token:TOKEN});
+      if(active()&&Array.isArray(rows)&&!S.busy){S.events=rows.map(fromDB);renderAll();}
+    }catch(err){if(active())showError(err);}
+  },120000);
+}
+
 async function renderBonusDashboard(body){
   if(!session){body.innerHTML='<div class="empty">Требуется вход</div>';return;}
   const current=++BONUS_OPEN_SEQUENCE,month=BONUS_MONTH;
