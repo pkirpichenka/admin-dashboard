@@ -1250,7 +1250,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '13.11.2026-b'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '13.11.2026-c'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -3718,7 +3718,7 @@ async function renderUsers(body,options={}){
     el.innerHTML=`<div class="section-title" style="margin-top:4px">📨 Telegram-уведомления</div>
       <p class="msg-sub">Для каждого получателя можно отдельно включить ежедневные отчёты и напоминания календаря. Один Chat ID используется для обоих типов уведомлений. Время в таблице относится к ежедневному отчёту; время календарных напоминаний задаётся в разделе «Календарь → Напоминания».</p>
       <div class="card" style="padding:0;overflow:hidden;max-width:980px"><table class="tg-tbl"><thead><tr><th>Получатель</th><th style="text-align:center">Отчёты</th><th style="text-align:center">Календарь</th><th>Telegram chat ID</th><th>Время отчёта</th><th></th></tr></thead><tbody>${recips.map(r=>{const c=TG.recipients[r.login]||{};const calOn=(c.calendar===true)||(c.calendar==null&&r.login===(ownerUser&&ownerUser.login));return `<tr><td class="tg-name">${escapeHtml(r.name)}</td><td data-label="Отчёты" style="text-align:center"><input type="checkbox" data-tgen="${escapeHtml(r.login)}" ${c.enabled?'checked':''}/></td><td data-label="Календарь" style="text-align:center"><input type="checkbox" data-tgcal="${escapeHtml(r.login)}" ${calOn?'checked':''}/></td><td data-label="Telegram chat ID"><input class="tg-inp" data-tgcid="${escapeHtml(r.login)}" value="${escapeHtml(c.chatId||'')}" placeholder="напр. 123456789"/></td><td data-label="Время отчёта"><input type="time" data-tgtime="${escapeHtml(r.login)}" value="${escapeHtml(c.time||'23:00')}"/></td><td class="tg-test" data-label="Проверка"><button class="btn btn-sm" data-tgtest="${escapeHtml(r.login)}">Тест</button></td></tr>`;}).join('')}</tbody></table></div>
-      <div class="msg-actions"><button class="btn btn-primary" id="tgSave">Сохранить получателей</button><button class="btn btn-sm" id="tgHealthBtn" type="button">Проверить доставку Telegram</button><span id="tgInd" class="msg-ind"></span></div>
+      <div class="msg-actions" style="flex-wrap:wrap"><button class="btn btn-primary" id="tgSave">Сохранить получателей</button><button class="btn btn-sm" id="tgHealthBtn" type="button">Проверить доставку Telegram</button>${session.role==='owner'?'<button class="btn btn-sm" id="tgYesterdayTest" type="button">🧪 Отправить отчёт за вчера (тест)</button>':''}<span id="tgInd" class="msg-ind"></span></div>
       <div id="tgHealthText" style="font-size:12px;color:var(--ink-soft);white-space:pre-line;padding:4px 0 18px"></div>`;
     function tgSet(login,k,v){ TG.recipients[login]=Object.assign({time:'23:00'},TG.recipients[login]||{}); TG.recipients[login][k]=v; markAppDirty('telegram'); }
     el.querySelectorAll('[data-tgen]').forEach(x=>x.onchange=()=>tgSet(x.dataset.tgen,'enabled',x.checked));
@@ -3753,6 +3753,24 @@ async function renderUsers(body,options={}){
       }catch(e){out.textContent='Не удалось прочитать состояние: '+String(e.message||e);}
       b.disabled=false;
     };
+    if(session.role==='owner'){
+      const b=el.querySelector('#tgYesterdayTest');
+      if(b)b.onclick=async()=>{
+        if(appHasUnsavedWork()){toast('Сначала сохраните настройки получателей Telegram.',true);return;}
+        b.disabled=true;const old=b.textContent;b.textContent='Отправляем тест…';
+        try{
+          const res=await fetch(SUPABASE_URL+'/functions/v1/daily-report',{
+            method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON_KEY},
+            body:JSON.stringify({mode:'test_yesterday',token:TOKEN})
+          });
+          const ans=await res.json().catch(()=>({}));
+          if(!res.ok||!ans?.ok)throw new Error(ans?.error||'HTTP '+res.status);
+          void auditAction('Отправлен тест вечернего отчёта за вчера','telegram',ans.day||'',{parts:ans.parts});
+          toast('Telegram принял '+(ans.parts||1)+' часть(и) отчёта за '+(ans.day||'вчера')+' ✓');
+        }catch(e){toast('Тест вечернего отчёта: '+String(e.message||e),true);}
+        finally{b.disabled=false;b.textContent=old;}
+      };
+    }
     el.querySelector('#tgSave').onclick=async()=>{ const ind=el.querySelector('#tgInd'); try{ await apiSaveSettings(Object.assign({},settings,{telegram:TG})); settings.telegram=TG; void auditAction('Изменены настройки Telegram','telegram','recipients',{recipients:TG.recipients}); clearAppDirty('telegram'); ind.textContent='✓ Сохранено'; setTimeout(()=>{ if(ind) ind.textContent=''; },2500); }catch(e){ handleErr(e); } };
   }
   function drawU(){ const el=body.querySelector('#uBody'); if(selectedView==='telegram') drawTelegram(el); else if(selectedView==='archive') drawArchive(el); else if(selectedView==='log') void drawAudit(el); else drawAdmins(el); }
