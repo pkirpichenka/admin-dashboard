@@ -1259,6 +1259,16 @@ table th>*,table td>*{max-width:100%;box-sizing:border-box}
 .bonus-page .bp-types-foot{font-size:11px;line-height:1.5;color:#6a788a;margin-top:16px}
 @media(max-width:690px){.bonus-page .bp-types-item{grid-template-columns:minmax(85px,1fr) minmax(50px,1.1fr) 70px;gap:8px}.bonus-page .bp-types-content{padding:11px}.bonus-page .bp-types-toolbar label{width:100%;justify-content:space-between}}
 
+
+/* FAD 13.11.2026-e — manual bonus refresh, icon-only */
+.bonus-page .bp-refresh-btn{height:41px;width:41px;min-width:41px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #cfd7e3;border-radius:9px;background:#fff;color:#247c59;cursor:pointer;padding:0;transition:background .15s}
+.bonus-page .bp-refresh-btn:hover{background:#eef7f2}
+.bonus-page .bp-refresh-btn:focus-visible{outline:3px solid #93c8ac;outline-offset:2px}
+.bonus-page .bp-refresh-btn:disabled{cursor:wait;opacity:.6}
+.bonus-page .bp-refresh-btn svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.bonus-page .bp-refresh-btn.bp-loading svg{animation:bp-spin .85s linear infinite}
+@keyframes bp-spin{to{transform:rotate(360deg)}}
+@media(max-width:640px){.bonus-page .bp-head{flex-wrap:wrap}.bonus-page .bp-month-row{width:100%;justify-content:flex-end;flex-wrap:nowrap}.bonus-page .bp-month-row>span{display:none}.bonus-page .bp-month{flex:1;min-width:0}.bonus-page .bp-refresh-btn{flex:0 0 41px}}
 </style>
 
 <div id="root"></div>
@@ -1279,7 +1289,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '13.11.2026-d'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '13.11.2026-e'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -4740,7 +4750,7 @@ function bonusRenderHtml(model){const owner=model.owner,branches=model.branches;
   const stale=model.period===liveMonth && minskHour>=8 && minskHour<=23 && (!model.updatedAt || Date.now()-new Date(model.updatedAt).getTime()>90*60*1000);
   const freshnessNotice=stale?'<span style="color:#ae4529;font-weight:600"> · ⚠️ Автоматическое обновление задерживается — последние подтверждённые данные сохранены</span>':'';
   return `<div class="bonus-page fade-in">
-    <div class="bp-head"><div><div class="bp-eyebrow">FLEXICO · АДМИНИСТРАТОРЫ</div><h1 class="bp-h1">План и бонусы</h1></div><div class="bp-month-row"><span>Период</span><select class="bp-month" id="bp-month">${bonusMonthOptions(model.period)}</select></div></div>
+    <div class="bp-head"><div><div class="bp-eyebrow">FLEXICO · АДМИНИСТРАТОРЫ</div><h1 class="bp-h1">План и бонусы</h1></div><div class="bp-month-row"><span>Период</span><select class="bp-month" id="bp-month">${bonusMonthOptions(model.period)}</select><button type="button" id="bp-refresh" class="bp-refresh-btn" aria-label="${owner&&model.period===liveMonth?'Запросить свежие продажи из ImpulseCRM':'Обновить данные из Supabase'}" title="${owner&&model.period===liveMonth?'Обновить продажи из ImpulseCRM':'Обновить отображение из Supabase'}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14-5L3 9m0-6v6h6M4 13a8 8 0 0 0 14 5l3-3m0 6v-6h-6"/></svg></button></div></div>
     <section class="bp-totals">
       <div class="bp-total"><div class="bp-label">${model.viewAll?'План, все филиалы':'План своего филиала'}</div><div class="bp-total-value">${bonusFormat(model.planTotal)}</div><div class="bp-sub">${model.branches.map(b=>bonusHtml(b.name)+' '+(b.target??'—')).join(' · ')}</div></div>
       <div class="bp-total"><div class="bp-label">Факт</div><div class="bp-total-value">${bonusFormat(model.factTotal)}</div><div class="bp-sub">${model.branches.map(b=>bonusHtml(b.name)+' '+bonusFormat(b.fact)+' (в студии '+bonusFormat(b.physicalFact)+')').join(' · ')}</div></div>
@@ -5223,6 +5233,30 @@ async function renderBonusDashboard(body){
     body.innerHTML=bonusRenderHtml(model);
     void bonusRenderTypes(body,model,stillCurrent);
     const sel=body.querySelector('#bp-month');if(sel)sel.onchange=e=>{BONUS_MONTH=e.target.value;renderBonusDashboard(body)};
+    const refreshButton=body.querySelector('#bp-refresh');
+    if(refreshButton)refreshButton.onclick=async()=>{
+      if(refreshButton.disabled)return;
+      if(appHasUnsavedWork()){toast('Сначала сохраните изменения',true);return;}
+      refreshButton.disabled=true;refreshButton.classList.add('bp-loading');
+      try{
+        const currentMonth=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Minsk',year:'numeric',month:'2-digit'}).format(new Date());
+        if(model.owner&&model.period===currentMonth){
+          const response=await fetch(SUPABASE_URL+'/functions/v1/fad-bonus-sync',{
+            method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON_KEY,'apikey':SUPABASE_ANON_KEY},
+            body:JSON.stringify({mode:'sync',token:TOKEN,month:model.period}),
+            signal:AbortSignal.timeout(120000)
+          });
+          const result=await response.json().catch(()=>({}));
+          if(!response.ok||result?.ok!==true||result?.saved!==true||result?.month!==model.period)
+            throw new Error('ImpulseCRM: '+String(result?.error||'обновление не подтверждено'));
+          toast('ImpulseCRM: синхронизировано '+result.memberships+' абонементов ✓');
+        }else{
+          toast('Перечитываем сохранённые показатели из Supabase');
+        }
+        if(body.isConnected && body.querySelector('.bonus-page'))await renderBonusDashboard(body);
+      }catch(e){toast('Не удалось обновить: '+String(e?.message||e),true);}
+      finally{if(refreshButton.isConnected){refreshButton.disabled=false;refreshButton.classList.remove('bp-loading');}}
+    };
     body.querySelectorAll('[data-bp-plan]').forEach(input=>{const before=input.value;const commit=async()=>{
       if(input.value===before)return;
       const value=input.value.trim()===''?0:Number(input.value);
