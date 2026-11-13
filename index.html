@@ -1019,13 +1019,7 @@ table th>*,table td>*{max-width:100%;box-sizing:border-box}
 .bonus-page .bp-mode{border:1px solid #cbd5e2;border-radius:7px;background:white;color:#39495b;font-size:11px;padding:6px}
 .bonus-page .bp-editing{opacity:.6;pointer-events:none}
 .bonus-page .bp-branches-single{grid-template-columns:minmax(280px,400px)}
-.bonus-page .bp-access{border:1px solid #d7dfeb;border-radius:10px;background:#fff;margin:-3px 0 24px;padding:16px 18px}
-.bonus-page .bp-access-head{margin-bottom:12px}
-.bonus-page .bp-access-list{display:grid;grid-template-columns:1fr 1fr;gap:0 24px}
-.bonus-page .bp-access-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;border-top:1px solid #e5eaf0}
-.bonus-page .bp-access-name{font-size:12px;font-weight:600;line-height:1.4}
-.bonus-page .bp-access-row .bp-toggle-container{font-size:11px;flex-shrink:0}
-@media(max-width:760px){.bonus-page .bp-access-list{grid-template-columns:1fr}.bonus-page .bp-branches-single{grid-template-columns:1fr}}
+@media(max-width:760px){.bonus-page .bp-branches-single{grid-template-columns:1fr}}
 @media(max-width:980px){.bonus-page{padding:24px 17px}.bonus-page .bp-branches{grid-template-columns:1fr 1fr}.bonus-page .bp-totals{grid-template-columns:1fr 1fr}.bonus-page .bp-total:nth-child(2){border-right:0}.bonus-page .bp-total:nth-child(-n+2){border-bottom:1px solid #d7dfeb}.bonus-page .bp-tier-list{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:640px){.bonus-page{padding:18px 12px}.bonus-page .bp-head{align-items:flex-start}.bonus-page .bp-h1{font-size:23px}.bonus-page .bp-branches{grid-template-columns:1fr}.bonus-page .bp-totals{grid-template-columns:1fr 1fr}.bonus-page .bp-total{padding:13px 10px;min-height:104px}.bonus-page .bp-total-value{font-size:23px}.bonus-page .bp-tier-list{grid-template-columns:repeat(2,1fr)}.bonus-page .bp-table-hint{display:none}}
 
@@ -1230,6 +1224,41 @@ table th>*,table td>*{max-width:100%;box-sizing:border-box}
 .bh-form select,.bh-form input{width:100%;max-width:100%;box-sizing:border-box}
 .bh-dialog .actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;position:static;margin-top:2px;padding:0;background:transparent;z-index:auto}
 @media(max-width:560px){.bh-form{grid-template-columns:1fr}.bh-history-item{flex-direction:column;gap:4px}}
+
+/* FAD 13.11.2026-d · isolated bonus analytics and employee access */
+.staff-bonus-access{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 2px 5px;border-top:1px solid var(--line);margin-top:12px}
+.staff-bonus-access>div{display:flex;flex-direction:column;gap:3px;min-width:0}
+.staff-bonus-access b{font-size:12px;color:var(--ink)}
+.staff-bonus-access small{font-size:11px;line-height:1.45;color:var(--ink-soft)}
+.staff-bonus-access .sw{flex-shrink:0}
+.bonus-page .bp-types{background:var(--surface,#fff);border:1px solid #d7dfeb;border-radius:11px;margin:0 0 25px;overflow:hidden}
+.bonus-page .bp-types-summary{cursor:pointer;padding:15px 17px;font-size:15px;font-weight:710;display:flex;justify-content:space-between;gap:14px;align-items:center;list-style:none;color:#263245}
+.bonus-page .bp-types-summary::-webkit-details-marker{display:none}
+.bonus-page .bp-types-chevron{color:#607389;font-size:11px;font-weight:600;white-space:nowrap}
+.bonus-page .bp-types[open] .bp-types-chevron{color:#287f5c}
+.bonus-page .bp-types-content{border-top:1px solid #e5e9ef;padding:18px}
+.bonus-page .bp-types-toolbar{display:flex;justify-content:space-between;align-items:flex-end;gap:15px;flex-wrap:wrap;margin-bottom:15px}
+.bonus-page .bp-types-toolbar>div>b{font-size:24px;color:#223042}
+.bonus-page .bp-types-toolbar>div>span{font-size:11px;color:#728095}
+.bonus-page .bp-types-toolbar label{font-size:11px;color:#64738a;display:flex;align-items:center;gap:8px}
+.bonus-page .bp-types-toolbar select{width:auto;min-width:135px;border:1px solid #ccd7df;border-radius:7px;background:#fff;color:#283647;padding:7px}
+.bonus-page .bp-types-chart{display:flex;flex-direction:column;gap:5px}
+.bonus-page .bp-types-item{display:grid;grid-template-columns:minmax(115px,1.1fr) minmax(80px,2.4fr) 85px;gap:14px;width:100%;align-items:center;border:1px solid transparent;padding:10px 8px;background:transparent;text-align:left;cursor:pointer;border-radius:8px;color:#263245}
+.bonus-page .bp-types-item:hover,.bonus-page .bp-types-item.active{background:#f3f8f5;border-color:#cce6d9}
+.bonus-page .bp-types-item-title{font-size:12px;font-weight:650;overflow-wrap:anywhere}
+.bonus-page .bp-types-item-title small{display:block;color:#748396;font-size:10px;font-weight:400;margin-top:3px}
+.bonus-page .bp-types-bar{height:9px;border-radius:999px;overflow:hidden;background:#e5ece9}
+.bonus-page .bp-types-bar>span{display:block;height:100%;background:#2d8867;border-radius:inherit;min-width:0}
+.bonus-page .bp-types-qty{font-size:13px;font-weight:720;text-align:right;white-space:nowrap}
+.bonus-page .bp-types-qty small{font-size:10px;font-weight:450;color:#748396}
+.bonus-page .bp-types-detail{margin-top:16px;border:1px solid #dce9e2;background:#f7fbf8;border-radius:9px;padding:12px 15px}
+.bonus-page .bp-types-detail-head{display:flex;align-items:center;justify-content:space-between;font-size:12px;gap:10px;padding-bottom:8px;border-bottom:1px solid #dce9e2}
+.bonus-page .bp-types-person{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #e2ede6;font-size:12px}
+.bonus-page .bp-types-person:last-child{border-bottom:0}
+.bonus-page .bp-types-message{font-size:12px;color:#64738a;line-height:1.55;padding:7px 3px}
+.bonus-page .bp-types-foot{font-size:11px;line-height:1.5;color:#6a788a;margin-top:16px}
+@media(max-width:690px){.bonus-page .bp-types-item{grid-template-columns:minmax(85px,1fr) minmax(50px,1.1fr) 70px;gap:8px}.bonus-page .bp-types-content{padding:11px}.bonus-page .bp-types-toolbar label{width:100%;justify-content:space-between}}
+
 </style>
 
 <div id="root"></div>
@@ -1250,7 +1279,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '13.11.2026-c'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '13.11.2026-d'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -3599,6 +3628,15 @@ async function renderUsers(body,options={}){
   if(viewAudit) subs.push(['log','Лог']);
   if(!subs.length){ body.innerHTML='<div class="empty">Нет доступных разделов.</div>'; return; }
   const selectedView=String(options.view||'admins');
+  let bonusAccess=new Map(),bonusAccessReady=false;
+  if(session.role==='owner'&&selectedView==='admins'){
+    try{
+      const grants=await rpc('app_bonus_access_list',{p_token:TOKEN});
+      if(!Array.isArray(grants))throw new Error('Неверный ответ настроек бонусов');
+      bonusAccess=new Map(grants.map(x=>[String(x.employee_id),x.scope==='all'?'all':'branch']));
+      bonusAccessReady=true;
+    }catch(e){toast('Не удалось загрузить доступ к бонусам: '+String(e.message||e),true);}
+  }
   if(!subs.some(x=>x[0]===selectedView)){body.innerHTML='<div class="empty">Нет доступа к этому разделу.</div>';return;}
   body.innerHTML='<div id="uBody"></div>';
   const refreshPanel=()=>{
@@ -3641,10 +3679,24 @@ async function renderUsers(body,options={}){
       <div id="ulist" class="staff-account-grid">${active.length?active.map(u=>{
         const e=staffByLogin[u.login];
         const profile=e?employeeCard(e,canEditStaff):`<div class="staff-card"><div class="staff-head"><b class="staff-name">${escapeHtml(u.name)}</b><span class="staff-role">Администратор</span></div><div class="staff-meta">Логин: ${escapeHtml(u.login)}</div></div>`;
-        return `<div class="staff-account-box">${profile}<details class="staff-account-details"><summary>Учётная запись и права</summary>${userRow(u,(settings.adminPhones||{})[u.login]||'',{manage:manageAdmins,permissions:managePerms})}${session.role==='owner'&&e?`<div class="bh-card-controls"><button type="button" class="btn btn-sm" data-bh-open="${e.id}">История филиала / перевод</button><span class="bh-note">С начала выбранного месяца · предыдущие периоды сохраняются</span></div>`:''}</details></div>`;
+        return `<div class="staff-account-box">${profile}<details class="staff-account-details"><summary>Учётная запись и права</summary>${userRow(u,(settings.adminPhones||{})[u.login]||'',{manage:manageAdmins,permissions:managePerms})}${session.role==='owner'&&e?`<div class="staff-bonus-access"><div><b>Доступ к планам и бонусам</b><small>${bonusAccessReady?(bonusAccess.get(String(e.id))==='all'?'Все филиалы и администраторы':'Свой филиал и коллеги'):'Настройки временно недоступны'}</small></div><button type="button" class="sw ${bonusAccess.get(String(e.id))==='all'?'on':''}" data-ba-access="${e.id}" role="switch" aria-label="Показать все филиалы ${escapeHtml(e.full_name||u.name)}" aria-checked="${bonusAccess.get(String(e.id))==='all'}" ${bonusAccessReady?'':'disabled'}></button></div>`:''}${session.role==='owner'&&e?`<div class="bh-card-controls"><button type="button" class="btn btn-sm" data-bh-open="${e.id}">История филиала / перевод</button><span class="bh-note">С начала выбранного месяца · предыдущие периоды сохраняются</span></div>`:''}</details></div>`;
       }).join(''):'<div class="empty">Активных администраторов нет.</div>'}</div>`;
     const main=el.querySelector('#ulist');
     wireRows(main);
+    if(session.role==='owner')main.querySelectorAll('[data-ba-access]').forEach(btn=>btn.onclick=async()=>{
+      if(!bonusAccessReady)return;
+      const id=String(btn.dataset.baAccess);
+      const current=bonusAccess.get(id)==='all';
+      const next=current?'branch':'all';
+      btn.disabled=true;
+      try{
+        await rpc('app_bonus_set_view_scope',{p_token:TOKEN,p_employee_id:Number(id),p_scope:next});
+        bonusAccess.set(id,next);
+        btn.classList.toggle('on',next==='all');btn.setAttribute('aria-checked',String(next==='all'));
+        btn.parentElement.querySelector('small').textContent=next==='all'?'Все филиалы и администраторы':'Свой филиал и коллеги';
+        toast('Права просмотра бонусов сохранены');
+      }catch(e){handleErr(e);}finally{btn.disabled=false;}
+    });
     if(session.role==='owner')main.querySelectorAll('[data-bh-open]').forEach(b=>b.onclick=()=>{
       const e=staffRows.find(x=>String(x.id)===String(b.dataset.bhOpen));
       if(e)bonusBranchHistoryModal(e,refreshPanel);
@@ -4698,14 +4750,16 @@ function bonusRenderHtml(model){const owner=model.owner,branches=model.branches;
     <h2 class="bp-section-title">${model.viewAll?'Выполнение плана по филиалам':'Выполнение плана своего филиала'}</h2>
     <div class="bp-branches${model.viewAll?'':' bp-branches-single'}">${branches.map(b=>bonusCard(b,model)).join('')}</div>
     <div class="bp-note" style="margin:-12px 0 24px">Факт для премирования — продажи администраторов, закреплённых за филиалом в выбранном месяце. В скобках — продажи, оформленные по адресу студии.</div>
+    <details id="bp-sales-types" class="bp-types">
+      <summary class="bp-types-summary"><span>📊 Структура продаж по абонементам</span><span class="bp-types-chevron">Подробнее ▾</span></summary>
+      <div id="bp-types-host" class="bp-types-content"><div class="bp-types-message">Загружаем типы проданных абонементов…</div></div>
+    </details>
     <div class="bp-table-head"><h2 class="bp-section-title" style="margin:0">Администраторы</h2><div class="bp-table-hint">Продажи относятся к основному филиалу администратора в выбранном месяце. В скобках — место оформления.</div></div>
     <div class="bp-table-scroll"><table class="bp-table"><thead><tr><th>Администратор</th><th>Филиал</th><th class="bp-num">Факт</th><th class="bp-num">Доля филиала</th><th class="bp-num">Бонус Flexico</th><th class="bp-num">Качество, ${bonusMoney(model.settings.quality_amount)}</th><th class="bp-num">Итого</th></tr></thead>
      <tbody>${model.staff.map(s=>{const b=BONUS_BRANCHES.find(x=>x.id===s.studio)||BONUS_BRANCHES[0];return `<tr><td class="bp-name">${bonusHtml(s.name)}</td><td><span class="bp-branch-tag">${bonusLabel(b)}</span></td>
       <td class="bp-num"><span class="bp-admin-count">${bonusFormat(s.count)}</span><span class="bp-admin-places">(${s.physicalSummary.length?s.physicalSummary.map(f=>bonusHtml((BONUS_BRANCHES.find(b=>b.id===f.studio)||{}).name||'Неизвестный филиал')+' '+bonusFormat(f.count)).join(' · '):'нет продаж'})</span></td><td class="bp-num"><span class="bp-small-muted">${Math.round(s.share)}%</span></td><td class="bp-num">${bonusMoney(s.flexico)}</td>
       <td><div class="bp-toggle-container"><span>${s.quality?'Платить':'Не платить'}</span><button type="button" class="bp-toggle" role="switch" aria-label="Качество: ${bonusHtml(s.name)}" aria-checked="${s.quality}" ${owner?`data-bp-quality="${s.id}"`:'disabled'}></button></div></td><td class="bp-num"><b>${bonusMoney(s.total)}</b></td></tr>`}).join('')}
      <tr class="bp-total-row"><td colspan="2">${model.viewAll?'Всего':'Итого по филиалу'}</td><td class="bp-num">${bonusFormat(model.factTotal)}</td><td></td><td class="bp-num">${bonusMoney(model.flexicoTotal)}</td><td class="bp-num">${bonusMoney(model.qualityTotal)}</td><td class="bp-num">${bonusMoney(model.payout)}</td></tr></tbody></table></div>
-    ${owner?`<section class="bp-access"><div class="bp-access-head"><div><h2 class="bp-section-title" style="margin:0">Доступ к планам и бонусам</h2><div class="bp-note" style="margin-top:4px">По умолчанию администратор видит весь свой филиал и коллег по нему. Разрешение действует для всех месяцев.</div></div></div>
-       <div class="bp-access-list">${model.staff.map(s=>{const full=model.accessGrants.some(a=>String(a.employee_id)===String(s.id)&&a.scope==='all');return `<div class="bp-access-row"><div class="bp-access-name">${bonusHtml(s.name)}<span class="bp-small-muted"> · ${bonusHtml((BONUS_BRANCHES.find(b=>b.id===s.studio)||{}).name||'')}</span></div><div class="bp-toggle-container"><span>${full?'Все филиалы':'Свой филиал'}</span><button type="button" class="bp-toggle" role="switch" aria-label="Доступ ко всем филиалам: ${bonusHtml(s.name)}" aria-checked="${full}" data-bp-access="${s.id}"></button></div></div>`}).join('')}</div></section>`:''}
     <div class="bp-footer-head"><h2 class="bp-section-title" style="margin:0">${owner?`<button class="bp-settings-trigger" id="bp-settings-trigger" type="button" title="Настроить бонусы">Шкала бонуса Flexico</button>`:'Шкала бонуса Flexico'}</h2><div class="bp-table-hint">Выплата за выполнение плана своего филиала. Ниже 90% бонус не начисляется.</div></div>
     <div class="bp-tier-list">${model.tiers.map(t=>{
       const badges=model.branches.filter(b=>b.tier&&b.tier.pct===t.pct);
@@ -5083,6 +5137,75 @@ async function renderMarketing(body){
     }catch(err){if(active())showError(err);}
   },120000);
 }
+// --- Bonus membership breakdown · 13.11.2026-d ---
+// Read-only. Server returns only authorized employees and never raw client/sale records.
+let BONUS_TYPES_UI={studio:'all',selected:'',period:''};
+async function bonusRenderTypes(body,model,isCurrent){
+  const root=body.querySelector('#bp-sales-types'),host=body.querySelector('#bp-types-host');
+  if(!root||!host)return;
+  if(BONUS_TYPES_UI.period!==model.period){BONUS_TYPES_UI={studio:'all',selected:'',period:model.period};}
+  try{
+    const data=await rpc('app_bonus_types_snapshot',{p_token:TOKEN,p_period:model.period});
+    if(!isCurrent()||!root.isConnected)return;
+    if(!data||!data.ready){
+      host.innerHTML='<div class="bp-types-message">Детализация пока не синхронизирована. После первого успешного обновления ImpulseCRM здесь появятся реальные типы продаж. Общий факт и бонусы остаются без изменений.</div>';
+      return;
+    }
+    if(Number(data.expected)!==model.factTotal){
+      host.innerHTML='<div class="bp-types-message">Расхождение детализации с общим фактом. Данные не показываются до следующей успешной синхронизации.</div>';
+      return;
+    }
+    const visible=new Set(model.branches.map(x=>x.id));
+    const staff=new Map(model.staff.map(x=>[String(x.id),x]));
+    const rows=(Array.isArray(data.rows)?data.rows:[]).map(r=>({
+      id:String(r.employee_id),home:String(r.home),type:String(r.type||'Тип не определён'),
+      source:String(r.source||'unknown'),count:Number(r.count)||0
+    })).filter(r=>visible.has(r.home)&&staff.has(r.id)&&r.count>0);
+    const sourceTag={api_name:'',trainings_total:' · по количеству занятий',unknown:' · тип не определён'};
+    function draw(){
+      const branches=model.branches;
+      if(BONUS_TYPES_UI.studio!=='all'&&!visible.has(BONUS_TYPES_UI.studio))BONUS_TYPES_UI.studio='all';
+      const picked=BONUS_TYPES_UI.studio;
+      const current=rows.filter(r=>picked==='all'||r.home===picked);
+      const groups=new Map();
+      for(const r of current){const key=JSON.stringify([r.type,r.source]);
+        if(!groups.has(key))groups.set(key,{key,label:r.type,source:r.source,count:0});
+        groups.get(key).count+=r.count;
+      }
+      const sorted=[...groups.values()].sort((a,b)=>b.count-a.count||a.label.localeCompare(b.label,'ru'));
+      const total=sorted.reduce((sum,g)=>sum+g.count,0);
+      const fact=picked==='all'?model.factTotal:(branches.find(b=>b.id===picked)?.fact||0);
+      if(total!==fact){host.innerHTML='<div class="bp-types-message">Данные типов не совпадают с фактом филиала. Дождитесь следующей синхронизации.</div>';return;}
+      if(BONUS_TYPES_UI.selected&&!groups.has(BONUS_TYPES_UI.selected))BONUS_TYPES_UI.selected='';
+      const selectLabel=(b)=>b.name;
+      host.innerHTML=`<div class="bp-types-toolbar"><div><b>${bonusFormat(total)}</b><span> продано абонементов · накопительно за ${bonusHtml(bonusPeriodTitle(model.period).toLowerCase())}</span></div>
+        <label>Основной филиал <select id="bp-types-studio"><option value="all">Все доступные филиалы</option>${branches.map(b=>`<option value="${b.id}"${picked===b.id?' selected':''}>${bonusHtml(selectLabel(b))}</option>`).join('')}</select></label></div>
+      <div class="bp-types-chart">${sorted.length?sorted.map(g=>{
+        const active=BONUS_TYPES_UI.selected===g.key;
+        const percent=total?g.count/total*100:0;
+        return `<button type="button" class="bp-types-item${active?' active':''}" data-bp-type="${bonusHtml(g.key)}" aria-expanded="${active}">
+        <span class="bp-types-item-title">${bonusHtml(g.label)}<small>${bonusHtml(sourceTag[g.source]||'')}</small></span>
+        <span class="bp-types-bar"><span style="width:${percent.toFixed(2)}%"></span></span>
+        <span class="bp-types-qty">${bonusFormat(g.count)} <small>(${bonusFormat(Math.round(percent))}%)</small></span></button>`}).join(''):'<div class="bp-types-message">Продаж за выбранный период пока нет.</div>'}</div>
+      ${BONUS_TYPES_UI.selected?(()=>{const choice=groups.get(BONUS_TYPES_UI.selected);
+        const byStaff=new Map();for(const r of current){if(JSON.stringify([r.type,r.source])!==choice.key)continue;byStaff.set(r.id,(byStaff.get(r.id)||0)+r.count);}
+        const named=[...byStaff].map(([id,count])=>({name:staff.get(id)?.name||'Неизвестный сотрудник',count}))
+          .sort((a,b)=>b.count-a.count||a.name.localeCompare(b.name,'ru'));
+        return `<div class="bp-types-detail"><div class="bp-types-detail-head"><b>${bonusHtml(choice.label)} — кто продал</b><span>${bonusFormat(choice.count)} шт.</span></div>
+        ${named.map(s=>`<div class="bp-types-person"><span>${bonusHtml(s.name)}</span><b>${bonusFormat(s.count)}</b></div>`).join('')}</div>`;
+      })():''}
+      <div class="bp-types-foot">Продажи отнесены к основному филиалу администратора за выбранный месяц. ${sorted.some(g=>g.source!=='api_name')?'Часть названий определена по числу занятий или отсутствует в API; такие данные явно помечены.':'Типы получены из полей тарифов ImpulseCRM.'} Новые данные поступают через автоматическую синхронизацию.</div>`;
+      const sel=host.querySelector('#bp-types-studio');if(sel)sel.onchange=ev=>{BONUS_TYPES_UI.studio=ev.target.value;BONUS_TYPES_UI.selected='';draw();};
+      host.querySelectorAll('[data-bp-type]').forEach(btn=>btn.onclick=()=>{BONUS_TYPES_UI.selected=BONUS_TYPES_UI.selected===btn.dataset.bpType?'':btn.dataset.bpType;draw();});
+    }
+    draw();
+  }catch(err){
+    if(!isCurrent()||!root.isConnected)return;
+    host.innerHTML='<div class="bp-types-message">Не удалось загрузить структуру продаж. Проверьте установку SQL и синхронизацию бонусов.</div>';
+    toast('Структура продаж: '+String(err?.message||err),true);
+  }
+}
+
 
 async function renderBonusDashboard(body){
   if(!session){body.innerHTML='<div class="empty">Требуется вход</div>';return;}
@@ -5098,6 +5221,7 @@ async function renderBonusDashboard(body){
     if(!stillCurrent())return;
     const model=calcBonuses(month,snapshot);
     body.innerHTML=bonusRenderHtml(model);
+    void bonusRenderTypes(body,model,stillCurrent);
     const sel=body.querySelector('#bp-month');if(sel)sel.onchange=e=>{BONUS_MONTH=e.target.value;renderBonusDashboard(body)};
     body.querySelectorAll('[data-bp-plan]').forEach(input=>{const before=input.value;const commit=async()=>{
       if(input.value===before)return;
@@ -5108,15 +5232,6 @@ async function renderBonusDashboard(body){
     body.querySelectorAll('[data-bp-quality]').forEach(btn=>btn.onclick=async()=>{
       btn.disabled=true;const id=Number(btn.dataset.bpQuality),next=btn.getAttribute('aria-checked')!=='true';
       try{await rpc('app_bonus_set_quality',{p_token:TOKEN,p_period:month,p_employee_id:id,p_payable:next});await renderBonusDashboard(body)}catch(e){btn.disabled=false;handleErr(e)}
-    });
-    body.querySelectorAll('[data-bp-access]').forEach(btn=>btn.onclick=async()=>{
-      const id=Number(btn.dataset.bpAccess),scope=btn.getAttribute('aria-checked')==='true'?'branch':'all';
-      btn.disabled=true;
-      try{
-        await rpc('app_bonus_set_view_scope',{p_token:TOKEN,p_employee_id:id,p_scope:scope});
-        toast(scope==='all'?'Разрешён просмотр всех филиалов':'Оставлен просмотр своего филиала');
-        await renderBonusDashboard(body);
-      }catch(e){btn.disabled=false;handleErr(e)}
     });
     const cfg=body.querySelector('#bp-settings-trigger');if(cfg)cfg.onclick=()=>bonusSettingsEditor(model,()=>renderBonusDashboard(body));
     // Rights are enforced in app_bonus_snapshot; readonly UI is not an authorization boundary.
