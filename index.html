@@ -1213,6 +1213,23 @@ table th>*,table td>*{max-width:100%;box-sizing:border-box}
   }
 }
 
+
+/* FAD · История закрепления администраторов · 13.11.2026-b */
+.bh-home-display{display:inline-flex;align-items:center;gap:6px;min-width:120px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);font-size:12px;color:var(--ink)}
+.bh-card-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 12px;border-top:1px solid var(--line)}
+.bh-card-controls .bh-note{font-size:11px;color:var(--ink-faint)}
+.bh-dialog{display:flex;flex-direction:column;gap:12px;min-height:0;overflow:visible}
+.bh-history{display:flex;flex-direction:column;gap:7px}
+.bh-history-item{border:1px solid var(--line);border-left:4px solid var(--leaf,#2e815d);border-radius:8px;padding:9px 11px;display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.bh-history-name{font-weight:700;font-size:13px}
+.bh-history-period{font-size:12px;color:var(--ink-faint)}
+.bh-history-info{font-size:11px;color:var(--ink-faint);margin-top:3px}
+.bh-warning{padding:10px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;font-size:12px;color:var(--ink-faint)}
+.bh-form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.bh-form .field{min-width:0}
+.bh-form select,.bh-form input{width:100%;max-width:100%;box-sizing:border-box}
+.bh-dialog .actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;position:static;margin-top:2px;padding:0;background:transparent;z-index:auto}
+@media(max-width:560px){.bh-form{grid-template-columns:1fr}.bh-history-item{flex-direction:column;gap:4px}}
 </style>
 
 <div id="root"></div>
@@ -1233,7 +1250,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '13.11.2026-a'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '13.11.2026-b'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -1565,6 +1582,7 @@ const AUDIT_RPC_META = {
   app_perm_delete_admin:{action:'Удалён администратор',entity:'admin'},
   app_set_admin_permissions:{action:'Изменены права администратора',entity:'admin'},
   app_perm_set_home:{action:'Изменён филиал администратора',entity:'admin'},
+  app_bonus_transfer_branch:{action:'Запланирован перевод администратора',entity:'employee'},
   app_perm_set_hire:{action:'Изменена дата приёма',entity:'admin'},
   app_perm_set_coffee:{action:'Изменён доступ к кофе+снекам',entity:'admin'},
   app_save_schedule:{action:'Изменено расписание',entity:'schedule'},
@@ -1584,6 +1602,7 @@ function auditEntityKey(fn,args){
   args=args||{};
   if(fn.includes('report')) return [args.p_studio,args.p_date].filter(Boolean).join(' · ');
   if(fn.includes('admin')||fn.includes('set_home')||fn.includes('set_hire')||fn.includes('set_coffee')||fn.includes('set_active')||fn.includes('reset_password')) return args.p_login||'';
+  if(fn==='app_bonus_transfer_branch')return String(args.p_employee_id||'');
   if(fn.includes('schedule')) return args.p_month||'';
   return '';
 }
@@ -3006,6 +3025,16 @@ async function renderEmployees(body){
         b.onclick=()=>permissionsModal(u,()=>renderEmployees(body));actions.appendChild(b);
       });
     }
+    if(session.role==='owner'){
+      selected.filter(x=>x.employee_type==='admin').forEach(e=>{
+        const card=[...list.querySelectorAll('.staff-card')].find(x=>x.dataset.eid===String(e.id));
+        if(!card)return;
+        let actions=card.querySelector('.staff-actions');
+        if(!actions){actions=document.createElement('div');actions.className='staff-actions';card.appendChild(actions);}
+        const b=document.createElement('button');b.type='button';b.className='btn btn-sm';b.textContent='История филиала / перевод';
+        b.onclick=()=>bonusBranchHistoryModal(e,()=>renderEmployees(body));actions.appendChild(b);
+      });
+    }
     list.querySelectorAll('[data-edit-employee]').forEach(b=>b.onclick=()=>{
       const e=rows.find(x=>String(x.id)===String(b.dataset.editEmployee));
       if(e)employeeModal(e,()=>renderEmployees(body));
@@ -3021,6 +3050,69 @@ async function renderEmployees(body){
   const addAdmin=body.querySelector('#addEmployeeAdmin');if(addAdmin)addAdmin.onclick=()=>addAdminModal(()=>{EMP_VIEW='admin';renderEmployees(body);});
   await draw();
 }
+/* Branch history: only the owner can schedule a home-studio transfer.
+   All updates go through server-checked app_bonus_transfer_branch. */
+function bonusBranchMonthNow(){return new Date(Date.now()+3*3600000).toISOString().slice(0,7);}
+function bonusBranchNextMonth(key){const [y,m]=key.split('-').map(Number);const d=new Date(Date.UTC(y,m,1));return d.toISOString().slice(0,7);}
+function bonusBranchDisplayDate(v){if(!v)return 'по настоящее время';const d=String(v).slice(0,10);return d.split('-').reverse().join('.');}
+function bonusBranchEndInclusive(v){if(!v)return null;return new Date(Date.parse(String(v).slice(0,10)+'T00:00:00Z')-86400000).toISOString().slice(0,10);}
+async function bonusBranchHistoryModal(emp,onDone){
+  if(!session||session.role!=='owner')return;
+  const id=Number(emp&&emp.id);
+  if(!Number.isSafeInteger(id)||id<=0){toast('Не удалось найти администратора',true);return;}
+  const ov=modal('<h3>История закрепления администратора</h3><div class="bh-dialog" id="bh-body">Загружаем историю…</div><div class="actions"><button class="btn" data-x>Закрыть</button></div>');
+  const area=ov.querySelector('#bh-body');
+  try{
+    const data=await rpc('app_bonus_branch_history',{p_token:TOKEN,p_employee_id:id});
+    if(!ov.isConnected)return;
+    const rows=Array.isArray(data.history)?data.history:[];
+    const current=bonusBranchMonthNow();
+    const next=bonusBranchNextMonth(current);
+    const studioNameSafe=x=>escapeHtml(studioName(x)||x||'Не указан');
+    let h='<div class="bh-warning">Продажи учитываются по закреплению на первое число месяца. Выходы на замены не меняют филиал для премии. Старые завершённые месяцы защищены.</div>';
+    h+='<div class="bh-history"><b>История · '+escapeHtml(data.name||emp.full_name||'')+'</b>';
+    if(!rows.length)h+='<div class="bh-warning">Закреплений пока нет. Назначьте основной филиал.</div>';
+    rows.forEach(r=>{
+      const end=bonusBranchEndInclusive(r.valid_to);
+      const assumption=r.source==='baseline_unverified';
+      const scheduled=String(r.valid_from||'').slice(0,7)>current;
+      const place=({masherova:'#2F6FB5',kuibysheva:'#E6A700',tolbuhina:'#E2711D'})[r.studio]||'#777';
+      h+='<div class="bh-history-item" style="border-left-color:'+place+'"><div><div class="bh-history-name">'+studioNameSafe(r.studio)+'</div>'+ 
+        '<div class="bh-history-period">С '+escapeHtml(bonusBranchDisplayDate(r.valid_from))+' '+(end?'по '+escapeHtml(bonusBranchDisplayDate(end)):'— по настоящее время')+'</div>'+ 
+        (assumption?'<div class="bh-history-info">Исходное закрепление из существующих данных; прежние переводы требуют ручной сверки</div>':'')+'</div>'+
+        (scheduled?'<span class="bh-history-info">Запланировано</span>':'')+'</div>';
+    });
+    h+='</div>';
+    if(data.active){
+      h+='<div class="bh-form"><label class="field"><span class="lbl">Новый основной филиал</span><select id="bh-new-studio">'+STUDIOS.map(x=>'<option value="'+escapeHtml(x.id)+'"'+(x.id===data.current_studio?' selected':'')+'>'+escapeHtml(x.name)+'</option>').join('')+'</select></label>'+
+        '<label class="field"><span class="lbl">С первого числа месяца</span><input type="month" id="bh-new-month" min="'+current+'" value="'+next+'"></label></div>'+
+        '<div class="bh-warning" id="bh-preview">Продажи за предыдущие месяцы не изменятся. Перевод вступит в силу автоматически с выбранного месяца.</div>'+
+        '<div class="actions"><button class="btn btn-primary" id="bh-save-transfer">Сохранить перевод</button></div>';
+    }else h+='<div class="bh-warning">Администратор находится в архиве. История доступна только для просмотра.</div>';
+    area.innerHTML=h;
+    const save=area.querySelector('#bh-save-transfer');
+    if(save)save.onclick=()=>{
+      const studio=area.querySelector('#bh-new-studio').value;
+      const month=area.querySelector('#bh-new-month').value;
+      if(!/^20\d\d-(0[1-9]|1[0-2])$/.test(month)||month<current){toast('Выберите текущий или будущий месяц',true);return;}
+      const selectedStudio=STUDIOS.find(x=>x.id===studio);
+      if(!selectedStudio){toast('Выберите филиал',true);return;}
+      const details='Перевести '+String(data.name||emp.full_name||'администратора')+' в «'+selectedStudio.name+'» с 01.'+month.slice(5)+'.'+month.slice(0,4)+'?'+
+        (month===current?' Внимание: все продажи ТЕКУЩЕГО месяца будут закреплены за новым филиалом.':' Продажи завершённых месяцев останутся прежними.');
+      const ask=modal('<h3>Подтвердить перевод</h3><p>'+escapeHtml(details)+'</p><div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="bh-confirm">Подтвердить</button></div>');
+      ask.querySelector('#bh-confirm').onclick=async()=>{
+        const b=ask.querySelector('#bh-confirm');b.disabled=true;
+        try{
+          await rpc('app_bonus_transfer_branch',{p_token:TOKEN,p_employee_id:id,p_studio:studio,p_effective_month:month+'-01'});
+          closeModal(ask);closeModal(ov);
+          toast(month===current?'Филиал изменён для текущего месяца':'Перевод запланирован с '+month);
+          if(onDone)await onDone();
+        }catch(err){b.disabled=false;handleErr(err);}
+      };
+    };
+  }catch(err){if(ov.isConnected){area.textContent='Не удалось загрузить историю. Проверьте SQL 13.11.2026-b.';handleErr(err);}}
+}
+
 function employeeModal(e,onDone){
   const isNew=!e, isAdmin=!!(e&&e.employee_type==='admin');
   const studios=e?employeeStudios(e):[];
@@ -3529,7 +3621,6 @@ async function renderUsers(body,options={}){
       if(pb&&managePerms) pb.onclick=()=>{ void permissionsModal(u,()=>refreshPanel()); };
     });
     if(manageAdmins){
-      listEl.querySelectorAll('select[data-home]').forEach(sel=>{ sel.onchange=async()=>{ try{ await apiSetHome(sel.dataset.home, sel.value); toast('Домашний филиал обновлён'); }catch(e){ handleErr(e); } }; });
       listEl.querySelectorAll('input[data-hire]').forEach(inp=>{ inp.onchange=async()=>{ try{ await apiSetHire(inp.dataset.hire, inp.value); toast('Дата приёма сохранена'); }catch(e){ handleErr(e); } }; });
       listEl.querySelectorAll('input[data-coffee]').forEach(cb=>{ cb.onchange=async()=>{ try{ await apiSetCoffee(cb.dataset.coffee, cb.checked); toast('Сохранено'); }catch(e){ handleErr(e); } }; });
       listEl.querySelectorAll('input[data-phone]').forEach(inp=>{ inp.onchange=async()=>{
@@ -3550,10 +3641,14 @@ async function renderUsers(body,options={}){
       <div id="ulist" class="staff-account-grid">${active.length?active.map(u=>{
         const e=staffByLogin[u.login];
         const profile=e?employeeCard(e,canEditStaff):`<div class="staff-card"><div class="staff-head"><b class="staff-name">${escapeHtml(u.name)}</b><span class="staff-role">Администратор</span></div><div class="staff-meta">Логин: ${escapeHtml(u.login)}</div></div>`;
-        return `<div class="staff-account-box">${profile}<details class="staff-account-details"><summary>Учётная запись и права</summary>${userRow(u,(settings.adminPhones||{})[u.login]||'',{manage:manageAdmins,permissions:managePerms})}</details></div>`;
+        return `<div class="staff-account-box">${profile}<details class="staff-account-details"><summary>Учётная запись и права</summary>${userRow(u,(settings.adminPhones||{})[u.login]||'',{manage:manageAdmins,permissions:managePerms})}${session.role==='owner'&&e?`<div class="bh-card-controls"><button type="button" class="btn btn-sm" data-bh-open="${e.id}">История филиала / перевод</button><span class="bh-note">С начала выбранного месяца · предыдущие периоды сохраняются</span></div>`:''}</details></div>`;
       }).join(''):'<div class="empty">Активных администраторов нет.</div>'}</div>`;
     const main=el.querySelector('#ulist');
     wireRows(main);
+    if(session.role==='owner')main.querySelectorAll('[data-bh-open]').forEach(b=>b.onclick=()=>{
+      const e=staffRows.find(x=>String(x.id)===String(b.dataset.bhOpen));
+      if(e)bonusBranchHistoryModal(e,refreshPanel);
+    });
     main.querySelectorAll('[data-edit-employee]').forEach(b=>b.onclick=()=>{
       const e=staffRows.find(x=>String(x.id)===String(b.dataset.editEmployee));
       if(e)employeeModal(e,refreshPanel);
@@ -3680,7 +3775,7 @@ function userRow(u,phone,opts){
     <div class="u-main"><div class="u-name">${escapeHtml(u.name)} <span class="perm-badge${pName==='Полный доступ'?' full':''}">${escapeHtml(pName)}</span></div>
       <div class="u-login">логин: ${escapeHtml(u.login)}</div></div>
     <div class="u-ctl">
-      <select class="home-sel u-home" data-home="${escapeHtml(u.login)}" style="max-width:150px"${disabled}><option value="">филиал —</option>${STUDIOS.map(s=>`<option value="${s.id}" ${u.home===s.id?'selected':''}>${s.name}</option>`).join('')}</select>
+      <span class="bh-home-display" title="Текущий основной филиал">${u.home?escapeHtml(studioName(u.home)):'Филиал не назначен'}</span>
       <label class="hire-lbl u-hire">приём:<input type="date" class="hire-inp" data-hire="${escapeHtml(u.login)}" value="${u.hire||''}"${disabled}/></label>
       <label class="u-phone">тел.: <input type="tel" inputmode="tel" class="phone-inp" data-phone="${escapeHtml(u.login)}" value="${escapeHtml(phone||'')}" placeholder="+375…"${disabled}/></label>
       <label class="hire-lbl u-coffee"><input type="checkbox" class="coffee-inp" data-coffee="${escapeHtml(u.login)}" ${u.coffee?'checked':''}${disabled}/> ☕ кофе+снеки</label>
@@ -4494,10 +4589,10 @@ const bonusHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;',
 const bonusPeriodTitle=p=>{const [y,m]=p.split('-').map(Number);return new Intl.DateTimeFormat('ru-RU',{month:'long',year:'numeric'}).format(new Date(y,m-1,1)).replace(/^./,c=>c.toUpperCase());};
 function bonusMonthOptions(selected){const [y,m]=selected.split('-').map(Number),months=[];for(let i=-24;i<=12;i++){const d=new Date(y,m-1+i,1);const p=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');months.push(`<option value="${p}"${p===selected?' selected':''}>${bonusPeriodTitle(p)}</option>`)}return months.join('');}
 function bonusFormatStaffOrder(a){const n=String(a.name||'').toLowerCase();for(const [q,i] of [['горов',1],['черкас',2],['колесникевич',3],['гис',4],['полхов',5],['шаревич',6]])if(n.includes(q))return i;return 100;}
-/** All amounts and eligibility are derived ONLY here; rendering is presentation-only. */
+/** Amounts derive from period-specific history; rendering is presentation-only. */
 function calcBonuses(period,snapshot){
   const data=snapshot||{},cfg={...BONUS_DEFAULT_SETTINGS,...(data.settings||{})};
-  if(data.bonusBasis!=='employee_primary_studio')throw new Error('Сначала выполните SQL-обновление мотивации 13.11.2026-a. Показатели премирования не рассчитаны.');
+  if(data.bonusBasis!=='employee_branch_history')throw new Error('Сначала выполните SQL истории филиалов 13.11.2026-b. Показатели премирования не рассчитаны.');
   const tiers=[...(cfg.tiers||BONUS_DEFAULT_SETTINGS.tiers)].map(t=>({pct:Number(t.pct),amount:Number(t.amount)})).sort((a,b)=>a.pct-b.pct);
   const branchById=Object.fromEntries(BONUS_BRANCHES.map(x=>[x.id,{...x,target:null,fact:0,physicalFact:0,pct:null,tier:null,next:null,bonus:0}]));
   for(const p of data.plans||[])if(branchById[p.studio]){const t=Number(p.target);branchById[p.studio].target=Number.isFinite(t)&&t>0?t:null;}
@@ -4515,7 +4610,7 @@ function calcBonuses(period,snapshot){
   const qualityMap=new Map((data.quality||[]).map(q=>[String(q.employee_id),q.payable===true]));
   const staff=(data.staff||[]).map(s=>{
     const facts=factsByEmployee.get(String(s.id))||[];
-    // Fixed ownership: every membership belongs to the seller's FAD home studio,
+    // Historical ownership: every membership belongs to the seller's assigned studio for the selected month,
     // even when the sale was physically entered at a different studio.
     const studio=s.home||s.studio;
     if(!branchById[studio])throw new Error('У администратора не указан основной филиал FAD: '+String(s.name||s.id));
@@ -4584,8 +4679,8 @@ function bonusRenderHtml(model){const owner=model.owner,branches=model.branches;
     </section>
     <h2 class="bp-section-title">${model.viewAll?'Выполнение плана по филиалам':'Выполнение плана своего филиала'}</h2>
     <div class="bp-branches${model.viewAll?'':' bp-branches-single'}">${branches.map(b=>bonusCard(b,model)).join('')}</div>
-    <div class="bp-note" style="margin:-12px 0 24px">Факт для премирования — продажи администраторов, закреплённых за филиалом. В скобках — продажи, оформленные на адресе студии всеми администраторами.</div>
-    <div class="bp-table-head"><h2 class="bp-section-title" style="margin:0">Администраторы</h2><div class="bp-table-hint">Все продажи администратора идут в его основной филиал FAD. В скобках — фактическое место оформления.</div></div>
+    <div class="bp-note" style="margin:-12px 0 24px">Факт для премирования — продажи администраторов, закреплённых за филиалом в выбранном месяце. В скобках — продажи, оформленные по адресу студии.</div>
+    <div class="bp-table-head"><h2 class="bp-section-title" style="margin:0">Администраторы</h2><div class="bp-table-hint">Продажи относятся к основному филиалу администратора в выбранном месяце. В скобках — место оформления.</div></div>
     <div class="bp-table-scroll"><table class="bp-table"><thead><tr><th>Администратор</th><th>Филиал</th><th class="bp-num">Факт</th><th class="bp-num">Доля филиала</th><th class="bp-num">Бонус Flexico</th><th class="bp-num">Качество, ${bonusMoney(model.settings.quality_amount)}</th><th class="bp-num">Итого</th></tr></thead>
      <tbody>${model.staff.map(s=>{const b=BONUS_BRANCHES.find(x=>x.id===s.studio)||BONUS_BRANCHES[0];return `<tr><td class="bp-name">${bonusHtml(s.name)}</td><td><span class="bp-branch-tag">${bonusLabel(b)}</span></td>
       <td class="bp-num"><span class="bp-admin-count">${bonusFormat(s.count)}</span><span class="bp-admin-places">(${s.physicalSummary.length?s.physicalSummary.map(f=>bonusHtml((BONUS_BRANCHES.find(b=>b.id===f.studio)||{}).name||'Неизвестный филиал')+' '+bonusFormat(f.count)).join(' · '):'нет продаж'})</span></td><td class="bp-num"><span class="bp-small-muted">${Math.round(s.share)}%</span></td><td class="bp-num">${bonusMoney(s.flexico)}</td>
