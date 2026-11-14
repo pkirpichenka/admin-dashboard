@@ -913,10 +913,18 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 .rep-directions,.rep-chips{display:flex;flex-wrap:wrap;gap:8px}
 .rep-direction{
   border:1px solid var(--rep-line);border-radius:999px;background:#fff;color:var(--ink);
-  padding:4px 12px;font-size:14px;font-weight:600;
+  padding:4px 12px;font-size:14px;font-weight:600;max-width:100%;overflow-wrap:anywhere;
 }
 .rep-direction:disabled{opacity:.64;cursor:default}
 .rep-hint{margin:8px 0 0;color:var(--ink-soft);font-size:13px;line-height:1.4}
+.direction-add{min-height:44px;margin-top:8px}
+.direction-add:focus-visible{outline:2px solid #2D7155;outline-offset:2px}
+.direction-dialog{width:calc(100% - 24px);max-width:390px;border:0;color:var(--ink)}
+.direction-dialog::backdrop{background:rgba(23,38,31,.42)}
+.direction-dialog h3{margin-bottom:16px}
+.direction-dialog .actions{position:static;margin-top:12px}
+.direction-dialog :is(input,button){min-height:44px}
+.direction-error{font-size:13px;color:#A33B27}
 .rep-switch{
   display:flex;align-items:center;gap:10px;border:0;background:transparent;color:var(--ink);
   padding:0 2px;text-align:left;font-size:15px;font-weight:600;
@@ -980,14 +988,14 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   outline:2px solid #2D7155;outline-offset:2px;
 }
 .trainer-directions{border:0;padding:0;margin:0;min-width:0}
-.staff-form-studios label.trainer-direction{position:relative;min-height:46px;cursor:pointer}
+.staff-form-studios label.trainer-direction{position:relative;min-height:46px;max-width:100%;cursor:pointer;overflow-wrap:anywhere}
 .trainer-direction input[type="checkbox"]{
   appearance:none;position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;
   min-height:44px;border:0;border-radius:inherit;background:transparent;cursor:pointer;
 }
 .trainer-direction span{position:relative;pointer-events:none}
 .trainer-direction-check{
-  display:grid;place-items:center;width:16px;height:16px;border:1px solid var(--line-strong);border-radius:4px;background:#fff;
+  display:grid;place-items:center;flex:none;width:16px;height:16px;border:1px solid var(--line-strong);border-radius:4px;background:#fff;
 }
 .trainer-direction input:checked + .trainer-direction-check{border-color:#2D7155;background:#2D7155;color:#fff}
 .trainer-direction input:checked + .trainer-direction-check::after{content:'✓';line-height:1}
@@ -1518,7 +1526,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '14.11.2026-e'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '14.11.2026-f'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -1538,7 +1546,7 @@ function clearAppDirty(reason){
 function appHasUnsavedWork(){
   try{ if(APP_REPORT_UNSAVED_CHECK && APP_REPORT_UNSAVED_CHECK()) return true; }catch(e){}
   if(APP_DIRTY_REASONS.size) return true;
-  if(document.querySelector('.overlay')) return true;
+  if(document.querySelector('.overlay, dialog[open]')) return true;
   const a=document.activeElement;
   if(a && a!==document.body && a.matches && a.matches('input,textarea,select,[contenteditable="true"]')) return true;
   return false;
@@ -1909,7 +1917,7 @@ function auditFmtDateTime(ts){
   catch(e){return String(ts)}
 }
 function auditObjectLabel(r){
-  const t={report:'Отчёт',admin:'Администратор',employee:'Сотрудник',calendar:'Календарь',schedule:'Расписание',settings:'Настройки',telegram:'Telegram',export:'Выгрузка',auth:'Авторизация'}[r.entity_type]||r.entity_type||'';
+  const t={report:'Отчёт',admin:'Администратор',employee:'Сотрудник',direction:'Направление',calendar:'Календарь',schedule:'Расписание',settings:'Настройки',telegram:'Telegram',export:'Выгрузка',auth:'Авторизация'}[r.entity_type]||r.entity_type||'';
   return [t,r.entity_key].filter(Boolean).join(' · ');
 }
 const AUDIT_DETAIL_LABELS={
@@ -2165,10 +2173,13 @@ async function apiSaveEmployee(data){
 }
 async function apiListReplacements(){
   const data=await rpc('app_replacements_list',{p_token:TOKEN});
-  if(data?.directions?.length!==7 || !Array.isArray(data.trainers) || !Array.isArray(data.trainer_directions)){
+  if(!Array.isArray(data?.directions) || !Array.isArray(data.trainers) || !Array.isArray(data.trainer_directions)){
     throw new Error('Не удалось загрузить справочник направлений');
   }
   return data;
+}
+async function apiCreateDirection(name){
+  return rpc('app_create_direction',{p_token:TOKEN,p_name:name});
 }
 async function apiSetEmployeePhone(login,phone){ try{return await rpc('app_set_employee_phone',{p_token:TOKEN,p_login:login,p_phone:phone||''});}catch(e){return null;} }
 async function apiListCalendarBirthdays(){ return await rpc('app_list_calendar_birthdays',{p_token:TOKEN})||[]; }
@@ -3244,6 +3255,82 @@ function trainerViberLink(number){
   return `<a class="rep-contact rep-contact-icon rep-viber" href="viber://chat?number=${encodeURIComponent(number)}" aria-label="Написать в Viber" title="Написать в Viber">${TRAINER_VIBER_ICON}</a>`;
 }
 
+/* ================= Направления тренеров ================= */
+function directionModal(opener,onSaved){
+  const dialog=document.createElement('dialog');
+  dialog.className='modal direction-dialog';
+  dialog.setAttribute('aria-labelledby','direction-title');
+  dialog.innerHTML=`<form>
+    <h3 id="direction-title">Новое направление</h3>
+    <label class="field"><span class="lbl">Название направления</span>
+      <input name="direction-name" placeholder="Например, Total Body" required autofocus aria-describedby="direction-error">
+    </label>
+    <div class="direction-error" id="direction-error" role="status" hidden></div>
+    <div class="actions"><button type="button" class="btn" data-x>Отмена</button><button type="submit" class="btn btn-primary">Добавить</button></div>
+  </form>`;
+  const form=dialog.querySelector('form');
+  const input=form.elements['direction-name'];
+  const error=dialog.querySelector('#direction-error');
+  const cancel=form.querySelector('[data-x]');
+  const submit=form.querySelector('[type="submit"]');
+
+  function showError(message=''){
+    input.setAttribute('aria-invalid',String(!!message));
+    error.hidden=!message;
+    error.textContent=message;
+  }
+
+  dialog.addEventListener('close',()=>{
+    dialog.remove();
+    if(opener.isConnected) opener.focus({preventScroll:true});
+  },{once:true});
+  dialog.oncancel=event=>{if(submit.disabled) event.preventDefault();};
+  cancel.onclick=()=>dialog.close();
+  input.oninput=()=>showError();
+  form.onsubmit=async event=>{
+    event.preventDefault();
+    if(submit.disabled) return;
+    const name=input.value.trim().replace(/\s+/g,' ');
+    const invalidName='Введите название длиной от 1 до 80 символов.';
+    if(!name||[...name].length>80){showError(invalidName);input.focus();return;}
+
+    showError();
+    input.readOnly=true;
+    cancel.disabled=submit.disabled=true;
+    markAppDirty('directionCreate');
+    let direction;
+    try{
+      direction=await apiCreateDirection(name);
+    }catch(err){
+      if(err?.message==='invalid_direction_name') showError(invalidName);
+      else if(err?.code==='PGRST202') showError('Выполните supabase-directions.sql в Supabase и попробуйте снова.');
+      else if(isForbiddenErr(err)){
+        showError('Добавлять направления может руководитель.');
+        handleErr(err);
+      }else showError('Не удалось добавить направление. Попробуйте снова.');
+      input.readOnly=false;
+      cancel.disabled=submit.disabled=false;
+      input.focus();
+      return;
+    }finally{clearAppDirty('directionCreate');}
+
+    if(direction.created) void auditAction('Добавлено направление','direction',direction.id,{name:direction.name});
+    dialog.close();
+    onSaved(direction);
+    toast(direction.created?'Направление добавлено':'Это направление уже есть в списке');
+  };
+
+  document.body.appendChild(dialog);
+  dialog.showModal();
+}
+
+function mergeTrainerDirection(catalog,direction){
+  if(!catalog.some(item=>item.id===direction.id)){
+    catalog.push(direction);
+    catalog.sort((a,b)=>a.sort-b.sort);
+  }
+}
+
 /* ================= Замены ================= */
 function replacementCandidates(trainers, directionsByTrainer, excludedId, needed){
   const counts=new Map(), full=[], partial=[];
@@ -3330,12 +3417,9 @@ async function renderReplacements(body){
       </div>
       <div>
         <div class="rep-label" id="rep-dir-label">Направления занятия</div>
-        <div class="rep-directions" role="group" aria-labelledby="rep-dir-label" aria-describedby="rep-dir-hint">
-          ${catalog.map(d=>`<button type="button" class="rep-direction" data-rep-direction="${d.id}" aria-pressed="false">
-            <span data-rep-check aria-hidden="true" hidden>✓ </span>${escapeHtml(d.name)} · <span data-rep-count></span>
-          </button>`).join('')}
-        </div>
+        <div class="rep-directions" id="rep-directions" role="group" aria-labelledby="rep-dir-label" aria-describedby="rep-dir-hint"></div>
         <p class="rep-hint" id="rep-dir-hint"></p>
+        ${session.role==='owner'?'<button type="button" class="btn direction-add" id="rep-add-direction">+ Добавить направление</button>':''}
       </div>
       <button type="button" class="rep-switch" id="rep-only-full" aria-pressed="false">
         <span class="rep-switch-track" aria-hidden="true"></span>Только полное совпадение
@@ -3360,8 +3444,14 @@ async function renderReplacements(body){
 
   const get=id=>page.querySelector('#'+id);
   const modeButtons=page.querySelectorAll('[data-rep-mode]');
-  const directionButtons=page.querySelectorAll('[data-rep-direction]');
+  const directionList=get('rep-directions');
   const select=get('rep-trainer'), onlyFull=get('rep-only-full'), more=get('rep-more');
+
+  function renderDirectionButtons(){
+    directionList.innerHTML=catalog.map(d=>`<button type="button" class="rep-direction" data-rep-direction="${d.id}" aria-pressed="false">
+      <span data-rep-check aria-hidden="true" hidden>✓ </span>${escapeHtml(d.name)} · <span data-rep-count></span>
+    </button>`).join('');
+  }
 
   function draw(){
     const byTrainer=state.mode==='trainer';
@@ -3377,7 +3467,7 @@ async function renderReplacements(body){
     get('rep-dir-hint').textContent=byTrainer
       ? 'Оставьте направления нужного занятия. Цифра показывает, сколько других тренеров его ведут.'
       : 'Выберите одно или несколько направлений. Цифра показывает, сколько тренеров их ведут.';
-    directionButtons.forEach(button=>{
+    directionList.querySelectorAll('[data-rep-direction]').forEach(button=>{
       const id=Number(button.dataset.repDirection);
       const selected=state.selected.has(id);
       button.disabled=byTrainer&&!absent;
@@ -3440,10 +3530,19 @@ async function renderReplacements(body){
     state.showAll=false;
     draw();
   };
-  directionButtons.forEach(b=>b.onclick=()=>{
-    const id=Number(b.dataset.repDirection);
+  directionList.onclick=event=>{
+    const button=event.target.closest('[data-rep-direction]');
+    if(!button||button.disabled) return;
+    const id=Number(button.dataset.repDirection);
     if(state.selected.has(id)) state.selected.delete(id); else state.selected.add(id);
     state.showAll=false;
+    draw();
+  };
+  const addDirection=get('rep-add-direction');
+  if(addDirection) addDirection.onclick=()=>directionModal(addDirection,direction=>{
+    if(!page.isConnected) return;
+    mergeTrainerDirection(catalog,direction);
+    renderDirectionButtons();
     draw();
   });
   onlyFull.onclick=()=>{ state.onlyFull=!state.onlyFull; draw(); };
@@ -3458,6 +3557,7 @@ async function renderReplacements(body){
     clearSelection();
     draw();
   };
+  renderDirectionButtons();
   draw();
 }
 
@@ -3692,11 +3792,15 @@ function employeeModal(e,onDone,employeeRows=[]){
     ${isAdmin?'':`<div class="field"><div class="lbl">Дата начала работы</div><input id="efHire" type="date" value="${e&&e.hire_date||''}"/></div>
     <div class="field"><div class="lbl">Филиалы</div><div class="staff-form-studios">${STUDIOS.map(s=>`<label><input type="checkbox" data-efs="${s.id}" ${studios.includes(s.id)?'checked':''}/>${sdot(s)}${escapeHtml(s.name)}</label>`).join('')}</div></div>
     <label class="field" style="display:flex;align-items:center;gap:8px"><input id="efActive" type="checkbox" ${!e||e.is_active?'checked':''}/><b>Работает</b></label>`}
-    ${editDirections?'<div id="efDirections" class="trainer-directions-status">Загружаем направления…</div>':''}
+    ${editDirections?`<div class="field">
+      <div id="efDirections" class="trainer-directions-status">Загружаем направления…</div>
+      <button type="button" class="btn direction-add" id="efAddDirection" disabled>+ Добавить направление</button>
+    </div>`:''}
     <div class="field"><div class="lbl">Комментарий</div><textarea id="efNote" rows="3" placeholder="Необязательно">${escapeHtml(e&&e.note||'')}</textarea></div>
     <div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="efSave">Сохранить</button></div>`);
   const save=el.querySelector('#efSave');
   const directionArea=el.querySelector('#efDirections');
+  const addDirection=el.querySelector('#efAddDirection');
   const telegramInput=el.querySelector('#efTelegram');
   const telegramMessage=el.querySelector('#efTelegramMessage');
   function showTelegramMessage(message='',invalid=false){
@@ -3724,20 +3828,32 @@ function employeeModal(e,onDone,employeeRows=[]){
   }
   let loadedDirectionIds=null;
   if(editDirections){
+    let catalog=[];
+    function renderDirectionChoices(selected){
+      directionArea.innerHTML=`<fieldset class="trainer-directions">
+        <legend class="rep-label">Направления</legend>
+        <div class="staff-form-studios">${catalog.map(d=>`<label class="trainer-direction"><input type="checkbox" name="trainer-direction" value="${d.id}" ${selected.has(d.id)?'checked':''}><span class="trainer-direction-check" aria-hidden="true"></span><span>${escapeHtml(d.name)}</span></label>`).join('')}</div>
+      </fieldset>`;
+    }
+    addDirection.onclick=()=>directionModal(addDirection,direction=>{
+      if(!el.isConnected) return;
+      const selected=new Set([...directionArea.querySelectorAll('input:checked')].map(input=>Number(input.value)));
+      mergeTrainerDirection(catalog,direction);
+      selected.add(direction.id);
+      renderDirectionChoices(selected);
+    });
     const loadDirections=async()=>{
-      save.disabled=true;
+      save.disabled=addDirection.disabled=true;
       directionArea.setAttribute('role','status');
       directionArea.textContent='Загружаем направления…';
       try{
         const data=await apiListReplacements();
         if(!el.isConnected) return;
         directionArea.removeAttribute('role');
+        catalog=data.directions;
         loadedDirectionIds=new Set(data.trainer_directions.filter(row=>row.trainer_id===String(e.id)).map(row=>row.direction_id));
-        directionArea.innerHTML=`<fieldset class="trainer-directions">
-          <legend class="rep-label">Направления</legend>
-          <div class="staff-form-studios">${data.directions.map(d=>`<label class="trainer-direction"><input type="checkbox" name="trainer-direction" value="${d.id}" ${loadedDirectionIds.has(d.id)?'checked':''}><span class="trainer-direction-check" aria-hidden="true"></span><span>${escapeHtml(d.name)}</span></label>`).join('')}</div>
-        </fieldset>`;
-        save.disabled=false;
+        renderDirectionChoices(loadedDirectionIds);
+        save.disabled=addDirection.disabled=false;
       }catch(err){
         if(!el.isConnected) return;
         loadedDirectionIds=null;
@@ -3781,6 +3897,7 @@ function employeeModal(e,onDone,employeeRows=[]){
     }
     const dirtyKey=payload.direction_ids!==undefined||payload.telegram_username!==undefined?'trainerProfileSave':'';
     save.disabled=true;
+    if(addDirection) addDirection.disabled=true;
     if(dirtyKey) markAppDirty(dirtyKey);
     try{
       await apiSaveEmployee(payload);
@@ -3789,6 +3906,7 @@ function employeeModal(e,onDone,employeeRows=[]){
       toast('Сотрудник сохранён');
     }catch(err){
       save.disabled=false;
+      if(addDirection) addDirection.disabled=!loadedDirectionIds;
       if(telegramInput&&err?.message==='invalid_telegram_username'){
         showTelegramMessage(TRAINER_TELEGRAM_ERROR,true);
         telegramInput.focus();
