@@ -1518,7 +1518,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '14.11.2026-d'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '14.11.2026-e'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -3221,18 +3221,26 @@ function normalizeTrainerTelegramUsername(value){
   return TRAINER_TELEGRAM_USERNAME.test(username)?username:null;
 }
 
-function trainerTelegramLink(username,className,iconOnly=false){
-  if(typeof username!=='string'||!TRAINER_TELEGRAM_USERNAME.test(username)) return '';
-  const nick=escapeHtml(username);
-  const name=iconOnly?' aria-label="Написать в Telegram" title="Написать в Telegram"':'';
-  const label=iconOnly?'':`<span>@${nick}</span>`;
-  return `<a class="${className}" href="https://t.me/${nick}" target="_blank" rel="noopener noreferrer"${name}>${TRAINER_TELEGRAM_ICON}${label}</a>`;
+function trainerTelegramAnchor(recipient,className,label,hint=''){
+  const name=hint?` aria-label="${hint}" title="${hint}"`:'';
+  return `<a class="${className}" href="https://t.me/${escapeHtml(recipient)}" target="_blank" rel="noopener noreferrer"${name}>${TRAINER_TELEGRAM_ICON}${label}</a>`;
 }
 
-function trainerViberLink(dial){
+function trainerTelegramLink(username,className,iconOnly=false){
+  if(typeof username!=='string'||!TRAINER_TELEGRAM_USERNAME.test(username)) return '';
+  return iconOnly
+    ? trainerTelegramAnchor(username,className,'','Написать в Telegram')
+    : trainerTelegramAnchor(username,className,`<span>@${username}</span>`);
+}
+
+function trainerInternationalPhone(dial){
   const belarus=dial.match(/^(?:375|80|0|8)?([1-9]\d{8})$/);
   const number=belarus?`+375${belarus[1]}`:dial.replace(/^(?:00|810)/,'+');
-  if(!/^\+[1-9]\d{7,14}$/.test(number)) return '';
+  return /^\+[1-9]\d{7,14}$/.test(number)?number:'';
+}
+
+function trainerViberLink(number){
+  if(!number) return '';
   return `<a class="rep-contact rep-contact-icon rep-viber" href="viber://chat?number=${encodeURIComponent(number)}" aria-label="Написать в Viber" title="Написать в Viber">${TRAINER_VIBER_ICON}</a>`;
 }
 
@@ -3265,8 +3273,11 @@ function replacementCard({trainer,directions,missing},catalog,selected){
   const phoneLink=/^\+?\d+$/.test(dial)
     ? `<a class="rep-contact rep-call" href="tel:${dial}" aria-label="Позвонить: ${escapeHtml(trainer.full_name)}, ${escapeHtml(phone)}"><span aria-hidden="true">☎︎</span><span>${escapeHtml(phone)}</span></a>`
     : '';
-  const telegramLink=trainerTelegramLink(trainer.telegram_username,'rep-contact rep-contact-icon rep-telegram',true);
-  const contacts=phoneLink+telegramLink+trainerViberLink(dial);
+  const phoneNumber=trainerInternationalPhone(dial);
+  const telegramClass='rep-contact rep-contact-icon rep-telegram';
+  const telegramLink=trainerTelegramLink(trainer.telegram_username,telegramClass,true)
+    || (phoneNumber?trainerTelegramAnchor(phoneNumber,telegramClass,'','Написать в Telegram по номеру'):'');
+  const contacts=phoneLink+telegramLink+trainerViberLink(phoneNumber);
   return `<article class="rep-card${isFull?' rep-card-full':''}">
     <div class="rep-card-head"><h4 class="rep-name">${escapeHtml(trainer.full_name)}</h4>
       <span class="rep-badge rep-badge-${isFull?'full':'partial'}">${badge}</span></div>
