@@ -763,7 +763,7 @@ table th>*,table td>*{max-width:100%;box-sizing:border-box}
 .staff-meta{display:grid;gap:7px;margin-top:12px;font-size:12px;color:var(--ink-soft)}
 .staff-meta b{color:var(--ink)}
 .staff-telegram{display:inline-flex;align-items:center;justify-self:start;max-width:100%;gap:5px;color:#2D7155;font-weight:700;overflow-wrap:anywhere}
-.staff-telegram svg,.rep-telegram svg{flex:none}
+.staff-telegram svg{flex:none}
 .staff-telegram span{min-width:0}
 .telegram-nick-label{display:block}
 .telegram-nick-input[aria-invalid="true"]{border-color:var(--clay)}
@@ -954,8 +954,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 .rep-chip-match{background:var(--rep-green);border-color:var(--rep-green);color:#fff}
 .rep-branches,.rep-missing{margin:0;font-size:13px;color:var(--ink-soft);overflow-wrap:anywhere}
 .rep-missing{color:#8A4B14;font-weight:600}
-.rep-contacts{container-type:inline-size;margin-top:auto}
-.rep-contact-row{display:flex;gap:8px}
+.rep-contacts{margin-top:auto}
+.rep-contact-row{display:flex;align-items:center;gap:8px}
 .rep-contact{
   flex:1 1 0;min-width:0;
   display:flex;align-items:center;justify-content:center;gap:6px;padding:5px 8px;
@@ -968,14 +968,14 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 }
 .rep-call span:last-child{min-width:0}
 .rep-call:hover{background:#1E5A3F;border-color:#1E5A3F}
-.rep-telegram{
-  background:#fff;border:1px solid var(--rep-green);color:var(--rep-green);
-  font:700 14px/1.25 'Onest','Golos Text',sans-serif;text-decoration:none;text-align:center;
+.rep-contact-icon{
+  flex:0 0 44px;min-width:44px;height:44px;padding:0;
+  border:1px solid var(--rep-contact-line);color:var(--rep-contact-color);background:#fff;
 }
-.rep-telegram:hover{background:#F0F6F2}
-.rep-telegram-text{min-width:0}
-.rep-telegram-nick{display:inline-block;max-width:100%;overflow-wrap:anywhere}
-@container(max-width:265px){.rep-contact-row{flex-direction:column}.rep-contact{flex-basis:auto}}
+.rep-contact-icon:hover{background:var(--rep-contact-hover);border-color:var(--rep-contact-color)}
+.rep-contact-icon svg{flex:none;width:20px;height:20px}
+.rep-telegram{--rep-contact-color:#147BA9;--rep-contact-line:#A7CFE2;--rep-contact-hover:#EBF7FC}
+.rep-viber{--rep-contact-color:#6650A4;--rep-contact-line:#CBBBE7;--rep-contact-hover:#F4EFFB}
 .replacements :is(button,select,a):focus-visible,.trainer-directions input:focus-visible{
   outline:2px solid #2D7155;outline-offset:2px;
 }
@@ -996,7 +996,6 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 @media(max-width:740px){.rep-layout{grid-template-columns:1fr}}
 @media(max-width:480px){
   .rep-panel,.rep-summary{padding:16px}.rep-panel{gap:14px}.rep-mode button{font-size:13px}
-  .rep-contact-row{flex-direction:column}.rep-contact{flex-basis:auto}
 }
 
 .cal-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
@@ -1519,7 +1518,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '14.11.2026-c'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '14.11.2026-d'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -3208,6 +3207,11 @@ function defaultMessages(){ return {checklist:{all:[],byAdmin:{}}, openMsg:{all:
 const TRAINER_TELEGRAM_USERNAME=/^[A-Za-z][A-Za-z0-9_]{4,31}$/;
 const TRAINER_TELEGRAM_ERROR='Ник: 5–32 символа, латиница, цифры и _. Первый символ — буква.';
 const TRAINER_TELEGRAM_ICON='<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 9.5 14.5M22 2l-5 20-7.5-7.5L2 7z"/></svg>';
+const TRAINER_VIBER_ICON=`<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M8 19.5 4.5 22v-4A5.5 5.5 0 0 1 2 13.5v-5A5.5 5.5 0 0 1 7.5 3h9A5.5 5.5 0 0 1 22 8.5v5a6 6 0 0 1-6 6Z"/>
+  <path fill="currentColor" stroke="none" d="M8 6.8 10.1 9c.3.3.3.7.1 1l-.9 1.2a7.3 7.3 0 0 0 3.5 3.4l1.2-.8c.3-.3.7-.3 1 0l2.2 2.1a.8.8 0 0 1 .1 1c-.8 1.2-1.9 1.4-3.2 1-4-1.3-6.7-4-8-8-.4-1.3-.1-2.4 1-3.2.3-.2.7-.1.9.1Z"/>
+  <path d="M13.5 6.5a5.1 5.1 0 0 1 4 4m-4-1.3a2.4 2.4 0 0 1 1.4 1.4"/>
+</svg>`;
 
 function normalizeTrainerTelegramUsername(value){
   const raw=String(value??'').trim();
@@ -3217,11 +3221,19 @@ function normalizeTrainerTelegramUsername(value){
   return TRAINER_TELEGRAM_USERNAME.test(username)?username:null;
 }
 
-function trainerTelegramLink(username,className,showService=false){
+function trainerTelegramLink(username,className,iconOnly=false){
   if(typeof username!=='string'||!TRAINER_TELEGRAM_USERNAME.test(username)) return '';
   const nick=escapeHtml(username);
-  const label=showService?`<span class="rep-telegram-text">Telegram <span class="rep-telegram-nick">@${nick}</span></span>`:`<span>@${nick}</span>`;
-  return `<a class="${className}" href="https://t.me/${nick}" target="_blank" rel="noopener noreferrer">${TRAINER_TELEGRAM_ICON}${label}</a>`;
+  const name=iconOnly?' aria-label="Написать в Telegram" title="Написать в Telegram"':'';
+  const label=iconOnly?'':`<span>@${nick}</span>`;
+  return `<a class="${className}" href="https://t.me/${nick}" target="_blank" rel="noopener noreferrer"${name}>${TRAINER_TELEGRAM_ICON}${label}</a>`;
+}
+
+function trainerViberLink(dial){
+  const belarus=dial.match(/^(?:375|80|0|8)?([1-9]\d{8})$/);
+  const number=belarus?`+375${belarus[1]}`:dial.replace(/^(?:00|810)/,'+');
+  if(!/^\+[1-9]\d{7,14}$/.test(number)) return '';
+  return `<a class="rep-contact rep-contact-icon rep-viber" href="viber://chat?number=${encodeURIComponent(number)}" aria-label="Написать в Viber" title="Написать в Viber">${TRAINER_VIBER_ICON}</a>`;
 }
 
 /* ================= Замены ================= */
@@ -3253,7 +3265,8 @@ function replacementCard({trainer,directions,missing},catalog,selected){
   const phoneLink=/^\+?\d+$/.test(dial)
     ? `<a class="rep-contact rep-call" href="tel:${dial}" aria-label="Позвонить: ${escapeHtml(trainer.full_name)}, ${escapeHtml(phone)}"><span aria-hidden="true">☎︎</span><span>${escapeHtml(phone)}</span></a>`
     : '';
-  const telegramLink=trainerTelegramLink(trainer.telegram_username,'rep-contact rep-telegram',true);
+  const telegramLink=trainerTelegramLink(trainer.telegram_username,'rep-contact rep-contact-icon rep-telegram',true);
+  const contacts=phoneLink+telegramLink+trainerViberLink(dial);
   return `<article class="rep-card${isFull?' rep-card-full':''}">
     <div class="rep-card-head"><h4 class="rep-name">${escapeHtml(trainer.full_name)}</h4>
       <span class="rep-badge rep-badge-${isFull?'full':'partial'}">${badge}</span></div>
@@ -3263,7 +3276,7 @@ function replacementCard({trainer,directions,missing},catalog,selected){
     }).join('')}</div>
     ${isFull?'':`<p class="rep-missing">Не ведёт: ${missing.map(d=>escapeHtml(d.name)).join(', ')}</p>`}
     <p class="rep-branches">${branches.length?escapeHtml(branches.join(' · ')):'филиал не указан'}</p>
-    <div class="rep-contacts"><div class="rep-contact-row">${phoneLink||telegramLink?phoneLink+telegramLink:'<div class="rep-contact">контакты не указаны</div>'}</div></div>
+    <div class="rep-contacts"><div class="rep-contact-row">${contacts||'<div class="rep-contact">контакты не указаны</div>'}</div></div>
   </article>`;
 }
 
