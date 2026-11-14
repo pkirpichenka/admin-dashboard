@@ -769,6 +769,106 @@ table th>*,table td>*{max-width:100%;box-sizing:border-box}
 .staff-form-studios{display:flex;gap:8px;flex-wrap:wrap}
 .staff-form-studios label{display:flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:9px;padding:7px 9px;background:var(--surface-2);font-size:12px}
 
+/* ================= Замены ================= */
+.replacements{
+  --rep-green:#2D7155;
+  --rep-line:#C9D1C7;
+  display:grid;gap:16px;
+}
+.wrap:has(> #tabbody > .replacements){max-width:1152px}
+.tab[data-tab="replacements"]{min-height:44px}
+.tab[data-tab="replacements"].on{background:#2D7155}
+.rep-title{
+  margin:0;font-size:19px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);
+}
+.rep-layout{display:grid;grid-template-columns:minmax(285px,320px) minmax(0,1fr);gap:16px;align-items:start}
+.rep-panel,.rep-summary,.rep-card,.rep-empty{background:#fff;border-radius:20px;box-shadow:var(--shadow);min-width:0}
+.rep-panel{display:grid;gap:18px;padding:20px}
+.rep-mode{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:4px;padding:4px;border-radius:14px;background:#EEF1ED}
+.rep-mode button,.rep-direction,.rep-switch,.rep-reset,.rep-more,.rep-call{min-height:44px}
+.rep-mode button{
+  border:1px solid transparent;border-radius:10px;background:transparent;color:#3C4A42;
+  padding:4px 6px;font-size:14px;font-weight:700;line-height:1.2;
+}
+.rep-mode button[aria-pressed="true"],.rep-direction[aria-pressed="true"],.rep-call{
+  background:var(--rep-green);border-color:var(--rep-green);color:#fff;
+}
+.rep-label{
+  display:block;margin-bottom:8px;font-size:13px;font-weight:700;letter-spacing:.04em;
+  text-transform:uppercase;color:var(--ink-soft);
+}
+.rep-trainer{min-height:48px;border-radius:12px;border-color:var(--rep-line);background:#fff;font-size:16px;font-weight:600}
+.rep-directions,.rep-chips{display:flex;flex-wrap:wrap;gap:8px}
+.rep-direction{
+  border:1px solid var(--rep-line);border-radius:999px;background:#fff;color:var(--ink);
+  padding:4px 12px;font-size:14px;font-weight:600;
+}
+.rep-direction:disabled{opacity:.64;cursor:default}
+.rep-hint{margin:8px 0 0;color:var(--ink-soft);font-size:13px;line-height:1.4}
+.rep-switch{
+  display:flex;align-items:center;gap:10px;border:0;background:transparent;color:var(--ink);
+  padding:0 2px;text-align:left;font-size:15px;font-weight:600;
+}
+.rep-switch-track{position:relative;flex:0 0 40px;height:24px;border-radius:999px;background:#727F76}
+.rep-switch-track::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff}
+.rep-switch[aria-pressed="true"] .rep-switch-track{background:var(--rep-green)}
+.rep-switch[aria-pressed="true"] .rep-switch-track::after{left:19px}
+.rep-rare{background:#FFF8E1;border:1px solid #E8C66A;border-radius:12px;padding:11px 13px;color:#5C3F00;font-size:14px}
+.rep-reset,.rep-more{border-radius:12px;border-color:var(--rep-line);font-size:15px}
+.rep-results,.rep-group{display:grid;gap:12px;min-width:0}
+.rep-results [hidden]{display:none}
+.rep-summary{padding:16px 20px}
+.rep-summary h2{margin:0 0 4px;font-size:18px;line-height:1.3;overflow-wrap:anywhere}
+.rep-summary p{margin:0;color:var(--ink-soft);font-size:14px}
+.rep-empty{padding:26px 20px;text-align:center;color:var(--ink-soft)}
+.rep-summary p:empty{display:none}
+.rep-empty .btn{display:block;margin:12px auto 0;min-height:44px}
+.rep-group h3{
+  margin:3px 0 0;color:#1E5A3F;font-size:14px;font-weight:800;
+  letter-spacing:.04em;text-transform:uppercase;
+}
+.rep-group-partial h3,.rep-badge-partial{color:#7A5200}
+.rep-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(285px,100%),1fr));gap:12px}
+.rep-card{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:16px;padding:15px}
+.rep-card-full{border-color:#BFE0CE}
+.rep-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.rep-name{margin:0;font-size:16px;font-weight:700;line-height:1.25;overflow-wrap:anywhere}
+.rep-badge,.rep-chip{border:1px solid;border-radius:999px;font-weight:700}
+.rep-badge{flex:none;padding:2px 9px;font-size:12px;white-space:nowrap}
+.rep-badge-full{background:#DDF0E5;border-color:#9CCFB4;color:#1E5A3F}
+.rep-badge-partial{background:#FFF2CC;border-color:#E8C66A}
+.rep-chips{gap:6px}
+.rep-chip{background:#F0F2EE;border-color:#DDE2DB;color:#4A5750;padding:3px 8px;font-size:12px}
+.rep-chip-match{background:var(--rep-green);border-color:var(--rep-green);color:#fff}
+.rep-branches,.rep-missing{margin:0;font-size:13px;color:var(--ink-soft);overflow-wrap:anywhere}
+.rep-missing{color:#8A4B14;font-weight:600}
+.rep-contact{
+  display:flex;align-items:center;justify-content:center;gap:6px;padding:5px 8px;
+  min-height:44px;margin-top:auto;border:1px dashed var(--rep-line);border-radius:12px;
+  color:var(--ink-soft);font-size:14px;overflow-wrap:anywhere;
+}
+.rep-call{border-style:solid;font-size:15px;font-weight:700;text-decoration:none}
+.rep-call:hover{background:#1E5A3F;border-color:#1E5A3F}
+.replacements :is(button,select,a):focus-visible,.trainer-directions input:focus-visible{
+  outline:2px solid #2D7155;outline-offset:2px;
+}
+.trainer-directions{border:0;padding:0;margin:0;min-width:0}
+.staff-form-studios label.trainer-direction{position:relative;min-height:46px;cursor:pointer}
+.trainer-direction input[type="checkbox"]{
+  appearance:none;position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;
+  min-height:44px;border:0;border-radius:inherit;background:transparent;cursor:pointer;
+}
+.trainer-direction span{position:relative;pointer-events:none}
+.trainer-direction-check{
+  display:grid;place-items:center;width:16px;height:16px;border:1px solid var(--line-strong);border-radius:4px;background:#fff;
+}
+.trainer-direction input:checked + .trainer-direction-check{border-color:#2D7155;background:#2D7155;color:#fff}
+.trainer-direction input:checked + .trainer-direction-check::after{content:'✓';line-height:1}
+.trainer-directions-status{margin:0 0 12px;color:var(--ink-soft);font-size:13px}
+.trainer-directions-status button{min-height:44px;margin-top:8px}
+@media(max-width:740px){.rep-layout{grid-template-columns:1fr}}
+@media(max-width:480px){.rep-panel,.rep-summary{padding:16px}.rep-panel{gap:14px}.rep-mode button{font-size:13px}}
+
 .cal-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
 .cal-toolbar .grow{flex:1}
 .cal-month-title{font-size:18px;font-weight:800}
@@ -1289,7 +1389,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '13.11.2026-e'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '14.11.2026-b'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -1915,7 +2015,22 @@ async function apiSetHome(login,home){ return await rpc('app_perm_set_home',{p_t
 async function apiSetHire(login,hire){ return await rpc('app_perm_set_hire',{p_token:TOKEN,p_login:login,p_hire:hire||''}); }
 async function apiSetCoffee(login,val){ return await rpc('app_perm_set_coffee',{p_token:TOKEN,p_login:login,p_val:!!val}); }
 async function apiListEmployees(){ return await rpc('app_list_employees',{p_token:TOKEN})||[]; }
-async function apiSaveEmployee(data){ return await rpc('app_save_employee',{p_token:TOKEN,p_id:data.id||null,p_full_name:data.full_name||'',p_phone:data.phone||'',p_birth_date:data.birth_date||null,p_hire_date:data.hire_date||null,p_primary_studio:data.primary_studio||'',p_studios:data.studios||[],p_is_active:data.is_active!==false,p_note:data.note||''}); }
+async function apiSaveEmployee(data){
+  const args={p_token:TOKEN,p_id:data.id||null,p_full_name:data.full_name||'',p_phone:data.phone||'',
+    p_birth_date:data.birth_date||null,p_hire_date:data.hire_date||null,p_primary_studio:data.primary_studio||'',
+    p_studios:data.studios||[],p_is_active:data.is_active!==false,p_note:data.note||''};
+  if(data.direction_ids!==undefined){
+    return rpc('app_save_trainer_with_directions',{...args,p_direction_ids:data.direction_ids});
+  }
+  return rpc('app_save_employee',args);
+}
+async function apiListReplacements(){
+  const data=await rpc('app_replacements_list',{p_token:TOKEN});
+  if(data?.directions?.length!==7 || !Array.isArray(data.trainers) || !Array.isArray(data.trainer_directions)){
+    throw new Error('Не удалось загрузить справочник направлений');
+  }
+  return data;
+}
 async function apiSetEmployeePhone(login,phone){ try{return await rpc('app_set_employee_phone',{p_token:TOKEN,p_login:login,p_phone:phone||''});}catch(e){return null;} }
 async function apiListCalendarBirthdays(){ return await rpc('app_list_calendar_birthdays',{p_token:TOKEN})||[]; }
 async function apiListCalendarEvents(){ return await rpc('app_list_calendar_events',{p_token:TOKEN})||[]; }
@@ -2084,6 +2199,7 @@ function renderApp(){
   if(session.role==='owner') tabs.push({label:'Отчёты',render:renderAllReports});
   else tabs.push({label:'Смена',render:renderShift});
   tabs.push({label:'Расписание',render:renderSchedule});
+  if(session.role==='owner'||session.role==='admin') tabs.push({label:'Замены',key:'replacements',render:renderReplacements});
   tabs.push({label:'План и бонусы',render:renderBonusDashboard});
   if(session && (session.role==='owner'||session.role==='admin')) tabs.push({label:'Маркетинг',render:renderMarketing});
   if(session.role!=='owner' && can('reports.view_all')) tabs.push({label:'Все отчёты',render:renderAllReports});
@@ -2094,23 +2210,30 @@ function renderApp(){
 }
 function renderRoleUI(tabs){
   const root=document.getElementById('root');
-  root.innerHTML=`<div class="topbar">${header()}${tabs.length>1?`<div class="tabsrow"><div class="tabs">${tabs.map((t,i)=>`<button class="tab${i===0?' on':''}" data-i="${i}">${t.label}</button>`).join('')}</div></div>`:''}</div><div class="wrap"><div id="tabbody"></div></div>`;
+  root.innerHTML=`<div class="topbar">${header()}${tabs.length>1?`<div class="tabsrow"><div class="tabs">${tabs.map((t,i)=>`<button class="tab${i===0?' on':''}" data-i="${i}"${t.key?` data-tab="${t.key}"`:''}>${t.label}</button>`).join('')}</div></div>`:''}</div><div class="wrap"><div id="tabbody"></div></div>`;
   root.querySelector('#logout').onclick=()=>doLogout();
   const _rb=root.querySelector('#refreshBtn'); if(_rb) _rb.onclick=async()=>{
     if(appHasUnsavedWork()){ toast('Есть несохранённые изменения — сначала сохраните их',true); return; }
     await checkForAppUpdate(false);
     if(APP_UPDATE_AVAILABLE) reloadToLatestVersion(); else location.reload();
   };
-  const body=root.querySelector('#tabbody');
+  let body=root.querySelector('#tabbody');
   let currentTab=-1;
   function show(i){
     if(currentTab!==-1 && currentTab!==i && appHasUnsavedWork()){
       toast('Есть несохранённые данные — сначала сохраните изменения',true);
       return;
     }
+    body.removeAttribute('data-bonus-token');
+    if(tabs[i].key==='replacements'||tabs[currentTab]?.key==='replacements'){
+      // A pending renderer from the previous tab can still update its own detached panel.
+      const nextBody=document.createElement('div');
+      nextBody.id='tabbody';
+      body.replaceWith(nextBody);
+      body=nextBody;
+    }
     currentTab=i;
     root.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',+b.dataset.i===i));
-    body.removeAttribute('data-bonus-token');
     tabs[i].render(body);
   }
   root.querySelectorAll('.tab').forEach(b=>b.onclick=()=>show(+b.dataset.i));
@@ -2941,6 +3064,218 @@ function exportExcel(entries){
 /* ================= User management (owner only) ================= */
 function defaultMessages(){ return {checklist:{all:[],byAdmin:{}}, openMsg:{all:'',byAdmin:{}}}; }
 
+/* ================= Замены ================= */
+function replacementCandidates(trainers, directionsByTrainer, excludedId, needed){
+  const counts=new Map(), full=[], partial=[];
+  // Фильтр занятости по расписанию и календарю будет применяться здесь, до подсчёта.
+  const eligible=trainers.filter(trainer=>trainer.id!==excludedId);
+  for(const trainer of eligible){
+    const directions=directionsByTrainer.get(trainer.id)||new Set();
+    for(const id of directions) counts.set(id,(counts.get(id)||0)+1);
+    if(!needed.length) continue;
+    const missing=needed.filter(direction=>!directions.has(direction.id));
+    if(missing.length===needed.length) continue;
+    const candidate={trainer,directions,missing};
+    (missing.length?partial:full).push(candidate);
+  }
+  // Исходный список уже отсортирован по ФИО. Стабильная сортировка сохраняет этот порядок при равенстве.
+  partial.sort((a,b)=>a.missing.length-b.missing.length);
+  return {counts,full,partial};
+}
+
+function replacementCard({trainer,directions,missing},catalog,selected){
+  const isFull=missing.length===0;
+  const count=selected.size;
+  const badge=isFull?(count===1?'Ведёт':`Все ${count} из ${count}`):`${count-missing.length} из ${count}`;
+  const branches=employeeStudios(trainer).map(studioName);
+  const phone=String(trainer.phone||'').trim();
+  const dial=phone.replace(/[\s().\-\u2010-\u2015\u2212]/g,'');
+  const contact=/^\+?\d+$/.test(dial)
+    ? `<a class="rep-contact rep-call" href="tel:${dial}" aria-label="Позвонить: ${escapeHtml(trainer.full_name)}, ${escapeHtml(phone)}"><span aria-hidden="true">☎</span>${escapeHtml(phone)}</a>`
+    : '<div class="rep-contact">номер не указан</div>';
+  return `<article class="rep-card${isFull?' rep-card-full':''}">
+    <div class="rep-card-head"><h4 class="rep-name">${escapeHtml(trainer.full_name)}</h4>
+      <span class="rep-badge rep-badge-${isFull?'full':'partial'}">${badge}</span></div>
+    <div class="rep-chips">${catalog.filter(d=>directions.has(d.id)).map(d=>{
+      const match=selected.has(d.id);
+      return `<span class="rep-chip${match?' rep-chip-match':''}">${match?'✓ ':''}${escapeHtml(d.name)}</span>`;
+    }).join('')}</div>
+    ${isFull?'':`<p class="rep-missing">Не ведёт: ${missing.map(d=>escapeHtml(d.name)).join(', ')}</p>`}
+    <p class="rep-branches">${branches.length?escapeHtml(branches.join(' · ')):'филиал не указан'}</p>
+    ${contact}
+  </article>`;
+}
+
+async function renderReplacements(body){
+  const page=document.createElement('section');
+  page.className='replacements fade-in';
+  page.setAttribute('aria-labelledby','rep-title');
+  page.innerHTML='<h1 id="rep-title" class="rep-title">Подбор замены</h1><div class="rep-empty" role="status">Загружаем тренеров и направления…</div>';
+  body.replaceChildren(page);
+
+  let data;
+  try{ data=await apiListReplacements(); }
+  catch(err){
+    if(!page.isConnected) return;
+    page.querySelector('.rep-empty').innerHTML='Не удалось загрузить тренеров и направления.<button type="button" class="btn">Повторить</button>';
+    page.querySelector('.rep-empty button').onclick=()=>{ void renderReplacements(body); };
+    if(isForbiddenErr(err)) handleErr(err);
+    return;
+  }
+  if(!page.isConnected) return;
+
+  const catalog=data.directions;
+  const trainers=data.trainers.filter(t=>t.is_active).sort((a,b)=>a.full_name.trim().localeCompare(b.full_name.trim(),'ru'));
+  const directionsByTrainer=new Map(trainers.map(t=>[t.id,new Set()]));
+  for(const {trainer_id,direction_id} of data.trainer_directions){
+    directionsByTrainer.get(trainer_id)?.add(direction_id);
+  }
+
+  const state={mode:'trainer',trainerId:'',selected:new Set(),onlyFull:false,showAll:false};
+  page.querySelector('.rep-empty').outerHTML=`<div class="rep-layout">
+    <div class="rep-panel">
+      <div class="rep-mode" role="group" aria-label="Способ подбора">
+        <button type="button" data-rep-mode="trainer" aria-pressed="true">По тренеру</button>
+        <button type="button" data-rep-mode="direction" aria-pressed="false">По направлению</button>
+      </div>
+      <div id="rep-trainer-field">
+        <label class="rep-label" for="rep-trainer">Кого заменяем</label>
+        <select class="rep-trainer" id="rep-trainer"><option value="">Выберите тренера…</option>
+          ${trainers.map(t=>`<option value="${escapeHtml(t.id)}">${escapeHtml(t.full_name)}</option>`).join('')}</select>
+      </div>
+      <div>
+        <div class="rep-label" id="rep-dir-label">Направления занятия</div>
+        <div class="rep-directions" role="group" aria-labelledby="rep-dir-label" aria-describedby="rep-dir-hint">
+          ${catalog.map(d=>`<button type="button" class="rep-direction" data-rep-direction="${d.id}" aria-pressed="false">
+            <span data-rep-check aria-hidden="true" hidden>✓ </span>${escapeHtml(d.name)} · <span data-rep-count></span>
+          </button>`).join('')}
+        </div>
+        <p class="rep-hint" id="rep-dir-hint"></p>
+      </div>
+      <button type="button" class="rep-switch" id="rep-only-full" aria-pressed="false">
+        <span class="rep-switch-track" aria-hidden="true"></span>Только полное совпадение
+      </button>
+      <div class="rep-rare" id="rep-rare" hidden></div>
+      <button type="button" class="btn rep-reset" id="rep-reset">Сбросить</button>
+    </div>
+    <div class="rep-results">
+      <div class="rep-summary" aria-live="polite" aria-atomic="true">
+        <h2 id="rep-summary-title"></h2><p id="rep-summary-detail"></p>
+      </div>
+      <div class="rep-empty" id="rep-empty" hidden></div>
+      <section class="rep-group" id="rep-full" aria-labelledby="rep-full-title" hidden>
+        <h3 id="rep-full-title"></h3><div class="rep-grid" id="rep-full-cards"></div>
+      </section>
+      <section class="rep-group rep-group-partial" id="rep-partial" aria-labelledby="rep-partial-title" hidden>
+        <h3 id="rep-partial-title"></h3><div class="rep-grid" id="rep-partial-cards"></div>
+        <button type="button" class="btn rep-more" id="rep-more" aria-controls="rep-partial-cards" aria-expanded="false" hidden></button>
+      </section>
+    </div>
+  </div>`;
+
+  const get=id=>page.querySelector('#'+id);
+  const modeButtons=page.querySelectorAll('[data-rep-mode]');
+  const directionButtons=page.querySelectorAll('[data-rep-direction]');
+  const select=get('rep-trainer'), onlyFull=get('rep-only-full'), more=get('rep-more');
+
+  function draw(){
+    const byTrainer=state.mode==='trainer';
+    const absent=byTrainer?trainers.find(t=>t.id===state.trainerId):null;
+    const needed=catalog.filter(d=>state.selected.has(d.id));
+    const {counts,full,partial}=replacementCandidates(trainers,directionsByTrainer,state.trainerId,needed);
+    const rare=needed.filter(d=>(counts.get(d.id)||0)<=3);
+
+    modeButtons.forEach(b=>b.setAttribute('aria-pressed',b.dataset.repMode===state.mode));
+    select.value=state.trainerId;
+    get('rep-trainer-field').hidden=!byTrainer;
+    get('rep-dir-label').textContent=byTrainer?'Направления занятия':'Нужные направления';
+    get('rep-dir-hint').textContent=byTrainer
+      ? 'Оставьте направления нужного занятия. Цифра показывает, сколько других тренеров его ведут.'
+      : 'Выберите одно или несколько направлений. Цифра показывает, сколько тренеров их ведут.';
+    directionButtons.forEach(button=>{
+      const id=Number(button.dataset.repDirection);
+      const selected=state.selected.has(id);
+      button.disabled=byTrainer&&!absent;
+      button.setAttribute('aria-pressed',selected);
+      button.querySelector('[data-rep-check]').hidden=!selected;
+      button.querySelector('[data-rep-count]').textContent=counts.get(id)||0;
+    });
+    onlyFull.setAttribute('aria-pressed',state.onlyFull);
+    const rareNote=get('rep-rare');
+    rareNote.hidden=!rare.length;
+    rareNote.innerHTML=rare.length?`<strong>Мало тренеров:</strong> ${rare.map(d=>`${escapeHtml(d.name)} — ${counts.get(d.id)||'нет других тренеров'}`).join(', ')}`:'';
+
+    get('rep-summary-title').textContent=byTrainer
+      ? (absent?`Замена для: ${absent.full_name}`:'Выберите, кого заменяем')
+      : 'Кто ведёт выбранные направления';
+    get('rep-summary-detail').textContent=needed.length
+      ? `Нужно: ${needed.map(d=>d.name).join(' · ')}. Полностью подходят: ${full.length}, частично: ${partial.length}.`
+      : '';
+
+    let emptyText='';
+    if(!needed.length){
+      emptyText=byTrainer&&!absent?'Выберите тренера слева…':'Отметьте нужные направления.';
+    }else if(!full.length&&!partial.length){
+      emptyText='Никто из остальных тренеров не ведёт выбранные направления.';
+    }else if(!full.length&&state.onlyFull){
+      emptyText='Нет тренеров, которые ведут все выбранные направления.';
+    }
+    const empty=get('rep-empty');
+    empty.hidden=!emptyText;
+    empty.textContent=emptyText;
+
+    const showPartial=!state.onlyFull&&partial.length>0;
+    get('rep-full').hidden=!full.length;
+    get('rep-partial').hidden=!showPartial;
+    get('rep-full-title').textContent=`Подходят полностью · ${full.length}`;
+    get('rep-partial-title').textContent=`Подходят частично · ${partial.length}`;
+    get('rep-full-cards').innerHTML=full.map(c=>replacementCard(c,catalog,state.selected)).join('');
+    const partialShown=state.showAll?partial:partial.slice(0,6);
+    get('rep-partial-cards').innerHTML=showPartial?partialShown.map(c=>replacementCard(c,catalog,state.selected)).join(''):'';
+    more.hidden=!showPartial||partial.length<=6;
+    more.setAttribute('aria-expanded',state.showAll);
+    more.textContent=state.showAll?'Свернуть':`Показать всех (${partial.length})`;
+  }
+
+  function clearSelection(){
+    state.trainerId='';
+    state.selected.clear();
+    state.showAll=false;
+  }
+
+  modeButtons.forEach(b=>b.onclick=()=>{
+    if(state.mode===b.dataset.repMode) return;
+    state.mode=b.dataset.repMode;
+    clearSelection();
+    draw();
+  });
+  select.onchange=()=>{
+    state.trainerId=select.value;
+    state.selected=new Set(directionsByTrainer.get(select.value));
+    state.showAll=false;
+    draw();
+  };
+  directionButtons.forEach(b=>b.onclick=()=>{
+    const id=Number(b.dataset.repDirection);
+    if(state.selected.has(id)) state.selected.delete(id); else state.selected.add(id);
+    state.showAll=false;
+    draw();
+  });
+  onlyFull.onclick=()=>{ state.onlyFull=!state.onlyFull; draw(); };
+  more.onclick=()=>{
+    state.showAll=!state.showAll;
+    draw();
+    if(!state.showAll) more.scrollIntoView({block:'nearest'});
+  };
+  get('rep-reset').onclick=()=>{
+    state.mode='trainer';
+    state.onlyFull=false;
+    clearSelection();
+    draw();
+  };
+  draw();
+}
+
 /* ================= Employees ================= */
 let EMP_VIEW='all';
 function employeeRoleLabel(e){ return e.employee_type==='trainer'?'Тренер':'Администратор'; }
@@ -3154,6 +3489,7 @@ async function bonusBranchHistoryModal(emp,onDone){
 
 function employeeModal(e,onDone){
   const isNew=!e, isAdmin=!!(e&&e.employee_type==='admin');
+  const editDirections=session.role==='owner'&&e?.employee_type==='trainer';
   const studios=e?employeeStudios(e):[];
   const title=isNew?'Новый тренер':`Сотрудник · ${e.full_name}`;
   const el=modal(`<h3>${escapeHtml(title)}</h3>
@@ -3164,9 +3500,41 @@ function employeeModal(e,onDone){
     ${isAdmin?'':`<div class="field"><div class="lbl">Дата начала работы</div><input id="efHire" type="date" value="${e&&e.hire_date||''}"/></div>
     <div class="field"><div class="lbl">Филиалы</div><div class="staff-form-studios">${STUDIOS.map(s=>`<label><input type="checkbox" data-efs="${s.id}" ${studios.includes(s.id)?'checked':''}/>${sdot(s)}${escapeHtml(s.name)}</label>`).join('')}</div></div>
     <label class="field" style="display:flex;align-items:center;gap:8px"><input id="efActive" type="checkbox" ${!e||e.is_active?'checked':''}/><b>Работает</b></label>`}
+    ${editDirections?'<div id="efDirections" class="trainer-directions-status">Загружаем направления…</div>':''}
     <div class="field"><div class="lbl">Комментарий</div><textarea id="efNote" rows="3" placeholder="Необязательно">${escapeHtml(e&&e.note||'')}</textarea></div>
     <div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="efSave">Сохранить</button></div>`);
-  el.querySelector('#efSave').onclick=async()=>{
+  const save=el.querySelector('#efSave');
+  const directionArea=el.querySelector('#efDirections');
+  let loadedDirectionIds=null;
+  if(editDirections){
+    const loadDirections=async()=>{
+      save.disabled=true;
+      directionArea.setAttribute('role','status');
+      directionArea.textContent='Загружаем направления…';
+      try{
+        const data=await apiListReplacements();
+        if(!el.isConnected) return;
+        directionArea.removeAttribute('role');
+        loadedDirectionIds=new Set(data.trainer_directions.filter(row=>row.trainer_id===String(e.id)).map(row=>row.direction_id));
+        directionArea.innerHTML=`<fieldset class="trainer-directions">
+          <legend class="rep-label">Направления</legend>
+          <div class="staff-form-studios">${data.directions.map(d=>`<label class="trainer-direction"><input type="checkbox" name="trainer-direction" value="${d.id}" ${loadedDirectionIds.has(d.id)?'checked':''}><span class="trainer-direction-check" aria-hidden="true"></span><span>${escapeHtml(d.name)}</span></label>`).join('')}</div>
+        </fieldset>`;
+        save.disabled=false;
+      }catch(err){
+        if(!el.isConnected) return;
+        loadedDirectionIds=null;
+        directionArea.removeAttribute('role');
+        directionArea.innerHTML='Не удалось загрузить направления.<br><button type="button" class="btn btn-sm">Повторить</button>';
+        directionArea.querySelector('button').onclick=loadDirections;
+        if(isForbiddenErr(err)) handleErr(err);
+        else save.disabled=false;
+      }
+    };
+    void loadDirections();
+  }
+  save.onclick=async()=>{
+    if(save.disabled) return;
     const full_name=(el.querySelector('#efName').value||'').trim();
     if(!full_name){toast('Укажите ФИО',true);return;}
     const payload={
@@ -3179,11 +3547,25 @@ function employeeModal(e,onDone){
       is_active:isAdmin?e.is_active:el.querySelector('#efActive').checked,
       note:(el.querySelector('#efNote').value||'').trim()
     };
+    const details={name:full_name,birth_date:payload.birth_date,phone:payload.phone};
+    if(loadedDirectionIds){
+      const checked=[...directionArea.querySelectorAll('input:checked')];
+      const ids=checked.map(input=>Number(input.value));
+      if(ids.length!==loadedDirectionIds.size||ids.some(id=>!loadedDirectionIds.has(id))){
+        payload.direction_ids=ids;
+        details['Направления']=checked.map(input=>input.parentElement.textContent.trim());
+      }
+    }
+    const dirtyKey=payload.direction_ids!==undefined?'trainerDirectionsSave':'';
+    save.disabled=true;
+    if(dirtyKey) markAppDirty(dirtyKey);
     try{
       await apiSaveEmployee(payload);
-      void auditAction(isNew?'Добавлен тренер':'Изменены данные сотрудника','employee',String(e&&e.id||''),{name:full_name,birth_date:payload.birth_date,phone:payload.phone});
-      closeModal(el);toast('Сотрудник сохранён');onDone&&onDone();
-    }catch(err){handleErr(err);}
+      void auditAction(isNew?'Добавлен тренер':'Изменены данные сотрудника','employee',String(e&&e.id||''),details);
+      if(el.isConnected){closeModal(el);onDone&&onDone();}
+      toast('Сотрудник сохранён');
+    }catch(err){save.disabled=false;handleErr(err);}
+    finally{if(dirtyKey) clearAppDirty(dirtyKey);}
   };
 }
 
