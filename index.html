@@ -1683,7 +1683,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '15.11.2026-v'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '15.11.2026-w'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -3595,6 +3595,8 @@ const PAYROLL_SYNC_ERRORS = {
   payroll_db_url_missing:"В Edge Function отсутствует секрет SUPABASE_DB_URL. Данные не обновлены.",
   payroll_sql_schema_mismatch:"Схема Supabase не соответствует запросам функции. Данные не обновлены.",
   payroll_sql_data_error:"База отклонила расчёт зарплаты. Данные не обновлены.",
+  payroll_sql_duplicate_key:"Supabase обнаружил повторяющийся технический идентификатор при импорте. Прежний расчёт сохранён.",
+  impulse_payroll_duplicate_lessons:"При формировании импорта обнаружены повторяющиеся идентификаторы занятий. Прежний расчёт сохранён.",
   payroll_sql_transaction_conflict:"Конфликт одновременного обновления зарплаты. Повторите запрос.",
   payroll_sql_connection_error:"Не удалось выполнить запрос к базе Supabase. Проверьте подключение.",
   payroll_sql_error:"Ошибка запроса в базе Supabase. Расчёт не обновлён.",
@@ -3609,7 +3611,7 @@ const PAYROLL_SYNC_STAGE_LABELS = {
   advances_and_replacements:"авансы и замены",employee_mapping:"карточки сотрудников",
   payroll_database_write:"запись зарплаты в Supabase"
 };
-const PAYROLL_EXPECTED_SERVICE = "fad-payroll-impulse-15.11.2026-v";
+const PAYROLL_EXPECTED_SERVICE = "fad-payroll-impulse-15.11.2026-w";
 
 const PAYROLL_ADVANCE_WARNINGS = {
   impulse_advance_key_denied:"Суммы авансов загружены. ImpulseCRM отклонил доступ к датам в «Балансе сотрудников».",
@@ -3661,6 +3663,7 @@ function bindPayrollSync(page, refresh){
           const extra=[];
           if(result?.stage && PAYROLL_SYNC_STAGE_LABELS[result.stage])extra.push("этап: "+PAYROLL_SYNC_STAGE_LABELS[result.stage]);
           if(typeof result?.sqlState==="string" && /^[A-Z0-9]{5}$/.test(result.sqlState))extra.push("SQLSTATE: "+result.sqlState);
+          if(typeof result?.constraint==="string" && /^[a-zA-Z][a-zA-Z0-9_]{0,100}$/.test(result.constraint))extra.push("ограничение: "+result.constraint);
           if(typeof result?.reason==="string" && /^[a-z_]{3,60}$/.test(result.reason))extra.push("причина: "+result.reason);
           if(typeof result?.error==="string" && /^[a-z_]{3,80}$/.test(result.error))extra.push("код: "+result.error);
           if(!result?.service)extra.push("HTTP "+response.status+" — версия функции не подтверждена");
