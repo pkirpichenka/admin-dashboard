@@ -1683,7 +1683,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '15.11.2026-p'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '15.11.2026-q'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -3573,7 +3573,7 @@ const PAYROLL_SYNC_ERRORS = {
   impulse_payroll_unmatched:"Нужна однозначная привязка тренера к карточке FAD.",
   impulse_advance_reconciliation:"Нужно сверить авансы из ImpulseCRM с ранее внесёнными в FAD. Последний сохранённый расчёт доступен для просмотра.",
   impulse_trainer_creation_failed:"Не удалось добавить карточку тренера из ImpulseCRM.",
-  impulse_advance_unmatched:"Не удалось однозначно определить преподавателя для аванса в ImpulseCRM.",
+  impulse_advance_unmatched:"Не удалось определить преподавателя по историческому авансу ImpulseCRM. Расчёт не перезаписан.",
   impulse_advance_ledger_incomplete:"Отчёт зарплаты показывает больше авансов, чем журнал «Баланс сотрудников». Расчёт не перезаписан — проверьте операции.",
   impulse_advance_key_denied:"ImpulseCRM не разрешил чтение «Баланса сотрудников». Расчёт не перезаписан.",
   impulse_advance_endpoint_unavailable:"Метод «Баланс сотрудников» недоступен через API. Расчёт не перезаписан.",
