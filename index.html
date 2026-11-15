@@ -1683,7 +1683,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '15.11.2026-m'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '15.11.2026-n'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -3515,8 +3515,8 @@ function payrollMessage(row                   , period        , view            
   if (replacements.length) {
     detail.push("", "Замены:");
     for (const lesson of replacements) {
-      const pay=lesson.amount==null?"сумма уточняется":"−"+payrollMoney(lesson.amount)+" BYN";
-      detail.push(`• ${payrollDateLabel(lesson.date)} · ${payrollLessonTitle(lesson)} — ${payrollPeople(lesson.attendance)}, ${pay} — вместо ${payrollSurnameInitials(lesson.replaced_name)}`);
+      const pay=lesson.amount==null?"":", −"+payrollPaymentMoney(lesson.amount)+" BYN";
+      detail.push(`• ${payrollDateLabel(lesson.date)} · ${payrollLessonTitle(lesson)} — ${payrollPeople(lesson.attendance)}${pay} — вместо ${payrollSurnameInitials(lesson.replaced_name)}`);
     }
   }
   if (row.missing_replacement_dates) detail.push("", row.replacement_count
@@ -4042,7 +4042,8 @@ function bindPayrollSync(page, refresh){
             if(result.advanceWarning)notices.push(PAYROLL_ADVANCE_WARNINGS[result.advanceWarning]||"Суммы авансов загружены. Даты недоступны.");
             if(result.replacementWarning==="impulse_replacement_key_denied")notices.push("ImpulseCRM отклонил доступ к журналу замен.");
             else if(result.replacementWarning==="impulse_replacement_endpoint_unavailable")notices.push("Журнал замен недоступен через API ImpulseCRM.");
-            else if(result.replacementWarning)notices.push("Часть строк замен требует сверки. Откройте расчёт тренера и разверните «Замены».");
+            else if(result.replacementWarning==="impulse_replacement_rate_mismatch")notices.push("Суммы по ставкам тренеров расходятся с итогами отчёта ImpulseCRM. Проверьте раздел «Замены» в расчёте.");
+            else if(result.replacementWarning)notices.push("Для части замен не хватает данных из ImpulseCRM. Откройте расчёт тренера и разверните «Замены».");
             feedback(notices.join(" "));
           }
           return;
@@ -4127,6 +4128,7 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
         </section>
         <section class="payroll-section">
           <h3>Сообщение тренеру</h3>
+          <p class="payroll-hint" id="payrollReplacementNotice" role="status" hidden></p>
           <pre class="payroll-preview" tabindex="0"></pre>
           <p class="payroll-hint" id="payrollMessageInfo"></p>
           <button type="button" class="btn btn-sm" data-payroll-action="copy">Скопировать текст</button>
@@ -4295,7 +4297,7 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
       const matches = lessons.filter(lesson => lesson.date === date);
       const item = lesson => {
         const name = lesson.replaced_name ? lesson.group + " · вместо " + lesson.replaced_name : lesson.group;
-        const pay = lesson.amount === null ? "—" : payrollMoney(lesson.amount);
+        const pay = lesson.amount === null ? "—" : payrollPaymentMoney(lesson.amount);
         return `<div title="${esc(name)}">${pay}/${lesson.attendance ?? "—"}</div>`;
       };
       const subtotal = isReplacement && dayAmounts.has(date) ? `<div class="payroll-sub">${payrollMoney(dayAmounts.get(date))} BYN за день</div>` : "";
@@ -4307,8 +4309,8 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
       <tbody>${rows.map(group => `<tr${group.replacements ? ' class="payroll-grid-replacements"' : ""}><th scope="row">${esc(group.name)}${group.time ? "<br>" + esc(group.time) : ""}</th>
         ${cells(group.lessons,group.replacements)}<td>${payrollMoney(group.replacements ? row.replacements : payrollSum(group.lessons,lessonCost))}</td></tr>`).join("")}</tbody>
       <tfoot><tr><th scope="row">${costsKnown ? "Итого за день" : "Итого по известным суммам"}</th>${dates.map(date =>
-        `<td>${payrollMoney(dailyCost(date))}</td>`).join("")}
-        <td>${payrollMoney(payrollSum(dates,dailyCost))}</td></tr></tfoot>
+        `<td>${payrollPaymentMoney(dailyCost(date))}</td>`).join("")}
+        <td>${payrollPaymentMoney(payrollSum(dates,dailyCost))}</td></tr></tfoot>
       </table></div>`;
   }
 
@@ -4327,7 +4329,7 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
     const skipped = row.skipped_lessons;
     const tile = (lesson,skip)=>{
       const name = esc(payrollLessonTitle(lesson));
-      const paid = lesson.amount === null ? "" : " · " + (skip ? "−" : "") + payrollMoney(lesson.amount) + " BYN";
+      const paid = lesson.amount === null ? "" : " · " + (skip ? "−" : "") + payrollPaymentMoney(lesson.amount) + " BYN";
       const substitute = lesson.substitute_name ? " · замена " + esc(lesson.substitute_name) : "";
       const replaced = lesson.replaced_name ? " · вместо " + esc(lesson.replaced_name) : "";
       return `<span>${payrollDateLabel(lesson.date)} ${payrollDay(lesson.date)} · ${payrollPeople(lesson.attendance)}${paid}<br>${name}${substitute}${replaced}</span>`;
@@ -4399,6 +4401,14 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
       ? (state.view === "dates" ? grid(row) : grouped(row))
       : '<p class="payroll-hint">' + (state.updated ? "Нет занятий с датами в выгрузке." : "Занятия появятся после загрузки из Impulse.") + "</p>";
     get("#payrollLessons").innerHTML = lessons + lessonAdjustments(row);
+    const replacements=row.lessons.filter(lesson=>lesson.replaced_name);
+    const missingRates=replacements.filter(lesson=>lesson.amount==null).length;
+    const ratesTotal=payrollSum(replacements,lesson=>Math.round((lesson.amount??0)*100));
+    const ratesMismatch=replacements.length>0&&!missingRates&&!row.missing_replacement_dates&&ratesTotal!==Math.round(row.replacements*100);
+    const rateNotice=get("#payrollReplacementNotice");
+    rateNotice.textContent=missingRates?`Для ${missingRates} замен не хватает данных о ставке, длительности или посещаемости из ImpulseCRM.`:
+      ratesMismatch?`${payrollPaymentMoney(ratesTotal/100)} BYN по настройкам тренера · ${payrollMoney(row.replacements)} BYN в отчёте ImpulseCRM.`:"";
+    rateNotice.hidden=!rateNotice.textContent;
     const message = state.updated ? payrollMessage(row, state.period, state.view, row.branch ? studioName(row.branch) : "филиал не выбран") : null;
     get(".payroll-preview").textContent = message || "Расчёт появится после загрузки занятий.";
     get('[data-payroll-action="copy"]').disabled = !message;
