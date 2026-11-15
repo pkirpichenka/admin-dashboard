@@ -1683,7 +1683,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '15.11.2026-u'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '15.11.2026-v'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -3591,8 +3591,25 @@ const PAYROLL_SYNC_ERRORS = {
   impulse_api_unavailable:"ImpulseCRM временно недоступен.",
   impulse_rate_limited:"ImpulseCRM ограничил частоту запросов. Повторите позже.",
   payroll_future_month:"Этот месяц ещё не начался.",
-  payroll_sync_unavailable:"Проверьте установку функции fad-payroll-sync и SQL сборки.",
+  payroll_sync_unavailable:"Ошибка синхронизации. Нужно проверить функцию fad-payroll-sync и базу данных.",
+  payroll_db_url_missing:"В Edge Function отсутствует секрет SUPABASE_DB_URL. Данные не обновлены.",
+  payroll_sql_schema_mismatch:"Схема Supabase не соответствует запросам функции. Данные не обновлены.",
+  payroll_sql_data_error:"База отклонила расчёт зарплаты. Данные не обновлены.",
+  payroll_sql_transaction_conflict:"Конфликт одновременного обновления зарплаты. Повторите запрос.",
+  payroll_sql_connection_error:"Не удалось выполнить запрос к базе Supabase. Проверьте подключение.",
+  payroll_sql_error:"Ошибка запроса в базе Supabase. Расчёт не обновлён.",
+  payroll_internal_error:"Ошибка при обработке отчёта зарплаты. Расчёт не обновлён.",
 };
+
+const PAYROLL_SYNC_STAGE_LABELS = {
+  initialization:"подключение к базе",period_validation:"проверка месяца",refresh_claim:"запуск синхронизации",
+  cached_failure:"предыдущая ошибка",impulse_credentials:"ключ ImpulseCRM",
+  teacher_directories:"список преподавателей",payroll_report:"отчёт зарплаты",
+  duplicate_initials:"сопоставление одинаковых инициалов",
+  advances_and_replacements:"авансы и замены",employee_mapping:"карточки сотрудников",
+  payroll_database_write:"запись зарплаты в Supabase"
+};
+const PAYROLL_EXPECTED_SERVICE = "fad-payroll-impulse-15.11.2026-v";
 
 const PAYROLL_ADVANCE_WARNINGS = {
   impulse_advance_key_denied:"Суммы авансов загружены. ImpulseCRM отклонил доступ к датам в «Балансе сотрудников».",
@@ -3632,12 +3649,22 @@ function bindPayrollSync(page, refresh){
         });
         const result=await response.json().catch(()=>null);
         if(!current())return;
+        if(result?.service && result.service!==PAYROLL_EXPECTED_SERVICE){
+          feedback("В Supabase опубликована другая версия fad-payroll-sync ("+String(result.service).slice(0,100)+"). Нужна версия "+PAYROLL_EXPECTED_SERVICE+". Данные не обновлены.",true);
+          return;
+        }
         if(!response.ok||!result?.ok){
           const text=PAYROLL_SYNC_ERRORS[result?.error]||(result?.error==="forbidden"
             ? "Доступ к зарплатам выдаёт руководитель."
             : "Подключение ImpulseCRM недоступно. Проверьте функцию fad-payroll-sync.");
           const suffix=Array.isArray(result?.names)&&result.names.length ? " "+result.names.join(", ")+".":"";
-          feedback(text+suffix,true);
+          const extra=[];
+          if(result?.stage && PAYROLL_SYNC_STAGE_LABELS[result.stage])extra.push("этап: "+PAYROLL_SYNC_STAGE_LABELS[result.stage]);
+          if(typeof result?.sqlState==="string" && /^[A-Z0-9]{5}$/.test(result.sqlState))extra.push("SQLSTATE: "+result.sqlState);
+          if(typeof result?.reason==="string" && /^[a-z_]{3,60}$/.test(result.reason))extra.push("причина: "+result.reason);
+          if(typeof result?.error==="string" && /^[a-z_]{3,80}$/.test(result.error))extra.push("код: "+result.error);
+          if(!result?.service)extra.push("HTTP "+response.status+" — версия функции не подтверждена");
+          feedback(text+suffix+(extra.length?" ["+extra.join(" · ")+"]":"")+". Показан последний сохранённый расчёт.",true);
           if(result?.error==="forbidden")void handleForbiddenErr();
           return;
         }
