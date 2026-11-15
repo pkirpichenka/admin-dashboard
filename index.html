@@ -1688,7 +1688,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '15.11.2026-g'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '15.11.2026-h'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -3457,14 +3457,14 @@ function payrollMessage(row                   , period        , view            
   const impulsePayments = row.impulse_advances ?? row.advances.filter(advance=>advance.in_impulse);
   const advanceLines = [...impulsePayments,...row.advances.filter(advance=>!advance.in_impulse)]
     .sort((a,b)=>a.date.localeCompare(b.date)).map(advance =>
-      `  • ${payrollAdvanceDate(advance.date)} — ${payrollMoney(advance.amount)} BYN${advance.note ? " (" + payrollLine(advance.note) + ")" : ""}`);
+      `  • ${payrollMoney(advance.amount)} BYN — ${payrollAdvanceDate(advance.date)}${advance.note ? " (" + payrollLine(advance.note) + ")" : ""}`);
   const undatedAdvance = row.imported_advance - payrollSum(impulsePayments,advance=>advance.amount);
-  if (undatedAdvance > 0) {
-    advanceLines.push("  • По сводке Impulse — " + payrollMoney(undatedAdvance) + " BYN");
+  if (undatedAdvance > 0 && advanceLines.length) {
+    advanceLines.push("  • " + payrollMoney(undatedAdvance) + " BYN");
   }
   const closing = [
     "Остаток: " + payrollMoney(row.balance) + " BYN",
-    "К выдаче: " + payrollMoney(row.due) + " BYN" + (row.balance > 0 && row.due !== row.balance ? " (округлено вверх до 5)" : ""),
+    "К выдаче: " + payrollMoney(row.due) + " BYN",
     "Получить: " + branch,
   ];
   const detail           = [];
@@ -4278,7 +4278,7 @@ function renderTrainerPayroll(host){
     const sent = rows.filter(row => row.send_status === "sent").length;
     const changed = rows.filter(row => row.send_status === "changed").length;
     get(".payroll-kpis").innerHTML = `
-      <div class="payroll-kpi"><small>К выдаче всего</small><b>${amount(total("due"))}${state.updated ? " BYN" : ""}</b><small>Округление вверх до 5 BYN</small></div>
+      <div class="payroll-kpi"><small>К выдаче всего</small><b>${amount(total("due"))}${state.updated ? " BYN" : ""}</b></div>
       <div class="payroll-kpi"><small>Начислено</small><b>${amount(total("own"))}</b><small>Замены ${state.updated ? signed(total("replacements"), "+") : "—"} · пропуски ${state.updated ? signed(total("skips"), "−") : "—"}</small></div>
       <div class="payroll-kpi"><small>Авансы выданы</small><b>${payrollMoney(total("advance"))}</b><small>Остаток ${amount(total("balance"))}</small></div>
       <div class="payroll-kpi"><small>Расчёт отправлен</small><b>${sent} из ${rows.length}</b>
