@@ -1683,7 +1683,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '15.11.2026-q'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '15.11.2026-r'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -3423,9 +3423,16 @@ const payrollFormat = new Intl.NumberFormat("ru-RU", {maximumFractionDigits: 2})
 const payrollMoney = (amount        ) => payrollFormat.format(amount).replace(/[\u00a0\u202f]/g, " ");
 const payrollPaymentFormat = new Intl.NumberFormat("ru-RU", {maximumFractionDigits:2});
 const payrollPaymentMoney = amount => payrollPaymentFormat.format(amount).replace(/[\u00a0\u202f]/g, " ");
-// В сводке ImpulseCRM авансы округляются до BYN; журнал хранит копейки.
-const payrollAdvanceReportDiffers = row => row.impulse_advance_reference != null &&
-  Number(row.impulse_advance_reference) !== Math.round(Number(row.imported_advance || 0));
+// В отчётах ImpulseCRM бывают как целые авансы, так и суммы с копейками.
+// Для целых сверяем округление, для дробных — точное значение до копейки.
+const payrollAdvanceReportDiffers = row => {
+  if (row.impulse_advance_reference == null) return false;
+  const declared = Number(row.impulse_advance_reference);
+  const ledger = Number(row.imported_advance || 0);
+  return Number.isInteger(declared)
+    ? declared !== Math.sign(ledger)*Math.round(Math.abs(ledger))
+    : Math.round(declared*100) !== Math.round(ledger*100);
+};
 const payrollMonthLabel = (period        ) => PAYROLL_MONTHS[Number(period.slice(5, 7)) - 1] + " " + period.slice(0, 4);
 const payrollDateLabel = (date        ) => date.slice(8, 10) + "." + date.slice(5, 7);
 const payrollAdvanceDate = date => payrollDateLabel(date) + "." + date.slice(0,4);
