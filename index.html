@@ -1569,6 +1569,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 .payroll-drawer-head,.payroll-drawer-footer{padding:14px 18px;gap:10px;background:var(--surface);border-bottom:1px solid var(--line)}
 .payroll-drawer-footer{border:0;border-top:1px solid var(--line);flex-wrap:wrap;padding-bottom:max(14px,env(safe-area-inset-bottom))}
 .payroll-drawer-footer .payroll-total{font-weight:700;font-size:22px}
+.payroll-drawer-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
 .payroll-drawer-head h2{margin:0;font-size:21px;line-height:1.2}
 .payroll-drawer-body{overflow:auto;overscroll-behavior:contain;padding:0 18px}
 .payroll-section{margin:0;padding:14px 0;border-bottom:1px solid var(--line)}
@@ -3438,6 +3439,19 @@ function payrollLessonTitle(lesson                      ) {
   return [payrollLine(lesson.group), lesson.time].filter(Boolean).join(" ");
 }
 
+const payrollPeople = attendance => attendance == null ? "число участников не указано" : payrollMoney(attendance) + " чел.";
+
+function payrollReplacementDetails(row){
+  const byDate = new Map();
+  for (const lesson of row.lessons) {
+    if (!lesson.replaced_name) continue;
+    if (!byDate.has(lesson.date)) byDate.set(lesson.date,[]);
+    byDate.get(lesson.date).push(lesson);
+  }
+  const dayTotals = new Map((row.replacement_day_totals || []).map(day=>[day.date,day.amount]));
+  return [...byDate].map(([date,lessons])=>({date,lessons,amount:dayTotals.get(date)}));
+}
+
 function payrollImportedAdvanceDetails(row){
   return row.impulse_advances ?? (row.confirmed_advance_date
     ? [{date:row.confirmed_advance_date,amount:row.imported_advance}]
@@ -3469,12 +3483,11 @@ function payrollMessage(row                   , period        , view            
     "Получить: " + branch,
   ];
   const detail           = [];
-  const replacements = row.lessons.filter(lesson => lesson.replaced_name !== null);
-  if (view === "dates" && row.lessons.length) {
+  const held = row.lessons.filter(lesson=>!lesson.replaced_name);
+  if (view === "dates" && held.length) {
     detail.push("По датам:");
-    for (const lesson of row.lessons) {
-      const replacement = lesson.replaced_name ? " (замена, вместо " + payrollLine(lesson.replaced_name) + ")" : "";
-      detail.push(`${payrollDateLabel(lesson.date)} ${payrollDay(lesson.date)} · ${payrollLessonTitle(lesson)}${replacement} — ${lesson.attendance} чел.${lesson.amount === null ? "" : ", " + payrollMoney(lesson.amount) + " BYN"}`);
+    for (const lesson of held) {
+      detail.push(`${payrollDateLabel(lesson.date)} ${payrollDay(lesson.date)} · ${payrollLessonTitle(lesson)} — ${payrollPeople(lesson.attendance)}, ${payrollMoney(lesson.amount)} BYN`);
     }
   } else if (view === "groups") {
     const groups = payrollGroups(row.lessons);
@@ -3482,21 +3495,26 @@ function payrollMessage(row                   , period        , view            
     for (const group of groups) {
       detail.push(`• ${[payrollLine(group.name), group.time].filter(Boolean).join(" ")} — ${group.lessons.length} зан., ${payrollMoney(payrollSum(group.lessons, lesson => lesson.attendance))} чел., ${payrollMoney(payrollSum(group.lessons, lesson => lesson.amount ?? 0))} BYN`);
     }
-    if (replacements.length) {
-      detail.push("", "Замены:");
-      for (const lesson of replacements) {
-        detail.push(`• ${payrollDateLabel(lesson.date)} · ${payrollLessonTitle(lesson)}, вместо ${payrollLine(lesson.replaced_name || "")} — ${lesson.attendance} чел.${lesson.amount === null ? "" : ", " + payrollMoney(lesson.amount) + " BYN"}`);
+  }
+  const replacements = payrollReplacementDetails(row);
+  if (replacements.length) {
+    detail.push("", "Замены:");
+    for (const day of replacements) {
+      for (const lesson of day.lessons) {
+        detail.push(`• ${payrollDateLabel(lesson.date)} · ${payrollLessonTitle(lesson)}, вместо ${payrollLine(lesson.replaced_name)} — ${payrollPeople(lesson.attendance)}${lesson.amount === null ? "" : ", " + payrollMoney(lesson.amount) + " BYN"}`);
       }
+      if (day.amount != null) detail.push(`  Итого за замены ${payrollDateLabel(day.date)} — ${payrollMoney(day.amount)} BYN`);
     }
   }
   if (row.missing_replacement_dates) detail.push("", row.replacement_count
     ? "Даты замен указаны для " + row.known_replacement_count + " из " + row.replacement_count + " занятий."
     : "По заменам в Impulse приведена общая сумма.");
-  if (replacements.some(lesson=>lesson.amount === null)) detail.push("", "В отчёте приведена общая сумма доплаты за замены.");
-  if (view === "dates" && row.skipped_lessons.length) {
+  if (replacements.some(day=>day.amount == null && day.lessons.some(lesson=>lesson.amount === null)))
+    detail.push("", "Сумма части замен указана в общем итоге за месяц.");
+  if (row.skipped_lessons.length) {
     detail.push("", "Пропуски:");
     for (const lesson of row.skipped_lessons) {
-      detail.push(`• ${payrollDateLabel(lesson.date)} · ${payrollLessonTitle(lesson)} · −${payrollMoney(lesson.amount ?? 0)} BYN${lesson.substitute_name ? " · замена " + payrollLine(lesson.substitute_name) : ""}`);
+      detail.push(`• ${payrollDateLabel(lesson.date)} · ${payrollLessonTitle(lesson)} — ${payrollPeople(lesson.attendance)}, −${payrollMoney(lesson.amount)} BYN${lesson.substitute_name ? " · замена " + payrollLine(lesson.substitute_name) : ""}`);
     }
   }
   if (detail.length) detail.push("");
@@ -3680,19 +3698,21 @@ function parseImpulsePayroll(buffer, xlsx){
       const lesson = {source_key:"impulse:" + (index + 2) + ":" + date,date,group,time,...item,replaced_name:null};
       teacher.lessons.push(lesson);
       sum += lesson.amount;
-      if (lesson.substitute_name){
-        const substitute = byKey.get(impulsePayrollKey(lesson.substitute_name));
-        if (substitute && substitute !== teacher){
-          substitute.knownReplacements.push({...lesson,source_key:lesson.source_key + ":replacement",amount:null,
-            is_skipped:false,substitute_name:null,replaced_name:teacher.name});
-        }
-      }
     }
     detailTotal += sum;
     if (sum !== impulsePayrollAmount(row[rowTotalCol],hint + " · Начислено").amount)
       throw new Error("Сумма занятий в строке расходится с итогом · " + hint);
   }
   const trainers = [...byKey.values()];
+  const directory = trainers.map(trainer=>({id:trainer.key,name:trainer.name}));
+  for (const trainer of trainers) {
+    for (const lesson of trainer.lessons.filter(item=>item.substitute_name)) {
+      const key = impulsePayrollMatch(lesson.substitute_name,directory);
+      const substitute = byKey.get(key);
+      if (substitute && substitute !== trainer) substitute.knownReplacements.push({...lesson,
+        source_key:lesson.source_key + ":replacement",amount:null,is_skipped:false,substitute_name:null,replaced_name:trainer.name});
+    }
+  }
   for (const trainer of trainers){
     const skipped = trainer.lessons.filter(lesson => lesson.is_skipped);
     if (payrollSum(trainer.lessons,lesson => lesson.amount) !== trainer.own || payrollSum(skipped,lesson => lesson.amount) !== trainer.skips ||
@@ -3986,7 +4006,7 @@ function bindPayrollSync(page, refresh){
       try{
         const response=await fetch(SUPABASE_URL+"/functions/v1/fad-payroll-sync",{
           method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+SUPABASE_ANON_KEY},
-          body:JSON.stringify({token:TOKEN,period:month,force}),signal:AbortSignal.timeout(75000),
+          body:JSON.stringify({token:TOKEN,period:month,force}),signal:AbortSignal.timeout(115000),
         });
         const result=await response.json().catch(()=>null);
         if(!current())return;
@@ -4007,8 +4027,12 @@ function bindPayrollSync(page, refresh){
         if(result.status==="updated"||result.status==="fresh"){
           await refresh(month);
           if(current()){
-            const warning=result.advanceWarning;
-            feedback(warning?(PAYROLL_ADVANCE_WARNINGS[warning]||"Суммы авансов загружены. Даты недоступны."):"");
+            const notices=[];
+            if(result.advanceWarning)notices.push(PAYROLL_ADVANCE_WARNINGS[result.advanceWarning]||"Суммы авансов загружены. Даты недоступны.");
+            if(result.replacementWarning==="impulse_replacement_key_denied")notices.push("ImpulseCRM отклонил доступ к журналу замен.");
+            else if(result.replacementWarning==="impulse_replacement_endpoint_unavailable")notices.push("Журнал замен недоступен через API ImpulseCRM.");
+            else if(result.replacementWarning)notices.push("Загружена неполная детализация замен. Проверьте даты, суммы и число участников в карточке расчёта.");
+            feedback(notices.join(" "));
           }
           return;
         }
@@ -4027,7 +4051,7 @@ function bindPayrollSync(page, refresh){
   return {setPeriod,run,trigger};
 }
 
-function renderTrainerPayroll(host, employees){
+function renderTrainerPayroll(host, employees, openTrainerCard){
   const page = document.createElement("section");
   page.className = "payroll fade-in";
   host.replaceChildren(page);
@@ -4246,29 +4270,34 @@ function renderTrainerPayroll(host, employees){
 
   function grid(row){
     const rows = payrollGroups(row.lessons);
-    const replacements = row.lessons.filter(lesson => lesson.replaced_name);
+    const replacementDays = payrollReplacementDetails(row);
+    const replacements = replacementDays.flatMap(day=>day.lessons);
+    const dayAmounts = new Map(replacementDays.filter(day=>day.amount != null).map(day=>[day.date,day.amount]));
     if (row.replacements || row.replacement_count || replacements.length)
       rows.push({name:"Замены",time:null,lessons:replacements,replacements:true});
     const dates = [...new Set(row.lessons.map(lesson => lesson.date))].sort();
-    const costsKnown = !row.missing_replacement_dates && !replacements.some(lesson=>lesson.amount === null);
+    const costsKnown = !row.missing_replacement_dates && !replacementDays.some(day=>day.amount == null && day.lessons.some(lesson=>lesson.amount === null));
     const lessonCost = lesson => lesson.amount ?? 0;
-    const cells = lessons => dates.map(date => {
+    const dailyCost = date => (dayAmounts.get(date) ?? 0) + payrollSum(row.lessons.filter(lesson=>
+      lesson.date === date && (!lesson.replaced_name || !dayAmounts.has(date))),lessonCost);
+    const cells = (lessons,isReplacement) => dates.map(date => {
       const matches = lessons.filter(lesson => lesson.date === date);
       const item = lesson => {
         const name = lesson.replaced_name ? lesson.group + " · вместо " + lesson.replaced_name : lesson.group;
         const pay = lesson.amount === null ? "—" : payrollMoney(lesson.amount);
-        return `<div title="${esc(name)}">${pay}/${lesson.attendance}</div>`;
+        return `<div title="${esc(name)}">${pay}/${lesson.attendance ?? "—"}</div>`;
       };
-      return `<td>${matches.map(item).join("")}</td>`;
+      const subtotal = isReplacement && dayAmounts.has(date) ? `<div class="payroll-sub">${payrollMoney(dayAmounts.get(date))} BYN за день</div>` : "";
+      return `<td>${matches.map(item).join("")}${subtotal}</td>`;
     }).join("");
-    return `<p class="payroll-hint">В ячейке — оплата за занятие / число человек.${costsKnown ? "" : " Сумма замен взята из отчёта за месяц."}</p>
+    return `<p class="payroll-hint">В ячейке — оплата за занятие / число человек.${costsKnown ? "" : " Сумма части замен указана в общем итоге за месяц."}</p>
       <div class="payroll-grid-scroll" role="region" aria-label="Сетка занятий по датам" tabindex="0"><table class="payroll-grid">
       <thead><tr><th scope="col">Группа</th>${dates.map(date => `<th scope="col">${payrollDateLabel(date)}<span class="payroll-sub">${payrollDay(date)}</span></th>`).join("")}<th scope="col">Итого, BYN</th></tr></thead>
       <tbody>${rows.map(group => `<tr${group.replacements ? ' class="payroll-grid-replacements"' : ""}><th scope="row">${esc(group.name)}${group.time ? "<br>" + esc(group.time) : ""}</th>
-        ${cells(group.lessons)}<td>${payrollMoney(group.replacements ? row.replacements : payrollSum(group.lessons,lessonCost))}</td></tr>`).join("")}</tbody>
+        ${cells(group.lessons,group.replacements)}<td>${payrollMoney(group.replacements ? row.replacements : payrollSum(group.lessons,lessonCost))}</td></tr>`).join("")}</tbody>
       <tfoot><tr><th scope="row">${costsKnown ? "Итого за день" : "Итого по известным суммам"}</th>${dates.map(date =>
-        `<td>${payrollMoney(payrollSum(row.lessons.filter(lesson=>lesson.date===date),lessonCost))}</td>`).join("")}
-        <td>${payrollMoney(payrollSum(row.lessons,lessonCost))}</td></tr></tfoot>
+        `<td>${payrollMoney(dailyCost(date))}</td>`).join("")}
+        <td>${payrollMoney(payrollSum(dates,dailyCost))}</td></tr></tfoot>
       </table></div>`;
   }
 
@@ -4282,28 +4311,34 @@ function renderTrainerPayroll(host, employees){
   }
 
   function lessonAdjustments(row){
-    const known = row.lessons.filter(lesson=>lesson.replaced_name);
+    const replacementDays = payrollReplacementDetails(row);
+    const known = replacementDays.flatMap(day=>day.lessons);
     const skipped = row.skipped_lessons;
-    const box = (title,count,pay,items,kind,hint) => `<details class="payroll-group">
-      <summary><span>${title}</span><span>${count ? count + " зан." : ""}</span><strong>${pay} BYN</strong></summary>
+    const tile = (lesson,skip)=>{
+      const name = esc(payrollLessonTitle(lesson));
+      const paid = lesson.amount === null ? "" : " · " + (skip ? "−" : "") + payrollMoney(lesson.amount) + " BYN";
+      const substitute = lesson.substitute_name ? " · замена " + esc(lesson.substitute_name) : "";
+      const replaced = lesson.replaced_name ? " · вместо " + esc(lesson.replaced_name) : "";
+      return `<span>${payrollDateLabel(lesson.date)} ${payrollDay(lesson.date)} · ${payrollPeople(lesson.attendance)}${paid}<br>${name}${substitute}${replaced}</span>`;
+    };
+    const box = (title,count,pay,items,tiles,hint) => `<details class="payroll-group">
+      <summary><span>${title}</span><span>${count ? count + " зан." : ""}${items.length && items.length===count && items.every(lesson=>lesson.attendance != null)
+        ? " · " + payrollPeople(payrollSum(items,lesson=>lesson.attendance)) : ""}</span><strong>${pay} BYN</strong></summary>
       ${hint ? '<p class="payroll-hint payroll-replacement-details">' + hint + "</p>" : ""}
-      ${items.length ? '<div class="payroll-dates">' + items.map(lesson=>{
-        const name = esc(payrollLessonTitle(lesson));
-        const people = payrollMoney(lesson.attendance) + " чел.";
-        const paid = lesson.amount === null ? "" : " · " + (kind === "skip" ? "−" : "") + payrollMoney(lesson.amount) + " BYN";
-        const substitute = lesson.substitute_name ? " · замена " + esc(lesson.substitute_name) : "";
-        const replaced = lesson.replaced_name ? " · вместо " + esc(lesson.replaced_name) : "";
-        return `<span>${payrollDateLabel(lesson.date)} ${payrollDay(lesson.date)} · ${people}${paid}<br>${name}${substitute}${replaced}</span>`;
-      }).join("") + "</div>" : ""}</details>`;
+      ${tiles}</details>`;
     let replacements = "";
     if (row.replacements || row.replacement_count || known.length){
       const notes = [];
       if (row.missing_replacement_dates) notes.push(row.replacement_count ?
-        "В Impulse есть даты для " + row.known_replacement_count + " из " + row.replacement_count + " замен." : "По заменам в Impulse есть общая сумма.");
-      if (known.some(lesson=>lesson.amount===null)) notes.push("Оплата указана общей суммой за месяц.");
-      replacements = box("Замены",row.replacement_count,signed(row.replacements,"+"),known,"replacement",notes.join(" "));
+        "Загружены даты для " + row.known_replacement_count + " из " + row.replacement_count + " замен." : "По заменам в Impulse есть общая сумма.");
+      if (replacementDays.some(day=>day.amount == null && day.lessons.some(lesson=>lesson.amount === null)))
+        notes.push("Сумма части замен указана в общем итоге за месяц.");
+      const tiles = replacementDays.map(day=>`<div class="payroll-dates">${day.lessons.map(lesson=>tile(lesson,false)).join("")}${day.amount != null
+        ? `<span><b>Итого за замены ${payrollDateLabel(day.date)} · ${payrollMoney(day.amount)} BYN</b></span>` : ""}</div>`).join("");
+      replacements = box("Замены",row.replacement_count,signed(row.replacements,"+"),known,tiles,notes.join(" "));
     }
-    const skips = skipped.length ? box("Пропуски",row.skip_count,signed(row.skips,"−"),skipped,"skip","") : "";
+    const skips = skipped.length ? box("Пропуски",row.skip_count,signed(row.skips,"−"),skipped,
+      '<div class="payroll-dates">' + skipped.map(lesson=>tile(lesson,true)).join("") + '</div>',"") : "";
     return replacements || skips ? '<div class="payroll-lesson-adjustments">' + replacements + skips + '</div>' : "";
   }
 
@@ -4360,7 +4395,8 @@ function renderTrainerPayroll(host, employees){
     get(".payroll-drawer-footer").innerHTML = `
       <div><span class="payroll-sub">К выдаче${row.branch ? " · " + studioName(row.branch) : ""}</span>
       <div class="payroll-total">${amount(row.due)}${state.updated ? " BYN" : ""}</div></div>
-      ${telegramLink(row)}`;
+      <div class="payroll-drawer-actions">${openTrainerCard ? '<button type="button" class="btn btn-sm" data-payroll-action="profile">Открыть карточку тренера</button>' : ""}
+        ${telegramLink(row)}</div>`;
     applyBusy();
   }
 
@@ -4509,6 +4545,13 @@ function renderTrainerPayroll(host, employees){
       case "open": openDrawer(id, false, action); break;
       case "advance": openDrawer(id, true, action); break;
       case "close": dialog.close(); break;
+      case "profile": {
+        const trainer = selected();
+        if (!trainer || !openTrainerCard || state.busy) break;
+        dialog.close();
+        await openTrainerCard(trainer.id);
+        break;
+      }
       case "view":
         state.view = id === "dates" ? "dates" : "groups";
         try{ localStorage.setItem(PAYROLL_VIEW_KEY, state.view); }catch(_){}
@@ -5110,11 +5153,21 @@ async function renderEmployees(body){
     <div class="subtabs">${sections.map(([v,label])=>`<button class="subtab${EMP_VIEW===v?' on':''}" data-empv="${v}">${label}</button>`).join('')}</div>
     <div id="empList"></div>`;
   const list=body.querySelector('#empList');
+  const openTrainerCard=canEmployees?async id=>{
+    try{
+      const employees=rows.some(e=>String(e.id)===id)?rows:await apiListEmployees();
+      if(!list.isConnected||EMP_VIEW!=='payroll')return;
+      const trainer=employees.find(e=>e.employee_type==='trainer'&&String(e.id)===id);
+      if(!trainer){toast('Карточка тренера недоступна',true);return;}
+      if(manageEmployees)employeeModal(trainer,()=>renderEmployees(body),employees);
+      else modal(employeeCard(trainer,false)+'<div class="actions"><button class="btn" data-x>Закрыть</button></div>');
+    }catch(e){handleErr(e);}
+  }:null;
   let displayRequest=0;
   async function draw(){
     const ticket=++displayRequest;
     const view=EMP_VIEW;
-    if(view==='payroll'){renderTrainerPayroll(list,rows);return;}
+    if(view==='payroll'){renderTrainerPayroll(list,rows,openTrainerCard);return;}
     if((view==='admin'||view==='archive')&&canEmployees&&!canAdmins){
       const plain=rows.filter(e=>view==='admin'?e.is_active&&e.employee_type==='admin':!e.is_active);
       list.innerHTML=plain.length?`<div class="staff-grid">${plain.map(e=>employeeCard(e,manageEmployees)).join('')}</div>`:'<div class="empty">Сотрудников в этом разделе нет.</div>';
