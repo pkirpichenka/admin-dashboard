@@ -1683,7 +1683,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '15.11.2026-o'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '15.11.2026-p'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -3423,6 +3423,9 @@ const payrollFormat = new Intl.NumberFormat("ru-RU", {maximumFractionDigits: 2})
 const payrollMoney = (amount        ) => payrollFormat.format(amount).replace(/[\u00a0\u202f]/g, " ");
 const payrollPaymentFormat = new Intl.NumberFormat("ru-RU", {maximumFractionDigits:2});
 const payrollPaymentMoney = amount => payrollPaymentFormat.format(amount).replace(/[\u00a0\u202f]/g, " ");
+// В сводке ImpulseCRM авансы округляются до BYN; журнал хранит копейки.
+const payrollAdvanceReportDiffers = row => row.impulse_advance_reference != null &&
+  Number(row.impulse_advance_reference) !== Math.round(Number(row.imported_advance || 0));
 const payrollMonthLabel = (period        ) => PAYROLL_MONTHS[Number(period.slice(5, 7)) - 1] + " " + period.slice(0, 4);
 const payrollDateLabel = (date        ) => date.slice(8, 10) + "." + date.slice(5, 7);
 const payrollAdvanceDate = date => payrollDateLabel(date) + "." + date.slice(0,4);
@@ -3828,8 +3831,7 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
         ? payrollDateLabel(snapshot.range_start) + "–" + payrollDateLabel(snapshot.range_end) + "." + state.period.slice(0,4) : null;
       state.ready = true;
       const differences = state.source === "impulse_api"
-        ? state.rows.filter(row=>row.impulse_advance_reference!=null &&
-          Math.abs(row.impulse_advance_reference-row.imported_advance)>0.001) : [];
+        ? state.rows.filter(payrollAdvanceReportDiffers) : [];
       showNotice(differences.length ? "Расхождение между отчётом зарплаты и журналом авансов: " +
         differences.map(row=>row.name+" (отчёт "+payrollPaymentMoney(row.impulse_advance_reference)+
           ", баланс "+payrollPaymentMoney(row.imported_advance)+" BYN)").join("; ")+". Для зарплаты использован журнал «Баланс сотрудников»." :
@@ -3947,8 +3949,7 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
       `<p class="payroll-hint">Исторические записи FAD (до сверки с ImpulseCRM):</p><ul class="payroll-advance-list">${row.advances.map(advance=>
       `<li><span>${payrollAdvanceDate(advance.date)}</span><span>${esc(advance.note)}</span><strong>${payrollPaymentMoney(advance.amount)} BYN</strong></li>`).join("")}</ul>` : "";
     const advances = imported + legacy || '<p class="payroll-hint">Авансов за месяц пока нет.</p>';
-    const reference = state.source === "impulse_api" && row.impulse_advance_reference!=null &&
-        Math.abs(row.impulse_advance_reference-row.imported_advance)>0.001
+    const reference = state.source === "impulse_api" && payrollAdvanceReportDiffers(row)
       ? `<p class="payroll-hint">Сверка: в отчёте зарплаты ${payrollPaymentMoney(row.impulse_advance_reference)} BYN, в «Балансе сотрудников» ${payrollPaymentMoney(row.imported_advance)} BYN. Учтён журнал.</p>` : "";
     get("#payrollAdvances").innerHTML = advances + reference;
     get(".payroll-view").innerHTML = [["groups","По группам"],["dates","По датам"]].map(([id,label]) =>
