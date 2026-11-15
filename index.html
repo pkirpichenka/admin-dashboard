@@ -1531,7 +1531,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '15.11.2026-c'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '15.11.2026-d'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -2357,8 +2357,8 @@ function renderApp(){
   if(session.role==='owner') tabs.push({label:'Отчёты',render:renderAllReports});
   else tabs.push({label:'Смена',render:renderShift});
   tabs.push({label:'Расписание',render:renderSchedule});
-  if(session.role==='owner'||session.role==='admin') tabs.push({label:'Замены',key:'replacements',render:renderReplacements});
   tabs.push({label:'План и бонусы',render:renderBonusDashboard});
+  if(session.role==='owner'||session.role==='admin') tabs.push({label:'Замены',key:'replacements',render:renderReplacements});
   if(session && (session.role==='owner'||session.role==='admin')) tabs.push({label:'Маркетинг',render:renderMarketing});
   if(session.role!=='owner' && can('reports.view_all')) tabs.push({label:'Все отчёты',render:renderAllReports});
   if(session.role==='owner' || ['employees.view','employees.manage','admins.view','admins.manage','admins.permissions','admins.audit','telegram.manage'].some(k=>can(k))) tabs.push({label:'Сотрудники',render:renderEmployees});
