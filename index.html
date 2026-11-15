@@ -886,44 +886,58 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 
 /* ================= Замены ================= */
 .replacements{
-  --rep-green:#2D7155;
-  --rep-line:#C9D1C7;
-  display:grid;gap:16px;
+  --rep-green:#2D7155;--rep-line:#D5DBD3;--rep-divider:#EEF1ED;--rep-muted:#5E6B64;
+  display:grid;gap:16px;max-width:960px;margin-inline:auto;
+  font-family:'Onest','Golos Text',sans-serif;
 }
-.wrap:has(> #tabbody > .replacements){max-width:1152px}
+.replacements [hidden]{display:none}
 .tab[data-tab="replacements"]{min-height:44px}
 .tab[data-tab="replacements"].on{background:#2D7155}
 .rep-title{
   margin:0;font-size:19px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);
 }
-.rep-layout{display:grid;grid-template-columns:minmax(285px,320px) minmax(0,1fr);gap:16px;align-items:start}
-.rep-panel,.rep-summary,.rep-card,.rep-empty{background:#fff;border-radius:20px;box-shadow:var(--shadow);min-width:0}
-.rep-panel{display:grid;gap:18px;padding:20px}
-.rep-mode{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:4px;padding:4px;border-radius:14px;background:#EEF1ED}
-.rep-mode button,.rep-direction,.rep-switch,.rep-reset,.rep-more,.rep-call{min-height:44px}
+.rep-query,.rep-results,.rep-loading{background:#fff;border:1px solid var(--rep-divider);border-radius:16px;box-shadow:var(--shadow);min-width:0}
+.rep-query{display:grid;gap:14px;padding:20px}
+.rep-query-top,.rep-query-footer{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;min-width:0}
+.rep-mode{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;padding:4px;border-radius:12px;background:#EEF1ED}
+.rep-mode button,.rep-direction,.rep-switch,.rep-link,.rep-partial-toggle,.rep-trainer,.rep-loading button{min-height:44px}
 .rep-mode button{
-  border:1px solid transparent;border-radius:10px;background:transparent;color:#3C4A42;
-  padding:4px 6px;font-size:14px;font-weight:700;line-height:1.2;
+  border:1px solid transparent;border-radius:9px;background:transparent;color:#3C4A42;
+  padding:6px 12px;font-size:14px;font-weight:600;line-height:1.2;
 }
-.rep-mode button[aria-pressed="true"],.rep-direction[aria-pressed="true"]{
-  background:var(--rep-green);border-color:var(--rep-green);color:#fff;
+.rep-mode button[aria-pressed="true"]{
+  background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(23,38,31,.14);
 }
 .rep-label{
   display:block;margin-bottom:8px;font-size:13px;font-weight:700;letter-spacing:.04em;
   text-transform:uppercase;color:var(--ink-soft);
 }
-.rep-trainer{min-height:48px;border-radius:12px;border-color:var(--rep-line);background:#fff;font-size:16px;font-weight:600}
-.rep-directions,.rep-chips{display:flex;flex-wrap:wrap;gap:8px}
-.rep-direction{
+.replacements .rep-label{color:var(--rep-muted);font-weight:600;letter-spacing:normal;text-transform:none}
+.rep-trainer-field{flex:1 1 230px;min-width:0;max-width:420px}
+.rep-trainer{border-radius:12px;border-color:var(--rep-line);background:#fff;font-size:15px;font-weight:600}
+.rep-directions{display:flex;flex-wrap:wrap;gap:8px;min-width:0}
+.rep-direction,.rep-switch{
+  display:inline-flex;align-items:center;gap:8px;
   border:1px solid var(--rep-line);border-radius:999px;background:#fff;color:var(--ink);
-  padding:4px 12px;font-size:14px;font-weight:600;max-width:100%;overflow-wrap:anywhere;
+  padding:6px 12px;font-size:14px;font-weight:600;max-width:100%;text-align:left;overflow-wrap:anywhere;
 }
-.rep-direction:disabled{opacity:.64;cursor:default}
-.rep-hint{margin:8px 0 0;color:var(--ink-soft);font-size:13px;line-height:1.4}
+.rep-direction[aria-pressed="true"],.rep-switch[aria-pressed="true"]{background:#E6F1EA;border-color:var(--rep-green);color:#1E5A3F}
+.rep-direction:disabled{cursor:default;color:var(--rep-muted)}
+.rep-direction.rep-direction-empty{border:1px dashed var(--rep-line);background:#fff;color:var(--rep-muted)}
+.rep-direction-count{color:var(--rep-muted);font-size:13px;font-weight:400;font-variant-numeric:tabular-nums}
+.rep-need{display:flex;flex:1 1 240px;align-items:center;flex-wrap:wrap;gap:4px 12px;min-width:0}
+.rep-needed{margin:0;color:var(--rep-muted);font-size:13px;overflow-wrap:anywhere}
+.rep-link{
+  border:0;background:transparent;color:var(--rep-muted);border-radius:8px;padding:0 2px;
+  font-size:13px;text-decoration:underline;text-underline-offset:3px;text-align:left;
+}
+.rep-link:hover{color:var(--rep-green)}
+.rep-switch{margin-left:auto}
+.rep-unavailable{margin:0;padding:8px 12px;background:#FFF8E6;color:#6B4A00;border-radius:8px;font-size:13px;overflow-wrap:anywhere}
 .direction-add{min-height:44px;margin-top:8px}
 .direction-add:focus-visible{outline:2px solid #2D7155;outline-offset:2px}
-.direction-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.direction-actions .direction-add{margin:0}
+.rep-manage{justify-self:end;margin-top:-12px}
+.rep-manage-actions{display:grid;gap:8px}
 .direction-dialog{width:calc(100% - 24px);max-width:390px;border:0;color:var(--ink)}
 .direction-dialog::backdrop{background:rgba(23,38,31,.42)}
 .direction-dialog h3{margin-bottom:16px}
@@ -933,58 +947,46 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 .direction-remove{background:#A33B27;border-color:#A33B27}
 .direction-remove:hover{background:#842E1E;border-color:#842E1E}
 .direction-error{font-size:13px;color:#A33B27}
-.rep-switch{
-  display:flex;align-items:center;gap:10px;border:0;background:transparent;color:var(--ink);
-  padding:0 2px;text-align:left;font-size:15px;font-weight:600;
+.rep-results{overflow:clip}
+.rep-loading,.rep-empty{margin:0;padding:18px 20px;color:var(--rep-muted);font-size:14px}
+.rep-loading .btn{display:block;margin-top:10px}
+.rep-result-heading,.rep-partial-toggle{
+  margin:0;color:var(--rep-muted);font-size:12px;font-weight:700;letter-spacing:.045em;text-transform:uppercase;
 }
-.rep-switch-track{position:relative;flex:0 0 40px;height:24px;border-radius:999px;background:#727F76}
-.rep-switch-track::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff}
-.rep-switch[aria-pressed="true"] .rep-switch-track{background:var(--rep-green)}
-.rep-switch[aria-pressed="true"] .rep-switch-track::after{left:19px}
-.rep-rare{background:#FFF8E1;border:1px solid #E8C66A;border-radius:12px;padding:11px 13px;color:#5C3F00;font-size:14px}
-.rep-reset,.rep-more{border-radius:12px;border-color:var(--rep-line);font-size:15px}
-.rep-results,.rep-group{display:grid;gap:12px;min-width:0}
-.rep-results [hidden]{display:none}
-.rep-summary{padding:16px 20px}
-.rep-summary h2{margin:0 0 4px;font-size:18px;line-height:1.3;overflow-wrap:anywhere}
-.rep-summary p{margin:0;color:var(--ink-soft);font-size:14px}
-.rep-empty{padding:26px 20px;text-align:center;color:var(--ink-soft)}
-.rep-summary p:empty{display:none}
-.rep-empty .btn{display:block;margin:12px auto 0;min-height:44px}
-.rep-group h3{
-  margin:3px 0 0;color:#1E5A3F;font-size:14px;font-weight:800;
-  letter-spacing:.04em;text-transform:uppercase;
+.rep-result-heading{padding:12px 20px}
+.rep-archive-heading{border-top:1px solid var(--rep-divider);background:#F6F7F4}
+.rep-rows{list-style:none;margin:0;padding:0}
+.rep-row{display:flex;align-items:center;justify-content:space-between;gap:10px 16px;padding:12px 20px;border-top:1px solid var(--rep-divider)}
+.rep-row-info{min-width:0}
+.rep-name{margin:0;font-size:16px;font-weight:600;line-height:1.25;overflow-wrap:anywhere}
+.rep-row-meta,.rep-branches,.rep-branch{display:flex;align-items:center;flex-wrap:wrap;gap:4px 10px}
+.rep-row-meta{margin-top:4px;color:var(--rep-muted);font-size:13px;overflow-wrap:anywhere}
+.rep-row-meta:empty{display:none}
+.rep-branch{gap:6px}
+.rep-branch .sdot{width:8px;height:8px;margin-right:0}
+.rep-missing{color:#8A5A00;font-weight:600}
+.rep-row-contacts{display:flex;flex:none;align-items:center;gap:8px}
+.rep-row-contact{
+  display:grid;place-items:center;flex:none;width:44px;height:44px;padding:0;
+  border:1px solid var(--rep-line);border-radius:12px;background:#fff;color:#3C4A42;text-decoration:none;
 }
-.rep-group-partial h3,.rep-badge-partial{color:#7A5200}
-.rep-group-archived h3{color:var(--ink-soft)}
-.rep-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(285px,100%),1fr));gap:12px}
-.rep-card{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:16px;padding:15px}
-.rep-card-full{border-color:#BFE0CE}
-.rep-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
-.rep-name{margin:0;font-size:16px;font-weight:700;line-height:1.25;overflow-wrap:anywhere}
-.rep-badge,.rep-chip{border:1px solid;border-radius:999px;font-weight:700}
-.rep-badge{flex:none;padding:2px 9px;font-size:12px;white-space:nowrap}
-.rep-badge-full{background:#DDF0E5;border-color:#9CCFB4;color:#1E5A3F}
-.rep-badge-partial{background:#FFF2CC;border-color:#E8C66A}
-.rep-chips{gap:6px}
-.rep-chip{background:#F0F2EE;border-color:#DDE2DB;color:#4A5750;padding:3px 8px;font-size:12px}
-.rep-chip-match{background:var(--rep-green);border-color:var(--rep-green);color:#fff}
-.rep-branches,.rep-missing{margin:0;font-size:13px;color:var(--ink-soft);overflow-wrap:anywhere}
-.rep-missing{color:#8A4B14;font-weight:600}
-.rep-contacts{margin-top:auto}
-.rep-contact-row{display:flex;align-items:center;gap:8px}
+.rep-row-contact svg{width:20px;height:20px}
+a.rep-row-contact:hover{background:#F6F7F4;border-color:#AAB7AB}
+.rep-row-contact:disabled{color:#859188;background:#F6F7F4;cursor:default}
+.rep-partial-toggle{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:8px 20px;
+  border:0;border-top:1px solid var(--rep-divider);background:#F6F7F4;text-align:left;
+}
+.rep-partial-toggle:hover{background:#EEF1ED}
+.rep-partial-toggle svg{width:18px;height:18px;flex:none}
+.rep-partial-toggle[aria-expanded="true"] svg{transform:rotate(180deg)}
+.rep-subheading{margin:0;padding:8px 20px;color:var(--rep-muted);font-size:13px;font-weight:600;border-top:1px solid var(--rep-divider)}
 .rep-contact{
   flex:1 1 0;min-width:0;
   display:flex;align-items:center;justify-content:center;gap:6px;padding:5px 8px;
   min-height:44px;border:1px dashed var(--rep-line);border-radius:12px;
   color:var(--ink-soft);font-size:14px;overflow-wrap:anywhere;
 }
-.rep-call{
-  border:1px solid var(--rep-green);background:var(--rep-green);color:#fff;
-  font:700 15px/1.25 'Onest','Golos Text',sans-serif;text-decoration:none;text-align:center;
-}
-.rep-call span:last-child{min-width:0}
-.rep-call:hover{background:#1E5A3F;border-color:#1E5A3F}
 .rep-contact-icon{
   flex:0 0 44px;min-width:44px;height:44px;padding:0;
   border:1px solid var(--rep-contact-line);color:var(--rep-contact-color);background:#fff;
@@ -996,6 +998,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 .replacements :is(button,select,a):focus-visible,.trainer-directions input:focus-visible{
   outline:2px solid #2D7155;outline-offset:2px;
 }
+.replacements .rep-partial-toggle:focus-visible{outline-offset:-3px}
 .trainer-directions{border:0;padding:0;margin:0;min-width:0}
 .staff-form-studios label.trainer-direction{position:relative;min-height:46px;max-width:100%;cursor:pointer;overflow-wrap:anywhere}
 .trainer-direction input[type="checkbox"]{
@@ -1012,9 +1015,13 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 .trainer-directions-status button{min-height:44px;margin-top:8px}
 label.trainer-replacement-setting{display:flex;align-items:center;gap:8px;min-height:44px}
 .trainer-replacement-setting input{width:auto;margin:0}
-@media(max-width:740px){.rep-layout{grid-template-columns:1fr}}
-@media(max-width:480px){
-  .rep-panel,.rep-summary{padding:16px}.rep-panel{gap:14px}.rep-mode button{font-size:13px}
+@media(max-width:540px){
+  .rep-query{padding:16px}
+  .rep-need,.rep-trainer-field{flex-basis:100%}
+  .rep-switch{margin-left:0}
+  .rep-row{flex-wrap:wrap;padding-inline:16px}
+  .rep-row-info{flex-basis:100%}
+  .rep-result-heading,.rep-partial-toggle,.rep-subheading,.rep-empty{padding-inline:16px}
 }
 
 .cal-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
@@ -1683,7 +1690,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '15.11.2026-w'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '15.11.2026-x'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -4361,61 +4368,96 @@ function mergeTrainerDirection(catalog,direction){
 }
 
 /* ================= Замены ================= */
-function replacementCandidates(trainers, directionsByTrainer, excludedId, needed){
+function replacementCandidates(trainers,directionsByTrainer,excludedId,requested){
   const counts=new Map(), full=[], partial=[];
-  // Фильтр занятости по расписанию и календарю будет применяться здесь, до подсчёта.
-  const eligible=trainers.filter(trainer=>trainer.id!==excludedId&&!trainer.exclude_from_replacements);
+  const eligible=trainers.filter(t=>t.id!==excludedId&&!t.exclude_from_replacements);
+  for(const trainer of eligible){
+    for(const id of directionsByTrainer.get(trainer.id)||[]){
+      counts.set(id,(counts.get(id)||0)+1);
+    }
+  }
+  const needed=requested.filter(d=>counts.has(d.id));
+  const unavailable=requested.filter(d=>!counts.has(d.id));
+  if(!needed.length) return {counts,needed,unavailable,full,partial};
+
   for(const trainer of eligible){
     const directions=directionsByTrainer.get(trainer.id)||new Set();
-    for(const id of directions) counts.set(id,(counts.get(id)||0)+1);
-    if(!needed.length) continue;
-    const missing=needed.filter(direction=>!directions.has(direction.id));
-    if(missing.length===needed.length) continue;
-    const candidate={trainer,directions,missing};
-    (missing.length?partial:full).push(candidate);
+    const missing=needed.filter(d=>!directions.has(d.id));
+    if(missing.length<needed.length){
+      (missing.length?partial:full).push({trainer,missing});
+    }
   }
-  // Исходный список уже отсортирован по ФИО. Стабильная сортировка сохраняет этот порядок при равенстве.
+  // По ФИО уже отсортировано, поэтому при одинаковом числе пропусков порядок сохраняется.
   partial.sort((a,b)=>a.missing.length-b.missing.length);
-  return {counts,full,partial};
+  return {counts,needed,unavailable,full,partial};
 }
 
-function replacementCard({trainer,directions,missing},catalog,selected){
-  const isFull=missing.length===0;
-  const count=selected.size;
-  const badge=isFull?(count===1?'Ведёт':`Все ${count} из ${count}`):`${count-missing.length} из ${count}`;
-  const branches=employeeStudios(trainer).map(studioName);
-  const phone=String(trainer.phone||'').trim();
-  const dial=staffPhoneDial(phone);
-  const phoneLink=/^\+?\d+$/.test(dial)
-    ? `<a class="rep-contact rep-call" href="tel:${dial}" aria-label="Позвонить: ${escapeHtml(trainer.full_name)}, ${escapeHtml(phone)}"><span aria-hidden="true">☎︎</span><span>${escapeHtml(phone)}</span></a>`
-    : '';
-  const contacts=phoneLink+trainerMessengerLinks(trainer,dial);
-  return `<article class="rep-card${isFull?' rep-card-full':''}">
-    <div class="rep-card-head"><h4 class="rep-name">${escapeHtml(trainer.full_name)}</h4>
-      <span class="rep-badge rep-badge-${isFull?'full':'partial'}">${badge}</span></div>
-    <div class="rep-chips">${catalog.filter(d=>directions.has(d.id)).map(d=>{
-      const match=selected.has(d.id);
-      return `<span class="rep-chip${match?' rep-chip-match':''}">${match?'✓ ':''}${escapeHtml(d.name)}</span>`;
-    }).join('')}</div>
-    ${isFull?'':`<p class="rep-missing">Не ведёт: ${missing.map(d=>escapeHtml(d.name)).join(', ')}</p>`}
-    <p class="rep-branches">${branches.length?escapeHtml(branches.join(' · ')):'филиал не указан'}</p>
-    <div class="rep-contacts"><div class="rep-contact-row">${contacts||'<div class="rep-contact">контакты не указаны</div>'}</div></div>
-  </article>`;
+const REPLACEMENT_PHONE_ICON='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16.5v3a2 2 0 0 1-2.2 2 17 17 0 0 1-7.4-2.6 17 17 0 0 1-5.3-5.3A17 17 0 0 1 3.5 6.2 2 2 0 0 1 5.5 4h3a2 2 0 0 1 2 1.7l.4 2.4a2 2 0 0 1-.6 2l-1.2 1.2a13 13 0 0 0 4.6 4.6l1.2-1.2a2 2 0 0 1 2-.6l2.4.4a2 2 0 0 1 1.7 2z"/></svg>';
+const REPLACEMENT_CHEVRON='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
+
+function replacementRow({trainer,missing}){
+  const name=escapeHtml(trainer.full_name);
+  const branches=employeeStudios(trainer);
+  const dial=staffPhoneDial(trainer.phone);
+  const number=trainerInternationalPhone(dial);
+  const username=trainer.telegram_username;
+  const telegram=typeof username==='string'&&TRAINER_TELEGRAM_USERNAME.test(username)?username:number;
+  const contacts=[
+    {title:'Телефон',action:'Позвонить',href:/^\+?\d+$/.test(dial)?`tel:${dial}`:'',icon:REPLACEMENT_PHONE_ICON},
+    {title:'Telegram',action:'Написать в Telegram',href:telegram?`https://t.me/${telegram}`:'',icon:TRAINER_TELEGRAM_ICON,newTab:true},
+    {title:'Viber',action:'Написать в Viber',href:number?`viber://chat?number=${encodeURIComponent(number)}`:'',icon:TRAINER_VIBER_ICON}
+  ].map(({title,action,href,icon,newTab})=>{
+    const label=`${action}: ${name}`;
+    return href
+      ? `<a class="rep-row-contact" href="${escapeHtml(href)}" title="${title}" aria-label="${label}"${newTab?' target="_blank" rel="noopener noreferrer"':''}>${icon}</a>`
+      : `<button type="button" class="rep-row-contact" disabled title="Не указан" aria-label="${label} — не указан">${icon}</button>`;
+  }).join('');
+  const branchLabels=branches.map(s=>`<span class="rep-branch">${sdot(s)}${escapeHtml(studioName(s))}</span>`).join('');
+  const meta=(branchLabels?`<span class="rep-branches">${branchLabels}</span>`:'')
+    +(missing.length?`<span class="rep-missing">Нет: ${escapeHtml(missing.map(d=>d.name).join(', '))}</span>`:'');
+  return `<li class="rep-row">
+    <div class="rep-row-info"><div class="rep-name">${name}</div>${meta?`<div class="rep-row-meta">${meta}</div>`:''}</div>
+    <div class="rep-row-contacts">${contacts}</div>
+  </li>`;
+}
+
+function replacementResultGroup(id,heading=''){
+  const fullHeading=heading?'h3':'h2';
+  const partialHeading=heading?'h4':'h3';
+  return `<section id="${id}" aria-labelledby="${id}-title" hidden>
+    ${heading?`<h2 class="rep-result-heading rep-archive-heading" id="${id}-title">${heading}</h2>`:''}
+    <${fullHeading} class="rep-result-heading" ${heading?'':`id="${id}-title"`} data-rep-full-title></${fullHeading}>
+    <p class="rep-empty" data-rep-full-empty hidden></p>
+    <ol class="rep-rows" role="list" data-rep-full-rows></ol>
+    <button type="button" class="rep-partial-toggle" aria-controls="${id}-partial" aria-expanded="false" hidden>
+      <span></span>${REPLACEMENT_CHEVRON}
+    </button>
+    <div id="${id}-partial" data-rep-partial-content hidden>
+      <div data-rep-partial-one hidden>
+        <${partialHeading} class="rep-subheading">Не хватает одного направления</${partialHeading}>
+        <ol class="rep-rows" role="list"></ol>
+      </div>
+      <div data-rep-partial-many hidden>
+        <${partialHeading} class="rep-subheading">Не хватает двух и более</${partialHeading}>
+        <ol class="rep-rows" role="list"></ol>
+      </div>
+    </div>
+  </section>`;
 }
 
 async function renderReplacements(body){
   const page=document.createElement('section');
   page.className='replacements fade-in';
   page.setAttribute('aria-labelledby','rep-title');
-  page.innerHTML='<h1 id="rep-title" class="rep-title">Подбор замены</h1><div class="rep-empty" role="status">Загружаем тренеров и направления…</div>';
+  page.innerHTML='<h1 id="rep-title" class="rep-title">Подбор замены</h1><div class="rep-loading" role="status">Загружаем тренеров и направления…</div>';
   body.replaceChildren(page);
 
   let data;
   try{ data=await apiListReplacements(); }
   catch(err){
     if(!page.isConnected) return;
-    page.querySelector('.rep-empty').innerHTML='Не удалось загрузить тренеров и направления.<button type="button" class="btn">Повторить</button>';
-    page.querySelector('.rep-empty button').onclick=()=>{ void renderReplacements(body); };
+    page.querySelector('.rep-loading').innerHTML='Не удалось загрузить тренеров и направления.<button type="button" class="btn">Повторить</button>';
+    page.querySelector('.rep-loading button').onclick=()=>{ void renderReplacements(body); };
     if(isForbiddenErr(err)) handleErr(err);
     return;
   }
@@ -4431,187 +4473,202 @@ async function renderReplacements(body){
     assignmentCounts.set(direction_id,(assignmentCounts.get(direction_id)||0)+1);
   }
 
-  const state={mode:'trainer',trainerId:'',selected:new Set(),onlyFull:false,showAll:false};
-  page.querySelector('.rep-empty').outerHTML=`<div class="rep-layout">
-    <div class="rep-panel">
+  const state={mode:'trainer',trainerId:'',selected:new Set(),onlyFull:false};
+  page.querySelector('.rep-loading').remove();
+  page.insertAdjacentHTML('beforeend',`<div class="rep-query">
+    <div class="rep-query-top">
       <div class="rep-mode" role="group" aria-label="Способ подбора">
         <button type="button" data-rep-mode="trainer" aria-pressed="true">По тренеру</button>
         <button type="button" data-rep-mode="direction" aria-pressed="false">По направлению</button>
       </div>
-      <div id="rep-trainer-field">
-        <label class="rep-label" for="rep-trainer">Кого заменяем</label>
-        <select class="rep-trainer" id="rep-trainer"><option value="">Выберите тренера…</option>
-          ${workingTrainers.map(t=>`<option value="${escapeHtml(t.id)}">${escapeHtml(t.full_name)}</option>`).join('')}</select>
+      <div class="rep-trainer-field" id="rep-trainer-field">
+        <select class="rep-trainer" id="rep-trainer" aria-label="Кого заменяем">
+          <option value="">Кого заменяем…</option>
+          ${workingTrainers.map(t=>`<option value="${escapeHtml(t.id)}">${escapeHtml(t.full_name)}</option>`).join('')}
+        </select>
       </div>
-      <div>
-        <div class="rep-label" id="rep-dir-label">Направления занятия</div>
-        <div class="rep-directions" id="rep-directions" role="group" aria-labelledby="rep-dir-label" aria-describedby="rep-dir-hint"></div>
-        <p class="rep-hint" id="rep-dir-hint"></p>
-        ${session.role==='owner'?`<div class="direction-actions">
-          <button type="button" class="btn btn-sm direction-add" id="rep-add-direction">+ Добавить направление</button>
-          <button type="button" class="btn btn-sm btn-ghost direction-add" id="rep-delete-direction">Удалить направление</button>
-        </div>`:''}
-      </div>
-      <button type="button" class="rep-switch" id="rep-only-full" aria-pressed="false">
-        <span class="rep-switch-track" aria-hidden="true"></span>Только полное совпадение
-      </button>
-      <div class="rep-rare" id="rep-rare" hidden></div>
-      <button type="button" class="btn rep-reset" id="rep-reset">Сбросить</button>
     </div>
-    <div class="rep-results">
-      <div class="rep-summary" aria-live="polite" aria-atomic="true">
-        <h2 id="rep-summary-title"></h2><p id="rep-summary-detail"></p>
-      </div>
-      <div class="rep-empty" id="rep-empty" hidden></div>
-      <section class="rep-group" id="rep-full" aria-labelledby="rep-full-title" hidden>
-        <h3 id="rep-full-title"></h3><div class="rep-grid" id="rep-full-cards"></div>
-      </section>
-      <section class="rep-group rep-group-partial" id="rep-partial" aria-labelledby="rep-partial-title" hidden>
-        <h3 id="rep-partial-title"></h3><div class="rep-grid" id="rep-partial-cards"></div>
-        <button type="button" class="btn rep-more" id="rep-more" aria-controls="rep-partial-cards" aria-expanded="false" hidden></button>
-      </section>
-      <section class="rep-group rep-group-archived" id="rep-archived" aria-labelledby="rep-archived-title" hidden>
-        <h3 id="rep-archived-title"></h3><div class="rep-grid" id="rep-archived-cards"></div>
-      </section>
+    <div>
+      <div class="rep-label" id="rep-dir-label">Направления занятия</div>
+      <div class="rep-directions" id="rep-directions" role="group" aria-labelledby="rep-dir-label"></div>
     </div>
-  </div>`;
+    <div class="rep-query-footer">
+      <div class="rep-need">
+        <p class="rep-needed" id="rep-needed" aria-live="polite" hidden></p>
+        <button type="button" class="rep-link" id="rep-restore" hidden>Вернуть направления тренера</button>
+      </div>
+      <button type="button" class="rep-switch" id="rep-only-full" aria-pressed="false">Только полное совпадение</button>
+    </div>
+    <p class="rep-unavailable" id="rep-unavailable" role="status" hidden></p>
+  </div>
+  <div class="rep-results">
+    <p id="rep-empty" class="rep-empty" role="status" hidden></p>
+    ${replacementResultGroup('rep-working')}
+    ${replacementResultGroup('rep-archived','Тренеры из архива')}
+  </div>
+  ${session.role==='owner'?`<button type="button" class="rep-link rep-manage" id="rep-manage" aria-haspopup="dialog">Управление направлениями</button>
+    <dialog class="modal direction-dialog" id="rep-direction-manager" aria-labelledby="rep-manager-title">
+      <h3 id="rep-manager-title">Управление направлениями</h3>
+      <div class="rep-manage-actions">
+        <button type="button" class="btn" id="rep-add-direction" autofocus>Добавить направление</button>
+        <button type="button" class="btn" id="rep-delete-direction">Удалить направление</button>
+      </div>
+      <div class="actions"><button type="button" class="btn" id="rep-manager-close">Закрыть</button></div>
+    </dialog>`:''}`);
 
   const get=id=>page.querySelector('#'+id);
   const modeButtons=page.querySelectorAll('[data-rep-mode]');
   const directionList=get('rep-directions');
+  const select=get('rep-trainer'), onlyFull=get('rep-only-full'), restore=get('rep-restore');
   const addDirection=get('rep-add-direction'), deleteDirection=get('rep-delete-direction');
-  const select=get('rep-trainer'), onlyFull=get('rep-only-full'), more=get('rep-more');
+  const groups=['rep-working','rep-archived'].map(id=>{
+    const element=get(id);
+    const toggle=element.querySelector('.rep-partial-toggle');
+    const group={
+      element,toggle,expanded:null,
+      fullTitle:element.querySelector('[data-rep-full-title]'),
+      fullEmpty:element.querySelector('[data-rep-full-empty]'),
+      fullRows:element.querySelector('[data-rep-full-rows]'),
+      partialContent:element.querySelector('[data-rep-partial-content]'),
+      oneMissing:element.querySelector('[data-rep-partial-one]'),
+      moreMissing:element.querySelector('[data-rep-partial-many]')
+    };
+    toggle.onclick=()=>{
+      group.expanded=toggle.getAttribute('aria-expanded')!=='true';
+      setPartialExpanded(group,group.expanded);
+    };
+    return group;
+  });
+
+  function setPartialExpanded(group,expanded){
+    group.toggle.setAttribute('aria-expanded',String(expanded));
+    group.partialContent.hidden=!expanded;
+  }
 
   function renderDirectionButtons(){
     if(deleteDirection) deleteDirection.disabled=!catalog.length;
     directionList.innerHTML=catalog.map(d=>`<button type="button" class="rep-direction" data-rep-direction="${d.id}" aria-pressed="false">
-      <span data-rep-check aria-hidden="true" hidden>✓ </span>${escapeHtml(d.name)} · <span data-rep-count></span>
+      <span>${escapeHtml(d.name)}</span><span class="rep-direction-count" data-rep-count></span>
     </button>`).join('');
+  }
+
+  function drawGroup(group,full,partial){
+    group.element.hidden=!(full.length||partial.length);
+    group.fullTitle.textContent=`Подходят полностью · ${full.length}`;
+    group.fullEmpty.hidden=full.length>0;
+    group.fullEmpty.textContent=state.onlyFull
+      ? 'Полностью подходящих нет. Выключите «Только полное совпадение», чтобы увидеть частичные.'
+      : 'Полностью подходящих нет — смотрите частичные совпадения ниже.';
+    group.fullRows.innerHTML=full.map(replacementRow).join('');
+
+    group.toggle.hidden=state.onlyFull||!partial.length;
+    group.toggle.querySelector('span').textContent=`Частичные совпадения · ${partial.length}`;
+    const oneMissing=partial.filter(c=>c.missing.length===1);
+    const moreMissing=partial.slice(oneMissing.length);
+    group.oneMissing.hidden=!oneMissing.length;
+    group.moreMissing.hidden=!moreMissing.length;
+    group.oneMissing.querySelector('ol').innerHTML=oneMissing.map(replacementRow).join('');
+    group.moreMissing.querySelector('ol').innerHTML=moreMissing.map(replacementRow).join('');
+    setPartialExpanded(group,!group.toggle.hidden&&(group.expanded??!full.length));
   }
 
   function draw(){
     const byTrainer=state.mode==='trainer';
-    const absent=byTrainer?workingTrainers.find(t=>t.id===state.trainerId):null;
-    const needed=catalog.filter(d=>state.selected.has(d.id));
-    const {counts,full,partial}=replacementCandidates(trainers,directionsByTrainer,state.trainerId,needed);
-    const rare=needed.filter(d=>(counts.get(d.id)||0)<=3);
-    const workingFull=full.filter(c=>c.trainer.is_active);
-    const workingPartial=partial.filter(c=>c.trainer.is_active);
-    const visibleMatches=state.onlyFull?full:full.concat(partial);
-    const archived=visibleMatches.filter(c=>!c.trainer.is_active);
+    const selectedTrainer=byTrainer?workingTrainers.find(t=>t.id===state.trainerId):null;
+    const defaults=selectedTrainer?directionsByTrainer.get(selectedTrainer.id):null;
+    const requested=catalog.filter(d=>state.selected.has(d.id));
+    const {counts,needed,unavailable,full,partial}=replacementCandidates(trainers,directionsByTrainer,state.trainerId,requested);
 
-    modeButtons.forEach(b=>b.setAttribute('aria-pressed',b.dataset.repMode===state.mode));
-    select.value=state.trainerId;
+    modeButtons.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.repMode===state.mode)));
     get('rep-trainer-field').hidden=!byTrainer;
-    get('rep-dir-label').textContent=byTrainer?'Направления занятия':'Нужные направления';
-    get('rep-dir-hint').textContent=!catalog.length?'':byTrainer
-      ? 'Оставьте направления нужного занятия. Цифра показывает, сколько других тренеров его ведут.'
-      : 'Выберите одно или несколько направлений. Цифра показывает, сколько тренеров доступно для подбора.';
+    select.value=state.trainerId;
+    onlyFull.setAttribute('aria-pressed',String(state.onlyFull));
+    restore.hidden=!defaults||(defaults.size===state.selected.size&&[...defaults].every(id=>state.selected.has(id)));
     directionList.querySelectorAll('[data-rep-direction]').forEach(button=>{
       const id=Number(button.dataset.repDirection);
-      const selected=state.selected.has(id);
-      button.disabled=byTrainer&&!absent;
-      button.setAttribute('aria-pressed',selected);
-      button.querySelector('[data-rep-check]').hidden=!selected;
-      button.querySelector('[data-rep-count]').textContent=counts.get(id)||0;
+      const count=counts.get(id)||0;
+      button.disabled=!count||(byTrainer&&!selectedTrainer);
+      button.classList.toggle('rep-direction-empty',!count);
+      button.title=count?'':'Других тренеров с этим направлением нет';
+      button.setAttribute('aria-pressed',String(state.selected.has(id)));
+      button.querySelector('[data-rep-count]').textContent=count;
     });
-    onlyFull.setAttribute('aria-pressed',state.onlyFull);
-    const rareNote=get('rep-rare');
-    rareNote.hidden=!rare.length;
-    rareNote.innerHTML=rare.length?`<strong>Мало тренеров:</strong> ${rare.map(d=>`${escapeHtml(d.name)} — ${counts.get(d.id)||'нет других тренеров'}`).join(', ')}`:'';
 
-    get('rep-summary-title').textContent=byTrainer
-      ? (absent?`Замена для: ${absent.full_name}`:'Выберите, кого заменяем')
-      : 'Кто ведёт выбранные направления';
-    get('rep-summary-detail').textContent=needed.length
-      ? `Нужно: ${needed.map(d=>d.name).join(' · ')}. Полностью подходят: ${full.length}, частично: ${partial.length}.`
-      : '';
+    const need=get('rep-needed');
+    need.hidden=!needed.length;
+    need.textContent=needed.length?`Нужно: ${needed.map(d=>d.name).join(', ')}`:'';
+    const warning=get('rep-unavailable');
+    warning.hidden=!unavailable.length;
+    const omitted=unavailable.map(d=>d.name).join(', ');
+    warning.textContent=unavailable.length===1
+      ? `${omitted} — других тренеров с этим направлением нет, в подборе не учитывается.`
+      : `${omitted} — других тренеров с этими направлениями нет, в подборе не учитываются.`;
 
     let emptyText='';
-    if(!catalog.length){
-      emptyText='Направлений пока нет.';
-    }else if(!needed.length){
-      emptyText=byTrainer&&!absent?'Выберите тренера слева…':'Отметьте нужные направления.';
-    }else if(!full.length&&!partial.length){
-      emptyText='Никто из остальных тренеров не ведёт выбранные направления.';
-    }else if(!full.length&&state.onlyFull){
-      emptyText='Нет тренеров, которые ведут все выбранные направления.';
-    }
+    if(!catalog.length) emptyText='Направлений пока нет.';
+    else if(byTrainer&&!selectedTrainer) emptyText='Выберите тренера — покажем, кто может его заменить.';
+    else if(!requested.length) emptyText='Отметьте направления — покажем, кто их ведёт.';
+    else if(!full.length&&!partial.length) emptyText='По выбранным направлениям нет доступных тренеров.';
     const empty=get('rep-empty');
     empty.hidden=!emptyText;
     empty.textContent=emptyText;
 
-    const showPartial=!state.onlyFull&&workingPartial.length>0;
-    get('rep-full').hidden=!workingFull.length;
-    get('rep-partial').hidden=!showPartial;
-    get('rep-full-title').textContent=`Подходят полностью · ${workingFull.length}`;
-    get('rep-partial-title').textContent=`Подходят частично · ${workingPartial.length}`;
-    get('rep-full-cards').innerHTML=workingFull.map(c=>replacementCard(c,catalog,state.selected)).join('');
-    const partialShown=state.showAll?workingPartial:workingPartial.slice(0,6);
-    get('rep-partial-cards').innerHTML=showPartial?partialShown.map(c=>replacementCard(c,catalog,state.selected)).join(''):'';
-    more.hidden=!showPartial||workingPartial.length<=6;
-    more.setAttribute('aria-expanded',state.showAll);
-    more.textContent=state.showAll?'Свернуть':`Показать всех (${workingPartial.length})`;
-    get('rep-archived').hidden=!archived.length;
-    get('rep-archived-title').textContent=`Тренеры из архива · ${archived.length}`;
-    get('rep-archived-cards').innerHTML=archived.map(c=>replacementCard(c,catalog,state.selected)).join('');
+    drawGroup(groups[0], full.filter(c=>c.trainer.is_active), partial.filter(c=>c.trainer.is_active));
+    drawGroup(groups[1], full.filter(c=>!c.trainer.is_active), partial.filter(c=>!c.trainer.is_active));
   }
 
-  function clearSelection(){
-    state.trainerId='';
-    state.selected.clear();
-    state.showAll=false;
+  function updateSearch(){
+    groups.forEach(group=>{group.expanded=null;});
+    draw();
   }
 
   modeButtons.forEach(b=>b.onclick=()=>{
     if(state.mode===b.dataset.repMode) return;
     state.mode=b.dataset.repMode;
-    clearSelection();
-    draw();
+    state.trainerId='';
+    state.selected.clear();
+    updateSearch();
   });
   select.onchange=()=>{
     state.trainerId=select.value;
     state.selected=new Set(directionsByTrainer.get(select.value));
-    state.showAll=false;
-    draw();
+    updateSearch();
   };
   directionList.onclick=event=>{
     const button=event.target.closest('[data-rep-direction]');
     if(!button||button.disabled) return;
     const id=Number(button.dataset.repDirection);
     if(state.selected.has(id)) state.selected.delete(id); else state.selected.add(id);
-    state.showAll=false;
-    draw();
+    updateSearch();
   };
-  if(addDirection) addDirection.onclick=()=>directionModal(addDirection,direction=>{
-    if(!page.isConnected) return;
-    mergeTrainerDirection(catalog,direction);
-    renderDirectionButtons();
-    draw();
-  });
-  if(deleteDirection) deleteDirection.onclick=()=>deleteDirectionModal(deleteDirection,catalog,assignmentCounts,id=>{
-    if(!page.isConnected) return;
-    catalog=catalog.filter(d=>d.id!==id);
-    assignmentCounts.delete(id);
-    directionsByTrainer.forEach(ids=>ids.delete(id));
-    state.selected.delete(id);
-    state.showAll=false;
-    renderDirectionButtons();
-    draw();
-    if(deleteDirection.disabled) addDirection.focus();
-  });
+  restore.onclick=()=>{
+    state.selected=new Set(directionsByTrainer.get(state.trainerId));
+    select.focus({preventScroll:true});
+    updateSearch();
+  };
   onlyFull.onclick=()=>{ state.onlyFull=!state.onlyFull; draw(); };
-  more.onclick=()=>{
-    state.showAll=!state.showAll;
-    draw();
-    if(!state.showAll) more.scrollIntoView({block:'nearest'});
-  };
-  get('rep-reset').onclick=()=>{
-    state.mode='trainer';
-    state.onlyFull=false;
-    clearSelection();
-    draw();
-  };
+
+  if(addDirection){
+    const manager=get('rep-direction-manager');
+    get('rep-manage').onclick=()=>manager.showModal();
+    get('rep-manager-close').onclick=()=>manager.close();
+    addDirection.onclick=()=>directionModal(addDirection,direction=>{
+      if(!page.isConnected) return;
+      mergeTrainerDirection(catalog,direction);
+      renderDirectionButtons();
+      draw();
+    });
+    deleteDirection.onclick=()=>deleteDirectionModal(deleteDirection,catalog,assignmentCounts,id=>{
+      if(!page.isConnected) return;
+      catalog=catalog.filter(d=>d.id!==id);
+      assignmentCounts.delete(id);
+      directionsByTrainer.forEach(ids=>ids.delete(id));
+      state.selected.delete(id);
+      renderDirectionButtons();
+      updateSearch();
+      if(deleteDirection.disabled) addDirection.focus();
+    });
+  }
   renderDirectionButtons();
   draw();
 }
