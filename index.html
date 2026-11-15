@@ -1662,7 +1662,7 @@ label.trainer-replacement-setting{display:flex;align-items:center;gap:8px;min-he
 
 .payroll-sync-status{margin:6px 0 14px;padding:9px 12px;border-radius:8px;background:var(--surface-2);border:1px solid var(--line);font-size:13px}
 .payroll-sync-error{color:var(--payroll-bad);background:var(--clay-soft)}
-.payroll-period-actions [data-payroll-import-open]{background:var(--surface)}
+
 </style>
 
 <div id="root"></div>
@@ -1683,7 +1683,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '15.11.2026-n'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '15.11.2026-o'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -3419,7 +3419,7 @@ function exportExcel(entries){
 const PAYROLL_MONTHS = ["январь", "февраль", "март", "апрель", "май", "июнь",
   "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь"];
 const PAYROLL_DAYS = ["вс", "пн", "вт", "ср", "чт", "пт", "сб"];
-const payrollFormat = new Intl.NumberFormat("ru-RU", {maximumFractionDigits: 0});
+const payrollFormat = new Intl.NumberFormat("ru-RU", {maximumFractionDigits: 2});
 const payrollMoney = (amount        ) => payrollFormat.format(amount).replace(/[\u00a0\u202f]/g, " ");
 const payrollPaymentFormat = new Intl.NumberFormat("ru-RU", {maximumFractionDigits:2});
 const payrollPaymentMoney = amount => payrollPaymentFormat.format(amount).replace(/[\u00a0\u202f]/g, " ");
@@ -3534,414 +3534,6 @@ function payrollMessage(row                   , period        , view            
   return [...opening, ...advanceLines, ...closing, "", ...detail].join("\n").trim();
 }
 
-/* Импорт двух листов отчёта «Расчёт ЗП преподавателя» из ImpulseCRM. */
-const IMPULSE_PAYROLL_MAX_AMOUNT = 2147483647;
-const impulsePayrollText = value => String(value ?? "").trim().replace(/\s+/gu, " ");
-const impulsePayrollLabel = value => impulsePayrollText(value).toLocaleLowerCase("ru").replace(/ё/g, "е");
-const impulsePayrollName = value => impulsePayrollLabel(value).match(/[\p{L}\p{M}]+(?:-[\p{L}\p{M}]+)*/gu) || [];
-const impulsePayrollKey = value => impulsePayrollName(value).join(" ");
-function impulsePayrollMatch(name, directory){
-  const parts = impulsePayrollName(name);
-  if (parts.length < 2) return "";
-  const clients = directory.filter(person => {
-    const words = impulsePayrollName(person.name);
-    return words[0] === parts[0] && words.length >= 2 && parts.slice(1).every((part, pos) => {
-      const word = words[pos + 1];
-      return !word || (word.length === 1 || part.length === 1 ? word[0] === part[0] : word === part);
-    });
-  });
-  return clients.length === 1 ? String(clients[0].id) : "";
-}
-function impulsePayrollDate(year, month, day, hint){
-  const iso = String(year) + "-" + String(month).padStart(2,"0") + "-" + String(day).padStart(2,"0");
-  const date = new Date(iso + "T00:00:00Z");
-  if (!/^20\d{2}-\d{2}-\d{2}$/.test(iso) || !Number.isFinite(date.getTime()) || date.toISOString().slice(0,10) !== iso)
-    throw new Error("Проверьте дату в выгрузке · " + hint);
-  return iso;
-}
-function impulsePayrollColumnDate(value, xlsx){
-  if (typeof value === "number"){
-    const date = xlsx.SSF.parse_date_code(value);
-    if (date) return impulsePayrollDate(date.y,date.m,date.d,String(value));
-  }
-  const text = impulsePayrollText(value);
-  const yearFirst = text.match(/^(20\d{2})\s+(\d{2})\.(\d{2})$/);
-  if (yearFirst) return impulsePayrollDate(yearFirst[1],yearFirst[3],yearFirst[2],text);
-  const dayFirst = text.match(/^(\d{2})\.(\d{2})\.(20\d{2})$/);
-  if (dayFirst) return impulsePayrollDate(dayFirst[3],dayFirst[2],dayFirst[1],text);
-  throw new Error("В шапке листа «Детализация» не распознана дата · " + text);
-}
-function impulsePayrollFooterDate(value){
-  const date = impulsePayrollText(value).match(/(\d{2})\.(\d{2})\.(20\d{2})/);
-  if (!date) throw new Error("В строке «Всего» нужен диапазон дат выгрузки.");
-  return impulsePayrollDate(date[3], date[2], date[1], date[0]);
-}
-function impulsePayrollAmount(value, hint){
-  const text = impulsePayrollText(value).replace(/\s/g,"").replace(/[−–]/g,"-");
-  const match = text.match(/^([+-]?\d+(?:[.,]0+)?)(?:\((\d+)\))?$/);
-  if (!match) throw new Error("Выгрузка должна содержать целые суммы в BYN · " + hint);
-  const amount = Number(match[1].replace(",","."));
-  const count = match[2] === undefined ? (amount === 0 ? 0 : null) : Number(match[2]);
-  if (!Number.isSafeInteger(amount) || Math.abs(amount) > IMPULSE_PAYROLL_MAX_AMOUNT ||
-    (count !== null && (!Number.isInteger(count) || count > IMPULSE_PAYROLL_MAX_AMOUNT))){
-    throw new Error("Слишком большая сумма или число записей · " + hint);
-  }
-  return {amount, count};
-}
-function impulsePayrollTime(value, hint){
-  if (!impulsePayrollText(value)) return null;
-  if (typeof value === "number" && value >= 0 && value < 1){
-    const minutes = Math.floor(value * 1440 + 1e-7);
-    return String(Math.floor(minutes / 60)).padStart(2,"0") + ":" + String(minutes % 60).padStart(2,"0");
-  }
-  const match = impulsePayrollText(value).match(/^(\d{1,2}):([0-5]\d)(?::[0-5]\d)?$/);
-  if (match && Number(match[1]) < 24) return match[1].padStart(2,"0") + ":" + match[2];
-  throw new Error("Не распознано время занятия · " + hint);
-}
-function impulsePayrollLesson(value, hint){
-  const lines = String(value).split(/\r\n|\r|\n/).map(impulsePayrollText).filter(Boolean);
-  const pair = lines[0]?.match(/^(\d+(?:[.,]0+)?)\s*\/\s*(\d+)$/);
-  if (!pair) throw new Error("Ожидалась ячейка «оплата / число человек» · " + hint);
-  const amount = impulsePayrollAmount(pair[1],hint).amount;
-  const attendance = Number(pair[2]);
-  if (!Number.isInteger(attendance) || attendance > IMPULSE_PAYROLL_MAX_AMOUNT)
-    throw new Error("Проверьте число человек · " + hint);
-  if (lines.length === 1) return {amount,attendance,is_skipped:false,substitute_name:null};
-  const substitute = lines[2]?.match(/^заменяющий преподаватель\s*:\s*(.+)$/iu);
-  if (impulsePayrollLabel(lines[1]) !== "пропуск" || (lines.length > 2 && (!substitute || lines.length !== 3))){
-    throw new Error("Не распознана отметка о пропуске · " + hint);
-  }
-  return {amount,attendance,is_skipped:true,substitute_name:substitute?.[1] || null};
-}
-
-function parseImpulsePayroll(buffer, xlsx){
-  const book = xlsx.read(buffer, {type:"array",cellDates:false});
-  function sheet(name){
-    const title = book.SheetNames.find(value => impulsePayrollLabel(value) === impulsePayrollLabel(name));
-    const tab = title && book.Sheets[title];
-    if (!tab?.["!ref"]) throw new Error("Нужен лист «" + name + "» из отчёта Impulse.");
-    const range = xlsx.utils.decode_range(tab["!ref"]);
-    if (range.e.r > 20000 || range.e.c > 120) throw new Error("Проверьте границы заполненных ячеек листа «" + name + "».");
-    return xlsx.utils.sheet_to_json(tab,{header:1,raw:true,defval:null,blankrows:true});
-  }
-  const [summaryHead,...summaryRows] = sheet("Заработная плата");
-  const [lessonHead,...lessonRows] = sheet("Детализация");
-  const summaryLabels = summaryHead.map(impulsePayrollLabel);
-  const required = name => {
-    const i = summaryLabels.indexOf(impulsePayrollLabel(name));
-    if (i < 0) throw new Error("Не найдена колонка «" + name + "» на листе «Заработная плата».");
-    return i;
-  };
-  const teacherCol = required("Преподаватель");
-  const ownCol = required("Начислено");
-  const skippedCol = required("Пропуски");
-  const replacementCol = required("Замены");
-  const advanceCol = required("Авансы");
-  const balanceCol = required("Итого");
-  const extras = ["Неустойки","Надбавка (%)","Штрафы","Премии"].map(label => ({label,i:summaryLabels.indexOf(impulsePayrollLabel(label))})).filter(col => col.i >= 0);
-  const byKey = new Map();
-  let footer;
-  summaryRows.forEach((row, index) => {
-    const name = impulsePayrollText(row[teacherCol]);
-    if (impulsePayrollLabel(row[advanceCol]) === "всего"){
-      if (footer) throw new Error("На листе «Заработная плата» найдены две строки «Всего».");
-      footer = row;
-      return;
-    }
-    if (!row.some(value => impulsePayrollText(value))) return;
-    const key = impulsePayrollKey(name);
-    if (!key) throw new Error("Проверьте преподавателя в строке " + (index + 2) + " на листе «Заработная плата».");
-    if (byKey.has(key)) throw new Error("Преподаватель повторяется в сводке · " + name);
-    const cell = i => impulsePayrollAmount(row[i],name + " · " + summaryHead[i]);
-    for (const col of extras){
-      const extra = impulsePayrollText(row[col.i]);
-      if (extra && !/^[+-]?0+(?:[.,]0+)?%?(?:\(\d+\))?$/.test(extra.replace(/\s/g,"")))
-        throw new Error("В расчёте есть дополнительная статья «" + col.label + "» · " + name + ". Сначала согласуйте её учёт в FAD.");
-    }
-    const own = cell(ownCol).amount;
-    const skip = cell(skippedCol);
-    const replacement = cell(replacementCol);
-    const advances = cell(advanceCol);
-    const balance = cell(balanceCol).amount;
-    if (own < 0 || replacement.amount < 0 || own + replacement.amount - Math.abs(skip.amount) - Math.abs(advances.amount) !== balance){
-      throw new Error("Суммы по преподавателю в сводке расходятся · " + name);
-    }
-    byKey.set(key,{name,key,own,replacements:replacement.amount,replacement_count:replacement.count,
-      skips:Math.abs(skip.amount),skip_count:skip.count,advance:Math.abs(advances.amount),advance_count:advances.count,
-      balance,lessons:[],knownReplacements:[]});
-  });
-  if (!footer || !byKey.size) throw new Error("На листе «Заработная плата» нужны строки преподавателей и итог за период.");
-  const dateLabels = footer.filter((value, i) => i !== teacherCol && i !== balanceCol &&
-    /\d{2}\.\d{2}\.20\d{2}/.test(impulsePayrollText(value)));
-  if (dateLabels.length !== 2) throw new Error("Укажите начало и конец периода в строке «Всего».");
-  const first = impulsePayrollFooterDate(dateLabels[0]);
-  const last = impulsePayrollFooterDate(dateLabels[1]);
-  const period = first.slice(0,7) + "-01";
-  if (first > last || !last.startsWith(first.slice(0,7))) throw new Error("Загрузите отчёт, даты которого входят в один календарный месяц.");
-  const reportedBalance = impulsePayrollAmount(footer[balanceCol],"Всего").amount;
-
-  const labels = lessonHead.map(impulsePayrollLabel);
-  const columns = ["преподаватель","группа","занятие"].map(name => labels.indexOf(name));
-  const rowTotalCol = labels.indexOf("начислено");
-  if (columns.some(i => i < 0) || rowTotalCol < 0) throw new Error("Проверьте заголовки листа «Детализация».");
-  const days = lessonHead.flatMap((label,index) =>
-    index !== rowTotalCol && !columns.includes(index) && impulsePayrollText(label)
-    ? [{index,date:impulsePayrollColumnDate(label,xlsx)}] : []);
-  if (!days.length || new Set(days.map(item => item.date)).size !== days.length ||
-    days.some(item => item.date < first || item.date > last) ||
-    !days.some(item => item.date === first) || !days.some(item => item.date === last)){
-    throw new Error("Даты детализации расходятся с периодом на первом листе.");
-  }
-  let detailTotal = 0;
-  for (const [index,row] of lessonRows.entries()){
-    if (!row.some(value => impulsePayrollText(value))) continue;
-    const name = impulsePayrollText(row[columns[0]]);
-    const teacher = byKey.get(impulsePayrollKey(name));
-    const group = impulsePayrollText(row[columns[1]]);
-    const hint = "Детализация · строка " + (index + 2);
-    if (!teacher || !group) throw new Error("Не найдена строка преподавателя или группы · " + hint);
-    const time = impulsePayrollTime(row[columns[2]],hint);
-    let sum = 0;
-    for (const {index:column,date} of days){
-      const cell = row[column];
-      if (!impulsePayrollText(cell)) continue;
-      const item = impulsePayrollLesson(cell,hint + " · " + payrollDateLabel(date));
-      const lesson = {source_key:"impulse:" + (index + 2) + ":" + date,date,group,time,...item,replaced_name:null};
-      teacher.lessons.push(lesson);
-      sum += lesson.amount;
-    }
-    detailTotal += sum;
-    if (sum !== impulsePayrollAmount(row[rowTotalCol],hint + " · Начислено").amount)
-      throw new Error("Сумма занятий в строке расходится с итогом · " + hint);
-  }
-  const trainers = [...byKey.values()];
-  const directory = trainers.map(trainer=>({id:trainer.key,name:trainer.name}));
-  for (const trainer of trainers) {
-    for (const lesson of trainer.lessons.filter(item=>item.substitute_name)) {
-      const key = impulsePayrollMatch(lesson.substitute_name,directory);
-      const substitute = byKey.get(key);
-      if (substitute && substitute !== trainer) substitute.knownReplacements.push({...lesson,
-        source_key:lesson.source_key + ":replacement",amount:null,is_skipped:false,substitute_name:null,replaced_name:trainer.name});
-    }
-  }
-  for (const trainer of trainers){
-    const skipped = trainer.lessons.filter(lesson => lesson.is_skipped);
-    if (payrollSum(trainer.lessons,lesson => lesson.amount) !== trainer.own || payrollSum(skipped,lesson => lesson.amount) !== trainer.skips ||
-      (trainer.skip_count !== null && skipped.length !== trainer.skip_count) ||
-      (trainer.replacement_count !== null && trainer.knownReplacements.length > trainer.replacement_count)){
-      throw new Error("Сводка и детализация расходятся · " + trainer.name);
-    }
-  }
-  const total = key => payrollSum(trainers,trainer=>trainer[key]);
-  if (total("balance") !== reportedBalance || total("own") !== detailTotal)
-    throw new Error("Контрольные итоги двух листов расходятся.");
-  return {period,first,last,trainers,reportedBalance};
-}
-function impulsePayrollNonzero(trainer){
-  return trainer.own || trainer.replacements || trainer.skips || trainer.advance || trainer.lessons.length || trainer.knownReplacements.length;
-}
-
-function bindPayrollImport(page,onImported){
-  const dialog = page.querySelector(".payroll-import-dialog");
-  const fileInput = dialog.querySelector("input[type=file]");
-  const status = dialog.querySelector(".payroll-import-status");
-  const preview = dialog.querySelector(".payroll-import-preview");
-  const button = dialog.querySelector("[data-payroll-import-submit]");
-  const close = dialog.querySelector("[data-payroll-import-close]");
-  const esc = escapeHtml;
-  let workbook = null, context = null, names = new Map(), covered = new Set();
-  let busy = false, reviewed = false;
-
-  function feedback(message, error = false){
-    status.textContent = message;
-    status.classList.toggle("payroll-negative", error);
-  }
-  function updateControls(){
-    fileInput.disabled = busy;
-    button.disabled = busy || !workbook || !context;
-    close.disabled = busy;
-    preview.inert = busy;
-  }
-  const advanceByTrainer = id => context.advances.filter(advance => advance.trainer_id === id);
-  const activeRows = () => workbook.trainers.filter(trainer => names.get(trainer.key));
-  const overlapRows = () => activeRows().filter(trainer => trainer.advance > 0 && advanceByTrainer(names.get(trainer.key)).length);
-  function payoutPreview(){
-    const conflicts = overlapRows();
-    const match = activeRows();
-    const ids = match.map(trainer => names.get(trainer.key));
-    const unmatched = workbook.trainers.filter(trainer => !names.get(trainer.key) && impulsePayrollNonzero(trainer));
-    const duplicated = ids.length !== new Set(ids).size;
-    const exceeded = conflicts.some(trainer => {
-      const chosen = advanceByTrainer(names.get(trainer.key)).filter(advance=>covered.has(advance.id));
-      return payrollSum(chosen,advance=>advance.amount)>trainer.advance ||
-        (trainer.advance_count!==null && chosen.length>trainer.advance_count);
-    });
-    const due = payrollSum(workbook.trainers,trainer => {
-      const id = names.get(trainer.key);
-      const fallback = id ? advanceByTrainer(id) : [];
-      const extra = payrollSum(fallback.filter(advance=>!trainer.advance || !covered.has(advance.id)),advance=>advance.amount);
-      return Math.max(0,Math.ceil((trainer.balance-extra)/5)*5);
-    });
-    preview.querySelector(".payroll-import-payout").textContent = payrollMoney(due) + " BYN";
-    preview.querySelector(".payroll-import-match").textContent =
-      unmatched.length ? "Сопоставьте преподавателей со строками расчёта · " + unmatched.length
-      : duplicated ? "Одна карточка выбрана для нескольких преподавателей."
-      : exceeded ? "Отмеченные авансы превышают сумму или число авансов в Impulse."
-      : "Сопоставлено · " + match.length + " из " + workbook.trainers.length;
-    button.disabled = busy || !!unmatched.length || duplicated || exceeded || (conflicts.length > 0 && !reviewed);
-  }
-  function renderReview(){
-    const pane = preview.querySelector(".payroll-import-reconcile");
-    const conflicts = overlapRows();
-    if (!conflicts.length){ pane.replaceChildren(); return; }
-    pane.innerHTML = `<h4>Сверка авансов</h4>
-      <p class="payroll-hint">Отметьте записи FAD, которые уже входят в сумму из Impulse.</p>
-      ${conflicts.map(trainer => {
-        const advances = advanceByTrainer(names.get(trainer.key));
-        return `<details class="payroll-import-advances" open>
-          <summary>${esc(trainer.name)} · Impulse ${payrollMoney(trainer.advance)} BYN · FAD ${payrollMoney(payrollSum(advances,a=>a.amount))} BYN</summary>
-          ${advances.map(advance=>`<label><input type="checkbox" data-payroll-covered="${esc(advance.id)}" ${covered.has(advance.id) ? "checked" : ""}>
-            ${payrollDateLabel(advance.date)} · ${payrollMoney(advance.amount)} BYN${advance.note ? " · " + esc(advance.note) : ""}</label>`).join("")}
-        </details>`;
-      }).join("")}
-      <label class="payroll-import-reviewed"><input type="checkbox" data-payroll-reviewed ${reviewed ? "checked" : ""}> Сверил авансы за этот месяц</label>`;
-  }
-  function renderPreview(){
-    const total = key => payrollSum(workbook.trainers,row=>row[key]);
-    const known = payrollSum(workbook.trainers,row=>row.knownReplacements.length);
-    const directory = context.trainers;
-    const selected = id => directory.find(person=>person.id===id);
-    const range = payrollDateLabel(workbook.first) + "–" + payrollDateLabel(workbook.last) + "." + workbook.period.slice(0,4);
-    preview.innerHTML = `<div class="payroll-import-strip">
-      <div><small>Период файла</small><b>${range}</b></div>
-      <div><small>Остаток по файлу</small><b>${payrollMoney(workbook.reportedBalance)} BYN</b></div>
-      <div><small>К выдаче после импорта</small><b class="payroll-import-payout"></b></div></div>
-      <p class="payroll-hint">Проверены оба листа. Замены с датами · ${known} из ${total("replacement_count") || known}. Сумма замен берётся из сводки.</p>
-      ${context.has_import ? '<p class="payroll-note">Данные Impulse за этот месяц будут обновлены.</p>' : ""}
-      <div class="payroll-import-grid" tabindex="0" role="region" aria-label="Предпросмотр выгрузки">
-      <table><thead><tr><th scope="col">В файле</th><th scope="col">Карточка в FAD</th><th scope="col">Начислено</th>
-        <th scope="col">Замены</th><th scope="col">Пропуски</th><th scope="col">Авансы Impulse</th><th scope="col">Остаток</th></tr></thead>
-      <tbody>${workbook.trainers.map((trainer,index)=>{
-        const match = names.get(trainer.key);
-        const identity = selected(match);
-        const options = directory.map(person=>`<option value="${esc(person.id)}" ${person.id===match ? "selected" : ""}>
-          ${esc(person.name)}${person.active ? "" : " · архив"}</option>`).join("");
-        return `<tr><th scope="row">${esc(trainer.name)}</th>
-          <td><select data-payroll-mapping="${index}" aria-label="Карточка FAD · ${esc(trainer.name)}">
-            <option value="" ${identity ? "" : "selected"}>${impulsePayrollNonzero(trainer) ? "Выберите карточку" : "Пустой расчёт"}</option>${options}
-          </select></td>
-          <td>${payrollMoney(trainer.own)}</td><td>${payrollMoney(trainer.replacements)}</td><td>${payrollMoney(trainer.skips)}</td>
-          <td>${payrollMoney(trainer.advance)}</td><td>${payrollMoney(trainer.balance)}</td></tr>`;
-      }).join("")}</tbody>
-      <tfoot><tr><th scope="row">Итого</th><td></td><td>${payrollMoney(total("own"))}</td><td>${payrollMoney(total("replacements"))}</td>
-      <td>${payrollMoney(total("skips"))}</td><td>${payrollMoney(total("advance"))}</td><td>${payrollMoney(workbook.reportedBalance)}</td></tr></tfoot></table></div>
-      <p class="payroll-hint payroll-import-match" aria-live="polite"></p>
-      <section class="payroll-import-reconcile" aria-label="Авансы FAD"></section>`;
-    button.textContent = context.has_import ? "Обновить месяц" : "Импортировать месяц";
-    renderReview();
-    updateControls();
-    payoutPreview();
-  }
-  async function readContext(){
-    const loaded = await rpc("app_trainer_payroll_import_context",{p_token:TOKEN,p_period:workbook.period});
-    if (!Array.isArray(loaded?.trainers) || !Array.isArray(loaded?.advances)) throw new Error("invalid_payroll_import");
-    return loaded;
-  }
-  fileInput.onchange = async () => {
-    const file = fileInput.files[0];
-    if (!file) return;
-    busy = true;
-    context = workbook = null;
-    names = new Map();
-    covered = new Set();
-    reviewed = false;
-    preview.replaceChildren();
-    updateControls();
-    feedback("Сверяем оба листа…");
-    try{
-      if (!window.XLSX) throw new Error("excel_library_unavailable");
-      const parsed = parseImpulsePayroll(await file.arrayBuffer(),window.XLSX);
-      workbook = parsed;
-      context = await readContext();
-      names = new Map(workbook.trainers.map(trainer=>[trainer.key,impulsePayrollMatch(trainer.name,context.trainers)]));
-      covered = new Set(context.advances.filter(advance=>advance.in_impulse).map(advance=>advance.id));
-      feedback(file.name);
-    }catch(error){
-      workbook = context = null;
-      feedback(error?.code==="PGRST202" ? "Выполните supabase-setup.sql из комплекта с импортом." :
-        error?.message==="excel_library_unavailable" ? "Модуль чтения Excel не загрузился. Обновите FAD и повторите." :
-        isForbiddenErr(error) ? payrollError(error) : (error?.message || "Файл Excel не удалось прочитать."),true);
-    }finally{
-      busy = false;
-      if(workbook && context) renderPreview();
-      else updateControls();
-    }
-  };
-  preview.onchange = event => {
-    const mapping = event.target.dataset.payrollMapping;
-    if (mapping !== undefined){
-      const trainer = workbook.trainers[Number(mapping)];
-      names.set(trainer.key,event.target.value);
-      reviewed = false;
-      renderReview();
-    }else if (event.target.dataset.payrollCovered){
-      const id = event.target.dataset.payrollCovered;
-      if (event.target.checked) covered.add(id); else covered.delete(id);
-      reviewed = false;
-      preview.querySelector("[data-payroll-reviewed]").checked = false;
-    }else if (event.target.matches("[data-payroll-reviewed]")){
-      reviewed = event.target.checked;
-    }
-    payoutPreview();
-  };
-  button.onclick = async () => {
-    if (busy || button.disabled) return;
-    const mapped = activeRows();
-    const totals = mapped.map(({name,key,lessons,knownReplacements,...amounts})=>({...amounts,trainer_id:names.get(key)}));
-    const lessons = mapped.flatMap(trainer => [...trainer.lessons,...trainer.knownReplacements].map(lesson=>({...lesson,trainer_id:names.get(trainer.key)})));
-    const relevant = new Set(overlapRows().map(trainer=>names.get(trainer.key)));
-    const included = context.advances.filter(advance=>relevant.has(advance.trainer_id) && covered.has(advance.id)).map(advance=>advance.id);
-    busy = true;
-    updateControls();
-    markAppDirty("trainerPayrollImport");
-    feedback("Сохраняем расчёт за " + payrollMonthLabel(workbook.period) + "…");
-    try{
-      await rpc("app_trainer_payroll_import",{p_token:TOKEN,p_period:workbook.period,p_first:workbook.first,p_last:workbook.last,
-        p_revision:context.revision,p_reported_balance:workbook.reportedBalance,p_totals:totals,p_lessons:lessons,p_covered:included});
-      const period = workbook.period.slice(0,7);
-      await onImported(period);
-      dialog.close();
-      toast("Зарплата загружена · " + payrollMonthLabel(period));
-    }catch(error){
-      if (error?.message === "payroll_import_conflict"){
-        try{
-          context = await readContext();
-          covered = new Set(context.advances.filter(advance=>advance.in_impulse).map(advance=>advance.id));
-          reviewed = false;
-          renderPreview();
-          feedback("Расчёт или авансы изменились. Сверьте обновлённые данные и повторите.",true);
-        }catch(reloadError){ context = null; preview.replaceChildren(); feedback(payrollError(reloadError),true); }
-      } else feedback(PAYROLL_ERRORS[error?.message] || payrollError(error),true);
-    }finally{
-      busy = false;
-      clearAppDirty("trainerPayrollImport");
-      updateControls();
-      if (workbook && context) payoutPreview();
-    }
-  };
-  page.querySelector("[data-payroll-import-open]").onclick = () => {
-    workbook = context = null;
-    fileInput.value = "";
-    preview.replaceChildren();
-    feedback("");
-    updateControls();
-    dialog.showModal();
-  };
-  close.onclick = () => dialog.close();
-  dialog.addEventListener("cancel",event=>{ if(busy)event.preventDefault(); });
-  return {button:page.querySelector("[data-payroll-import-open]")};
-}
-
 /* ================= Зарплата тренеров · экран ================= */
 const PAYROLL_VIEW_KEY = "fad.payroll.lesson-view";
 const PAYROLL_ERRORS = {
@@ -3978,6 +3570,12 @@ const PAYROLL_SYNC_ERRORS = {
   impulse_payroll_unmatched:"Нужна однозначная привязка тренера к карточке FAD.",
   impulse_advance_reconciliation:"Нужно сверить авансы из ImpulseCRM с ранее внесёнными в FAD. Последний сохранённый расчёт доступен для просмотра.",
   impulse_trainer_creation_failed:"Не удалось добавить карточку тренера из ImpulseCRM.",
+  impulse_advance_unmatched:"Не удалось однозначно определить преподавателя для аванса в ImpulseCRM.",
+  impulse_advance_ledger_incomplete:"Отчёт зарплаты показывает больше авансов, чем журнал «Баланс сотрудников». Расчёт не перезаписан — проверьте операции.",
+  impulse_advance_key_denied:"ImpulseCRM не разрешил чтение «Баланса сотрудников». Расчёт не перезаписан.",
+  impulse_advance_endpoint_unavailable:"Метод «Баланс сотрудников» недоступен через API. Расчёт не перезаписан.",
+  impulse_advance_request_failed:"Не удалось прочитать журнал авансов из ImpulseCRM. Расчёт не перезаписан.",
+  impulse_advance_response_invalid:"Не удалось полностью проверить журнал авансов ImpulseCRM. Расчёт не перезаписан.",
   impulse_api_unavailable:"ImpulseCRM временно недоступен.",
   impulse_rate_limited:"ImpulseCRM ограничил частоту запросов. Повторите позже.",
   payroll_future_month:"Этот месяц ещё не начался.",
@@ -3988,6 +3586,7 @@ const PAYROLL_ADVANCE_WARNINGS = {
   impulse_advance_key_denied:"Суммы авансов загружены. ImpulseCRM отклонил доступ к датам в «Балансе сотрудников».",
   impulse_advance_endpoint_unavailable:"Суммы авансов загружены. Журнал «Баланс сотрудников» недоступен через API.",
   impulse_advance_mismatch:"Суммы авансов загружены. Даты требуют сверки с журналом «Баланс сотрудников».",
+  impulse_advance_report_difference:"Авансы учтены по «Балансу сотрудников». В отчёте зарплаты обнаружены другие суммы.",
 };
 
 function bindPayrollSync(page, refresh){
@@ -4039,7 +3638,9 @@ function bindPayrollSync(page, refresh){
           await refresh(month);
           if(current()){
             const notices=[];
-            if(result.advanceWarning)notices.push(PAYROLL_ADVANCE_WARNINGS[result.advanceWarning]||"Суммы авансов загружены. Даты недоступны.");
+            if(result.advanceWarning){
+              notices.push(PAYROLL_ADVANCE_WARNINGS[result.advanceWarning]||"Сверьте авансы в ImpulseCRM.");
+            }
             if(result.replacementWarning==="impulse_replacement_key_denied")notices.push("ImpulseCRM отклонил доступ к журналу замен.");
             else if(result.replacementWarning==="impulse_replacement_endpoint_unavailable")notices.push("Журнал замен недоступен через API ImpulseCRM.");
             else if(result.replacementWarning==="impulse_replacement_rate_mismatch")notices.push("Суммы по ставкам тренеров расходятся с итогами отчёта ImpulseCRM. Проверьте раздел «Замены» в расчёте.");
@@ -4069,7 +3670,7 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
   host.replaceChildren(page);
   const state = {
     period:PAYROLL_SELECTED_MONTH || payrollToday().slice(0, 7), branch:"all", rows:[], updated:null, range:null, source:null,
-    view:"groups", selected:null, busy:false, loading:false, ready:false, ticket:0, advanceAttempt:null,
+    view:"groups", selected:null, busy:false, loading:false, ready:false, ticket:0,
   };
   try { if (localStorage.getItem(PAYROLL_VIEW_KEY) === "dates") state.view = "dates"; } catch (_) {}
   page.innerHTML = `
@@ -4078,7 +3679,6 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
       <div class="payroll-period-actions">
         <label class="payroll-period">Месяц <input id="payrollMonth" type="month" min="2000-01" max="2099-12" value="${state.period}"></label>
         <button type="button" class="btn btn-primary" data-payroll-sync>Обновить из Impulse</button>
-        <button type="button" class="btn" data-payroll-import-open>Импорт Excel</button>
       </div>
     </header>
     <p class="payroll-sync-status" role="status" hidden></p>
@@ -4106,21 +3706,7 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
       <div class="payroll-drawer-body">
         <section class="payroll-section"><h3>Расчёт</h3><div id="payrollCalculation"></div></section>
         <section class="payroll-section"><h3>Авансы</h3><div id="payrollAdvances"></div>
-          <form class="payroll-date-form" hidden>
-            <label><span id="payrollPaidOnLabel">Дата выдачи аванса</span>
-              <input name="paid_on" type="date" min="2000-01-01" max="2099-12-31" required></label>
-            <button type="submit" class="btn btn-sm">Сохранить дату</button>
-            <button type="button" class="btn btn-sm" data-payroll-action="clear-advance-date" hidden>Сбросить дату</button>
-          </form>
-          <form class="payroll-advance-form" novalidate>
-            <label>Дата <input name="date" type="date" required></label>
-            <label>Сумма, BYN <input name="amount" type="number" min="1" max="2147483647" step="1" inputmode="numeric" required></label>
-            <label>Комментарий <input name="note" type="text" maxlength="120" placeholder="Необязательно"></label>
-            <div class="payroll-advance-footer">
-              <span class="payroll-advance-error" role="alert"></span>
-              <button type="submit" class="btn btn-primary">Добавить аванс</button>
-            </div>
-          </form>
+          <p class="payroll-hint">Авансы загружаются из раздела «Баланс сотрудников» ImpulseCRM. Для сверки прошлого месяца выберите его вверху и нажмите «Обновить из Impulse».</p>
         </section>
         <section class="payroll-section">
           <h3>Проведённые занятия <span class="payroll-view" role="group" aria-label="Детализация занятий и сообщения"></span></h3>
@@ -4136,34 +3722,15 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
       </div>
       <footer class="payroll-drawer-footer"></footer>
     </dialog>
-    <dialog class="payroll-import-dialog" aria-labelledby="payrollImportTitle">
-      <header><h2 id="payrollImportTitle">Импорт из Impulse</h2>
-        <button type="button" class="btn payroll-close" aria-label="Закрыть импорт" data-payroll-import-close>×</button></header>
-      <div class="payroll-import-body">
-        <label class="payroll-import-file">Отчёт «Расчёт ЗП преподавателя» <input type="file" accept=".xlsx,.xls"></label>
-        <p class="payroll-import-status" role="status"></p>
-        <div class="payroll-import-preview"></div>
-      </div>
-      <footer><button type="button" class="btn btn-primary" data-payroll-import-submit disabled>Импортировать месяц</button></footer>
-    </dialog>`;
+`;
 
   const get = selector => page.querySelector(selector);
   const month = get("#payrollMonth");
   const notice = get("#payrollNotice");
   const table = get(".payroll-table");
   const dialog = get(".payroll-drawer");
-  const form = get(".payroll-advance-form");
-  const dateForm = get(".payroll-date-form");
   const trainers = new Map(employees.filter(employee=>employee.employee_type==="trainer")
     .map(employee=>[String(employee.id),employee]));
-  const advanceError = get(".payroll-advance-error");
-  const importControl = bindPayrollImport(page,async period=>{
-    state.period = PAYROLL_SELECTED_MONTH = month.value = period;
-    state.branch = "all";
-    state.ready = false;
-    render();
-    await load(false);
-  });
   const syncControl = bindPayrollSync(page,async current=>{
     if(state.period===current)await load(false);
   });
@@ -4187,8 +3754,6 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
   }
   function applyBusy(){
     month.disabled = state.busy;
-    importControl.button.disabled = state.busy;
-    page.querySelectorAll(".payroll-advance-form input,.payroll-advance-form button,.payroll-date-form input,.payroll-date-form button").forEach(element => { element.disabled = state.busy; });
     get(".payroll-chips").querySelectorAll("button").forEach(element => { element.disabled = state.busy; });
   }
   function renderSummary(){
@@ -4210,7 +3775,7 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
         <td class="payroll-number">${amount(row.own)}</td>
         <td class="payroll-number ${changeClass(row.replacements, "payroll-positive")}">${state.updated ? signed(row.replacements, "+") : "—"}</td>
         <td class="payroll-number ${changeClass(row.skips, "payroll-negative")}">${state.updated ? signed(row.skips, "−") : "—"}</td>
-        <td class="payroll-advance-col">${payrollMoney(row.advance)} <button type="button" class="btn payroll-plus" data-payroll-action="advance" data-id="${esc(row.id)}" aria-label="Добавить аванс · ${esc(row.name)}" ${state.busy ? "disabled" : ""}>+</button></td>
+        <td class="payroll-advance-col">${payrollPaymentMoney(row.advance)}</td>
         <td class="payroll-number ${row.balance < 0 ? "payroll-negative" : ""}">${amount(row.balance)}</td>
         <td class="payroll-number payroll-total">${amount(row.due)}</td>
         <td class="payroll-left"><div class="payroll-branch">${sdot(row.branch)}<select data-payroll-branch="${esc(row.id)}" aria-label="Филиал выдачи · ${esc(row.name)}" ${state.busy ? "disabled" : ""}>
@@ -4262,10 +3827,12 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
       state.range = snapshot.range_start && snapshot.range_end
         ? payrollDateLabel(snapshot.range_start) + "–" + payrollDateLabel(snapshot.range_end) + "." + state.period.slice(0,4) : null;
       state.ready = true;
-      const difference = state.source === "impulse_api"
-        ? payrollSum(state.rows,row=>Math.max(0,(row.impulse_advance_reference || 0) - row.advance)) : 0;
-      showNotice(difference ? "В отчёте Impulse есть авансы на " + payrollMoney(difference) +
-        " BYN сверх учтённых в FAD. Сверьте авансы за этот месяц." :
+      const differences = state.source === "impulse_api"
+        ? state.rows.filter(row=>row.impulse_advance_reference!=null &&
+          Math.abs(row.impulse_advance_reference-row.imported_advance)>0.001) : [];
+      showNotice(differences.length ? "Расхождение между отчётом зарплаты и журналом авансов: " +
+        differences.map(row=>row.name+" (отчёт "+payrollPaymentMoney(row.impulse_advance_reference)+
+          ", баланс "+payrollPaymentMoney(row.imported_advance)+" BYN)").join("; ")+". Для зарплаты использован журнал «Баланс сотрудников»." :
         (state.updated ? "" : "Авансы загружаются из ImpulseCRM вместе с начислениями."));
       render();
       if(autoSync)void syncControl.run();
@@ -4374,26 +3941,15 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
     const importedDetails = payrollImportedAdvanceDetails(row);
     const dated = importedDetails?.length ? `<ul class="payroll-advance-list">${importedDetails.map(advance=>
       `<li><span>${payrollAdvanceDate(advance.date)}</span><span>${row.impulse_advances?"ImpulseCRM":"Дата указана в FAD"}</span><strong>${payrollPaymentMoney(advance.amount)} BYN</strong></li>`).join("")}</ul>` : "";
-    dateForm.hidden = !Object.hasOwn(row,"confirmed_advance_date") || !row.imported_advance ||
-      (row.imported_advance_count!=null&&row.imported_advance_count!==1) || Array.isArray(row.impulse_advances) ||
-      row.advances.some(advance=>advance.in_impulse);
-    if(!dateForm.hidden){
-      const dateKey = JSON.stringify([row.id, state.period, row.imported_advance, row.confirmed_advance_date]);
-      if(dateForm.dataset.key!==dateKey){
-        dateForm.dataset.key = dateKey;
-        dateForm.elements.paid_on.value = row.confirmed_advance_date || "";
-      }
-      get("#payrollPaidOnLabel").textContent = "Дата выдачи аванса · " + payrollMoney(row.imported_advance) + " BYN";
-      dateForm.querySelector('[data-payroll-action="clear-advance-date"]').hidden = !row.confirmed_advance_date;
-    }
-    const imported = row.imported_advance ? `<p class="payroll-import-source">Из Impulse · <strong>${payrollMoney(row.imported_advance)} BYN</strong>${row.imported_advance_count ? " · записей " + row.imported_advance_count : ""}</p>${dated}` : "";
-    const manual = row.advances.length ? `<ul class="payroll-advance-list">${row.advances.map(advance =>
-      `<li><span>${payrollAdvanceDate(advance.date)}</span><span>${esc(advance.note)}${advance.in_impulse ? '<small class="payroll-sub">Учтён в Impulse</small>' : ""}</span>
-      <strong>${payrollMoney(advance.amount)} BYN</strong><button type="button" class="btn payroll-remove" data-payroll-action="delete" data-id="${esc(advance.id)}" aria-label="Удалить аванс ${payrollMoney(advance.amount)} BYN от ${payrollDateLabel(advance.date)}" ${state.busy ? "disabled" : ""}>×</button></li>`
-    ).join("")}</ul>` : "";
-    const advances = imported + manual || '<p class="payroll-hint">Авансов за месяц пока нет.</p>';
-    const reference = state.source === "impulse_api" && row.impulse_advance_reference > row.advance
-      ? `<p class="payroll-hint">В отчёте Impulse есть авансы на ${payrollMoney(row.impulse_advance_reference)} BYN. В FAD учтено ${payrollMoney(row.advance)} BYN.</p>` : "";
+    const imported = row.imported_advance ? `<p class="payroll-import-source">Из Impulse · <strong>${payrollPaymentMoney(row.imported_advance)} BYN</strong>${row.imported_advance_count ? " · записей " + row.imported_advance_count : ""}</p>${dated}` : "";
+    // Старые ручные записи отображаем только для месяцев, которые ещё не обновлялись через API.
+    const legacy = state.source !== "impulse_api" && row.advances.length ?
+      `<p class="payroll-hint">Исторические записи FAD (до сверки с ImpulseCRM):</p><ul class="payroll-advance-list">${row.advances.map(advance=>
+      `<li><span>${payrollAdvanceDate(advance.date)}</span><span>${esc(advance.note)}</span><strong>${payrollPaymentMoney(advance.amount)} BYN</strong></li>`).join("")}</ul>` : "";
+    const advances = imported + legacy || '<p class="payroll-hint">Авансов за месяц пока нет.</p>';
+    const reference = state.source === "impulse_api" && row.impulse_advance_reference!=null &&
+        Math.abs(row.impulse_advance_reference-row.imported_advance)>0.001
+      ? `<p class="payroll-hint">Сверка: в отчёте зарплаты ${payrollPaymentMoney(row.impulse_advance_reference)} BYN, в «Балансе сотрудников» ${payrollPaymentMoney(row.imported_advance)} BYN. Учтён журнал.</p>` : "";
     get("#payrollAdvances").innerHTML = advances + reference;
     get(".payroll-view").innerHTML = [["groups","По группам"],["dates","По датам"]].map(([id,label]) =>
       `<button type="button" class="btn payroll-toggle" data-payroll-action="view" data-id="${id}" aria-pressed="${id === state.view}">${label}</button>`).join("");
@@ -4421,25 +3977,13 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
     applyBusy();
   }
 
-  function openDrawer(id, forAdvance, opener){
+  function openDrawer(id, opener){
     if (!state.rows.some(row => row.id === id)) return;
     state.selected = id;
     lastFocus = opener;
-    state.advanceAttempt = null;
-    form.reset();
-    delete dateForm.dataset.key;
-    const [year, numericMonth] = state.period.split("-").map(Number);
-    const min = state.period + "-01";
-    const max = new Date(Date.UTC(year, numericMonth, 0)).toISOString().slice(0, 10);
-    form.elements.date.min = min;
-    form.elements.date.max = max;
-    const today = payrollToday();
-    form.elements.date.value = today < min ? min : (today > max ? max : today);
-    advanceError.textContent = "";
     renderDrawer();
     if (!dialog.open) dialog.showModal();
     get(".payroll-drawer-body").scrollTop = 0;
-    if (forAdvance) form.elements.amount.focus();
   }
 
   async function mutate(action){
@@ -4460,24 +4004,6 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
       }
     }
   }
-
-  async function setAdvanceDate(date){
-    const row = selected();
-    if(!row || state.busy || dateForm.hidden) return;
-    try{
-      await mutate(async () => {
-        await rpc("app_trainer_payroll_confirm_advance_date", {p_token:TOKEN, p_period:state.period + "-01",
-          p_trainer_id:row.id, p_expected_amount:row.imported_advance, p_paid_on:date});
-        toast(date ? "Дата аванса сохранена" : "Дата аванса сброшена");
-      });
-    }catch(error){ toast(payrollError(error), true); }
-  }
-
-  dateForm.onsubmit = event => {
-    event.preventDefault();
-    const date = dateForm.elements.paid_on;
-    if(date.reportValidity())void setAdvanceDate(date.value);
-  };
 
   dialog.addEventListener("close", () => {
     state.selected = null;
@@ -4515,42 +4041,11 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
       });
     }catch(error){ toast(payrollError(error), true); }
   };
-  form.onsubmit = async event => {
-    event.preventDefault();
-    const row = selected();
-    if (!row || state.busy) return;
-    const {date, amount, note} = form.elements;
-    const value = Number(amount.value);
-    if (!date.validity.valid){
-      advanceError.textContent = "Выберите дату внутри месяца.";
-      date.focus();
-      return;
-    }
-    if (!amount.validity.valid || !Number.isInteger(value) || value <= 0){
-      advanceError.textContent = "Введите целую сумму больше нуля.";
-      amount.focus();
-      return;
-    }
-    const key = JSON.stringify([row.id, state.period, date.value, value, note.value.trim()]);
-    if (state.advanceAttempt?.key !== key) state.advanceAttempt = {key, id:crypto.randomUUID()};
-    advanceError.textContent = "";
-    try{
-      await mutate(async () => {
-        await rpc("app_trainer_payroll_add_advance", {p_token:TOKEN, p_period:state.period + "-01", p_trainer_id:row.id,
-          p_id:state.advanceAttempt.id, p_date:date.value, p_amount:value, p_note:note.value.trim()});
-        state.advanceAttempt = null;
-        amount.value = note.value = "";
-        toast("Аванс добавлен");
-      });
-    }catch(error){ advanceError.textContent = payrollError(error); }
-    if (dialog.open) amount.focus();
-  };
-
   page.onclick = async event => {
     const action = event.target.closest("[data-payroll-action]");
     if (!action){
       const row = event.target.closest("[data-payroll-row]");
-      if (row && !event.target.closest("select,a,button,option")) openDrawer(row.dataset.payrollRow, false, row.querySelector(".payroll-name"));
+      if (row && !event.target.closest("select,a,button,option")) openDrawer(row.dataset.payrollRow, row.querySelector(".payroll-name"));
       return;
     }
     const id = action.dataset.id;
@@ -4563,8 +4058,7 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
         applyBusy();
         get('[data-payroll-action="filter"][aria-pressed="true"]').focus();
         break;
-      case "open": openDrawer(id, false, action); break;
-      case "advance": openDrawer(id, true, action); break;
+      case "open": openDrawer(id, action); break;
       case "close": dialog.close(); break;
       case "profile": {
         const trainer = selected();
@@ -4594,18 +4088,6 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
         }
         break;
       }
-      case "delete": {
-        const trainer = selected();
-        if (!trainer || state.busy) return;
-        try{
-          await mutate(async () => {
-            await rpc("app_trainer_payroll_delete_advance", {p_token:TOKEN, p_period:state.period + "-01", p_trainer_id:trainer.id, p_id:id});
-            toast("Аванс удалён");
-          });
-        }catch(error){ toast(payrollError(error), true); }
-        break;
-      }
-      case "clear-advance-date": await setAdvanceDate(null); break;
     }
   };
   void load();
