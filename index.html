@@ -1546,6 +1546,10 @@ label.trainer-replacement-setting{display:flex;align-items:center;gap:8px;min-he
 .payroll-kpi small,.payroll-sub{display:block;color:var(--ink-soft);font-size:12px}
 .payroll-toolbar{margin:0 0 10px;flex-wrap:wrap}
 .payroll-chips{flex-wrap:wrap}
+.payroll-visibility{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-left:auto}
+.payroll-visibility-note{color:var(--ink-soft);font-size:12px;line-height:1.35}
+.payroll-visibility button{white-space:nowrap}
+@media(max-width:720px){.payroll-visibility{justify-content:flex-start;margin-left:0;width:100%}}
 .payroll-chip{min-height:36px;border-radius:999px}
 .payroll-chip[aria-pressed="true"],.payroll-toggle[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
 .payroll button:disabled{opacity:.55;cursor:not-allowed}
@@ -1690,7 +1694,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '15.11.2026-z'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '15.11.2026-aa'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -3720,7 +3724,7 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
   host.replaceChildren(page);
   const state = {
     period:PAYROLL_SELECTED_MONTH || payrollToday().slice(0, 7), branch:"all", rows:[], updated:null, range:null, source:null,
-    view:"groups", selected:null, busy:false, loading:false, ready:false, ticket:0,
+    view:"groups", showInactive:false, selected:null, busy:false, loading:false, ready:false, ticket:0,
   };
   try { if (localStorage.getItem(PAYROLL_VIEW_KEY) === "dates") state.view = "dates"; } catch (_) {}
   page.innerHTML = `
@@ -3736,6 +3740,10 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
     <div class="payroll-note" id="payrollNotice" role="status">Загружаем расчёт…</div>
     <div class="payroll-toolbar" hidden>
       <div class="payroll-chips" role="group" aria-label="Филиал выдачи"></div>
+      <div class="payroll-visibility" role="group" aria-label="Отображение тренеров">
+        <span class="payroll-visibility-note" aria-live="polite"></span>
+        <button type="button" class="btn btn-sm" data-payroll-action="inactive" aria-pressed="false">Показать всех</button>
+      </div>
     </div>
     <div class="payroll-table-scroll" role="region" aria-label="Расчёт по тренерам" tabindex="0" hidden>
       <table class="payroll-table">
@@ -3785,7 +3793,13 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
     if(state.period===current)await load(false);
   });
   let lastFocus = null;
-  const visible = () => state.rows.filter(row => state.branch === "all" || row.branch === state.branch);
+  // Наличие аванса и удержания не превращает месяц без проведённых занятий/замен
+  // в рабочий. Фильтр влияет только на отображение; записи и суммы не удаляются.
+  const hasPayrollActivity = row => Number(row.own_count || 0) > 0 ||
+    Number(row.replacement_count || 0) > 0 || Number(row.replacements || 0) !== 0 ||
+    (Array.isArray(row.lessons) && row.lessons.some(lesson => !lesson.is_skipped));
+  const branchRows = () => state.rows.filter(row => state.branch === "all" || row.branch === state.branch);
+  const visible = () => branchRows().filter(row => state.showInactive || hasPayrollActivity(row));
   const selected = () => state.rows.find(row => row.id === state.selected);
   const esc = escapeHtml;
   const amount = value => state.updated ? payrollMoney(value) : "—";
@@ -3817,6 +3831,8 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
 
   function renderTable(){
     const rows = visible();
+    const allRows = branchRows();
+    const hiddenCount = allRows.length - rows.length;
     const branchOptions = (row) => STUDIOS.map(s => `<option value="${s.id}" ${s.id === row.branch ? "selected" : ""}>${esc(s.name)}</option>`).join("");
     table.tBodies[0].innerHTML = rows.length ? rows.map(row => `
       <tr data-payroll-row="${esc(row.id)}">
@@ -3832,9 +3848,13 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
           ${row.branch ? "" : '<option value="" selected disabled>Выберите</option>'}${branchOptions(row)}
         </select></div></td>
         <td class="payroll-telegram-cell">${telegramLink(row)}</td>
-      </tr>`).join("") : '<tr><td colspan="10">Нет тренеров в выбранном филиале.</td></tr>';
-    const total = key => payrollSum(rows, row => row[key]);
-    table.tFoot.innerHTML = `<tr><td>Итого${state.branch === "all" ? "" : " · " + studioName(state.branch)}</td>
+      </tr>`).join("") : '<tr><td colspan="10">' + (state.showInactive
+      ? "Нет тренеров в выбранном филиале."
+      : "Нет тренеров с занятиями или заменами за выбранный месяц. Можно показать всех.") + '</td></tr>';
+    // Финансовые итоги включают всех сотрудников, даже если их нулевые по занятиям
+    // строки скрыты. Это важно для авансов и отрицательных остатков.
+    const total = key => payrollSum(allRows, row => row[key]);
+    table.tFoot.innerHTML = `<tr><td>Итого${state.branch === "all" ? "" : " · " + studioName(state.branch)}${hiddenCount ? " (включая скрытых)" : ""}</td>
       <td>${amount(total("lesson_count"))}<span class="payroll-sub">${state.updated ? payrollMoney(total("people")) + " чел." + (rows.some(row=>row.missing_replacement_dates) ? " по детализации" : "") : ""}</span></td>
       <td>${amount(total("own"))}</td><td>${amount(total("replacements"))}</td><td>${amount(total("skips"))}</td>
       <td>${payrollMoney(total("advance"))}</td><td>${amount(total("balance"))}</td><td class="payroll-total">${amount(total("due"))}</td><td></td><td></td></tr>`;
@@ -3843,7 +3863,15 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
   function renderToolbar(){
     get(".payroll-chips").innerHTML = [{id:"all",name:"Все"}, ...STUDIOS].map(s =>
       `<button type="button" class="btn btn-sm payroll-chip" data-payroll-action="filter" data-id="${s.id}" aria-pressed="${s.id === state.branch}">${s.color ? sdot(s.id) : ""}${esc(s.name)}</button>`).join("");
-
+    const hidden = branchRows().filter(row => !hasPayrollActivity(row));
+    const hiddenWithAdvances = hidden.filter(row => Number(row.advance || 0) !== 0).length;
+    get(".payroll-visibility-note").textContent = hidden.length
+      ? `Без занятий и замен: ${hidden.length}${hiddenWithAdvances ? ` · с авансами: ${hiddenWithAdvances}` : ""}. Суммы учтены в итогах.`
+      : "Нет тренеров без занятий и замен.";
+    const button = get('[data-payroll-action="inactive"]');
+    button.textContent = state.showInactive ? "Только с занятиями" : "Показать всех";
+    button.setAttribute("aria-pressed", String(state.showInactive));
+    button.disabled = state.busy || !hidden.length;
   }
 
   function render(){
@@ -4071,6 +4099,7 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
     }
     if (dialog.open) dialog.close();
     state.period = month.value;
+    state.showInactive = false;
     PAYROLL_SELECTED_MONTH = state.period;
     state.ready = false;
     render();
@@ -4105,6 +4134,13 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
         renderTable();
         applyBusy();
         get('[data-payroll-action="filter"][aria-pressed="true"]').focus();
+        break;
+      case "inactive":
+        state.showInactive = !state.showInactive;
+        renderToolbar();
+        renderTable();
+        applyBusy();
+        get('[data-payroll-action="inactive"]').focus();
         break;
       case "open": openDrawer(id, action); break;
       case "close": dialog.close(); break;
