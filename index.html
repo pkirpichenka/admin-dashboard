@@ -9,7 +9,7 @@
 <title>Flexico-Admin-Dashboard</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMyRTdENUIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMxRTVDNDEiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjI2IiBmaWxsPSJ1cmwoI2cpIi8+PHJlY3QgeD0iMzYiIHk9IjI3IiB3aWR0aD0iMzMiIGhlaWdodD0iMTAiIHJ4PSIyIiBmaWxsPSIjZmZmIi8+PHJlY3QgeD0iMzYiIHk9IjI3IiB3aWR0aD0iMTAiIGhlaWdodD0iNDYiIHJ4PSIyIiBmaWxsPSIjZmZmIi8+PHJlY3QgeD0iMzYiIHk9IjQ2IiB3aWR0aD0iMjUiIGhlaWdodD0iMTAiIHJ4PSIyIiBmaWxsPSIjZmZmIi8+PC9zdmc+"/>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
@@ -1511,6 +1511,160 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 .bonus-page .bp-refresh-btn.bp-loading svg{animation:bp-spin .85s linear infinite}
 @keyframes bp-spin{to{transform:rotate(360deg)}}
 @media(max-width:640px){.bonus-page .bp-head{flex-wrap:wrap}.bonus-page .bp-month-row{width:100%;justify-content:flex-end;flex-wrap:nowrap}.bonus-page .bp-month-row>span{display:none}.bonus-page .bp-month{flex:1;min-width:0}.bonus-page .bp-refresh-btn{flex:0 0 41px}}
+
+/* ================= Зарплата тренеров ================= */
+.wrap:has(.payroll){max-width:1420px}
+.payroll{--payroll-tg:#186e9c;--payroll-tg-soft:#e8f2f8;--payroll-bad:#a33527;--payroll-good:#226a46;font-variant-numeric:tabular-nums}
+.payroll [hidden]{display:none!important}
+.payroll-head,.payroll-toolbar,.payroll-actions,.payroll-branch,.payroll-chips,.payroll-drawer-head,.payroll-drawer-footer{display:flex;align-items:center;gap:8px}
+.payroll-head,.payroll-toolbar,.payroll-drawer-head,.payroll-drawer-footer{justify-content:space-between}
+.payroll-head{gap:12px;align-items:flex-end;flex-wrap:wrap;margin:8px 0 16px}
+.payroll h1{margin:0;color:var(--ink);font-size:28px;line-height:1.2;letter-spacing:-.025em}
+.payroll-period{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--ink-soft)}
+.payroll-period input{max-width:100%;padding:8px 10px;min-height:40px;font-size:15px}
+.payroll-meta,.payroll-hint{margin:5px 0 0;color:var(--ink-soft);font-size:13px}
+.payroll-note,.payroll-confirm{padding:10px 13px;margin:12px 0;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);font-size:14px}
+.payroll-note.error,.payroll-warn{background:var(--clay-soft);color:var(--payroll-bad)}
+.payroll-note button{margin-left:8px}
+.payroll-confirm{background:var(--payroll-tg-soft)}
+.payroll-confirm p{margin:0 0 8px}
+.payroll-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:14px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);overflow:hidden}
+.payroll-kpi{display:flex;min-width:0;flex-direction:column;gap:3px;padding:13px 16px;border-left:1px solid var(--line)}
+.payroll-kpi:first-child{background:var(--surface-2);border-left:0}
+.payroll-kpi b{font-size:25px;line-height:1.2;color:var(--ink)}
+.payroll-kpi small,.payroll-sub{display:block;color:var(--ink-soft);font-size:12px}
+.payroll-kpi progress{height:6px;width:100%;accent-color:var(--accent);margin:3px 0 0}
+.payroll-toolbar{margin:0 0 10px;flex-wrap:wrap}
+.payroll-chips,.payroll-actions{flex-wrap:wrap}
+.payroll-chip{min-height:36px;border-radius:999px}
+.payroll-chip[aria-pressed="true"],.payroll-toggle[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.payroll button.payroll-send{background:var(--payroll-tg);color:#fff;border-color:transparent}
+.payroll button:disabled{opacity:.55;cursor:not-allowed}
+.payroll :is(button,select,input):focus-visible,.payroll-table-scroll:focus-visible,.payroll-grid-scroll:focus-visible{outline:2px solid var(--payroll-tg);outline-offset:2px}
+.payroll-table-scroll,.payroll-grid-scroll{overflow:auto;max-width:100%;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);overscroll-behavior-inline:contain}
+.payroll-table,.payroll-grid{width:100%;border-collapse:separate;border-spacing:0;color:var(--ink);font-size:13px}
+.payroll-table{min-width:1030px}
+.payroll-table :is(td,th),.payroll-grid :is(td,th){padding:9px 10px;border-bottom:1px solid var(--line);text-align:right;vertical-align:middle}
+.payroll-table :is(td,th):first-child,.payroll-grid :is(td,th):first-child,.payroll-table .payroll-left{text-align:left}
+.payroll-table thead,.payroll-table tfoot,.payroll-grid :is(thead,tfoot){background:var(--surface-2)}
+.payroll-table th,.payroll-grid th{font-size:11px;letter-spacing:.02em;white-space:nowrap}
+.payroll-table tfoot td,.payroll-grid tfoot td{border-bottom:0;font-weight:700}
+.payroll-table tbody tr:hover td{background:var(--surface-2)}
+.payroll-table tbody tr{cursor:pointer}
+.payroll-name{display:block;padding:0;border:0;background:transparent;color:var(--ink);font:inherit;font-weight:700;text-align:left;cursor:pointer}
+.payroll-name:hover{text-decoration:underline}
+.payroll-number{white-space:nowrap}
+.payroll-table .payroll-total{font-weight:700;font-size:15px}
+.payroll-negative{color:var(--payroll-bad)}
+.payroll-positive{color:var(--payroll-good)}
+.payroll-zero{color:var(--ink-soft)}
+.payroll-advance-col{white-space:nowrap}
+.payroll-plus,.payroll-remove,.payroll-close{display:inline-grid;place-items:center;min-height:36px;min-width:32px;padding:0 7px}
+.payroll-branch{gap:5px}
+.payroll-branch select{min-height:36px;padding:5px 6px;font-size:13px}
+.payroll-status{display:inline-block;border-radius:6px;padding:3px 6px;background:var(--surface-2);color:var(--ink-soft);font-size:11px;font-weight:700;line-height:1.35}
+.payroll-status.sent{color:var(--payroll-good);background:#e3f0e6}
+.payroll-status.changed,.payroll-status.uncertain,.payroll-status.partial{background:var(--gold-soft);color:#79510d}
+.payroll-status.no_telegram,.payroll-status.failed{background:var(--clay-soft);color:var(--payroll-bad)}
+.payroll-telegram-cell{min-width:152px}
+.payroll-telegram-cell .btn{margin-top:3px}
+.payroll-drawer{position:fixed;inset:0 0 0 auto;margin:0 0 0 auto;width:min(690px,100%);max-width:none;height:100dvh;max-height:none;padding:0;border:0;border-left:1px solid var(--line);color:var(--ink);background:var(--surface);box-shadow:var(--shadow)}
+.payroll-drawer[open]{display:grid;grid-template-rows:auto minmax(0,1fr) auto}
+.payroll-drawer::backdrop{background:rgba(17,36,25,.47)}
+.payroll-drawer-head,.payroll-drawer-footer{padding:14px 18px;gap:10px;background:var(--surface);border-bottom:1px solid var(--line)}
+.payroll-drawer-footer{border:0;border-top:1px solid var(--line);flex-wrap:wrap;padding-bottom:max(14px,env(safe-area-inset-bottom))}
+.payroll-drawer-footer .payroll-total{font-weight:700;font-size:22px}
+.payroll-drawer-head h2{margin:0;font-size:21px;line-height:1.2}
+.payroll-drawer-body{overflow:auto;overscroll-behavior:contain;padding:0 18px}
+.payroll-section{margin:0;padding:14px 0;border-bottom:1px solid var(--line)}
+.payroll-section h3{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:0 0 8px;font-size:15px}
+.payroll-calculation{margin:0}
+.payroll-calculation>div{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:5px 0}
+.payroll-calculation dd{margin:0;font-weight:700}
+.payroll-calculation .payroll-calc-total{border-top:1px solid var(--line);font-weight:700;font-size:15px}
+.payroll-warn{margin:7px 0;padding:7px 10px;border-radius:8px;font-size:13px}
+.payroll-advance-list{list-style:none;padding:0;margin:0 0 8px}
+.payroll-advance-list li{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere;font-size:13px}
+.payroll-advance-form{display:grid;grid-template-columns:minmax(125px,1fr) minmax(80px,.7fr) minmax(105px,1.4fr);gap:6px 10px;padding-top:4px}
+.payroll-advance-form label{display:grid;gap:4px;color:var(--ink-soft);font-size:12px}
+.payroll-advance-form input{min-width:0;width:100%;font-size:15px;padding:6px 8px}
+.payroll-advance-footer{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.payroll-advance-error{color:var(--payroll-bad);font-size:12px}
+.payroll-view{display:inline-flex;gap:4px;border:1px solid var(--line);border-radius:8px;padding:2px;background:var(--surface-2)}
+.payroll-toggle{padding:3px 8px;border-radius:5px;font-size:12px;min-height:32px}
+.payroll-group{border:1px solid var(--line);border-radius:8px;margin-top:6px;overflow:hidden}
+.payroll-group summary{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:10px;padding:8px 10px;cursor:pointer;background:var(--surface-2);font-size:13px}
+.payroll-group summary>span:first-child:before{content:"▸";margin-right:6px;color:var(--ink-soft)}
+.payroll-group[open] summary>span:first-child:before{content:"▾"}
+.payroll-group summary strong{white-space:nowrap}
+.payroll-dates{display:flex;gap:6px;padding:8px;flex-wrap:wrap}
+.payroll-dates span{background:var(--surface-2);border-radius:5px;padding:4px 7px;font-size:12px;overflow-wrap:anywhere}
+.payroll-grid-scroll{max-height:380px;border-radius:8px}
+.payroll-grid :is(td,th){white-space:nowrap;text-align:center;padding:6px 8px;border-right:1px solid var(--line)}
+.payroll-grid :is(td,th):first-child{position:sticky;left:0;background:var(--surface-2);z-index:1;max-width:155px;min-width:115px;white-space:normal}
+.payroll-grid thead th{position:sticky;top:0;background:var(--surface-2);z-index:2}
+.payroll-grid thead th:first-child{z-index:3}
+.payroll-grid .payroll-grid-replacements{background:var(--payroll-tg-soft)}
+.payroll-preview{max-height:340px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;padding:11px 12px;border-radius:9px;background:#e8f3e8;font:inherit;font-size:13px;line-height:1.45;margin:0 0 6px}
+.payroll-profile-chat{padding:8px 10px;border:1px solid var(--line);border-radius:9px;margin-bottom:10px}
+.payroll-profile-chat input{max-width:100%}
+.payroll-profile-chat-actions{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.payroll-profile-chat-feedback{font-size:12px;color:var(--ink-soft)}
+@media(max-width:780px){
+  .payroll-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .payroll-kpi:nth-child(3){border-left:0}
+  .payroll-kpi:nth-child(n+3){border-top:1px solid var(--line)}
+  .payroll-kpi{padding:9px 10px}
+  .payroll-kpi b{font-size:21px}
+  .payroll h1{font-size:24px}
+  .payroll-drawer{width:100%;border:0}
+  .payroll-drawer-head,.payroll-drawer-footer,.payroll-drawer-body{padding-inline:12px}
+  .payroll-advance-form{grid-template-columns:1fr 1fr}
+  .payroll-advance-form label:nth-child(3){grid-column:1/-1}
+  .payroll-group summary{gap:5px;padding:8px}
+}
+.payroll-period-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.payroll-import-dialog{width:min(950px,calc(100% - 24px));max-width:none;max-height:calc(100dvh - 24px);padding:0;border:1px solid var(--line);border-radius:15px;background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.payroll-import-dialog[open]{display:grid;grid-template-rows:auto minmax(0,1fr) auto}
+.payroll-import-dialog::backdrop{background:rgba(17,36,25,.47)}
+.payroll-import-dialog :is(header,footer){display:flex;align-items:center;gap:12px;padding:12px 16px;border-color:var(--line)}
+.payroll-import-dialog header{justify-content:space-between;border-bottom:1px solid var(--line)}
+.payroll-import-dialog header h2{font-size:20px;margin:0}
+.payroll-import-dialog footer{justify-content:flex-end;border-top:1px solid var(--line)}
+.payroll-import-body{overflow:auto;overscroll-behavior:contain;padding:12px 16px}
+.payroll-import-file{display:flex;gap:6px 10px;align-items:center;flex-wrap:wrap;color:var(--ink-soft)}
+.payroll-import-file input{max-width:100%;font-size:13px}
+.payroll-import-status{margin:8px 0;font-size:13px;overflow-wrap:anywhere}
+.payroll-import-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:10px 0;background:var(--surface-2);border:1px solid var(--line);border-radius:8px}
+.payroll-import-strip>div{padding:8px 10px;min-width:0}
+.payroll-import-strip small{display:block;color:var(--ink-soft);font-size:12px}
+.payroll-import-strip b{font-variant-numeric:tabular-nums;white-space:nowrap}
+.payroll-import-grid{max-width:100%;overflow:auto;border:1px solid var(--line);border-radius:8px;margin-top:10px}
+.payroll-import-grid table{min-width:720px;width:100%;border-collapse:collapse;font-size:13px}
+.payroll-import-grid :is(th,td){text-align:right;white-space:nowrap;padding:6px 8px;border-bottom:1px solid var(--line)}
+.payroll-import-grid :is(th,td):nth-child(-n+2){text-align:left}
+.payroll-import-grid :is(thead,tfoot){background:var(--surface-2)}
+.payroll-import-grid tbody th{font-weight:500}
+.payroll-import-grid select{width:100%;max-width:245px;padding:5px 7px;font-size:13px}
+.payroll-import-match{min-height:20px}
+.payroll-import-reconcile h4{margin:12px 0 0}
+.payroll-import-advances{padding:6px 9px;border:1px solid var(--line);border-radius:7px;margin-top:6px}
+.payroll-import-advances label,.payroll-import-reviewed{display:flex;gap:6px;align-items:center;font-size:13px;margin-top:5px}
+.payroll-import-dialog input[type="checkbox"]{width:16px;height:16px;flex:none;margin:0 3px 0 0;padding:0;accent-color:var(--accent);cursor:pointer}
+.payroll-import-advances summary{cursor:pointer}
+.payroll-import-source{padding:6px 0;margin:0 0 6px;border-bottom:1px solid var(--line);font-size:13px}
+.payroll-replacement-details{margin:6px 0}
+.payroll-lesson-adjustments{margin-top:10px}
+@media(max-width:550px){
+  .payroll-import-dialog{width:100%;max-height:100dvh;margin:auto 0 0;border-radius:14px 14px 0 0}
+  .payroll-import-strip{grid-template-columns:1fr 1fr}
+  .payroll-import-strip>div:last-child{grid-column:1/-1;border-top:1px solid var(--line)}
+  .payroll-import-dialog :is(header,footer),.payroll-import-body{padding-inline:11px}
+}
+
+.payroll-sync-status{margin:6px 0 14px;padding:9px 12px;border-radius:8px;background:var(--surface-2);border:1px solid var(--line);font-size:13px}
+.payroll-sync-error{color:var(--payroll-bad);background:var(--clay-soft)}
+.payroll-period-actions [data-payroll-import-open]{background:var(--surface)}
 </style>
 
 <div id="root"></div>
@@ -1531,7 +1685,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '15.11.2026-d'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '15.11.2026-e'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -1849,6 +2003,9 @@ async function refreshPermissions(){
     // До применения SQL-миграции сохраняем прежнее поведение старшего/правки кассы.
     session.permissions=legacyPermissions(session); session.permissionsLoaded=false;
   }
+  try{
+    session.payrollAccess=(await rpc('app_trainer_payroll_has_access',{p_token:TOKEN}))===true;
+  }catch(e){ session.payrollAccess=false; }
   persistSession();
 }
 
@@ -2361,7 +2518,7 @@ function renderApp(){
   if(session.role==='owner'||session.role==='admin') tabs.push({label:'Замены',key:'replacements',render:renderReplacements});
   if(session && (session.role==='owner'||session.role==='admin')) tabs.push({label:'Маркетинг',render:renderMarketing});
   if(session.role!=='owner' && can('reports.view_all')) tabs.push({label:'Все отчёты',render:renderAllReports});
-  if(session.role==='owner' || ['employees.view','employees.manage','admins.view','admins.manage','admins.permissions','admins.audit','telegram.manage'].some(k=>can(k))) tabs.push({label:'Сотрудники',render:renderEmployees});
+  if(session.role==='owner' || session.payrollAccess || ['employees.view','employees.manage','admins.view','admins.manage','admins.permissions','admins.audit','telegram.manage'].some(k=>can(k))) tabs.push({label:'Сотрудники',key:'employees',render:renderEmployees});
   if(session.role==='owner' || can('calendar.view') || can('calendar.manage')) tabs.push({label:'Календарь',render:renderCalendar});
   if(session.role==='owner' || can('messages.manage')) tabs.push({label:'Сообщения',render:renderMessages});
   renderRoleUI(tabs);
@@ -2383,7 +2540,7 @@ function renderRoleUI(tabs){
       return;
     }
     body.removeAttribute('data-bonus-token');
-    if(tabs[i].key==='replacements'||tabs[currentTab]?.key==='replacements'){
+    if(['replacements','employees'].includes(tabs[i].key)||['replacements','employees'].includes(tabs[currentTab]?.key)){
       // A pending renderer from the previous tab can still update its own detached panel.
       const nextBody=document.createElement('div');
       nextBody.id='tabbody';
@@ -3219,6 +3376,1343 @@ function exportExcel(entries){
   toast('Excel-лог выгружен');
 }
 
+/* ================= Зарплата тренеров · сообщение ================= */
+                             
+               
+                
+                      
+                     
+                        
+                               
+                                 
+  
+                                                                                                           
+                          
+             
+               
+                          
+                        
+                        
+                                  
+                                          
+                                    
+              
+                       
+                            
+                                  
+                                     
+                
+                  
+                           
+                                        
+                  
+              
+                       
+                 
+                    
+                     
+                          
+                   
+                                                                                                            
+                         
+                            
+  
+                                      
+
+const PAYROLL_MONTHS = ["январь", "февраль", "март", "апрель", "май", "июнь",
+  "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь"];
+const PAYROLL_DAYS = ["вс", "пн", "вт", "ср", "чт", "пт", "сб"];
+const PAYROLL_TELEGRAM_LIMIT = 4096;
+const payrollFormat = new Intl.NumberFormat("ru-RU", {maximumFractionDigits: 0});
+const payrollMoney = (amount        ) => payrollFormat.format(amount).replace(/[\u00a0\u202f]/g, " ");
+const payrollMonthLabel = (period        ) => PAYROLL_MONTHS[Number(period.slice(5, 7)) - 1] + " " + period.slice(0, 4);
+const payrollDateLabel = (date        ) => date.slice(8, 10) + "." + date.slice(5, 7);
+const payrollDay = (date        ) => PAYROLL_DAYS[new Date(date + "T00:00:00Z").getUTCDay()];
+const payrollSum =    (rows     , get                    ) => rows.reduce((sum, row) => sum + get(row), 0);
+const payrollLine = (text        ) => text.trim().replace(/\s+/gu, " ");
+
+function payrollGroups(lessons                        ) {
+  const groups = new Map                                                                              ();
+  for (const lesson of lessons) {
+    if (lesson.replaced_name !== null) continue;
+    const key = JSON.stringify([lesson.group, lesson.time]);
+    const group = groups.get(key);
+    if (group) group.lessons.push(lesson);
+    else groups.set(key, {name: lesson.group, time: lesson.time, lessons: [lesson]});
+  }
+  return [...groups.values()].sort((a, b) => a.name.localeCompare(b.name, "ru") || (a.time || "").localeCompare(b.time || ""));
+}
+
+function payrollLessonTitle(lesson                      ) {
+  return [payrollLine(lesson.group), lesson.time].filter(Boolean).join(" ");
+}
+
+function payrollMessage(row                   , period        , view             , branch        ) {
+  const attendance = `Занятия: ${row.own_count} · ${payrollMoney(row.own_people)} чел.`;
+  const opening = ["Расчёт за " + payrollMonthLabel(period), payrollLine(row.name), ""];
+  if (row.skips) opening.push(attendance,"Начислено по отчёту: " + payrollMoney(row.own) + " BYN");
+  else opening.push(attendance + " — " + payrollMoney(row.own) + " BYN");
+  if (row.replacements || row.replacement_count) opening.push("Замены: +" + payrollMoney(row.replacements) + " BYN");
+  if (row.skips) opening.push("Пропуски: −" + payrollMoney(row.skips) + " BYN");
+  opening.push(row.advance ? "Авансы: −" + payrollMoney(row.advance) + " BYN" : "Авансы: нет");
+  const advanceLines = row.advances.filter(advance=>!advance.in_impulse).map(advance =>
+    `  • ${payrollDateLabel(advance.date)} — ${payrollMoney(advance.amount)} BYN${advance.note ? " (" + payrollLine(advance.note) + ")" : ""}`);
+  if (row.imported_advance) {
+    advanceLines.unshift("  • По отчёту Impulse — " + payrollMoney(row.imported_advance) + " BYN" +
+      (row.imported_advance_count ? " · записей " + row.imported_advance_count : ""));
+  }
+  const closing = [
+    "Остаток: " + payrollMoney(row.balance) + " BYN",
+    "К выдаче: " + payrollMoney(row.due) + " BYN" + (row.balance > 0 && row.due !== row.balance ? " (округлено вверх до 5)" : ""),
+    "Получить: " + branch,
+  ];
+  const detail           = [];
+  const replacements = row.lessons.filter(lesson => lesson.replaced_name !== null);
+  if (view === "dates" && row.lessons.length) {
+    detail.push("По датам:");
+    for (const lesson of row.lessons) {
+      const replacement = lesson.replaced_name ? " (замена, вместо " + payrollLine(lesson.replaced_name) + ")" : "";
+      detail.push(`${payrollDateLabel(lesson.date)} ${payrollDay(lesson.date)} · ${payrollLessonTitle(lesson)}${replacement} — ${lesson.attendance} чел.${lesson.amount === null ? "" : ", " + payrollMoney(lesson.amount) + " BYN"}`);
+    }
+  } else if (view === "groups") {
+    const groups = payrollGroups(row.lessons);
+    if (groups.length) detail.push("По группам:");
+    for (const group of groups) {
+      detail.push(`• ${[payrollLine(group.name), group.time].filter(Boolean).join(" ")} — ${group.lessons.length} зан., ${payrollMoney(payrollSum(group.lessons, lesson => lesson.attendance))} чел., ${payrollMoney(payrollSum(group.lessons, lesson => lesson.amount ?? 0))} BYN`);
+    }
+    if (replacements.length) {
+      detail.push("", "Замены:");
+      for (const lesson of replacements) {
+        detail.push(`• ${payrollDateLabel(lesson.date)} · ${payrollLessonTitle(lesson)}, вместо ${payrollLine(lesson.replaced_name || "")} — ${lesson.attendance} чел.${lesson.amount === null ? "" : ", " + payrollMoney(lesson.amount) + " BYN"}`);
+      }
+    }
+  }
+  if (row.missing_replacement_dates) detail.push("", row.replacement_count
+    ? "Даты замен указаны для " + row.known_replacement_count + " из " + row.replacement_count + " занятий."
+    : "По заменам в Impulse приведена общая сумма.");
+  if (replacements.some(lesson=>lesson.amount === null)) detail.push("", "В отчёте приведена общая сумма доплаты за замены.");
+  if (view === "dates" && row.skipped_lessons.length) {
+    detail.push("", "Пропуски:");
+    for (const lesson of row.skipped_lessons) {
+      detail.push(`• ${payrollDateLabel(lesson.date)} · ${payrollLessonTitle(lesson)} · −${payrollMoney(lesson.amount ?? 0)} BYN${lesson.substitute_name ? " · замена " + payrollLine(lesson.substitute_name) : ""}`);
+    }
+  }
+  if (detail.length) detail.push("");
+  detail.push("Если видите расхождение, ответьте на это сообщение.");
+
+  let summary = [...opening, ...advanceLines, ...closing].join("\n");
+  if (summary.length > PAYROLL_TELEGRAM_LIMIT) {
+    summary = [...opening, ...closing].join("\n");
+    detail.unshift("Авансы по датам:", ...advanceLines, "");
+  }
+  const description = detail.join("\n").trim();
+  return {summary, description, text: summary + "\n\n" + description};
+}
+
+function payrollTelegramParts(message                                   ) {
+  const limit = PAYROLL_TELEGRAM_LIMIT;
+  if (message.text.length <= limit) return [message.text];
+  if (message.description.length <= limit) return [message.summary, message.description];
+
+  const parts           = [];
+  let text = message.text;
+  while (text.length > limit) {
+    let cut = text.lastIndexOf("\n", limit);
+    // Keep two messages when possible while keeping every total in the first.
+    const min = parts.length ? 1 : message.summary.length;
+    const required = text.length <= limit * 2 ? Math.max(min, text.length - limit) : min;
+    if (cut < required) cut = limit;
+    if (cut >= 1 && /[\uD800-\uDBFF]/.test(text[cut - 1])) cut--;
+    parts.push(text.slice(0, cut).trimEnd());
+    text = text.slice(cut).trimStart();
+  }
+  if (text) parts.push(text);
+  return parts;
+}
+
+/* Импорт двух листов отчёта «Расчёт ЗП преподавателя» из ImpulseCRM. */
+const IMPULSE_PAYROLL_MAX_AMOUNT = 2147483647;
+const impulsePayrollText = value => String(value ?? "").trim().replace(/\s+/gu, " ");
+const impulsePayrollLabel = value => impulsePayrollText(value).toLocaleLowerCase("ru").replace(/ё/g, "е");
+const impulsePayrollName = value => impulsePayrollLabel(value).match(/[\p{L}\p{M}]+(?:-[\p{L}\p{M}]+)*/gu) || [];
+const impulsePayrollKey = value => impulsePayrollName(value).join(" ");
+function impulsePayrollMatch(name, directory){
+  const parts = impulsePayrollName(name);
+  if (parts.length < 2) return "";
+  const clients = directory.filter(person => {
+    const words = impulsePayrollName(person.name);
+    return words[0] === parts[0] && words.length >= 2 && parts.slice(1).every((part, pos) => {
+      const word = words[pos + 1];
+      return !word || (word.length === 1 || part.length === 1 ? word[0] === part[0] : word === part);
+    });
+  });
+  return clients.length === 1 ? String(clients[0].id) : "";
+}
+function impulsePayrollDate(year, month, day, hint){
+  const iso = String(year) + "-" + String(month).padStart(2,"0") + "-" + String(day).padStart(2,"0");
+  const date = new Date(iso + "T00:00:00Z");
+  if (!/^20\d{2}-\d{2}-\d{2}$/.test(iso) || !Number.isFinite(date.getTime()) || date.toISOString().slice(0,10) !== iso)
+    throw new Error("Проверьте дату в выгрузке · " + hint);
+  return iso;
+}
+function impulsePayrollColumnDate(value, xlsx){
+  if (typeof value === "number"){
+    const date = xlsx.SSF.parse_date_code(value);
+    if (date) return impulsePayrollDate(date.y,date.m,date.d,String(value));
+  }
+  const text = impulsePayrollText(value);
+  const yearFirst = text.match(/^(20\d{2})\s+(\d{2})\.(\d{2})$/);
+  if (yearFirst) return impulsePayrollDate(yearFirst[1],yearFirst[3],yearFirst[2],text);
+  const dayFirst = text.match(/^(\d{2})\.(\d{2})\.(20\d{2})$/);
+  if (dayFirst) return impulsePayrollDate(dayFirst[3],dayFirst[2],dayFirst[1],text);
+  throw new Error("В шапке листа «Детализация» не распознана дата · " + text);
+}
+function impulsePayrollFooterDate(value){
+  const date = impulsePayrollText(value).match(/(\d{2})\.(\d{2})\.(20\d{2})/);
+  if (!date) throw new Error("В строке «Всего» нужен диапазон дат выгрузки.");
+  return impulsePayrollDate(date[3], date[2], date[1], date[0]);
+}
+function impulsePayrollAmount(value, hint){
+  const text = impulsePayrollText(value).replace(/\s/g,"").replace(/[−–]/g,"-");
+  const match = text.match(/^([+-]?\d+(?:[.,]0+)?)(?:\((\d+)\))?$/);
+  if (!match) throw new Error("Выгрузка должна содержать целые суммы в BYN · " + hint);
+  const amount = Number(match[1].replace(",","."));
+  const count = match[2] === undefined ? (amount === 0 ? 0 : null) : Number(match[2]);
+  if (!Number.isSafeInteger(amount) || Math.abs(amount) > IMPULSE_PAYROLL_MAX_AMOUNT ||
+    (count !== null && (!Number.isInteger(count) || count > IMPULSE_PAYROLL_MAX_AMOUNT))){
+    throw new Error("Слишком большая сумма или число записей · " + hint);
+  }
+  return {amount, count};
+}
+function impulsePayrollTime(value, hint){
+  if (!impulsePayrollText(value)) return null;
+  if (typeof value === "number" && value >= 0 && value < 1){
+    const minutes = Math.floor(value * 1440 + 1e-7);
+    return String(Math.floor(minutes / 60)).padStart(2,"0") + ":" + String(minutes % 60).padStart(2,"0");
+  }
+  const match = impulsePayrollText(value).match(/^(\d{1,2}):([0-5]\d)(?::[0-5]\d)?$/);
+  if (match && Number(match[1]) < 24) return match[1].padStart(2,"0") + ":" + match[2];
+  throw new Error("Не распознано время занятия · " + hint);
+}
+function impulsePayrollLesson(value, hint){
+  const lines = String(value).split(/\r\n|\r|\n/).map(impulsePayrollText).filter(Boolean);
+  const pair = lines[0]?.match(/^(\d+(?:[.,]0+)?)\s*\/\s*(\d+)$/);
+  if (!pair) throw new Error("Ожидалась ячейка «оплата / число человек» · " + hint);
+  const amount = impulsePayrollAmount(pair[1],hint).amount;
+  const attendance = Number(pair[2]);
+  if (!Number.isInteger(attendance) || attendance > IMPULSE_PAYROLL_MAX_AMOUNT)
+    throw new Error("Проверьте число человек · " + hint);
+  if (lines.length === 1) return {amount,attendance,is_skipped:false,substitute_name:null};
+  const substitute = lines[2]?.match(/^заменяющий преподаватель\s*:\s*(.+)$/iu);
+  if (impulsePayrollLabel(lines[1]) !== "пропуск" || (lines.length > 2 && (!substitute || lines.length !== 3))){
+    throw new Error("Не распознана отметка о пропуске · " + hint);
+  }
+  return {amount,attendance,is_skipped:true,substitute_name:substitute?.[1] || null};
+}
+
+function parseImpulsePayroll(buffer, xlsx){
+  const book = xlsx.read(buffer, {type:"array",cellDates:false});
+  function sheet(name){
+    const title = book.SheetNames.find(value => impulsePayrollLabel(value) === impulsePayrollLabel(name));
+    const tab = title && book.Sheets[title];
+    if (!tab?.["!ref"]) throw new Error("Нужен лист «" + name + "» из отчёта Impulse.");
+    const range = xlsx.utils.decode_range(tab["!ref"]);
+    if (range.e.r > 20000 || range.e.c > 120) throw new Error("Проверьте границы заполненных ячеек листа «" + name + "».");
+    return xlsx.utils.sheet_to_json(tab,{header:1,raw:true,defval:null,blankrows:true});
+  }
+  const [summaryHead,...summaryRows] = sheet("Заработная плата");
+  const [lessonHead,...lessonRows] = sheet("Детализация");
+  const summaryLabels = summaryHead.map(impulsePayrollLabel);
+  const required = name => {
+    const i = summaryLabels.indexOf(impulsePayrollLabel(name));
+    if (i < 0) throw new Error("Не найдена колонка «" + name + "» на листе «Заработная плата».");
+    return i;
+  };
+  const teacherCol = required("Преподаватель");
+  const ownCol = required("Начислено");
+  const skippedCol = required("Пропуски");
+  const replacementCol = required("Замены");
+  const advanceCol = required("Авансы");
+  const balanceCol = required("Итого");
+  const extras = ["Неустойки","Надбавка (%)","Штрафы","Премии"].map(label => ({label,i:summaryLabels.indexOf(impulsePayrollLabel(label))})).filter(col => col.i >= 0);
+  const byKey = new Map();
+  let footer;
+  summaryRows.forEach((row, index) => {
+    const name = impulsePayrollText(row[teacherCol]);
+    if (impulsePayrollLabel(row[advanceCol]) === "всего"){
+      if (footer) throw new Error("На листе «Заработная плата» найдены две строки «Всего».");
+      footer = row;
+      return;
+    }
+    if (!row.some(value => impulsePayrollText(value))) return;
+    const key = impulsePayrollKey(name);
+    if (!key) throw new Error("Проверьте преподавателя в строке " + (index + 2) + " на листе «Заработная плата».");
+    if (byKey.has(key)) throw new Error("Преподаватель повторяется в сводке · " + name);
+    const cell = i => impulsePayrollAmount(row[i],name + " · " + summaryHead[i]);
+    for (const col of extras){
+      const extra = impulsePayrollText(row[col.i]);
+      if (extra && !/^[+-]?0+(?:[.,]0+)?%?(?:\(\d+\))?$/.test(extra.replace(/\s/g,"")))
+        throw new Error("В расчёте есть дополнительная статья «" + col.label + "» · " + name + ". Сначала согласуйте её учёт в FAD.");
+    }
+    const own = cell(ownCol).amount;
+    const skip = cell(skippedCol);
+    const replacement = cell(replacementCol);
+    const advances = cell(advanceCol);
+    const balance = cell(balanceCol).amount;
+    if (own < 0 || replacement.amount < 0 || own + replacement.amount - Math.abs(skip.amount) - Math.abs(advances.amount) !== balance){
+      throw new Error("Суммы по преподавателю в сводке расходятся · " + name);
+    }
+    byKey.set(key,{name,key,own,replacements:replacement.amount,replacement_count:replacement.count,
+      skips:Math.abs(skip.amount),skip_count:skip.count,advance:Math.abs(advances.amount),advance_count:advances.count,
+      balance,lessons:[],knownReplacements:[]});
+  });
+  if (!footer || !byKey.size) throw new Error("На листе «Заработная плата» нужны строки преподавателей и итог за период.");
+  const dateLabels = footer.filter((value, i) => i !== teacherCol && i !== balanceCol &&
+    /\d{2}\.\d{2}\.20\d{2}/.test(impulsePayrollText(value)));
+  if (dateLabels.length !== 2) throw new Error("Укажите начало и конец периода в строке «Всего».");
+  const first = impulsePayrollFooterDate(dateLabels[0]);
+  const last = impulsePayrollFooterDate(dateLabels[1]);
+  const period = first.slice(0,7) + "-01";
+  if (first > last || !last.startsWith(first.slice(0,7))) throw new Error("Загрузите отчёт, даты которого входят в один календарный месяц.");
+  const reportedBalance = impulsePayrollAmount(footer[balanceCol],"Всего").amount;
+
+  const labels = lessonHead.map(impulsePayrollLabel);
+  const columns = ["преподаватель","группа","занятие"].map(name => labels.indexOf(name));
+  const rowTotalCol = labels.indexOf("начислено");
+  if (columns.some(i => i < 0) || rowTotalCol < 0) throw new Error("Проверьте заголовки листа «Детализация».");
+  const days = lessonHead.flatMap((label,index) =>
+    index !== rowTotalCol && !columns.includes(index) && impulsePayrollText(label)
+    ? [{index,date:impulsePayrollColumnDate(label,xlsx)}] : []);
+  if (!days.length || new Set(days.map(item => item.date)).size !== days.length ||
+    days.some(item => item.date < first || item.date > last) ||
+    !days.some(item => item.date === first) || !days.some(item => item.date === last)){
+    throw new Error("Даты детализации расходятся с периодом на первом листе.");
+  }
+  let detailTotal = 0;
+  for (const [index,row] of lessonRows.entries()){
+    if (!row.some(value => impulsePayrollText(value))) continue;
+    const name = impulsePayrollText(row[columns[0]]);
+    const teacher = byKey.get(impulsePayrollKey(name));
+    const group = impulsePayrollText(row[columns[1]]);
+    const hint = "Детализация · строка " + (index + 2);
+    if (!teacher || !group) throw new Error("Не найдена строка преподавателя или группы · " + hint);
+    const time = impulsePayrollTime(row[columns[2]],hint);
+    let sum = 0;
+    for (const {index:column,date} of days){
+      const cell = row[column];
+      if (!impulsePayrollText(cell)) continue;
+      const item = impulsePayrollLesson(cell,hint + " · " + payrollDateLabel(date));
+      const lesson = {source_key:"impulse:" + (index + 2) + ":" + date,date,group,time,...item,replaced_name:null};
+      teacher.lessons.push(lesson);
+      sum += lesson.amount;
+      if (lesson.substitute_name){
+        const substitute = byKey.get(impulsePayrollKey(lesson.substitute_name));
+        if (substitute && substitute !== teacher){
+          substitute.knownReplacements.push({...lesson,source_key:lesson.source_key + ":replacement",amount:null,
+            is_skipped:false,substitute_name:null,replaced_name:teacher.name});
+        }
+      }
+    }
+    detailTotal += sum;
+    if (sum !== impulsePayrollAmount(row[rowTotalCol],hint + " · Начислено").amount)
+      throw new Error("Сумма занятий в строке расходится с итогом · " + hint);
+  }
+  const trainers = [...byKey.values()];
+  for (const trainer of trainers){
+    const skipped = trainer.lessons.filter(lesson => lesson.is_skipped);
+    if (payrollSum(trainer.lessons,lesson => lesson.amount) !== trainer.own || payrollSum(skipped,lesson => lesson.amount) !== trainer.skips ||
+      (trainer.skip_count !== null && skipped.length !== trainer.skip_count) ||
+      (trainer.replacement_count !== null && trainer.knownReplacements.length > trainer.replacement_count)){
+      throw new Error("Сводка и детализация расходятся · " + trainer.name);
+    }
+  }
+  const total = key => payrollSum(trainers,trainer=>trainer[key]);
+  if (total("balance") !== reportedBalance || total("own") !== detailTotal)
+    throw new Error("Контрольные итоги двух листов расходятся.");
+  return {period,first,last,trainers,reportedBalance};
+}
+function impulsePayrollNonzero(trainer){
+  return trainer.own || trainer.replacements || trainer.skips || trainer.advance || trainer.lessons.length || trainer.knownReplacements.length;
+}
+
+function bindPayrollImport(page,onImported){
+  const dialog = page.querySelector(".payroll-import-dialog");
+  const fileInput = dialog.querySelector("input[type=file]");
+  const status = dialog.querySelector(".payroll-import-status");
+  const preview = dialog.querySelector(".payroll-import-preview");
+  const button = dialog.querySelector("[data-payroll-import-submit]");
+  const close = dialog.querySelector("[data-payroll-import-close]");
+  const esc = escapeHtml;
+  let workbook = null, context = null, names = new Map(), covered = new Set();
+  let busy = false, reviewed = false;
+
+  function feedback(message, error = false){
+    status.textContent = message;
+    status.classList.toggle("payroll-negative", error);
+  }
+  function updateControls(){
+    fileInput.disabled = busy;
+    button.disabled = busy || !workbook || !context;
+    close.disabled = busy;
+    preview.inert = busy;
+  }
+  const advanceByTrainer = id => context.advances.filter(advance => advance.trainer_id === id);
+  const activeRows = () => workbook.trainers.filter(trainer => names.get(trainer.key));
+  const overlapRows = () => activeRows().filter(trainer => trainer.advance > 0 && advanceByTrainer(names.get(trainer.key)).length);
+  function payoutPreview(){
+    const conflicts = overlapRows();
+    const match = activeRows();
+    const ids = match.map(trainer => names.get(trainer.key));
+    const unmatched = workbook.trainers.filter(trainer => !names.get(trainer.key) && impulsePayrollNonzero(trainer));
+    const duplicated = ids.length !== new Set(ids).size;
+    const exceeded = conflicts.some(trainer => {
+      const chosen = advanceByTrainer(names.get(trainer.key)).filter(advance=>covered.has(advance.id));
+      return payrollSum(chosen,advance=>advance.amount)>trainer.advance ||
+        (trainer.advance_count!==null && chosen.length>trainer.advance_count);
+    });
+    const due = payrollSum(workbook.trainers,trainer => {
+      const id = names.get(trainer.key);
+      const fallback = id ? advanceByTrainer(id) : [];
+      const extra = payrollSum(fallback.filter(advance=>!trainer.advance || !covered.has(advance.id)),advance=>advance.amount);
+      return Math.max(0,Math.ceil((trainer.balance-extra)/5)*5);
+    });
+    preview.querySelector(".payroll-import-payout").textContent = payrollMoney(due) + " BYN";
+    preview.querySelector(".payroll-import-match").textContent =
+      unmatched.length ? "Сопоставьте преподавателей со строками расчёта · " + unmatched.length
+      : duplicated ? "Одна карточка выбрана для нескольких преподавателей."
+      : exceeded ? "Отмеченные авансы превышают сумму или число авансов в Impulse."
+      : "Сопоставлено · " + match.length + " из " + workbook.trainers.length;
+    button.disabled = busy || !!unmatched.length || duplicated || exceeded || (conflicts.length > 0 && !reviewed);
+  }
+  function renderReview(){
+    const pane = preview.querySelector(".payroll-import-reconcile");
+    const conflicts = overlapRows();
+    if (!conflicts.length){ pane.replaceChildren(); return; }
+    pane.innerHTML = `<h4>Сверка авансов</h4>
+      <p class="payroll-hint">Отметьте записи FAD, которые уже входят в сумму из Impulse.</p>
+      ${conflicts.map(trainer => {
+        const advances = advanceByTrainer(names.get(trainer.key));
+        return `<details class="payroll-import-advances" open>
+          <summary>${esc(trainer.name)} · Impulse ${payrollMoney(trainer.advance)} BYN · FAD ${payrollMoney(payrollSum(advances,a=>a.amount))} BYN</summary>
+          ${advances.map(advance=>`<label><input type="checkbox" data-payroll-covered="${esc(advance.id)}" ${covered.has(advance.id) ? "checked" : ""}>
+            ${payrollDateLabel(advance.date)} · ${payrollMoney(advance.amount)} BYN${advance.note ? " · " + esc(advance.note) : ""}</label>`).join("")}
+        </details>`;
+      }).join("")}
+      <label class="payroll-import-reviewed"><input type="checkbox" data-payroll-reviewed ${reviewed ? "checked" : ""}> Сверил авансы за этот месяц</label>`;
+  }
+  function renderPreview(){
+    const total = key => payrollSum(workbook.trainers,row=>row[key]);
+    const known = payrollSum(workbook.trainers,row=>row.knownReplacements.length);
+    const directory = context.trainers;
+    const selected = id => directory.find(person=>person.id===id);
+    const range = payrollDateLabel(workbook.first) + "–" + payrollDateLabel(workbook.last) + "." + workbook.period.slice(0,4);
+    preview.innerHTML = `<div class="payroll-import-strip">
+      <div><small>Период файла</small><b>${range}</b></div>
+      <div><small>Остаток по файлу</small><b>${payrollMoney(workbook.reportedBalance)} BYN</b></div>
+      <div><small>К выдаче после импорта</small><b class="payroll-import-payout"></b></div></div>
+      <p class="payroll-hint">Проверены оба листа. Замены с датами · ${known} из ${total("replacement_count") || known}. Сумма замен берётся из сводки.</p>
+      ${context.has_import ? '<p class="payroll-note">Данные Impulse за этот месяц будут обновлены.</p>' : ""}
+      <div class="payroll-import-grid" tabindex="0" role="region" aria-label="Предпросмотр выгрузки">
+      <table><thead><tr><th scope="col">В файле</th><th scope="col">Карточка в FAD</th><th scope="col">Начислено</th>
+        <th scope="col">Замены</th><th scope="col">Пропуски</th><th scope="col">Авансы Impulse</th><th scope="col">Остаток</th></tr></thead>
+      <tbody>${workbook.trainers.map((trainer,index)=>{
+        const match = names.get(trainer.key);
+        const identity = selected(match);
+        const options = directory.map(person=>`<option value="${esc(person.id)}" ${person.id===match ? "selected" : ""}>
+          ${esc(person.name)}${person.active ? "" : " · архив"}</option>`).join("");
+        return `<tr><th scope="row">${esc(trainer.name)}</th>
+          <td><select data-payroll-mapping="${index}" aria-label="Карточка FAD · ${esc(trainer.name)}">
+            <option value="" ${identity ? "" : "selected"}>${impulsePayrollNonzero(trainer) ? "Выберите карточку" : "Пустой расчёт"}</option>${options}
+          </select></td>
+          <td>${payrollMoney(trainer.own)}</td><td>${payrollMoney(trainer.replacements)}</td><td>${payrollMoney(trainer.skips)}</td>
+          <td>${payrollMoney(trainer.advance)}</td><td>${payrollMoney(trainer.balance)}</td></tr>`;
+      }).join("")}</tbody>
+      <tfoot><tr><th scope="row">Итого</th><td></td><td>${payrollMoney(total("own"))}</td><td>${payrollMoney(total("replacements"))}</td>
+      <td>${payrollMoney(total("skips"))}</td><td>${payrollMoney(total("advance"))}</td><td>${payrollMoney(workbook.reportedBalance)}</td></tr></tfoot></table></div>
+      <p class="payroll-hint payroll-import-match" aria-live="polite"></p>
+      <section class="payroll-import-reconcile" aria-label="Авансы FAD"></section>`;
+    button.textContent = context.has_import ? "Обновить месяц" : "Импортировать месяц";
+    renderReview();
+    updateControls();
+    payoutPreview();
+  }
+  async function readContext(){
+    const loaded = await rpc("app_trainer_payroll_import_context",{p_token:TOKEN,p_period:workbook.period});
+    if (!Array.isArray(loaded?.trainers) || !Array.isArray(loaded?.advances)) throw new Error("invalid_payroll_import");
+    return loaded;
+  }
+  fileInput.onchange = async () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+    busy = true;
+    context = workbook = null;
+    names = new Map();
+    covered = new Set();
+    reviewed = false;
+    preview.replaceChildren();
+    updateControls();
+    feedback("Сверяем оба листа…");
+    try{
+      if (!window.XLSX) throw new Error("excel_library_unavailable");
+      const parsed = parseImpulsePayroll(await file.arrayBuffer(),window.XLSX);
+      workbook = parsed;
+      context = await readContext();
+      names = new Map(workbook.trainers.map(trainer=>[trainer.key,impulsePayrollMatch(trainer.name,context.trainers)]));
+      covered = new Set(context.advances.filter(advance=>advance.in_impulse).map(advance=>advance.id));
+      feedback(file.name);
+    }catch(error){
+      workbook = context = null;
+      feedback(error?.code==="PGRST202" ? "Выполните supabase-setup.sql из комплекта с импортом." :
+        error?.message==="excel_library_unavailable" ? "Модуль чтения Excel не загрузился. Обновите FAD и повторите." :
+        isForbiddenErr(error) ? payrollError(error) : (error?.message || "Файл Excel не удалось прочитать."),true);
+    }finally{
+      busy = false;
+      if(workbook && context) renderPreview();
+      else updateControls();
+    }
+  };
+  preview.onchange = event => {
+    const mapping = event.target.dataset.payrollMapping;
+    if (mapping !== undefined){
+      const trainer = workbook.trainers[Number(mapping)];
+      names.set(trainer.key,event.target.value);
+      reviewed = false;
+      renderReview();
+    }else if (event.target.dataset.payrollCovered){
+      const id = event.target.dataset.payrollCovered;
+      if (event.target.checked) covered.add(id); else covered.delete(id);
+      reviewed = false;
+      preview.querySelector("[data-payroll-reviewed]").checked = false;
+    }else if (event.target.matches("[data-payroll-reviewed]")){
+      reviewed = event.target.checked;
+    }
+    payoutPreview();
+  };
+  button.onclick = async () => {
+    if (busy || button.disabled) return;
+    const mapped = activeRows();
+    const totals = mapped.map(({name,key,lessons,knownReplacements,...amounts})=>({...amounts,trainer_id:names.get(key)}));
+    const lessons = mapped.flatMap(trainer => [...trainer.lessons,...trainer.knownReplacements].map(lesson=>({...lesson,trainer_id:names.get(trainer.key)})));
+    const relevant = new Set(overlapRows().map(trainer=>names.get(trainer.key)));
+    const included = context.advances.filter(advance=>relevant.has(advance.trainer_id) && covered.has(advance.id)).map(advance=>advance.id);
+    busy = true;
+    updateControls();
+    markAppDirty("trainerPayrollImport");
+    feedback("Сохраняем расчёт за " + payrollMonthLabel(workbook.period) + "…");
+    try{
+      await rpc("app_trainer_payroll_import",{p_token:TOKEN,p_period:workbook.period,p_first:workbook.first,p_last:workbook.last,
+        p_revision:context.revision,p_reported_balance:workbook.reportedBalance,p_totals:totals,p_lessons:lessons,p_covered:included});
+      const period = workbook.period.slice(0,7);
+      await onImported(period);
+      dialog.close();
+      toast("Зарплата загружена · " + payrollMonthLabel(period));
+    }catch(error){
+      if (error?.message === "payroll_import_conflict"){
+        try{
+          context = await readContext();
+          covered = new Set(context.advances.filter(advance=>advance.in_impulse).map(advance=>advance.id));
+          reviewed = false;
+          renderPreview();
+          feedback("Расчёт или авансы изменились. Сверьте обновлённые данные и повторите.",true);
+        }catch(reloadError){ context = null; preview.replaceChildren(); feedback(payrollError(reloadError),true); }
+      } else feedback(PAYROLL_ERRORS[error?.message] || payrollError(error),true);
+    }finally{
+      busy = false;
+      clearAppDirty("trainerPayrollImport");
+      updateControls();
+      if (workbook && context) payoutPreview();
+    }
+  };
+  page.querySelector("[data-payroll-import-open]").onclick = () => {
+    workbook = context = null;
+    fileInput.value = "";
+    preview.replaceChildren();
+    feedback("");
+    updateControls();
+    dialog.showModal();
+  };
+  close.onclick = () => dialog.close();
+  dialog.addEventListener("cancel",event=>{ if(busy)event.preventDefault(); });
+  return {button:page.querySelector("[data-payroll-import-open]")};
+}
+
+/* ================= Зарплата тренеров · экран ================= */
+const PAYROLL_VIEW_KEY = "fad.payroll.lesson-view";
+const PAYROLL_ERRORS = {
+  payroll_unavailable: "Функция отправки расчётов ещё не настроена в Supabase.",
+  payroll_data_missing: "Сначала загрузите занятия за этот месяц.",
+  payroll_outdated: "Расчёт изменился. Откройте обновлённый расчёт и повторите отправку.",
+  trainer_not_found: "Тренер не найден.",
+  no_telegram: "У тренера не привязан личный чат с ботом.",
+  no_branch: "Выберите филиал выдачи.",
+  telegram_chat_in_use: "Этот Chat ID уже привязан к другому тренеру.",
+  telegram_wrong_username: "Telegram-ник чата отличается от ника в карточке тренера.",
+  telegram_private_required: "Укажите Chat ID личного чата тренера с ботом.",
+  telegram_chat_missing: "Попросите тренера открыть чат с ботом и нажать «Старт». Затем проверьте Chat ID.",
+  telegram_blocked: "Бот заблокирован у тренера. Попросите тренера открыть чат и разблокировать бота.",
+  telegram_rate_limited: "Telegram временно ограничил отправку. Повторите через минуту.",
+  telegram_rejected: "Telegram отклонил сообщение. Проверьте привязку бота и повторите.",
+  telegram_busy: "Расчёт уже отправляется. Обновите вкладку через несколько секунд.",
+  telegram_uncertain: "Telegram не подтвердил доставку. Проверьте сообщение в чате перед повтором.",
+  invalid_payroll_import: "Проверьте структуру отчёта Impulse и выбранные карточки тренеров.",
+  payroll_import_totals_mismatch: "Сводка и суммы занятий расходятся. Проверьте оба листа выгрузки.",
+  payroll_import_invalid_advances: "Отмеченные авансы превышают сумму или число авансов в Impulse.",
+  payroll_import_too_large: "В выгрузке слишком много строк для одного месяца.",
+  invalid_advance: "Укажите дату внутри месяца и положительную целую сумму.",
+};
+const payrollError = error => PAYROLL_ERRORS[error?.message] ||
+  (isForbiddenErr(error) ? "Доступ к зарплатам выдаёт руководитель." : "Не удалось выполнить действие. Повторите через несколько секунд.");
+const payrollMinskDate = new Intl.DateTimeFormat("en-CA", {timeZone:"Europe/Minsk", year:"numeric", month:"2-digit", day:"2-digit"});
+const payrollMinskTime = new Intl.DateTimeFormat("ru-RU", {timeZone:"Europe/Minsk", day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit"});
+const payrollToday = () => payrollMinskDate.format(new Date());
+const payrollAt = value => value ? payrollMinskTime.format(new Date(value)).replace(",", "") : "";
+let PAYROLL_SELECTED_MONTH = "";
+
+async function payrollTelegramRpc(body){
+  const response = await fetch(SUPABASE_URL + "/functions/v1/daily-report", {
+    method:"POST", headers:{"Content-Type":"application/json","Authorization":"Bearer " + SUPABASE_ANON_KEY},
+    body:JSON.stringify({mode:"trainer_payroll", token:TOKEN, ...body}),
+  });
+  const result = await response.json().catch(() => null);
+  if (!response.ok || !result?.ok) throw new Error(result?.error || "payroll_unavailable");
+  return result;
+}
+
+function bindTrainerPayrollChat(modalElement, trainer, onLink){
+  const input = modalElement.querySelector("#efPayrollChat");
+  const check = modalElement.querySelector("#efPayrollChatCheck");
+  const confirm = modalElement.querySelector("#efPayrollChatConfirm");
+  const remove = modalElement.querySelector("#efPayrollChatRemove");
+  const info = modalElement.querySelector("#efPayrollChatInfo");
+  const args = {p_token:TOKEN, p_trainer_id:String(trainer.id)};
+  let saved = "";
+  let verified = null;
+  let loading = true;
+  const feedback = text => info.textContent = text;
+
+  function controls(){
+    input.disabled = loading;
+    check.disabled = loading || !input.value.trim();
+    confirm.hidden = verified === null || input.value.trim() !== verified;
+    confirm.disabled = loading;
+    remove.hidden = !saved;
+    remove.disabled = loading;
+  }
+  function setInput(value){
+    saved = value || "";
+    input.value = saved;
+    verified = null;
+    feedback(saved ? "Личный чат с ботом привязан." : "Тренеру нужно открыть чат с ботом и нажать «Старт».");
+  }
+  input.oninput = () => { verified = null; feedback(""); controls(); };
+  async function change(action, chatId){
+    loading = true;
+    controls();
+    markAppDirty("trainerPayrollChat");
+    try{
+      const result = await payrollTelegramRpc({action, trainer_id:String(trainer.id), chat_id:chatId});
+      if (!modalElement.isConnected) return;
+      if (action === "check_chat"){
+        verified = chatId;
+        feedback("Telegram · " + result.recipient + ". Сверьте имя и нажмите «Привязать».");
+      } else {
+        setInput(result.chat_id);
+        if (onLink) void onLink();
+        toast(result.chat_id ? "Чат для расчётов привязан" : "Чат для расчётов отвязан");
+      }
+    }catch(error){
+      feedback(payrollError(error));
+    }finally{
+      loading = false;
+      controls();
+      clearAppDirty("trainerPayrollChat");
+    }
+  }
+  check.onclick = () => {
+    const id = input.value.trim();
+    if (!/^[1-9]\d{0,15}$/.test(id) || !Number.isSafeInteger(Number(id)) || Number(id) >= 2 ** 52){
+      feedback("Введите числовой Chat ID личного чата.");
+      input.focus();
+      return;
+    }
+    void change("check_chat", id);
+  };
+  confirm.onclick = () => { if (verified) void change("save_chat", verified); };
+  remove.onclick = () => { void change("save_chat", null); };
+  void rpc("app_trainer_payroll_chat", args).then(setInput).catch(error => feedback(
+    error?.code === "PGRST202" ? "Настройка доступна после установки SQL для зарплат." : payrollError(error)
+  )).finally(() => { loading = false; controls(); });
+}
+
+const PAYROLL_SYNC_ERRORS = {
+  impulse_api_secret_missing:"В Supabase нужен ключ IMPULSE_AUTHORIZATION.",
+  impulse_teacher_key_denied:"ImpulseCRM отклонил ключ для списка тренеров.",
+  impulse_payroll_key_denied:"ImpulseCRM отклонил ключ для отчёта «ЗП преподавателя» (generator/teacher_wage).",
+  impulse_payroll_endpoint_unavailable:"Метод отчёта «ЗП преподавателя» недоступен для этой учётной записи ImpulseCRM.",
+  impulse_teacher_endpoint_unavailable:"Метод получения списка тренеров недоступен в ImpulseCRM.",
+  impulse_teacher_request_failed:"Не удалось получить список тренеров из ImpulseCRM.",
+  impulse_teacher_response_invalid:"ImpulseCRM вернул неполный список тренеров.",
+  impulse_payroll_request_failed:"ImpulseCRM вернул ошибку при расчёте ЗП.",
+  impulse_payroll_report_invalid:"ImpulseCRM вернул ответ без отчёта «ЗП преподавателя».",
+  impulse_payroll_report_mismatch:"В отчёте ImpulseCRM расходятся сводка и детализация либо присутствуют дополнительные статьи.",
+  impulse_payroll_period_mismatch:"Период отчёта ImpulseCRM отличается от запрошенного.",
+  impulse_payroll_unmatched:"Нужна однозначная привязка тренера к карточке FAD.",
+  impulse_trainer_creation_failed:"Не удалось добавить карточку тренера из ImpulseCRM.",
+  impulse_api_unavailable:"ImpulseCRM временно недоступен.",
+  impulse_rate_limited:"ImpulseCRM ограничил частоту запросов. Повторите позже.",
+  payroll_future_month:"Этот месяц ещё не начался.",
+  payroll_sync_unavailable:"Проверьте установку функции fad-payroll-sync и SQL сборки.",
+};
+
+function bindPayrollSync(page, refresh){
+  const trigger=page.querySelector("[data-payroll-sync]");
+  const notice=page.querySelector(".payroll-sync-status");
+  const pending=new Map();
+  let period="";
+  function feedback(message,error=false){
+    notice.textContent=message;
+    notice.hidden=!message;
+    notice.classList.toggle("payroll-sync-error",error);
+  }
+  function setPeriod(value){
+    if(period===value)return;
+    period=value;
+    trigger.disabled=pending.has(period);
+    feedback(pending.has(period)?"Получаем тренеров и начисления из ImpulseCRM…":"");
+  }
+  async function run(force=false){
+    const month=period;
+    if(!month||!page.isConnected)return;
+    if(pending.has(month))return pending.get(month);
+    trigger.disabled=true;
+    feedback("Получаем тренеров и начисления из ImpulseCRM…");
+    const current=()=>page.isConnected&&period===month;
+    const work=(async()=>{
+      try{
+        const response=await fetch(SUPABASE_URL+"/functions/v1/fad-payroll-sync",{
+          method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+SUPABASE_ANON_KEY},
+          body:JSON.stringify({token:TOKEN,period:month,force}),signal:AbortSignal.timeout(75000),
+        });
+        const result=await response.json().catch(()=>null);
+        if(!current())return;
+        if(!response.ok||!result?.ok){
+          const text=PAYROLL_SYNC_ERRORS[result?.error]||(result?.error==="forbidden"
+            ? "Доступ к зарплатам выдаёт руководитель."
+            : "Подключение ImpulseCRM недоступно. Проверьте функцию fad-payroll-sync.");
+          const suffix=Array.isArray(result?.names)&&result.names.length ? " "+result.names.join(", ")+".":"";
+          feedback(text+suffix,true);
+          if(result?.error==="forbidden")void handleForbiddenErr();
+          return;
+        }
+        if(result.status==="running"){
+          feedback("Отчёт обновляется в другой вкладке.");
+          setTimeout(()=>{if(current())void run(false);},5000);
+          return;
+        }
+        if(result.status==="updated"||result.status==="fresh"){
+          await refresh(month);
+          if(current())feedback("");
+          return;
+        }
+        feedback("Не удалось проверить состояние обновления.",true);
+      }catch(_){
+        if(current())feedback("Связь с синхронизацией прервана. Нажмите «Обновить из Impulse».",true);
+      }finally{
+        pending.delete(month);
+        if(page.isConnected&&period===month)trigger.disabled=false;
+      }
+    })();
+    pending.set(month,work);
+    return work;
+  }
+  trigger.onclick=()=>{void run(true);};
+  return {setPeriod,run,trigger};
+}
+
+function renderTrainerPayroll(host){
+  const page = document.createElement("section");
+  page.className = "payroll fade-in";
+  host.replaceChildren(page);
+  const state = {
+    period:PAYROLL_SELECTED_MONTH || payrollToday().slice(0, 7), branch:"all", rows:[], updated:null, range:null, source:null,
+    view:"groups", selected:null, bulk:null, busy:false, loading:false, ready:false, ticket:0, advanceAttempt:null,
+  };
+  try { if (localStorage.getItem(PAYROLL_VIEW_KEY) === "dates") state.view = "dates"; } catch (_) {}
+  page.innerHTML = `
+    <header class="payroll-head">
+      <div><h1>Зарплата тренеров</h1><p class="payroll-meta" id="payrollMeta">ImpulseCRM</p></div>
+      <div class="payroll-period-actions">
+        <label class="payroll-period">Месяц <input id="payrollMonth" type="month" min="2000-01" max="2099-12" value="${state.period}"></label>
+        <button type="button" class="btn btn-primary" data-payroll-sync>Обновить из Impulse</button>
+        <button type="button" class="btn" data-payroll-import-open>Импорт Excel</button>
+      </div>
+    </header>
+    <p class="payroll-sync-status" role="status" hidden></p>
+    <section class="payroll-kpis" aria-label="Итоги периода" hidden></section>
+    <div class="payroll-note" id="payrollNotice" role="status">Загружаем расчёт…</div>
+    <div class="payroll-toolbar" hidden>
+      <div class="payroll-chips" role="group" aria-label="Филиал выдачи"></div>
+      <button type="button" class="btn btn-primary" id="payrollSendAll" data-payroll-action="bulk">Отправить всем в Telegram</button>
+    </div>
+    <div class="payroll-confirm" id="payrollConfirm" hidden></div>
+    <div class="payroll-table-scroll" role="region" aria-label="Расчёт по тренерам" tabindex="0" hidden>
+      <table class="payroll-table">
+        <thead><tr>
+          <th scope="col">Преподаватель</th><th scope="col">Занятий</th><th scope="col">Начислено</th>
+          <th scope="col">Замены</th><th scope="col">Пропуски</th><th scope="col">Авансы</th>
+          <th scope="col">Остаток</th><th scope="col">К выдаче</th><th scope="col" class="payroll-left">Филиал выдачи</th>
+          <th scope="col" class="payroll-left">Расчёт в Telegram</th>
+        </tr></thead>
+        <tbody></tbody><tfoot></tfoot>
+      </table>
+    </div>
+    <dialog class="payroll-drawer" aria-labelledby="payrollTrainerName">
+      <header class="payroll-drawer-head">
+        <div><h2 id="payrollTrainerName"></h2><p class="payroll-meta" id="payrollTrainerMeta"></p></div>
+        <button type="button" class="btn payroll-close" data-payroll-action="close" aria-label="Закрыть карточку" autofocus>×</button>
+      </header>
+      <div class="payroll-drawer-body">
+        <section class="payroll-section"><h3>Расчёт</h3><div id="payrollCalculation"></div></section>
+        <section class="payroll-section"><h3>Авансы</h3><div id="payrollAdvances"></div>
+          <form class="payroll-advance-form" novalidate>
+            <label>Дата <input name="date" type="date" required></label>
+            <label>Сумма, BYN <input name="amount" type="number" min="1" max="2147483647" step="1" inputmode="numeric" required></label>
+            <label>Комментарий <input name="note" type="text" maxlength="120" placeholder="Необязательно"></label>
+            <div class="payroll-advance-footer">
+              <span class="payroll-advance-error" role="alert"></span>
+              <button type="submit" class="btn btn-primary">Добавить аванс</button>
+            </div>
+          </form>
+        </section>
+        <section class="payroll-section">
+          <h3>Проведённые занятия <span class="payroll-view" role="group" aria-label="Детализация занятий и сообщения"></span></h3>
+          <div id="payrollLessons"></div>
+        </section>
+        <section class="payroll-section">
+          <h3>Сообщение тренеру</h3>
+          <pre class="payroll-preview" tabindex="0"></pre>
+          <p class="payroll-hint" id="payrollMessageInfo"></p>
+          <button type="button" class="btn btn-sm" data-payroll-action="copy">Скопировать текст</button>
+        </section>
+      </div>
+      <footer class="payroll-drawer-footer"></footer>
+    </dialog>
+    <dialog class="payroll-import-dialog" aria-labelledby="payrollImportTitle">
+      <header><h2 id="payrollImportTitle">Импорт из Impulse</h2>
+        <button type="button" class="btn payroll-close" aria-label="Закрыть импорт" data-payroll-import-close>×</button></header>
+      <div class="payroll-import-body">
+        <label class="payroll-import-file">Отчёт «Расчёт ЗП преподавателя» <input type="file" accept=".xlsx,.xls"></label>
+        <p class="payroll-import-status" role="status"></p>
+        <div class="payroll-import-preview"></div>
+      </div>
+      <footer><button type="button" class="btn btn-primary" data-payroll-import-submit disabled>Импортировать месяц</button></footer>
+    </dialog>`;
+
+  const get = selector => page.querySelector(selector);
+  const month = get("#payrollMonth");
+  const notice = get("#payrollNotice");
+  const table = get(".payroll-table");
+  const dialog = get(".payroll-drawer");
+  const form = get(".payroll-advance-form");
+  const advanceError = get(".payroll-advance-error");
+  const importControl = bindPayrollImport(page,async period=>{
+    state.period = PAYROLL_SELECTED_MONTH = month.value = period;
+    state.bulk = null;
+    state.branch = "all";
+    state.ready = false;
+    render();
+    await load(false);
+  });
+  const syncControl = bindPayrollSync(page,async current=>{
+    if(state.period===current)await load(false);
+  });
+  let lastFocus = null;
+  const visible = () => state.rows.filter(row => state.branch === "all" || row.branch === state.branch);
+  const selected = () => state.rows.find(row => row.id === state.selected);
+  const esc = escapeHtml;
+  const amount = value => state.updated ? payrollMoney(value) : "—";
+  const signed = (value, sign) => value ? sign + payrollMoney(value) : "0";
+  const changeClass = (value, color) => value ? color : "payroll-zero";
+  const canSend = row => Boolean(state.updated && row.has_telegram && row.branch &&
+    (row.lesson_count || row.own || row.replacements || row.skips || row.advance) && ["none","changed","failed","partial","uncertain"].includes(row.send_status));
+  const eligible = () => visible().filter(row => canSend(row) && row.send_status !== "uncertain");
+  const statusLabel = row => ({
+    sent:"Отправлено " + payrollAt(row.sent_at), changed:"Изменён после отправки",
+    no_telegram:"Нет Telegram", none:"Не отправлено", sending:"Отправляется…",
+    failed:"Ошибка отправки", partial:"Доставлена часть", uncertain:"Доставка не подтверждена",
+  })[row.send_status];
+  const status = row => `<span class="payroll-status ${row.send_status}"${row.send_error ? ' title="' + esc(payrollError({message:row.send_error})) + '"' : ""}>${statusLabel(row)}</span>`;
+  const sendLabel = (row, long) => ({
+    changed:"Отправить снова", failed:"Повторить отправку", partial:"Отправить остаток", uncertain:"Проверить доставку",
+  })[row.send_status] || (long ? "Отправить в Telegram" : "Отправить");
+  function sendButton(row, long){
+    if (!long && !canSend(row)) return "";
+    return `<button type="button" class="btn btn-sm payroll-send" data-payroll-action="send" data-id="${esc(row.id)}" ${state.busy || !canSend(row) ? "disabled" : ""}>${sendLabel(row, long)}</button>`;
+  }
+
+  function showNotice(message, retry = false){
+    notice.hidden = !message;
+    notice.classList.toggle("error", retry);
+    notice.innerHTML = esc(message) + (retry ? ' <button type="button" class="btn btn-sm" data-payroll-action="load">Повторить</button>' : "");
+  }
+  function applyBusy(){
+    month.disabled = state.busy;
+    importControl.button.disabled = state.busy;
+    form.querySelectorAll("input,button").forEach(element => { element.disabled = state.busy; });
+    get(".payroll-chips").querySelectorAll("button").forEach(element => { element.disabled = state.busy; });
+  }
+  function renderSummary(){
+    const rows = state.rows;
+    const total = key => payrollSum(rows, row => row[key]);
+    const sent = rows.filter(row => row.send_status === "sent").length;
+    const changed = rows.filter(row => row.send_status === "changed").length;
+    get(".payroll-kpis").innerHTML = `
+      <div class="payroll-kpi"><small>К выдаче всего</small><b>${amount(total("due"))}${state.updated ? " BYN" : ""}</b><small>Округление вверх до 5 BYN</small></div>
+      <div class="payroll-kpi"><small>Начислено</small><b>${amount(total("own"))}</b><small>Замены ${state.updated ? signed(total("replacements"), "+") : "—"} · пропуски ${state.updated ? signed(total("skips"), "−") : "—"}</small></div>
+      <div class="payroll-kpi"><small>Авансы выданы</small><b>${payrollMoney(total("advance"))}</b><small>Остаток ${amount(total("balance"))}</small></div>
+      <div class="payroll-kpi"><small>Расчёт отправлен</small><b>${sent} из ${rows.length}</b>
+        <progress aria-label="Отправлено ${sent} из ${rows.length}" max="${rows.length || 1}" value="${sent}"></progress>
+        ${changed ? "<small>Изменены после отправки · " + changed + "</small>" : ""}</div>`;
+  }
+
+  function renderTable(){
+    const rows = visible();
+    const branchOptions = (row) => STUDIOS.map(s => `<option value="${s.id}" ${s.id === row.branch ? "selected" : ""}>${esc(s.name)}</option>`).join("");
+    table.tBodies[0].innerHTML = rows.length ? rows.map(row => `
+      <tr data-payroll-row="${esc(row.id)}">
+        <td><button type="button" class="payroll-name" data-payroll-action="open" data-id="${esc(row.id)}">${esc(row.name)}</button>
+          ${row.username ? trainerTelegramLink(row.username, "staff-telegram") : ""}</td>
+        <td class="payroll-number">${amount(row.lesson_count)}<span class="payroll-sub">${state.updated ? payrollMoney(row.people) + " чел." + (row.missing_replacement_dates ? " по детализации" : "") : ""}</span></td>
+        <td class="payroll-number">${amount(row.own)}</td>
+        <td class="payroll-number ${changeClass(row.replacements, "payroll-positive")}">${state.updated ? signed(row.replacements, "+") : "—"}</td>
+        <td class="payroll-number ${changeClass(row.skips, "payroll-negative")}">${state.updated ? signed(row.skips, "−") : "—"}</td>
+        <td class="payroll-advance-col">${payrollMoney(row.advance)} <button type="button" class="btn payroll-plus" data-payroll-action="advance" data-id="${esc(row.id)}" aria-label="Добавить аванс · ${esc(row.name)}" ${state.busy ? "disabled" : ""}>+</button></td>
+        <td class="payroll-number ${row.balance < 0 ? "payroll-negative" : ""}">${amount(row.balance)}</td>
+        <td class="payroll-number payroll-total">${amount(row.due)}</td>
+        <td class="payroll-left"><div class="payroll-branch">${sdot(row.branch)}<select data-payroll-branch="${esc(row.id)}" aria-label="Филиал выдачи · ${esc(row.name)}" ${state.busy ? "disabled" : ""}>
+          ${row.branch ? "" : '<option value="" selected disabled>Выберите</option>'}${branchOptions(row)}
+        </select></div></td>
+        <td class="payroll-left payroll-telegram-cell">${status(row)}<br>${sendButton(row, false)}</td>
+      </tr>`).join("") : '<tr><td colspan="10">Нет тренеров в выбранном филиале.</td></tr>';
+    const total = key => payrollSum(rows, row => row[key]);
+    table.tFoot.innerHTML = `<tr><td>Итого${state.branch === "all" ? "" : " · " + studioName(state.branch)}</td>
+      <td>${amount(total("lesson_count"))}<span class="payroll-sub">${state.updated ? payrollMoney(total("people")) + " чел." + (rows.some(row=>row.missing_replacement_dates) ? " по детализации" : "") : ""}</span></td>
+      <td>${amount(total("own"))}</td><td>${amount(total("replacements"))}</td><td>${amount(total("skips"))}</td>
+      <td>${payrollMoney(total("advance"))}</td><td>${amount(total("balance"))}</td><td class="payroll-total">${amount(total("due"))}</td><td></td><td></td></tr>`;
+  }
+
+  function renderToolbar(){
+    get(".payroll-chips").innerHTML = [{id:"all",name:"Все"}, ...STUDIOS].map(s =>
+      `<button type="button" class="btn btn-sm payroll-chip" data-payroll-action="filter" data-id="${s.id}" aria-pressed="${s.id === state.branch}">${s.color ? sdot(s.id) : ""}${esc(s.name)}</button>`).join("");
+    const n = eligible().length;
+    const button = get("#payrollSendAll");
+    button.textContent = "Отправить всем в Telegram" + (n ? " (" + n + ")" : "");
+    button.disabled = state.busy || !n;
+    const panel = get("#payrollConfirm");
+    panel.hidden = !state.bulk;
+    if (!state.bulk) return;
+    const rows = visible();
+    const excluded = rows.filter(row => !row.has_telegram).map(row => row.name);
+    const withoutBranch = rows.filter(row => row.has_telegram && !row.branch).map(row => row.name);
+    const branch = state.branch === "all" ? "Все филиалы" : studioName(state.branch);
+    panel.innerHTML = `<p><strong>${branch} · ${payrollMonthLabel(state.period)}</strong></p>
+      <p>Получателей — ${state.bulk.length}.</p>
+      ${excluded.length ? "<p>Без Telegram: " + esc(excluded.join(", ")) + ".</p>" : ""}
+      ${withoutBranch.length ? "<p>Без филиала выдачи: " + esc(withoutBranch.join(", ")) + ".</p>" : ""}
+      <div class="payroll-actions"><button type="button" class="btn payroll-send" data-payroll-action="bulk-confirm">Отправить расчёты (${state.bulk.length})</button>
+      <button type="button" class="btn" data-payroll-action="bulk-cancel">Отмена</button></div>`;
+  }
+
+  function render(){
+    get("#payrollMeta").textContent = state.updated
+      ? (state.source === "impulse_api" ? "ImpulseCRM API · " : "Excel из Impulse · ") +
+        (state.range ? state.range + " · " : "") + "обновлено " + payrollAt(state.updated)
+      : "ImpulseCRM · " + payrollMonthLabel(state.period);
+    for (const selector of [".payroll-kpis", ".payroll-toolbar", ".payroll-table-scroll"]) get(selector).hidden = !state.ready;
+    if (state.ready){
+      renderSummary();
+      renderToolbar();
+      renderTable();
+      if (selected()) renderDrawer();
+      else if (dialog.open) dialog.close();
+    }
+    applyBusy();
+  }
+
+  async function load(autoSync = true){
+    syncControl.setPeriod(state.period);
+    const id = ++state.ticket;
+    state.loading = true;
+    showNotice("Загружаем расчёт…");
+    try{
+      const snapshot = await rpc("app_trainer_payroll_snapshot", {p_token:TOKEN, p_period:state.period + "-01"});
+      if (!page.isConnected || id !== state.ticket) return;
+      if (!Array.isArray(snapshot?.rows)) throw new Error("payroll_unavailable");
+      state.rows = snapshot.rows;
+      state.updated = snapshot.updated_at;
+      state.source = snapshot.source;
+      state.range = snapshot.range_start && snapshot.range_end
+        ? payrollDateLabel(snapshot.range_start) + "–" + payrollDateLabel(snapshot.range_end) + "." + state.period.slice(0,4) : null;
+      state.ready = true;
+      const difference = state.source === "impulse_api"
+        ? payrollSum(state.rows,row=>Math.max(0,(row.impulse_advance_reference || 0) - row.advance)) : 0;
+      showNotice(difference ? "В отчёте Impulse есть авансы на " + payrollMoney(difference) +
+        " BYN сверх учтённых в FAD. Сверьте авансы за этот месяц." :
+        (state.updated ? "" : "Авансы можно внести до загрузки начислений из ImpulseCRM."));
+      render();
+      if(autoSync)void syncControl.run();
+    }catch(error){
+      if (!page.isConnected || id !== state.ticket) return;
+      state.ready = false;
+      if (dialog.open) dialog.close();
+      render();
+      showNotice(error?.code === "PGRST202" ? "Сначала выполните SQL для вкладки «Зарплата тренеров» в Supabase." : payrollError(error), true);
+      if (isForbiddenErr(error)) handleErr(error);
+    }finally{
+      if (id === state.ticket) state.loading = false;
+    }
+  }
+
+  function grid(row){
+    const rows = payrollGroups(row.lessons);
+    const replacements = row.lessons.filter(lesson => lesson.replaced_name);
+    if (row.replacements || row.replacement_count || replacements.length)
+      rows.push({name:"Замены",time:null,lessons:replacements,replacements:true});
+    const dates = [...new Set(row.lessons.map(lesson => lesson.date))].sort();
+    const costsKnown = !row.missing_replacement_dates && !replacements.some(lesson=>lesson.amount === null);
+    const lessonCost = lesson => lesson.amount ?? 0;
+    const cells = lessons => dates.map(date => {
+      const matches = lessons.filter(lesson => lesson.date === date);
+      const item = lesson => {
+        const name = lesson.replaced_name ? lesson.group + " · вместо " + lesson.replaced_name : lesson.group;
+        const pay = lesson.amount === null ? "—" : payrollMoney(lesson.amount);
+        return `<div title="${esc(name)}">${pay}/${lesson.attendance}</div>`;
+      };
+      return `<td>${matches.map(item).join("")}</td>`;
+    }).join("");
+    return `<p class="payroll-hint">В ячейке — оплата за занятие / число человек.${costsKnown ? "" : " Сумма замен взята из отчёта за месяц."}</p>
+      <div class="payroll-grid-scroll" role="region" aria-label="Сетка занятий по датам" tabindex="0"><table class="payroll-grid">
+      <thead><tr><th scope="col">Группа</th>${dates.map(date => `<th scope="col">${payrollDateLabel(date)}<span class="payroll-sub">${payrollDay(date)}</span></th>`).join("")}<th scope="col">Итого, BYN</th></tr></thead>
+      <tbody>${rows.map(group => `<tr${group.replacements ? ' class="payroll-grid-replacements"' : ""}><th scope="row">${esc(group.name)}${group.time ? "<br>" + esc(group.time) : ""}</th>
+        ${cells(group.lessons)}<td>${payrollMoney(group.replacements ? row.replacements : payrollSum(group.lessons,lessonCost))}</td></tr>`).join("")}</tbody>
+      <tfoot><tr><th scope="row">${costsKnown ? "Итого за день" : "Итого по известным суммам"}</th>${dates.map(date =>
+        `<td>${payrollMoney(payrollSum(row.lessons.filter(lesson=>lesson.date===date),lessonCost))}</td>`).join("")}
+        <td>${payrollMoney(payrollSum(row.lessons,lessonCost))}</td></tr></tfoot>
+      </table></div>`;
+  }
+
+  function grouped(row){
+    const groupTile=(name,time,lessons)=>`<details class="payroll-group">
+      <summary><span>${esc(name)} ${time ? '<small>' + esc(time) + '</small>' : ""}</span>
+        <span>${lessons.length} зан. · ${payrollMoney(payrollSum(lessons,lesson=>lesson.attendance))} чел.</span>
+        <strong>${payrollMoney(payrollSum(lessons,lesson=>lesson.amount??0))} BYN</strong></summary>
+      <div class="payroll-dates">${lessons.map(lesson=>`<span>${payrollDateLabel(lesson.date)} ${payrollDay(lesson.date)} · ${lesson.attendance} чел. · ${payrollMoney(lesson.amount)} BYN</span>`).join("")}</div></details>`;
+    return payrollGroups(row.lessons).map(g=>groupTile(g.name,g.time,g.lessons)).join("");
+  }
+
+  function lessonAdjustments(row){
+    const known = row.lessons.filter(lesson=>lesson.replaced_name);
+    const skipped = row.skipped_lessons;
+    const box = (title,count,pay,items,kind,hint) => `<details class="payroll-group">
+      <summary><span>${title}</span><span>${count ? count + " зан." : ""}</span><strong>${pay} BYN</strong></summary>
+      ${hint ? '<p class="payroll-hint payroll-replacement-details">' + hint + "</p>" : ""}
+      ${items.length ? '<div class="payroll-dates">' + items.map(lesson=>{
+        const name = esc(payrollLessonTitle(lesson));
+        const people = payrollMoney(lesson.attendance) + " чел.";
+        const paid = lesson.amount === null ? "" : " · " + (kind === "skip" ? "−" : "") + payrollMoney(lesson.amount) + " BYN";
+        const substitute = lesson.substitute_name ? " · замена " + esc(lesson.substitute_name) : "";
+        const replaced = lesson.replaced_name ? " · вместо " + esc(lesson.replaced_name) : "";
+        return `<span>${payrollDateLabel(lesson.date)} ${payrollDay(lesson.date)} · ${people}${paid}<br>${name}${substitute}${replaced}</span>`;
+      }).join("") + "</div>" : ""}</details>`;
+    let replacements = "";
+    if (row.replacements || row.replacement_count || known.length){
+      const notes = [];
+      if (row.missing_replacement_dates) notes.push(row.replacement_count ?
+        "В Impulse есть даты для " + row.known_replacement_count + " из " + row.replacement_count + " замен." : "По заменам в Impulse есть общая сумма.");
+      if (known.some(lesson=>lesson.amount===null)) notes.push("Оплата указана общей суммой за месяц.");
+      replacements = box("Замены",row.replacement_count,signed(row.replacements,"+"),known,"replacement",notes.join(" "));
+    }
+    const skips = skipped.length ? box("Пропуски",row.skip_count,signed(row.skips,"−"),skipped,"skip","") : "";
+    return replacements || skips ? '<div class="payroll-lesson-adjustments">' + replacements + skips + '</div>' : "";
+  }
+
+  function renderDrawer(){
+    const row = selected();
+    if (!row) return;
+    get("#payrollTrainerName").textContent = row.name;
+    get("#payrollTrainerMeta").textContent = payrollMonthLabel(state.period) + " · " + (row.branch ? studioName(row.branch) : "филиал выдачи не выбран");
+    const settled = state.updated && row.balance <= 0 && (row.advance || row.skips);
+    get("#payrollCalculation").innerHTML = `<dl class="payroll-calculation">
+      <div><dt>${row.skips ? "Начислено по отчёту" : "Начислено за свои занятия"}${state.updated ? '<span class="payroll-sub">' + row.own_count + " зан. · " + payrollMoney(row.own_people) + " чел.</span>" : ""}</dt><dd>${amount(row.own)}</dd></div>
+      <div><dt>Замены${row.replacement_count ? " · " + row.replacement_count + " зан." : ""}</dt><dd class="${changeClass(row.replacements,"payroll-positive")}">${state.updated ? signed(row.replacements, "+") : "—"}</dd></div>
+      <div><dt>Пропуски${row.skip_count ? " · " + row.skip_count + " зан." : ""}</dt><dd class="${changeClass(row.skips,"payroll-negative")}">${state.updated ? signed(row.skips, "−") : "—"}</dd></div>
+      <div><dt>Авансы</dt><dd class="payroll-negative">${signed(row.advance, "−")}</dd></div>
+      <div><dt>Остаток</dt><dd>${amount(row.balance)}</dd></div>
+      <div class="payroll-calc-total"><dt>К выдаче</dt><dd>${amount(row.due)}${state.updated ? " BYN" : ""}</dd></div>
+      </dl>${settled ? '<p class="payroll-warn">' + (row.balance < 0
+        ? "Авансы и удержания превышают начисления на " + payrollMoney(-row.balance) + " BYN. К выдаче 0 BYN."
+        : "Авансы и удержания полностью покрыли начисления. К выдаче 0 BYN.") + '</p>' : ""}`;
+    const imported = row.imported_advance ? `<p class="payroll-import-source">Из Impulse · <strong>${payrollMoney(row.imported_advance)} BYN</strong>${row.imported_advance_count ? " · записей " + row.imported_advance_count : ""}</p>` : "";
+    const manual = row.advances.length ? `<ul class="payroll-advance-list">${row.advances.map(advance =>
+      `<li><span>${payrollDateLabel(advance.date)}</span><span>${esc(advance.note)}${advance.in_impulse ? '<small class="payroll-sub">Учтён в Impulse</small>' : ""}</span>
+      <strong>${payrollMoney(advance.amount)} BYN</strong><button type="button" class="btn payroll-remove" data-payroll-action="delete" data-id="${esc(advance.id)}" aria-label="Удалить аванс ${payrollMoney(advance.amount)} BYN от ${payrollDateLabel(advance.date)}" ${state.busy ? "disabled" : ""}>×</button></li>`
+    ).join("")}</ul>` : "";
+    const advances = imported + manual || '<p class="payroll-hint">Авансов за месяц пока нет.</p>';
+    const reference = state.source === "impulse_api" && row.impulse_advance_reference > row.advance
+      ? `<p class="payroll-hint">В отчёте Impulse есть авансы на ${payrollMoney(row.impulse_advance_reference)} BYN. В FAD учтено ${payrollMoney(row.advance)} BYN.</p>` : "";
+    get("#payrollAdvances").innerHTML = advances + reference;
+    get(".payroll-view").innerHTML = [["groups","По группам"],["dates","По датам"]].map(([id,label]) =>
+      `<button type="button" class="btn payroll-toggle" data-payroll-action="view" data-id="${id}" aria-pressed="${id === state.view}">${label}</button>`).join("");
+    const lessons = row.lessons.length
+      ? (state.view === "dates" ? grid(row) : grouped(row))
+      : '<p class="payroll-hint">' + (state.updated ? "Нет занятий с датами в выгрузке." : "Занятия появятся после загрузки из Impulse.") + "</p>";
+    get("#payrollLessons").innerHTML = lessons + lessonAdjustments(row);
+    const message = state.updated ? payrollMessage(row, state.period, state.view, row.branch ? studioName(row.branch) : "филиал не выбран") : null;
+    get(".payroll-preview").textContent = message ? message.text : "Расчёт появится после загрузки занятий.";
+    get('[data-payroll-action="copy"]').disabled = !message;
+    const partCount = message ? payrollTelegramParts(message).length : 0;
+    get("#payrollMessageInfo").textContent = message ? payrollMoney(message.text.length) + " символов" +
+      (partCount > 1 ? " · Частей в Telegram — " + partCount + ". Итоги будут в первой." : "") : "";
+    let detail = "";
+    if (row.send_error) detail = payrollError({message:row.send_error});
+    else if (row.send_status === "uncertain") detail = PAYROLL_ERRORS.telegram_uncertain;
+    else if (!row.has_telegram) detail = "Chat ID указывается в карточке тренера (Сотрудники → Тренеры).";
+    else if (!row.branch) detail = "Выберите филиал выдачи в таблице.";
+    else if (!state.updated) detail = "Отправка доступна после загрузки занятий.";
+    get(".payroll-drawer-footer").innerHTML = `
+      <div><span class="payroll-sub">К выдаче${row.branch ? " · " + studioName(row.branch) : ""}</span>
+      <div class="payroll-total">${amount(row.due)}${state.updated ? " BYN" : ""}</div></div>
+      <div class="payroll-actions">${status(row)}${sendButton(row, true)}</div>
+      ${detail ? '<span class="payroll-sub">' + esc(detail) + '</span>' : ""}
+      ${!row.has_telegram && session.role === "owner" ? '<button type="button" class="btn btn-sm" data-payroll-action="profile">Открыть карточку тренера</button>' : ""}
+      <div class="payroll-confirm" id="payrollUncertain" hidden><p>${PAYROLL_ERRORS.telegram_uncertain}</p>
+        <button type="button" class="btn payroll-send" data-payroll-action="retry-uncertain" data-id="${esc(row.id)}">Проверил, повторить</button></div>`;
+    applyBusy();
+  }
+
+  function openDrawer(id, forAdvance, opener){
+    if (!state.rows.some(row => row.id === id)) return;
+    state.selected = id;
+    lastFocus = opener;
+    state.advanceAttempt = null;
+    form.reset();
+    const [year, numericMonth] = state.period.split("-").map(Number);
+    const min = state.period + "-01";
+    const max = new Date(Date.UTC(year, numericMonth, 0)).toISOString().slice(0, 10);
+    form.elements.date.min = min;
+    form.elements.date.max = max;
+    const today = payrollToday();
+    form.elements.date.value = today < min ? min : (today > max ? max : today);
+    advanceError.textContent = "";
+    renderDrawer();
+    if (!dialog.open) dialog.showModal();
+    get(".payroll-drawer-body").scrollTop = 0;
+    if (forAdvance) form.elements.amount.focus();
+  }
+
+  async function mutate(action){
+    if (state.busy || !state.ready) return;
+    state.busy = true;
+    markAppDirty("trainerPayrollMutation");
+    renderToolbar();
+    renderTable();
+    applyBusy();
+    dialog.querySelectorAll("button").forEach(button => { if (button.dataset.payrollAction !== "close") button.disabled = true; });
+    try{ await action(); }
+    finally{
+      state.busy = false;
+      try{ await load(false); }
+      finally{
+        if (page.isConnected) applyBusy();
+        clearAppDirty("trainerPayrollMutation");
+      }
+    }
+  }
+
+  async function sendRows(rows, retry = false){
+    if (state.busy || !rows.length) return;
+    state.bulk = null;
+    try{
+      await mutate(async () => {
+        let successes = 0;
+        let errors = [];
+        for (const row of rows){
+          try{
+            const result = await payrollTelegramRpc({action:"send", trainer_id:row.id, period:state.period + "-01",
+              revision:row.revision, view:state.view, retry_uncertain:retry});
+            if (!result.already_sent) successes++;
+          }catch(error){
+            errors.push(row.name + " · " + payrollError(error));
+          }
+        }
+        if (errors.length) toast((successes ? "Отправлено: " + successes + ". " : "") + errors.join(" "), true);
+        else toast(successes ? "Расчёт отправлен · " + successes : "Расчёты уже отправлены");
+      });
+    }catch(error){ toast(payrollError(error), true); }
+  }
+
+  dialog.addEventListener("close", () => {
+    state.selected = null;
+    if (lastFocus?.isConnected) lastFocus.focus();
+    else month.focus();
+  });
+  dialog.addEventListener("click", event => {
+    if (event.target !== dialog) return;
+    const box = dialog.getBoundingClientRect();
+    if (event.clientX < box.left) dialog.close();
+  });
+
+  month.onchange = () => {
+    if (!/^20\d\d-(0[1-9]|1[0-2])$/.test(month.value)){
+      month.value = state.period;
+      return;
+    }
+    if (dialog.open) dialog.close();
+    state.period = month.value;
+    PAYROLL_SELECTED_MONTH = state.period;
+    state.bulk = null;
+    state.ready = false;
+    render();
+    void load();
+  };
+  table.onchange = async event => {
+    const input = event.target.closest("[data-payroll-branch]");
+    if (!input) return;
+    const row = state.rows.find(item => item.id === input.dataset.payrollBranch);
+    if (!row || state.busy) return;
+    state.bulk = null;
+    const branch = input.value;
+    try{
+      await mutate(async () => {
+        await rpc("app_trainer_payroll_set_branch", {p_token:TOKEN, p_period:state.period + "-01", p_trainer_id:row.id, p_branch:branch});
+        toast("Филиал выдачи сохранён · " + studioName(branch));
+      });
+    }catch(error){ toast(payrollError(error), true); }
+  };
+  form.onsubmit = async event => {
+    event.preventDefault();
+    const row = selected();
+    if (!row || state.busy) return;
+    const {date, amount, note} = form.elements;
+    const value = Number(amount.value);
+    if (!date.validity.valid){
+      advanceError.textContent = "Выберите дату внутри месяца.";
+      date.focus();
+      return;
+    }
+    if (!amount.validity.valid || !Number.isInteger(value) || value <= 0){
+      advanceError.textContent = "Введите целую сумму больше нуля.";
+      amount.focus();
+      return;
+    }
+    const key = JSON.stringify([row.id, state.period, date.value, value, note.value.trim()]);
+    if (state.advanceAttempt?.key !== key) state.advanceAttempt = {key, id:crypto.randomUUID()};
+    advanceError.textContent = "";
+    try{
+      await mutate(async () => {
+        await rpc("app_trainer_payroll_add_advance", {p_token:TOKEN, p_period:state.period + "-01", p_trainer_id:row.id,
+          p_id:state.advanceAttempt.id, p_date:date.value, p_amount:value, p_note:note.value.trim()});
+        state.advanceAttempt = null;
+        amount.value = note.value = "";
+        toast("Аванс добавлен");
+      });
+    }catch(error){ advanceError.textContent = payrollError(error); }
+    if (dialog.open) amount.focus();
+  };
+
+  page.onclick = async event => {
+    const action = event.target.closest("[data-payroll-action]");
+    if (!action){
+      const row = event.target.closest("[data-payroll-row]");
+      if (row && !event.target.closest("select,a,button,option")) openDrawer(row.dataset.payrollRow, false, row.querySelector(".payroll-name"));
+      return;
+    }
+    const id = action.dataset.id;
+    const row = state.rows.find(item => item.id === id);
+    switch (action.dataset.payrollAction){
+      case "load": if (!state.loading) void load(); break;
+      case "filter":
+        state.branch = id;
+        state.bulk = null;
+        renderToolbar();
+        renderTable();
+        applyBusy();
+        get('[data-payroll-action="filter"][aria-pressed="true"]').focus();
+        break;
+      case "open": openDrawer(id, false, action); break;
+      case "advance": openDrawer(id, true, action); break;
+      case "close": dialog.close(); break;
+      case "view":
+        state.view = id === "dates" ? "dates" : "groups";
+        try{ localStorage.setItem(PAYROLL_VIEW_KEY, state.view); }catch(_){}
+        renderDrawer();
+        get('.payroll-toggle[aria-pressed="true"]').focus();
+        break;
+      case "copy": {
+        const preview = get(".payroll-preview");
+        try{
+          await navigator.clipboard.writeText(preview.textContent);
+          toast("Текст расчёта скопирован");
+        }catch(_){
+          const range = document.createRange();
+          range.selectNodeContents(preview);
+          const selection = getSelection();
+          selection.removeAllRanges();
+          selection.addRange(range);
+          toast("Текст выделен · Ctrl+C или ⌘C");
+        }
+        break;
+      }
+      case "delete": {
+        const trainer = selected();
+        if (!trainer || state.busy) return;
+        try{
+          await mutate(async () => {
+            await rpc("app_trainer_payroll_delete_advance", {p_token:TOKEN, p_period:state.period + "-01", p_trainer_id:trainer.id, p_id:id});
+            toast("Аванс удалён");
+          });
+        }catch(error){ toast(payrollError(error), true); }
+        break;
+      }
+      case "send":
+        if (!row || !canSend(row)) return;
+        if (row.send_status === "uncertain"){
+          if (!dialog.open) openDrawer(id, false, action);
+          get("#payrollUncertain").hidden = false;
+          get('[data-payroll-action="retry-uncertain"]').focus();
+        }else await sendRows([row]);
+        break;
+      case "retry-uncertain": if (row?.send_status === "uncertain") await sendRows([row], true); break;
+      case "bulk":
+        state.bulk = eligible();
+        renderToolbar();
+        get('[data-payroll-action="bulk-confirm"]').focus();
+        break;
+      case "bulk-cancel":
+        state.bulk = null;
+        renderToolbar();
+        get("#payrollSendAll").focus();
+        break;
+      case "bulk-confirm": await sendRows(state.bulk || []); break;
+      case "profile": {
+        const trainer = selected();
+        if (!trainer || session.role !== "owner") return;
+        action.disabled = true;
+        try{
+          const employees = await apiListEmployees();
+          const entry = employees.find(item => String(item.id) === trainer.id && item.employee_type === "trainer");
+          if (!entry) throw new Error("trainer_not_found");
+          dialog.close();
+          employeeModal(entry, load, employees, load);
+        }catch(error){ toast(payrollError(error), true); }
+        finally{ action.disabled = false; }
+        break;
+      }
+    }
+  };
+  void load();
+}
+
 /* ================= User management (owner only) ================= */
 function defaultMessages(){ return {checklist:{all:[],byAdmin:{}}, openMsg:{all:'',byAdmin:{}}}; }
 
@@ -3701,12 +5195,14 @@ async function renderEmployees(body){
   const canManagePermissions=session.role==='owner'||can('admins.permissions');
   const canTelegram=session.role==='owner'||can('telegram.manage');
   const canAudit=session.role==='owner'||can('admins.audit');
+  const canPayroll=session.role==='owner'||session.payrollAccess===true;
   body.innerHTML='<div class="empty">Загрузка сотрудников…</div>';
   let rows=[],adminAccounts=[];
   if(canEmployees){
     try{ rows=await apiListEmployees(); }
     catch(e){return handleErr(e);}
   }
+  if(!body.isConnected)return;
   rows.sort((a,b)=>{
     if(a.is_active!==b.is_active)return a.is_active?-1:1;
     if(a.employee_type!==b.employee_type)return a.employee_type==='admin'?-1:1;
@@ -3725,6 +5221,7 @@ async function renderEmployees(body){
   if(canEmployees)sections.push(['all',`Все (${counts.all})`]);
   if(canEmployees||canAdmins)sections.push(['admin',`Администраторы${canEmployees?' ('+counts.admin+')':''}`]);
   if(canEmployees)sections.push(['trainer',`Тренеры (${counts.trainer})`]);
+  if(canPayroll)sections.push(['payroll','Зарплата тренеров']);
   if(canTelegram)sections.push(['telegram','Telegram']);
   if(canAudit)sections.push(['log','Лог']);
   if(canEmployees||canAdmins)sections.push(['archive','Архив']);
@@ -3740,6 +5237,7 @@ async function renderEmployees(body){
   async function draw(){
     const ticket=++displayRequest;
     const view=EMP_VIEW;
+    if(view==='payroll'){renderTrainerPayroll(list);return;}
     if((view==='admin'||view==='archive')&&canEmployees&&!canAdmins){
       const plain=rows.filter(e=>view==='admin'?e.is_active&&e.employee_type==='admin':!e.is_active);
       list.innerHTML=plain.length?`<div class="staff-grid">${plain.map(e=>employeeCard(e,manageEmployees)).join('')}</div>`:'<div class="empty">Сотрудников в этом разделе нет.</div>';
@@ -3862,10 +5360,11 @@ async function bonusBranchHistoryModal(emp,onDone){
   }catch(err){if(ov.isConnected){area.textContent='Не удалось загрузить историю. Проверьте SQL 13.11.2026-b.';handleErr(err);}}
 }
 
-function employeeModal(e,onDone,employeeRows=[]){
+function employeeModal(e,onDone,employeeRows=[],onPayrollLink){
   const isNew=!e, isAdmin=!!(e&&e.employee_type==='admin');
   const editDirections=session.role==='owner'&&e?.employee_type==='trainer';
   const editTelegram=session.role==='owner'&&(isNew||e.employee_type==='trainer');
+  const editPayrollChat=editTelegram&&!isNew;
   const studios=e?employeeStudios(e):[];
   const title=isNew?'Новый тренер':`Сотрудник · ${e.full_name}`;
   const el=modal(`<h3>${escapeHtml(title)}</h3>
@@ -3876,6 +5375,16 @@ function employeeModal(e,onDone,employeeRows=[]){
       <input id="efTelegram" class="telegram-nick-input" value="${escapeHtml(e?.telegram_username??'')}" placeholder="@nickname"
         type="text" autocapitalize="none" autocomplete="off" spellcheck="false" aria-describedby="efTelegramMessage">
       <div class="telegram-nick-message" id="efTelegramMessage" aria-live="polite" hidden></div>
+    </div>`:''}
+    ${editPayrollChat?`<div class="payroll-profile-chat">
+      <label class="lbl" for="efPayrollChat">Chat ID для расчётов</label>
+      <input id="efPayrollChat" type="text" inputmode="numeric" autocomplete="off" maxlength="16" disabled>
+      <div class="payroll-profile-chat-actions">
+        <button type="button" class="btn btn-sm" id="efPayrollChatCheck" disabled>Проверить</button>
+        <button type="button" class="btn btn-sm btn-primary" id="efPayrollChatConfirm" hidden>Привязать</button>
+        <button type="button" class="btn btn-sm" id="efPayrollChatRemove" hidden>Отвязать</button>
+      </div>
+      <div class="payroll-profile-chat-feedback" id="efPayrollChatInfo" role="status">Проверяем привязку…</div>
     </div>`:''}
     <div class="field"><div class="lbl">Дата рождения</div><input id="efBirth" type="date" value="${e&&e.birth_date||''}"/></div>
     ${isAdmin?'':`<div class="field"><div class="lbl">Дата начала работы</div><input id="efHire" type="date" value="${e&&e.hire_date||''}"/></div>
@@ -3888,6 +5397,7 @@ function employeeModal(e,onDone,employeeRows=[]){
     <div class="field"><div class="lbl">Комментарий</div><textarea id="efNote" rows="3" placeholder="Необязательно">${escapeHtml(e&&e.note||'')}</textarea></div>
     <div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="efSave">Сохранить</button></div>`);
   const save=el.querySelector('#efSave');
+  if(editPayrollChat)bindTrainerPayrollChat(el,e,onPayrollLink);
   const directionArea=el.querySelector('#efDirections');
   const addDirection=el.querySelector('#efAddDirection');
   const telegramInput=el.querySelector('#efTelegram');
@@ -4467,7 +5977,12 @@ async function renderUsers(body,options={}){
   if(!subs.length){ body.innerHTML='<div class="empty">Нет доступных разделов.</div>'; return; }
   const selectedView=String(options.view||'admins');
   let bonusAccess=new Map(),bonusAccessReady=false;
+  let payrollAccess=null;
   if(session.role==='owner'&&selectedView==='admins'){
+    try{
+      const access=await rpc('app_trainer_payroll_access_list',{p_token:TOKEN});
+      if(Array.isArray(access))payrollAccess=new Set(access.map(String));
+    }catch(e){ if(e?.code!=='PGRST202')handleErr(e); }
     try{
       const grants=await rpc('app_bonus_access_list',{p_token:TOKEN});
       if(!Array.isArray(grants))throw new Error('Неверный ответ настроек бонусов');
@@ -4517,10 +6032,23 @@ async function renderUsers(body,options={}){
       <div id="ulist" class="staff-account-grid">${active.length?active.map(u=>{
         const e=staffByLogin[u.login];
         const profile=e?employeeCard(e,canEditStaff):`<div class="staff-card"><div class="staff-head"><b class="staff-name">${escapeHtml(u.name)}</b><span class="staff-role">Администратор</span></div><div class="staff-meta">Логин: ${escapeHtml(u.login)}</div></div>`;
-        return `<div class="staff-account-box">${profile}<details class="staff-account-details"><summary>Учётная запись и права</summary>${userRow(u,(settings.adminPhones||{})[u.login]||'',{manage:manageAdmins,permissions:managePerms})}${session.role==='owner'&&e?`<div class="staff-bonus-access"><div><b>Доступ к планам и бонусам</b><small>${bonusAccessReady?(bonusAccess.get(String(e.id))==='all'?'Все филиалы и администраторы':'Свой филиал и коллеги'):'Настройки временно недоступны'}</small></div><button type="button" class="sw ${bonusAccess.get(String(e.id))==='all'?'on':''}" data-ba-access="${e.id}" role="switch" aria-label="Показать все филиалы ${escapeHtml(e.full_name||u.name)}" aria-checked="${bonusAccess.get(String(e.id))==='all'}" ${bonusAccessReady?'':'disabled'}></button></div>`:''}${session.role==='owner'&&e?`<div class="bh-card-controls"><button type="button" class="btn btn-sm" data-bh-open="${e.id}">История филиала / перевод</button><span class="bh-note">С начала выбранного месяца · предыдущие периоды сохраняются</span></div>`:''}</details></div>`;
+        return `<div class="staff-account-box">${profile}<details class="staff-account-details"><summary>Учётная запись и права</summary>${userRow(u,(settings.adminPhones||{})[u.login]||'',{manage:manageAdmins,permissions:managePerms})}${session.role==='owner'&&e&&payrollAccess?`<div class="staff-bonus-access"><div><b>Зарплата тренеров</b><small>Просмотр, авансы и отправка в Telegram</small></div><button type="button" class="sw${payrollAccess.has(String(e.id))?' on':''}" role="switch" aria-checked="${payrollAccess.has(String(e.id))}" aria-label="Доступ к зарплатам тренеров" data-payroll-access="${escapeHtml(e.id)}"></button></div>`:''}${session.role==='owner'&&e?`<div class="staff-bonus-access"><div><b>Доступ к планам и бонусам</b><small>${bonusAccessReady?(bonusAccess.get(String(e.id))==='all'?'Все филиалы и администраторы':'Свой филиал и коллеги'):'Настройки временно недоступны'}</small></div><button type="button" class="sw ${bonusAccess.get(String(e.id))==='all'?'on':''}" data-ba-access="${e.id}" role="switch" aria-label="Показать все филиалы ${escapeHtml(e.full_name||u.name)}" aria-checked="${bonusAccess.get(String(e.id))==='all'}" ${bonusAccessReady?'':'disabled'}></button></div>`:''}${session.role==='owner'&&e?`<div class="bh-card-controls"><button type="button" class="btn btn-sm" data-bh-open="${e.id}">История филиала / перевод</button><span class="bh-note">С начала выбранного месяца · предыдущие периоды сохраняются</span></div>`:''}</details></div>`;
       }).join(''):'<div class="empty">Активных администраторов нет.</div>'}</div>`;
     const main=el.querySelector('#ulist');
     wireRows(main);
+    if(payrollAccess)main.querySelectorAll('[data-payroll-access]').forEach(button=>button.onclick=async()=>{
+      const id=button.dataset.payrollAccess;
+      const enabled=!payrollAccess.has(id);
+      button.disabled=true;
+      try{
+        await rpc('app_trainer_payroll_set_access',{p_token:TOKEN,p_employee_id:id,p_enabled:enabled});
+        if(enabled)payrollAccess.add(id);else payrollAccess.delete(id);
+        button.classList.toggle('on',enabled);
+        button.setAttribute('aria-checked',String(enabled));
+        void auditAction('Изменён доступ к зарплатам тренеров','admin',id,{enabled});
+        toast(enabled?'Доступ к зарплатам выдан':'Доступ к зарплатам отозван');
+      }catch(e){handleErr(e);}finally{button.disabled=false;}
+    });
     if(session.role==='owner')main.querySelectorAll('[data-ba-access]').forEach(btn=>btn.onclick=async()=>{
       if(!bonusAccessReady)return;
       const id=String(btn.dataset.baAccess);
