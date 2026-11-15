@@ -956,6 +956,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   letter-spacing:.04em;text-transform:uppercase;
 }
 .rep-group-partial h3,.rep-badge-partial{color:#7A5200}
+.rep-group-archived h3{color:var(--ink-soft)}
 .rep-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(285px,100%),1fr));gap:12px}
 .rep-card{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:16px;padding:15px}
 .rep-card-full{border-color:#BFE0CE}
@@ -1009,6 +1010,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 .trainer-direction input:checked + .trainer-direction-check::after{content:'✓';line-height:1}
 .trainer-directions-status{margin:0 0 12px;color:var(--ink-soft);font-size:13px}
 .trainer-directions-status button{min-height:44px;margin-top:8px}
+label.trainer-replacement-setting{display:flex;align-items:center;gap:8px;min-height:44px}
+.trainer-replacement-setting input{width:auto;margin:0}
 @media(max-width:740px){.rep-layout{grid-template-columns:1fr}}
 @media(max-width:480px){
   .rep-panel,.rep-summary{padding:16px}.rep-panel{gap:14px}.rep-mode button{font-size:13px}
@@ -1680,7 +1683,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '15.11.2026-j'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '15.11.2026-l'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -2317,11 +2320,15 @@ async function apiListEmployees(){
   }
 }
 async function apiSaveEmployee(data){
-  return rpc('app_save_staff_profile',{p_token:TOKEN,p_id:data.id||null,p_full_name:data.full_name||'',p_phone:data.phone??null,
+  const args={p_token:TOKEN,p_id:data.id||null,p_full_name:data.full_name||'',p_phone:data.phone??null,
     p_birth_date:data.birth_date||null,p_hire_date:data.hire_date||null,p_primary_studio:data.primary_studio||'',
     p_studios:data.studios||[],p_is_active:data.is_active!==false,p_note:data.note||'',
     p_update_telegram:data.telegram_username!==undefined,p_telegram_username:data.telegram_username??null,
-    p_direction_ids:data.direction_ids??null});
+    p_direction_ids:data.direction_ids??null};
+  if(data.exclude_from_replacements!==undefined){
+    return rpc('app_save_trainer_replacement_profile',{...args,p_exclude_from_replacements:data.exclude_from_replacements});
+  }
+  return rpc('app_save_staff_profile',args);
 }
 async function apiListReplacements(){
   const data=await rpc('app_replacements_list',{p_token:TOKEN});
@@ -4821,7 +4828,7 @@ function mergeTrainerDirection(catalog,direction){
 function replacementCandidates(trainers, directionsByTrainer, excludedId, needed){
   const counts=new Map(), full=[], partial=[];
   // Фильтр занятости по расписанию и календарю будет применяться здесь, до подсчёта.
-  const eligible=trainers.filter(trainer=>trainer.id!==excludedId);
+  const eligible=trainers.filter(trainer=>trainer.id!==excludedId&&!trainer.exclude_from_replacements);
   for(const trainer of eligible){
     const directions=directionsByTrainer.get(trainer.id)||new Set();
     for(const id of directions) counts.set(id,(counts.get(id)||0)+1);
@@ -4879,7 +4886,8 @@ async function renderReplacements(body){
   if(!page.isConnected) return;
 
   let catalog=data.directions;
-  const trainers=data.trainers.filter(t=>t.is_active).sort((a,b)=>a.full_name.trim().localeCompare(b.full_name.trim(),'ru'));
+  const trainers=data.trainers.sort((a,b)=>a.full_name.trim().localeCompare(b.full_name.trim(),'ru'));
+  const workingTrainers=trainers.filter(t=>t.is_active);
   const directionsByTrainer=new Map(trainers.map(t=>[t.id,new Set()]));
   const assignmentCounts=new Map();
   for(const {trainer_id,direction_id} of data.trainer_directions){
@@ -4897,7 +4905,7 @@ async function renderReplacements(body){
       <div id="rep-trainer-field">
         <label class="rep-label" for="rep-trainer">Кого заменяем</label>
         <select class="rep-trainer" id="rep-trainer"><option value="">Выберите тренера…</option>
-          ${trainers.map(t=>`<option value="${escapeHtml(t.id)}">${escapeHtml(t.full_name)}</option>`).join('')}</select>
+          ${workingTrainers.map(t=>`<option value="${escapeHtml(t.id)}">${escapeHtml(t.full_name)}</option>`).join('')}</select>
       </div>
       <div>
         <div class="rep-label" id="rep-dir-label">Направления занятия</div>
@@ -4926,6 +4934,9 @@ async function renderReplacements(body){
         <h3 id="rep-partial-title"></h3><div class="rep-grid" id="rep-partial-cards"></div>
         <button type="button" class="btn rep-more" id="rep-more" aria-controls="rep-partial-cards" aria-expanded="false" hidden></button>
       </section>
+      <section class="rep-group rep-group-archived" id="rep-archived" aria-labelledby="rep-archived-title" hidden>
+        <h3 id="rep-archived-title"></h3><div class="rep-grid" id="rep-archived-cards"></div>
+      </section>
     </div>
   </div>`;
 
@@ -4944,10 +4955,14 @@ async function renderReplacements(body){
 
   function draw(){
     const byTrainer=state.mode==='trainer';
-    const absent=byTrainer?trainers.find(t=>t.id===state.trainerId):null;
+    const absent=byTrainer?workingTrainers.find(t=>t.id===state.trainerId):null;
     const needed=catalog.filter(d=>state.selected.has(d.id));
     const {counts,full,partial}=replacementCandidates(trainers,directionsByTrainer,state.trainerId,needed);
     const rare=needed.filter(d=>(counts.get(d.id)||0)<=3);
+    const workingFull=full.filter(c=>c.trainer.is_active);
+    const workingPartial=partial.filter(c=>c.trainer.is_active);
+    const visibleMatches=state.onlyFull?full:full.concat(partial);
+    const archived=visibleMatches.filter(c=>!c.trainer.is_active);
 
     modeButtons.forEach(b=>b.setAttribute('aria-pressed',b.dataset.repMode===state.mode));
     select.value=state.trainerId;
@@ -4955,7 +4970,7 @@ async function renderReplacements(body){
     get('rep-dir-label').textContent=byTrainer?'Направления занятия':'Нужные направления';
     get('rep-dir-hint').textContent=!catalog.length?'':byTrainer
       ? 'Оставьте направления нужного занятия. Цифра показывает, сколько других тренеров его ведут.'
-      : 'Выберите одно или несколько направлений. Цифра показывает, сколько тренеров их ведут.';
+      : 'Выберите одно или несколько направлений. Цифра показывает, сколько тренеров доступно для подбора.';
     directionList.querySelectorAll('[data-rep-direction]').forEach(button=>{
       const id=Number(button.dataset.repDirection);
       const selected=state.selected.has(id);
@@ -4990,17 +5005,20 @@ async function renderReplacements(body){
     empty.hidden=!emptyText;
     empty.textContent=emptyText;
 
-    const showPartial=!state.onlyFull&&partial.length>0;
-    get('rep-full').hidden=!full.length;
+    const showPartial=!state.onlyFull&&workingPartial.length>0;
+    get('rep-full').hidden=!workingFull.length;
     get('rep-partial').hidden=!showPartial;
-    get('rep-full-title').textContent=`Подходят полностью · ${full.length}`;
-    get('rep-partial-title').textContent=`Подходят частично · ${partial.length}`;
-    get('rep-full-cards').innerHTML=full.map(c=>replacementCard(c,catalog,state.selected)).join('');
-    const partialShown=state.showAll?partial:partial.slice(0,6);
+    get('rep-full-title').textContent=`Подходят полностью · ${workingFull.length}`;
+    get('rep-partial-title').textContent=`Подходят частично · ${workingPartial.length}`;
+    get('rep-full-cards').innerHTML=workingFull.map(c=>replacementCard(c,catalog,state.selected)).join('');
+    const partialShown=state.showAll?workingPartial:workingPartial.slice(0,6);
     get('rep-partial-cards').innerHTML=showPartial?partialShown.map(c=>replacementCard(c,catalog,state.selected)).join(''):'';
-    more.hidden=!showPartial||partial.length<=6;
+    more.hidden=!showPartial||workingPartial.length<=6;
     more.setAttribute('aria-expanded',state.showAll);
-    more.textContent=state.showAll?'Свернуть':`Показать всех (${partial.length})`;
+    more.textContent=state.showAll?'Свернуть':`Показать всех (${workingPartial.length})`;
+    get('rep-archived').hidden=!archived.length;
+    get('rep-archived-title').textContent=`Тренеры из архива · ${archived.length}`;
+    get('rep-archived-cards').innerHTML=archived.map(c=>replacementCard(c,catalog,state.selected)).join('');
   }
 
   function clearSelection(){
@@ -5312,6 +5330,7 @@ function employeeModal(e,onDone,employeeRows=[]){
     <div class="field"><div class="lbl">Филиалы</div><div class="staff-form-studios">${STUDIOS.map(s=>`<label><input type="checkbox" data-efs="${s.id}" ${studios.includes(s.id)?'checked':''}/>${sdot(s)}${escapeHtml(s.name)}</label>`).join('')}</div></div>
     <label class="field" style="display:flex;align-items:center;gap:8px"><input id="efActive" type="checkbox" ${!e||e.is_active?'checked':''}/><b>Работает</b></label>`}
     ${editDirections?`<div class="field">
+      <label class="trainer-replacement-setting"><input id="efExcludeReplacements" type="checkbox" ${isNew?'':'disabled'}/> <b>Не предлагать на замены</b></label>
       <div id="efDirections" class="trainer-directions-status">Загружаем направления…</div>
       <button type="button" class="btn direction-add" id="efAddDirection" disabled>+ Добавить направление</button>
     </div>`:''}
@@ -5322,6 +5341,7 @@ function employeeModal(e,onDone,employeeRows=[]){
   if(phoneInput) bindStaffPhoneInput(phoneInput);
   const directionArea=el.querySelector('#efDirections');
   const addDirection=el.querySelector('#efAddDirection');
+  const excludeReplacements=el.querySelector('#efExcludeReplacements');
   const telegramInput=el.querySelector('#efTelegram');
   const telegramMessage=el.querySelector('#efTelegramMessage');
   function showTelegramMessage(message='',invalid=false){
@@ -5348,6 +5368,7 @@ function employeeModal(e,onDone,employeeRows=[]){
     validateTelegram(false);
   }
   let loadedDirectionIds=null, loadDirections;
+  let savedExclusion=isNew?false:null;
   if(editDirections){
     let catalog=[];
     function renderDirectionChoices(selected){
@@ -5373,6 +5394,13 @@ function employeeModal(e,onDone,employeeRows=[]){
         if(!el.isConnected) return;
         directionArea.removeAttribute('role');
         catalog=data.directions;
+        if(savedExclusion===null){
+          const preference=data.trainers.find(t=>String(t.id)===String(e.id))?.exclude_from_replacements;
+          if(typeof preference==='boolean'){
+            savedExclusion=excludeReplacements.checked=preference;
+            excludeReplacements.disabled=false;
+          }
+        }
         loadedDirectionIds=new Set(isNew?[]:data.trainer_directions.filter(row=>row.trainer_id===String(e.id)).map(row=>row.direction_id));
         const selected=new Set(catalog.filter(d=>changes.get(d.id)??loadedDirectionIds.has(d.id)).map(d=>d.id));
         renderDirectionChoices(selected);
@@ -5411,6 +5439,10 @@ function employeeModal(e,onDone,employeeRows=[]){
     };
     const details={name:full_name,birth_date:payload.birth_date};
     if(phone!==null) details.phone=phone;
+    if(excludeReplacements&&savedExclusion!==null&&excludeReplacements.checked!==savedExclusion){
+      payload.exclude_from_replacements=excludeReplacements.checked;
+      details['Не предлагать на замены']=payload.exclude_from_replacements;
+    }
     if(telegramInput&&telegramUsername!==(e?.telegram_username??'')){
       payload.telegram_username=telegramUsername||null;
       details.Telegram=payload.telegram_username;
@@ -5423,9 +5455,11 @@ function employeeModal(e,onDone,employeeRows=[]){
         details['Направления']=checked.map(input=>input.parentElement.textContent.trim());
       }
     }
-    const dirtyKey=phone!==null||payload.direction_ids!==undefined||payload.telegram_username!==undefined?'trainerProfileSave':'';
+    const dirtyKey=phone!==null||payload.direction_ids!==undefined||payload.telegram_username!==undefined
+      ||payload.exclude_from_replacements!==undefined?'trainerProfileSave':'';
     save.disabled=true;
     if(addDirection) addDirection.disabled=true;
+    if(excludeReplacements) excludeReplacements.disabled=true;
     if(dirtyKey) markAppDirty(dirtyKey);
     try{
       await apiSaveEmployee(payload);
@@ -5435,6 +5469,7 @@ function employeeModal(e,onDone,employeeRows=[]){
     }catch(err){
       save.disabled=false;
       if(addDirection) addDirection.disabled=!loadedDirectionIds;
+      if(excludeReplacements) excludeReplacements.disabled=savedExclusion===null;
       if(telegramInput&&err?.message==='invalid_telegram_username'){
         showTelegramMessage(TRAINER_TELEGRAM_ERROR,true);
         telegramInput.focus();
@@ -5443,7 +5478,8 @@ function employeeModal(e,onDone,employeeRows=[]){
         toast(STAFF_PHONE_ERROR,true);
         phoneInput.focus();
       }else if(err?.code==='PGRST202'){
-        toast('Выполните supabase-trainer-profiles.sql в Supabase и попробуйте снова.',true);
+        const file=payload.exclude_from_replacements!==undefined?'supabase-trainer-replacements.sql':'supabase-trainer-profiles.sql';
+        toast(`Выполните ${file} в Supabase и попробуйте снова.`,true);
       }else if(el.isConnected&&loadedDirectionIds&&err?.message==='invalid_trainer_directions'){
         const selected=new Set(payload.direction_ids);
         const changes=new Map();
