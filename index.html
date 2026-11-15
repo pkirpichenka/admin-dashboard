@@ -1683,7 +1683,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '15.11.2026-s'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '15.11.2026-t'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -3578,7 +3578,7 @@ const PAYROLL_SYNC_ERRORS = {
   impulse_payroll_report_mismatch:"В отчёте ImpulseCRM расходятся сводка и детализация либо присутствуют дополнительные статьи.",
   impulse_payroll_period_mismatch:"Период отчёта ImpulseCRM отличается от запрошенного.",
   impulse_payroll_unmatched:"Нужна однозначная привязка тренера к карточке FAD.",
-  impulse_payroll_partial_scope:"ImpulseCRM вернул неполный отчёт: отсутствуют ранее рассчитанные тренеры (возможно, другой филиал или архив). Старый расчёт сохранён без изменений. Проверьте доступ API ко всем филиалам и архиву.",
+  impulse_payroll_partial_scope:"ImpulseCRM вернул неполный или изменённый отчёт: у ранее рассчитанных тренеров исчезли занятия либо уменьшились начисления. История зарплаты НЕ перезаписана. В ImpulseCRM выберите «Все филиалы» и проверьте архивных тренеров. Если это настоящая корректировка зарплаты, нужна отдельная проверка перед её принятием.",
   impulse_advance_reconciliation:"Нужно сверить авансы из ImpulseCRM с ранее внесёнными в FAD. Последний сохранённый расчёт доступен для просмотра.",
   impulse_trainer_creation_failed:"Не удалось добавить карточку тренера из ImpulseCRM.",
   impulse_advance_unmatched:"Не удалось определить преподавателя по историческому авансу ImpulseCRM. Расчёт не перезаписан.",
