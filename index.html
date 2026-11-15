@@ -1688,7 +1688,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '15.11.2026-f'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '15.11.2026-g'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -3425,6 +3425,7 @@ const payrollFormat = new Intl.NumberFormat("ru-RU", {maximumFractionDigits: 0})
 const payrollMoney = (amount        ) => payrollFormat.format(amount).replace(/[\u00a0\u202f]/g, " ");
 const payrollMonthLabel = (period        ) => PAYROLL_MONTHS[Number(period.slice(5, 7)) - 1] + " " + period.slice(0, 4);
 const payrollDateLabel = (date        ) => date.slice(8, 10) + "." + date.slice(5, 7);
+const payrollAdvanceDate = date => payrollDateLabel(date) + "." + date.slice(0,4);
 const payrollDay = (date        ) => PAYROLL_DAYS[new Date(date + "T00:00:00Z").getUTCDay()];
 const payrollSum =    (rows     , get                    ) => rows.reduce((sum, row) => sum + get(row), 0);
 const payrollLine = (text        ) => text.trim().replace(/\s+/gu, " ");
@@ -3453,11 +3454,13 @@ function payrollMessage(row                   , period        , view            
   if (row.replacements || row.replacement_count) opening.push("Замены: +" + payrollMoney(row.replacements) + " BYN");
   if (row.skips) opening.push("Пропуски: −" + payrollMoney(row.skips) + " BYN");
   opening.push(row.advance ? "Авансы: −" + payrollMoney(row.advance) + " BYN" : "Авансы: нет");
-  const advanceLines = row.advances.filter(advance=>!advance.in_impulse).map(advance =>
-    `  • ${payrollDateLabel(advance.date)} — ${payrollMoney(advance.amount)} BYN${advance.note ? " (" + payrollLine(advance.note) + ")" : ""}`);
-  if (row.imported_advance) {
-    advanceLines.unshift("  • По отчёту Impulse — " + payrollMoney(row.imported_advance) + " BYN" +
-      (row.imported_advance_count ? " · записей " + row.imported_advance_count : ""));
+  const impulsePayments = row.impulse_advances ?? row.advances.filter(advance=>advance.in_impulse);
+  const advanceLines = [...impulsePayments,...row.advances.filter(advance=>!advance.in_impulse)]
+    .sort((a,b)=>a.date.localeCompare(b.date)).map(advance =>
+      `  • ${payrollAdvanceDate(advance.date)} — ${payrollMoney(advance.amount)} BYN${advance.note ? " (" + payrollLine(advance.note) + ")" : ""}`);
+  const undatedAdvance = row.imported_advance - payrollSum(impulsePayments,advance=>advance.amount);
+  if (undatedAdvance > 0) {
+    advanceLines.push("  • По сводке Impulse — " + payrollMoney(undatedAdvance) + " BYN");
   }
   const closing = [
     "Остаток: " + payrollMoney(row.balance) + " BYN",
@@ -4055,11 +4058,18 @@ const PAYROLL_SYNC_ERRORS = {
   impulse_payroll_report_mismatch:"В отчёте ImpulseCRM расходятся сводка и детализация либо присутствуют дополнительные статьи.",
   impulse_payroll_period_mismatch:"Период отчёта ImpulseCRM отличается от запрошенного.",
   impulse_payroll_unmatched:"Нужна однозначная привязка тренера к карточке FAD.",
+  impulse_advance_reconciliation:"Нужно сверить авансы из ImpulseCRM с ранее внесёнными в FAD. Последний сохранённый расчёт доступен для просмотра.",
   impulse_trainer_creation_failed:"Не удалось добавить карточку тренера из ImpulseCRM.",
   impulse_api_unavailable:"ImpulseCRM временно недоступен.",
   impulse_rate_limited:"ImpulseCRM ограничил частоту запросов. Повторите позже.",
   payroll_future_month:"Этот месяц ещё не начался.",
   payroll_sync_unavailable:"Проверьте установку функции fad-payroll-sync и SQL сборки.",
+};
+
+const PAYROLL_ADVANCE_WARNINGS = {
+  impulse_advance_key_denied:"Суммы авансов загружены. ImpulseCRM отклонил доступ к датам в «Балансе сотрудников».",
+  impulse_advance_endpoint_unavailable:"Суммы авансов загружены. Журнал «Баланс сотрудников» недоступен через API.",
+  impulse_advance_mismatch:"Суммы авансов загружены. Даты требуют сверки с журналом «Баланс сотрудников».",
 };
 
 function bindPayrollSync(page, refresh){
@@ -4109,7 +4119,10 @@ function bindPayrollSync(page, refresh){
         }
         if(result.status==="updated"||result.status==="fresh"){
           await refresh(month);
-          if(current())feedback("");
+          if(current()){
+            const warning=result.advanceWarning;
+            feedback(warning?(PAYROLL_ADVANCE_WARNINGS[warning]||"Суммы авансов загружены. Даты недоступны."):"");
+          }
           return;
         }
         feedback("Не удалось проверить состояние обновления.",true);
@@ -4356,7 +4369,7 @@ function renderTrainerPayroll(host){
         ? payrollSum(state.rows,row=>Math.max(0,(row.impulse_advance_reference || 0) - row.advance)) : 0;
       showNotice(difference ? "В отчёте Impulse есть авансы на " + payrollMoney(difference) +
         " BYN сверх учтённых в FAD. Сверьте авансы за этот месяц." :
-        (state.updated ? "" : "Авансы можно внести до загрузки начислений из ImpulseCRM."));
+        (state.updated ? "" : "Авансы загружаются из ImpulseCRM вместе с начислениями."));
       render();
       if(autoSync)void syncControl.run();
     }catch(error){
@@ -4450,9 +4463,11 @@ function renderTrainerPayroll(host){
       </dl>${settled ? '<p class="payroll-warn">' + (row.balance < 0
         ? "Авансы и удержания превышают начисления на " + payrollMoney(-row.balance) + " BYN. К выдаче 0 BYN."
         : "Авансы и удержания полностью покрыли начисления. К выдаче 0 BYN.") + '</p>' : ""}`;
-    const imported = row.imported_advance ? `<p class="payroll-import-source">Из Impulse · <strong>${payrollMoney(row.imported_advance)} BYN</strong>${row.imported_advance_count ? " · записей " + row.imported_advance_count : ""}</p>` : "";
+    const dated = row.impulse_advances?.length ? `<ul class="payroll-advance-list">${row.impulse_advances.map(advance=>
+      `<li><span>${payrollAdvanceDate(advance.date)}</span><span>ImpulseCRM</span><strong>${payrollMoney(advance.amount)} BYN</strong></li>`).join("")}</ul>` : "";
+    const imported = row.imported_advance ? `<p class="payroll-import-source">Из Impulse · <strong>${payrollMoney(row.imported_advance)} BYN</strong>${row.imported_advance_count ? " · записей " + row.imported_advance_count : ""}</p>${dated}` : "";
     const manual = row.advances.length ? `<ul class="payroll-advance-list">${row.advances.map(advance =>
-      `<li><span>${payrollDateLabel(advance.date)}</span><span>${esc(advance.note)}${advance.in_impulse ? '<small class="payroll-sub">Учтён в Impulse</small>' : ""}</span>
+      `<li><span>${payrollAdvanceDate(advance.date)}</span><span>${esc(advance.note)}${advance.in_impulse ? '<small class="payroll-sub">Учтён в Impulse</small>' : ""}</span>
       <strong>${payrollMoney(advance.amount)} BYN</strong><button type="button" class="btn payroll-remove" data-payroll-action="delete" data-id="${esc(advance.id)}" aria-label="Удалить аванс ${payrollMoney(advance.amount)} BYN от ${payrollDateLabel(advance.date)}" ${state.busy ? "disabled" : ""}>×</button></li>`
     ).join("")}</ul>` : "";
     const advances = imported + manual || '<p class="payroll-hint">Авансов за месяц пока нет.</p>';
