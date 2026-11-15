@@ -762,11 +762,14 @@ table th>*,table td>*{max-width:100%;box-sizing:border-box}
 .staff-role.trainer{background:#fff7df;border-color:#e9cf7b}
 .staff-meta{display:grid;gap:7px;margin-top:12px;font-size:12px;color:var(--ink-soft)}
 .staff-meta b{color:var(--ink)}
+.staff-contacts{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.staff-contacts .staff-phone{min-width:0;overflow-wrap:anywhere}
+.staff-contacts a:focus-visible{outline:2px solid #2D7155;outline-offset:2px}
 .staff-telegram{display:inline-flex;align-items:center;justify-self:start;max-width:100%;gap:5px;color:#2D7155;font-weight:700;overflow-wrap:anywhere}
 .staff-telegram svg{flex:none}
 .staff-telegram span{min-width:0}
 .telegram-nick-label{display:block}
-.telegram-nick-input[aria-invalid="true"]{border-color:var(--clay)}
+.telegram-nick-input[aria-invalid="true"],.staff-phone-input[aria-invalid="true"]{border-color:var(--clay)}
 .telegram-nick-message{margin-top:5px;font-size:12px;color:#7A5200}
 .telegram-nick-error{color:#A33B27}
 .staff-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
@@ -1685,7 +1688,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '15.11.2026-e'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '15.11.2026-f'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -2322,16 +2325,11 @@ async function apiListEmployees(){
   }
 }
 async function apiSaveEmployee(data){
-  const args={p_token:TOKEN,p_id:data.id||null,p_full_name:data.full_name||'',p_phone:data.phone||'',
+  return rpc('app_save_staff_profile',{p_token:TOKEN,p_id:data.id||null,p_full_name:data.full_name||'',p_phone:data.phone??null,
     p_birth_date:data.birth_date||null,p_hire_date:data.hire_date||null,p_primary_studio:data.primary_studio||'',
-    p_studios:data.studios||[],p_is_active:data.is_active!==false,p_note:data.note||''};
-  if(data.telegram_username!==undefined){
-    return rpc('app_save_trainer_telegram',{...args,p_telegram_username:data.telegram_username,p_direction_ids:data.direction_ids??null});
-  }
-  if(data.direction_ids!==undefined){
-    return rpc('app_save_trainer_with_directions',{...args,p_direction_ids:data.direction_ids});
-  }
-  return rpc('app_save_employee',args);
+    p_studios:data.studios||[],p_is_active:data.is_active!==false,p_note:data.note||'',
+    p_update_telegram:data.telegram_username!==undefined,p_telegram_username:data.telegram_username??null,
+    p_direction_ids:data.direction_ids??null});
 }
 async function apiListReplacements(){
   const data=await rpc('app_replacements_list',{p_token:TOKEN});
@@ -4746,15 +4744,57 @@ function trainerTelegramLink(username,className,iconOnly=false){
     : trainerTelegramAnchor(username,className,`<span>@${username}</span>`);
 }
 
+const STAFF_PHONE_ERROR='Введите белорусский номер в формате +375 и 9 цифр.';
+
+function staffPhoneDial(value){
+  return String(value??'').trim().replace(/[\s().\-\u2010-\u2015\u2212]/g,'');
+}
+
+function belarusPhoneNumber(dial){
+  const match=dial.match(/^(?:(?:\+|00|810)?375|80?|0)?([1-9]\d{8})$/);
+  return match?`+375${match[1]}`:'';
+}
+
+function bindStaffPhoneInput(input){
+  input.oninput=()=>{
+    input.removeAttribute('aria-invalid');
+    const dial=staffPhoneDial(input.value);
+    // Строка из девяти цифр ещё может быть началом номера с префиксом 375 или 8.
+    if(dial.length===9&&/^(?:375|8)/.test(dial)) return;
+    const formatted=belarusPhoneNumber(dial);
+    if(formatted&&input.value!==formatted) input.value=formatted;
+  };
+}
+
+function readStaffPhoneInput(input){
+  if(!input.value.trim()) return '';
+  const formatted=belarusPhoneNumber(staffPhoneDial(input.value));
+  if(!formatted){
+    input.setAttribute('aria-invalid','true');
+    toast(STAFF_PHONE_ERROR,true);
+    input.focus();
+    return null;
+  }
+  input.value=formatted;
+  return formatted;
+}
+
 function trainerInternationalPhone(dial){
-  const belarus=dial.match(/^(?:375|80|0|8)?([1-9]\d{8})$/);
-  const number=belarus?`+375${belarus[1]}`:dial.replace(/^(?:00|810)/,'+');
+  const number=belarusPhoneNumber(dial)||dial.replace(/^(?:00|810)/,'+');
   return /^\+[1-9]\d{7,14}$/.test(number)?number:'';
 }
 
 function trainerViberLink(number){
   if(!number) return '';
   return `<a class="rep-contact rep-contact-icon rep-viber" href="viber://chat?number=${encodeURIComponent(number)}" aria-label="Написать в Viber" title="Написать в Viber">${TRAINER_VIBER_ICON}</a>`;
+}
+
+function trainerMessengerLinks(trainer,dial){
+  const number=trainerInternationalPhone(dial);
+  const telegramClass='rep-contact rep-contact-icon rep-telegram';
+  const telegram=trainerTelegramLink(trainer.telegram_username,telegramClass,true)
+    || (number?trainerTelegramAnchor(number,telegramClass,'','Написать в Telegram по номеру'):'');
+  return telegram+trainerViberLink(number);
 }
 
 /* ================= Направления тренеров ================= */
@@ -4920,15 +4960,11 @@ function replacementCard({trainer,directions,missing},catalog,selected){
   const badge=isFull?(count===1?'Ведёт':`Все ${count} из ${count}`):`${count-missing.length} из ${count}`;
   const branches=employeeStudios(trainer).map(studioName);
   const phone=String(trainer.phone||'').trim();
-  const dial=phone.replace(/[\s().\-\u2010-\u2015\u2212]/g,'');
+  const dial=staffPhoneDial(phone);
   const phoneLink=/^\+?\d+$/.test(dial)
     ? `<a class="rep-contact rep-call" href="tel:${dial}" aria-label="Позвонить: ${escapeHtml(trainer.full_name)}, ${escapeHtml(phone)}"><span aria-hidden="true">☎︎</span><span>${escapeHtml(phone)}</span></a>`
     : '';
-  const phoneNumber=trainerInternationalPhone(dial);
-  const telegramClass='rep-contact rep-contact-icon rep-telegram';
-  const telegramLink=trainerTelegramLink(trainer.telegram_username,telegramClass,true)
-    || (phoneNumber?trainerTelegramAnchor(phoneNumber,telegramClass,'','Написать в Telegram по номеру'):'');
-  const contacts=phoneLink+telegramLink+trainerViberLink(phoneNumber);
+  const contacts=phoneLink+trainerMessengerLinks(trainer,dial);
   return `<article class="rep-card${isFull?' rep-card-full':''}">
     <div class="rep-card-head"><h4 class="rep-name">${escapeHtml(trainer.full_name)}</h4>
       <span class="rep-badge rep-badge-${isFull?'full':'partial'}">${badge}</span></div>
@@ -5174,12 +5210,14 @@ function ageLabel(age){
 }
 function employeeCard(e,manage){
   const studios=employeeStudios(e);
+  const dial=staffPhoneDial(e.phone);
+  const phone=e.phone?`<span class="staff-phone">☎ <b>${escapeHtml(belarusPhoneNumber(dial)||e.phone)}</b></span>`:'';
+  const messengers=e.employee_type==='trainer'?trainerMessengerLinks(e,dial):'';
   return `<div class="staff-card${e.is_active?'':' staff-muted'}" data-eid="${e.id}">
     <div class="staff-head"><div class="grow"><div class="staff-name">${escapeHtml(e.full_name||'')}</div></div><span class="staff-role ${e.employee_type==='trainer'?'trainer':''}">${escapeHtml(employeeRoleLabel(e))}</span></div>
     <div class="staff-meta">
       <div>🎂 <b>${escapeHtml(birthdayShort(e.birth_date))}</b>${e.birth_date&&employeeAge(e.birth_date)!=null?` · <b>${escapeHtml(ageLabel(employeeAge(e.birth_date)))}</b>`:''}</div>
-      ${e.phone?`<div>☎ <b>${escapeHtml(e.phone)}</b></div>`:''}
-      ${e.employee_type==='trainer'?trainerTelegramLink(e.telegram_username,'staff-telegram'):''}
+      ${phone||messengers?`<div class="staff-contacts">${phone}${messengers}</div>`:''}
       ${e.hire_date?`<div>Приём: <b>${escapeHtml(fmtLong(e.hire_date))}</b></div>`:''}
       <div class="staff-studios">${studios.length?studios.map(s=>`<span class="staff-studio">${sdot(s)}${escapeHtml(studioName(s))}</span>`).join(''):'<span style="color:var(--ink-faint)">филиал не указан</span>'}</div>
       ${e.note?`<div>${escapeHtml(e.note)}</div>`:''}
@@ -5362,15 +5400,17 @@ async function bonusBranchHistoryModal(emp,onDone){
 
 function employeeModal(e,onDone,employeeRows=[],onPayrollLink){
   const isNew=!e, isAdmin=!!(e&&e.employee_type==='admin');
-  const editDirections=session.role==='owner'&&e?.employee_type==='trainer';
-  const editTelegram=session.role==='owner'&&(isNew||e.employee_type==='trainer');
+  const editPhone=session.role==='owner';
+  const editDirections=editPhone&&(isNew||e.employee_type==='trainer');
+  const editTelegram=editDirections;
   const editPayrollChat=editTelegram&&!isNew;
+  const initialPhone=belarusPhoneNumber(staffPhoneDial(e?.phone))||e?.phone||'';
   const studios=e?employeeStudios(e):[];
   const title=isNew?'Новый тренер':`Сотрудник · ${e.full_name}`;
   const el=modal(`<h3>${escapeHtml(title)}</h3>
     ${isAdmin?`<p>Администратор добавлен сюда автоматически. ФИО, рабочий статус и домашний филиал управляются в разделе «Администраторы».</p>`:''}
     <div class="field"><div class="lbl">ФИО</div><input id="efName" value="${escapeHtml(e?e.full_name:'')}" ${isAdmin?'disabled':''}/></div>
-    <div class="field"><div class="lbl">Телефон</div><input id="efPhone" type="tel" inputmode="tel" value="${escapeHtml(e&&e.phone||'')}" placeholder="+375…"/></div>
+    ${editPhone?`<label class="field"><span class="lbl">Телефон</span><input id="efPhone" class="staff-phone-input" type="tel" inputmode="tel" autocomplete="tel" value="${escapeHtml(initialPhone)}" placeholder="+375291234567"/></label>`:''}
     ${editTelegram?`<div class="field"><label class="lbl telegram-nick-label" for="efTelegram">Telegram (ник)</label>
       <input id="efTelegram" class="telegram-nick-input" value="${escapeHtml(e?.telegram_username??'')}" placeholder="@nickname"
         type="text" autocapitalize="none" autocomplete="off" spellcheck="false" aria-describedby="efTelegramMessage">
@@ -5398,6 +5438,8 @@ function employeeModal(e,onDone,employeeRows=[],onPayrollLink){
     <div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="efSave">Сохранить</button></div>`);
   const save=el.querySelector('#efSave');
   if(editPayrollChat)bindTrainerPayrollChat(el,e,onPayrollLink);
+  const phoneInput=el.querySelector('#efPhone');
+  if(phoneInput) bindStaffPhoneInput(phoneInput);
   const directionArea=el.querySelector('#efDirections');
   const addDirection=el.querySelector('#efAddDirection');
   const telegramInput=el.querySelector('#efTelegram');
@@ -5451,7 +5493,7 @@ function employeeModal(e,onDone,employeeRows=[],onPayrollLink){
         if(!el.isConnected) return;
         directionArea.removeAttribute('role');
         catalog=data.directions;
-        loadedDirectionIds=new Set(data.trainer_directions.filter(row=>row.trainer_id===String(e.id)).map(row=>row.direction_id));
+        loadedDirectionIds=new Set(isNew?[]:data.trainer_directions.filter(row=>row.trainer_id===String(e.id)).map(row=>row.direction_id));
         const selected=new Set(catalog.filter(d=>changes.get(d.id)??loadedDirectionIds.has(d.id)).map(d=>d.id));
         renderDirectionChoices(selected);
         save.disabled=addDirection.disabled=false;
@@ -5473,9 +5515,13 @@ function employeeModal(e,onDone,employeeRows=[],onPayrollLink){
     if(telegramUsername===null){telegramInput.focus();return;}
     const full_name=(el.querySelector('#efName').value||'').trim();
     if(!full_name){toast('Укажите ФИО',true);return;}
+    let phone=null;
+    if(phoneInput&&phoneInput.value!==initialPhone){
+      phone=readStaffPhoneInput(phoneInput);
+      if(phone===null) return;
+    }
     const payload={
-      id:e&&e.id||null,full_name,
-      phone:(el.querySelector('#efPhone').value||'').trim(),
+      id:e&&e.id||null,full_name,phone,
       birth_date:el.querySelector('#efBirth').value||null,
       hire_date:isAdmin?(e.hire_date||null):(el.querySelector('#efHire').value||null),
       primary_studio:isAdmin?(e.primary_studio||''):'',
@@ -5483,7 +5529,8 @@ function employeeModal(e,onDone,employeeRows=[],onPayrollLink){
       is_active:isAdmin?e.is_active:el.querySelector('#efActive').checked,
       note:(el.querySelector('#efNote').value||'').trim()
     };
-    const details={name:full_name,birth_date:payload.birth_date,phone:payload.phone};
+    const details={name:full_name,birth_date:payload.birth_date};
+    if(phone!==null) details.phone=phone;
     if(telegramInput&&telegramUsername!==(e?.telegram_username??'')){
       payload.telegram_username=telegramUsername||null;
       details.Telegram=payload.telegram_username;
@@ -5496,7 +5543,7 @@ function employeeModal(e,onDone,employeeRows=[],onPayrollLink){
         details['Направления']=checked.map(input=>input.parentElement.textContent.trim());
       }
     }
-    const dirtyKey=payload.direction_ids!==undefined||payload.telegram_username!==undefined?'trainerProfileSave':'';
+    const dirtyKey=phone!==null||payload.direction_ids!==undefined||payload.telegram_username!==undefined?'trainerProfileSave':'';
     save.disabled=true;
     if(addDirection) addDirection.disabled=true;
     if(dirtyKey) markAppDirty(dirtyKey);
@@ -5511,6 +5558,12 @@ function employeeModal(e,onDone,employeeRows=[],onPayrollLink){
       if(telegramInput&&err?.message==='invalid_telegram_username'){
         showTelegramMessage(TRAINER_TELEGRAM_ERROR,true);
         telegramInput.focus();
+      }else if(phoneInput&&err?.message==='invalid_employee_phone'){
+        phoneInput.setAttribute('aria-invalid','true');
+        toast(STAFF_PHONE_ERROR,true);
+        phoneInput.focus();
+      }else if(err?.code==='PGRST202'){
+        toast('Выполните supabase-trainer-profiles.sql в Supabase и попробуйте снова.',true);
       }else if(el.isConnected&&loadedDirectionIds&&err?.message==='invalid_trainer_directions'){
         const selected=new Set(payload.direction_ids);
         const changes=new Map();
@@ -6014,13 +6067,25 @@ async function renderUsers(body,options={}){
     if(manageAdmins){
       listEl.querySelectorAll('input[data-hire]').forEach(inp=>{ inp.onchange=async()=>{ try{ await apiSetHire(inp.dataset.hire, inp.value); toast('Дата приёма сохранена'); }catch(e){ handleErr(e); } }; });
       listEl.querySelectorAll('input[data-coffee]').forEach(cb=>{ cb.onchange=async()=>{ try{ await apiSetCoffee(cb.dataset.coffee, cb.checked); toast('Сохранено'); }catch(e){ handleErr(e); } }; });
-      listEl.querySelectorAll('input[data-phone]').forEach(inp=>{ inp.onchange=async()=>{
-        const login=inp.dataset.phone, v=inp.value.trim();
-        settings.adminPhones=settings.adminPhones||{};
-        if(v) settings.adminPhones[login]=v; else delete settings.adminPhones[login];
-        ADMIN_PHONES=settings.adminPhones;
-        try{ await apiSaveSettings(settings); await apiSetEmployeePhone(login,v); void auditAction('Изменён телефон администратора','admin',login,{phone:v}); toast('Телефон сохранён'); }catch(e){ handleErr(e); }
-      }; });
+    }
+    if(session.role==='owner'){
+      listEl.querySelectorAll('input[data-phone]').forEach(inp=>{
+        bindStaffPhoneInput(inp);
+        inp.onchange=async()=>{
+          const phone=readStaffPhoneInput(inp);
+          if(phone===null) return;
+          const login=inp.dataset.phone;
+          const adminPhones={...settings.adminPhones};
+          if(phone) adminPhones[login]=phone; else delete adminPhones[login];
+          try{
+            await apiSaveSettings({...settings,adminPhones});
+            settings.adminPhones=ADMIN_PHONES=adminPhones;
+            await apiSetEmployeePhone(login,phone);
+            void auditAction('Изменён телефон администратора','admin',login,{phone});
+            toast('Телефон сохранён');
+          }catch(e){ handleErr(e); }
+        };
+      });
     }
   }
   function drawAdmins(el){
@@ -6207,13 +6272,14 @@ function archRow(u,manage){
 }
 function userRow(u,phone,opts){
   opts=opts||{}; const p=userPermissions(u), pName=permissionPresetName(p), disabled=opts.manage?'':' disabled';
+  const displayedPhone=belarusPhoneNumber(staffPhoneDial(phone))||phone||'';
   return `<div class="urow" data-login="${escapeHtml(u.login)}">
     <div class="u-main"><div class="u-name">${escapeHtml(u.name)} <span class="perm-badge${pName==='Полный доступ'?' full':''}">${escapeHtml(pName)}</span></div>
       <div class="u-login">логин: ${escapeHtml(u.login)}</div></div>
     <div class="u-ctl">
       <span class="bh-home-display" title="Текущий основной филиал">${u.home?escapeHtml(studioName(u.home)):'Филиал не назначен'}</span>
       <label class="hire-lbl u-hire">приём:<input type="date" class="hire-inp" data-hire="${escapeHtml(u.login)}" value="${u.hire||''}"${disabled}/></label>
-      <label class="u-phone">тел.: <input type="tel" inputmode="tel" class="phone-inp" data-phone="${escapeHtml(u.login)}" value="${escapeHtml(phone||'')}" placeholder="+375…"${disabled}/></label>
+      ${session.role==='owner'?`<label class="u-phone">тел.: <input type="tel" inputmode="tel" class="phone-inp staff-phone-input" data-phone="${escapeHtml(u.login)}" value="${escapeHtml(displayedPhone)}" placeholder="+375291234567"/></label>`:(displayedPhone?`<span class="u-phone">тел. ${escapeHtml(displayedPhone)}</span>`:'')}
       <label class="hire-lbl u-coffee"><input type="checkbox" class="coffee-inp" data-coffee="${escapeHtml(u.login)}" ${u.coffee?'checked':''}${disabled}/> ☕ кофе+снеки</label>
       <span class="st-pill u-status ${u.active?'st-on':'st-off'}">${u.active?'доступ включён':'доступ отключён'}</span>
       ${opts.manage?`<span class="ctl-item u-access">Доступ <button class="sw ${u.active?'on':''}" data-act="active" aria-label="Доступ"></button></span>`:''}
