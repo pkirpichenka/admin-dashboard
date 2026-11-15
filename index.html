@@ -1690,7 +1690,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '15.11.2026-x'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '15.11.2026-y'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -3618,7 +3618,7 @@ const PAYROLL_SYNC_STAGE_LABELS = {
   advances_and_replacements:"авансы и замены",employee_mapping:"карточки сотрудников",
   payroll_database_write:"запись зарплаты в Supabase"
 };
-const PAYROLL_EXPECTED_SERVICE = "fad-payroll-impulse-15.11.2026-w";
+const PAYROLL_EXPECTED_SERVICE = "fad-payroll-impulse-15.11.2026-x";
 
 const PAYROLL_ADVANCE_WARNINGS = {
   impulse_advance_key_denied:"Суммы авансов загружены. ImpulseCRM отклонил доступ к датам в «Балансе сотрудников».",
