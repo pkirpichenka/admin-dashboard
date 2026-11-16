@@ -1633,7 +1633,26 @@ label.trainer-replacement-setting{display:flex;align-items:center;gap:8px;min-he
   .payroll-group summary{gap:5px;padding:8px}
 }
 .payroll-period-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.payroll-month-reset[aria-pressed="true"]{border-color:var(--accent);color:var(--accent-deep);background:var(--surface-2)}
+.payroll-range-field{position:relative;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-soft)}
+.payroll-range-wrap{position:relative}
+.payroll-range-label{white-space:nowrap}
+.payroll-range-trigger{min-height:40px;min-width:218px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 11px;
+  background:var(--surface-2);border:1px solid var(--line);border-radius:10px;color:var(--ink);font:inherit;font-size:14px;font-weight:600}
+.payroll-range-trigger:hover{border-color:var(--accent)}
+.payroll-range-trigger svg{flex:none;color:var(--ink-soft)}
+.payroll-range-popover{position:absolute;top:calc(100% + 6px);left:0;z-index:55;width:296px;max-width:calc(100vw - 24px);padding:14px;
+  border-radius:14px;border:1px solid var(--line);background:var(--surface);box-shadow:0 15px 35px rgba(22,48,31,.2)}
+.payroll-range-caption{font-size:14px;font-weight:700;text-align:center;color:var(--ink);margin-bottom:5px}
+.payroll-range-popover p{font-size:11px;line-height:1.4;color:var(--ink-soft);margin:5px 0 10px;text-align:center}
+.payroll-range-weekdays,.payroll-range-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
+.payroll-range-weekdays{margin-bottom:5px}
+.payroll-range-weekdays span{text-align:center;font-size:10px;font-weight:700;color:var(--ink-faint)}
+.payroll-range-day{height:34px;min-width:0;border:1px solid transparent;border-radius:8px;background:transparent;font-size:12px;font-weight:600;color:var(--ink)}
+.payroll-range-day:not(:disabled):hover{background:var(--surface-2);border-color:var(--accent)}
+.payroll-range-day.active{background:var(--accent);color:#fff}
+.payroll-range-day:disabled{opacity:.28;cursor:not-allowed}
+.payroll-range-footer{margin:10px 0 0!important;padding-top:8px;border-top:1px solid var(--line)}
+@media(max-width:550px){.payroll-range-trigger{min-width:195px}.payroll-range-popover{left:auto;right:0}}
 .payroll-cutoff-notice{padding:11px 14px;margin:0 0 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);color:var(--ink-soft);font-size:12.5px;line-height:1.5}
 .payroll-cutoff-notice[hidden]{display:none}
 .payroll-import-dialog{width:min(950px,calc(100% - 24px));max-width:none;max-height:calc(100dvh - 24px);padding:0;border:1px solid var(--line);border-radius:15px;background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
@@ -1697,7 +1716,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '15.11.2026-ac'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '15.11.2026-ad'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -3835,8 +3854,22 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
       <div><h1>Зарплата тренеров</h1><p class="payroll-meta" id="payrollMeta">ImpulseCRM</p></div>
       <div class="payroll-period-actions">
         <label class="payroll-period">Месяц <input id="payrollMonth" type="month" min="2000-01" max="2099-12" value="${state.period}"></label>
-        <label class="payroll-period">По дату <input id="payrollCutoff" type="date" aria-label="Начисления с первого числа месяца по выбранную дату включительно" disabled></label>
-        <button type="button" class="btn btn-sm payroll-month-reset" data-payroll-action="full" aria-pressed="true" disabled>Весь месяц</button>
+        <div class="payroll-range-field">
+          <span class="payroll-range-label">Период</span>
+          <div class="payroll-range-wrap">
+            <button type="button" class="payroll-range-trigger" id="payrollRangeTrigger" aria-expanded="false" aria-haspopup="dialog" aria-controls="payrollRangeCalendar" aria-label="Выбрать дату окончания периода. Начало — первое число месяца" disabled>
+              <span id="payrollRangeText">—</span>
+              <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/></svg>
+            </button>
+            <div class="payroll-range-popover" id="payrollRangeCalendar" role="dialog" aria-label="Выбор даты окончания периода" hidden>
+              <div class="payroll-range-caption"></div>
+              <p>Нажми дату окончания. Начало периода — 1-е число.</p>
+              <div class="payroll-range-weekdays" aria-hidden="true"><span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span></div>
+              <div class="payroll-range-days" role="group" aria-label="Дни месяца"></div>
+              <p class="payroll-range-footer">Чтобы вернуться к полному месяцу, выбери его в поле «Месяц» или последний доступный день.</p>
+            </div>
+          </div>
+        </div>
         <button type="button" class="btn btn-primary" data-payroll-sync>Обновить из Impulse</button>
       </div>
     </header>
@@ -3890,8 +3923,10 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
 
   const get = selector => page.querySelector(selector);
   const month = get("#payrollMonth");
-  const cutoffInput = get("#payrollCutoff");
-  const resetCutoff = get('[data-payroll-action="full"]');
+  const rangeTrigger = get("#payrollRangeTrigger");
+  const rangeCalendar = get("#payrollRangeCalendar");
+  const rangeText = get("#payrollRangeText");
+  let rangeOpen = false;
   const cutoffNotice = get(".payroll-cutoff-notice");
   const notice = get("#payrollNotice");
   const table = get(".payroll-table");
@@ -3909,7 +3944,9 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
     (Array.isArray(row.lessons) && row.lessons.some(lesson => !lesson.is_skipped)) ||
     // Не скрываем преподавателя, у которого до выбранной даты возможна замена без даты.
     (state.cutoff && row._asOfUnknown?.includes("замены") && row._monthReplacementCount > 0);
-  const effectiveRows = () => state.cutoff ? state.rows.map(row=>payrollAsOfRow(row,state.cutoff)) : state.rows;
+  const atSavedEnd = () => !!(state.cutoff && state.rangeEnd && state.cutoff === state.rangeEnd);
+  const effectiveRows = () => state.cutoff && !atSavedEnd()
+    ? state.rows.map(row=>payrollAsOfRow(row,state.cutoff)) : state.rows;
   const branchRows = () => effectiveRows().filter(row => state.branch === "all" || row.branch === state.branch);
   const visible = () => branchRows().filter(row => state.showInactive || hasPayrollActivity(row));
   const selected = () => effectiveRows().find(row => row.id === state.selected);
@@ -3932,15 +3969,28 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
   }
   function applyBusy(){
     month.disabled = state.busy;
-    cutoffInput.disabled = state.busy || !state.ready || !state.updated;
-    resetCutoff.disabled = state.busy || !state.cutoff;
+    rangeTrigger.disabled = state.busy || !state.ready || !state.updated;
+    if (rangeTrigger.disabled) setRangeOpen(false);
     get(".payroll-chips").querySelectorAll("button").forEach(element => { element.disabled = state.busy; });
   }
+  // Неполные архивные строки не скрывают известные начисления всех остальных.
+  // При неполном срезе показываем только сумму по тренерам с подтверждённой датой,
+  // никогда не выдавая её за точный итог всей студии.
+  const dueBreakdown = rows => {
+    const checked = rows.filter(row=>payrollFinite(row.due));
+    return {
+      confirmed:checked.length ? payrollAddCents(checked.map(row=>row.due))/100 : null,
+      missing:rows.length-checked.length, checked:checked.length
+    };
+  };
   function renderSummary(){
     const rows = effectiveRows();
     const total = key => totalFor(rows,key);
+    const due = dueBreakdown(rows);
+    const incomplete = !!(state.cutoff && due.missing);
+    const shownDue = incomplete ? due.confirmed : total("due");
     get(".payroll-kpis").innerHTML = `
-      <div class="payroll-kpi"><small>${state.cutoff ? "Предварительно к выдаче" : "К выдаче всего"}</small><b>${amount(total("due"))}${state.updated && total("due")!==null ? " BYN" : ""}</b></div>
+      <div class="payroll-kpi"><small>${incomplete ? "Подтверждено к выдаче" : state.cutoff ? "Предварительно к выдаче" : "К выдаче всего"}</small><b>${amount(shownDue)}${state.updated && payrollFinite(shownDue) ? " BYN" : ""}</b>${incomplete ? `<small>По ${due.checked} тренерам · без расчёта ${due.missing}</small>` : ""}</div>
       <div class="payroll-kpi"><small>Начислено</small><b>${amount(total("own"))}</b><small>Замены ${state.updated ? signed(total("replacements"), "+") : "—"} · пропуски ${state.updated ? signed(total("skips"), "−") : "—"}</small></div>
       <div class="payroll-kpi"><small>Авансы выданы</small><b>${state.cutoff ? amount(total("advance")) : payrollMoney(total("advance"))}</b><small>Остаток ${amount(total("balance"))}</small></div>`;
   }
@@ -3970,10 +4020,43 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
     // Финансовые итоги включают всех сотрудников, даже если их нулевые по занятиям
     // строки скрыты. Это важно для авансов и отрицательных остатков.
     const total = key => totalFor(allRows,key);
-    table.tFoot.innerHTML = `<tr><td>Итого${state.branch === "all" ? "" : " · " + studioName(state.branch)}${hiddenCount ? " (включая скрытых)" : ""}</td>
+    const dues = dueBreakdown(allRows);
+    const partialDue = !!(state.cutoff && dues.missing);
+    table.tFoot.innerHTML = `<tr><td>Итого${state.branch === "all" ? "" : " · " + studioName(state.branch)}${hiddenCount ? " (включая скрытых)" : ""}${partialDue ? " · проверенные" : ""}</td>
       <td>${amount(total("lesson_count"))}<span class="payroll-sub">${state.updated ? payrollMoney(total("people")) + " чел." + (rows.some(row=>row.missing_replacement_dates) ? " по детализации" : "") : ""}</span></td>
       <td>${amount(total("own"))}</td><td>${amount(total("replacements"))}</td><td>${amount(total("skips"))}</td>
-      <td>${state.cutoff ? amount(total("advance")) : payrollMoney(total("advance"))}</td><td>${amount(total("balance"))}</td><td class="payroll-total">${amount(total("due"))}</td><td></td><td></td></tr>`;
+      <td>${state.cutoff ? amount(total("advance")) : payrollMoney(total("advance"))}</td><td>${amount(total("balance"))}</td><td class="payroll-total">${amount(partialDue ? dues.confirmed : total("due"))}${partialDue ? `<span class="payroll-sub">без ${dues.missing} трен.</span>` : ""}</td><td></td><td></td></tr>`;
+  }
+
+  const lastOfMonth = () => new Date(Date.UTC(Number(state.period.slice(0,4)), Number(state.period.slice(5,7)), 0))
+    .toISOString().slice(0,10);
+  const maxAvailableDay = () => state.rangeEnd?.startsWith(state.period + "-") ? state.rangeEnd : lastOfMonth();
+  const setRangeOpen = opened => {
+    rangeOpen = opened && !rangeTrigger.disabled;
+    rangeCalendar.hidden = !rangeOpen;
+    rangeTrigger.setAttribute("aria-expanded", String(rangeOpen));
+  };
+  function updateRangeCalendar(){
+    const year=Number(state.period.slice(0,4)), monthNumber=Number(state.period.slice(5,7));
+    const end=state.cutoff||maxAvailableDay();
+    rangeText.textContent = "01." + state.period.slice(5,7) + "–" + payrollAdvanceDate(end);
+    rangeCalendar.querySelector(".payroll-range-caption").textContent =
+      PAYROLL_MONTHS[monthNumber-1][0].toLocaleUpperCase("ru") + PAYROLL_MONTHS[monthNumber-1].slice(1) + " " + year;
+    const firstWeekday=(new Date(Date.UTC(year,monthNumber-1,1)).getUTCDay()+6)%7;
+    const days=new Date(Date.UTC(year,monthNumber,0)).getUTCDate();
+    const max=maxAvailableDay();
+    const buttons=[];
+    for(let offset=0; offset<firstWeekday; offset++) buttons.push('<span aria-hidden="true"></span>');
+    for(let day=1; day<=days; day++){
+      const date=state.period+"-"+String(day).padStart(2,"0");
+      const disabled=date>max;
+      const selected=date===end;
+      buttons.push(`<button type="button" class="payroll-range-day${selected ? " active" : ""}"
+        data-payroll-action="range-day" data-day="${date}" ${disabled ? "disabled" : ""}
+        aria-label="С 1 по ${day} ${PAYROLL_MONTHS[monthNumber-1]} ${year}"
+        aria-pressed="${selected}">${day}</button>`);
+    }
+    rangeCalendar.querySelector(".payroll-range-days").innerHTML=buttons.join("");
   }
 
   function renderToolbar(){
@@ -3996,19 +4079,21 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
         (state.cutoff ? "срез на " + payrollAdvanceDate(state.cutoff) + " · " : state.range ? state.range + " · " : "") +
         "обновлено " + payrollAt(state.updated)
       : "ImpulseCRM · " + payrollMonthLabel(state.period);
-    const first = state.period + "-01";
-    const last = new Date(Date.UTC(Number(state.period.slice(0,4)),Number(state.period.slice(5,7)),0)).toISOString().slice(0,10);
-    cutoffInput.min = first;
-    cutoffInput.max = state.rangeEnd && state.rangeEnd >= first && state.rangeEnd <= last ? state.rangeEnd : last;
-    cutoffInput.value = state.cutoff || "";
-    resetCutoff.setAttribute("aria-pressed",String(!state.cutoff));
+    updateRangeCalendar();
     if(state.cutoff && state.ready){
-      const rows=effectiveRows();
-      const incomplete=rows.filter(row=>row._asOfUnknown?.length);
-      cutoffNotice.textContent = "Предварительный расчёт с 01." + state.period.slice(5,7) + " по " + payrollAdvanceDate(state.cutoff) +
-        " включительно. " + (incomplete.length
-          ? "Точные суммы на дату недоступны для " + incomplete.length + " тренеров: не все начисления, замены, пропуски или авансы имеют проверенную дату. В неполных полях стоит «—»; общий итог может быть скрыт."
-          : "Все показанные суммы проверены по датированным записям. Итог месяца при этом не изменён.");
+      if(atSavedEnd()){
+        cutoffNotice.textContent = "С 01." + state.period.slice(5,7) + " по " + payrollAdvanceDate(state.cutoff) +
+          " включительно. Выбран последний день сохранённого отчёта ImpulseCRM — поэтому отображается полный расчёт из этой выгрузки, включая ранее сохранённые данные архивных тренеров.";
+      } else {
+        const rows=effectiveRows();
+        const incomplete=rows.filter(row=>row._asOfUnknown?.length);
+        const checked=dueBreakdown(rows);
+        cutoffNotice.textContent = "Предварительный расчёт с 01." + state.period.slice(5,7) + " по " + payrollAdvanceDate(state.cutoff) +
+          " включительно. " + (incomplete.length
+            ? "По " + checked.checked + " тренерам подтверждена сумма к выдаче. Для " + incomplete.length +
+              " тренеров недостаёт дат начислений, замен, пропусков или авансов: их выплаты в подтверждённый итог не включены."
+            : "Все показанные суммы сверены с датированными записями; расчёт месяца не изменён.");
+      }
       cutoffNotice.hidden = false;
     } else {cutoffNotice.textContent="";cutoffNotice.hidden=true;}
     for (const selector of [".payroll-kpis", ".payroll-toolbar", ".payroll-table-scroll"]) get(selector).hidden = !state.ready;
@@ -4240,6 +4325,7 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
     if (dialog.open) dialog.close();
     state.period = month.value;
     state.cutoff = null;
+    setRangeOpen(false);
     state.rangeEnd = null;
     state.showInactive = false;
     PAYROLL_SELECTED_MONTH = state.period;
@@ -4247,16 +4333,21 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
     render();
     void load();
   };
-  cutoffInput.onchange = () => {
-    if(state.busy || !state.ready || !state.updated) return;
-    const date = cutoffInput.value;
-    if(date && (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date < cutoffInput.min || date > cutoffInput.max)){
-      cutoffInput.value = state.cutoff || "";
-      return;
-    }
-    state.cutoff=date||null;
-    render();
+  rangeTrigger.onclick = () => {
+    if (rangeTrigger.disabled) return;
+    setRangeOpen(!rangeOpen);
+    if(rangeOpen) rangeCalendar.querySelector('.payroll-range-day.active:not(:disabled)')?.focus();
   };
+  const dismissRangeOnOutside = event => {
+    if (!page.isConnected){document.removeEventListener("pointerdown",dismissRangeOnOutside,true);return;}
+    if(rangeOpen && !event.target.closest(".payroll-range-field"))setRangeOpen(false);
+  };
+  document.addEventListener("pointerdown",dismissRangeOnOutside,true);
+  page.addEventListener("keydown",event=>{
+    if(rangeOpen && event.key === "Escape"){
+      event.preventDefault(); setRangeOpen(false);rangeTrigger.focus();
+    }
+  });
   table.onchange = async event => {
     const input = event.target.closest("[data-payroll-branch]");
     if (!input) return;
@@ -4287,10 +4378,15 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
         applyBusy();
         get('[data-payroll-action="filter"][aria-pressed="true"]').focus();
         break;
-      case "full":
-        state.cutoff=null;
+      case "range-day": {
+        const day=action.dataset.day;
+        if(!/^\d{4}-\d{2}-\d{2}$/.test(day)||!day.startsWith(state.period+"-")||day>maxAvailableDay())break;
+        state.cutoff=day;
+        setRangeOpen(false);
         render();
+        rangeTrigger.focus();
         break;
+      }
       case "inactive":
         state.showInactive = !state.showInactive;
         renderToolbar();
