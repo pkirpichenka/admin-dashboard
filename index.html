@@ -1694,7 +1694,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '15.11.2026-aa'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '15.11.2026-ab'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -3620,10 +3620,10 @@ const PAYROLL_SYNC_STAGE_LABELS = {
   cached_failure:"предыдущая ошибка",impulse_credentials:"ключ ImpulseCRM",
   teacher_directories:"список преподавателей",payroll_report:"отчёт зарплаты",
   duplicate_initials:"сопоставление одинаковых инициалов",historic_initials:"проверка исторических ID архивных тренеров",
-  advances_and_replacements:"авансы и замены",employee_mapping:"карточки сотрудников",
+  advances_and_replacements:"авансы и замены",archive_verification:"проверка архива преподавателей",employee_mapping:"карточки сотрудников",
   payroll_database_write:"запись зарплаты в Supabase"
 };
-const PAYROLL_EXPECTED_SERVICE = "fad-payroll-impulse-15.11.2026-z";
+const PAYROLL_EXPECTED_SERVICE = "fad-payroll-impulse-15.11.2026-ab";
 
 const PAYROLL_ADVANCE_WARNINGS = {
   impulse_advance_key_denied:"Суммы авансов загружены. ImpulseCRM отклонил доступ к датам в «Балансе сотрудников».",
@@ -3692,6 +3692,11 @@ function bindPayrollSync(page, refresh){
           await refresh(month);
           if(current()){
             const notices=[];
+            if(Number(result.archivedCarried)>0){
+              const names=Array.isArray(result.archivedCarriedNames)?result.archivedCarriedNames.slice(0,5).join(", "):"";
+              notices.push("Сохранены прежние начисления архивных тренеров ("+result.archivedCarried+")"+
+                (names?": "+names:"")+". Остальные данные обновлены; доступные авансы сверены с ImpulseCRM.");
+            }
             if(result.advanceWarning){
               notices.push(PAYROLL_ADVANCE_WARNINGS[result.advanceWarning]||"Сверьте авансы в ImpulseCRM.");
             }
