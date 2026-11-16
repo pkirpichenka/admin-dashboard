@@ -1849,7 +1849,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '16.11.2026-am'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '16.11.2026-an'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -8306,7 +8306,21 @@ function renderAdminPayroll(host){
     try{res=await fetch(SUPABASE_URL+'/functions/v1/fad-admin-payroll',{
       method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON_KEY,'apikey':SUPABASE_ANON_KEY},
       body:JSON.stringify({token:TOKEN,month,mode}),signal:AbortSignal.timeout(115000)
-    });}catch(err){throw Error('Не удалось обратиться к Edge Function fad-admin-payroll ('+(err?.name==='TimeoutError'?'истекло время запроса':'сеть / CORS')+').');}
+    });}catch(err){
+      if(err?.name==='TimeoutError')throw Error('Истекло время ожидания Edge Function fad-admin-payroll (115 сек). Откройте Supabase → Edge Functions → fad-admin-payroll → Logs.');
+      let probe='GET-проверка тоже недоступна';
+      try{
+        // GET без JSON/Authorization не вызывает CORS-preflight: помогает отделить
+        // сбой POST/OPTIONS от ошибки запуска функции или блокировки шлюзом.
+        const health=await fetch(SUPABASE_URL+'/functions/v1/fad-admin-payroll',{
+          method:'GET',signal:AbortSignal.timeout(6000)
+        });
+        const check=await health.json().catch(()=>null);
+        probe=health.ok&&check?.ok===true?'GET-проверка доступна: проверьте OPTIONS, POST и настройки JWT':
+          'GET ответил HTTP '+health.status+(check?.error?' ('+String(check.error).slice(0,70)+')':'');
+      }catch(_){ /* Не делаем вывод, что причина именно CORS */ }
+      throw Error('Нет ответа на POST fad-admin-payroll. '+probe+'. Проверьте публикацию функции, Verify JWT (OFF для авторизации через FAD-токен) и Logs/Invocations.');
+    }
     const raw=await res.text();let data={};
     try{data=raw?JSON.parse(raw):{};}catch(_){throw Error('Edge Function вернула не JSON (HTTP '+res.status+'). Проверьте Deploy и Logs.');}
     if(!res.ok||data?.ok!==true){
