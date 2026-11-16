@@ -1717,7 +1717,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '15.11.2026-ae'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '15.11.2026-af'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -3500,6 +3500,30 @@ function payrollSurnameInitials(name){
   return surname+" "+initials.map(part=>part[0].toLocaleUpperCase("ru")+".").join("");
 }
 
+// Приветствие при открытии расчёта: время студии в Минске, а не браузера.
+const PAYROLL_MONTHS_GENITIVE = ["января", "февраля", "марта", "апреля", "мая", "июня",
+  "июля", "августа", "сентября", "октября", "ноября", "декабря"];
+const payrollGreetingHour = new Intl.DateTimeFormat("en-GB", {
+  timeZone:"Europe/Minsk", hour:"2-digit", hourCycle:"h23"
+});
+function payrollGreeting(name, at = new Date()) {
+  const firstName = payrollLine(name).split(" ")[1] || payrollLine(name);
+  const hour = Number(payrollGreetingHour.format(at));
+  const greeting = hour >= 5 && hour < 12 ? "доброе утро"
+    : hour >= 12 && hour < 18 ? "добрый день" : "добрый вечер";
+  return firstName + ", " + greeting + " 🌼";
+}
+function payrollPeriodTitle(first, last) {
+  const startDay=String(Number(first.slice(8,10)));
+  const endDay=String(Number(last.slice(8,10)));
+  const firstMonth=first.slice(0,7), lastMonth=last.slice(0,7);
+  const endLabel=endDay+" "+PAYROLL_MONTHS_GENITIVE[Number(last.slice(5,7))-1]+" "+last.slice(0,4);
+  if(firstMonth===lastMonth) return (first===last?"":startDay+"–")+endLabel;
+  const startLabel=startDay+" "+PAYROLL_MONTHS_GENITIVE[Number(first.slice(5,7))-1];
+  if(first.slice(0,4)===last.slice(0,4))return startLabel+" – "+endLabel;
+  return startLabel+" "+first.slice(0,4)+" – "+endLabel;
+}
+
 function payrollReplacementDetails(row){
   const byDate = new Map();
   for (const lesson of row.lessons) {
@@ -3624,11 +3648,12 @@ function payrollAsOfRow(row, cutoff, start){
   };
 }
 
-function payrollMessage(row                   , period        , view             , branch        , cutoff = null, start = null) {
+function payrollMessage(row                   , period        , view             , branch        , cutoff = null, start = null, snapshotStart = null, snapshotEnd = null) {
   const attendance = `Занятия: ${row.own_count} · ${payrollMoney(row.own_people)} чел.`;
-  const title = cutoff ? `Предварительный расчёт за ${payrollAdvanceDate(start || (period + "-01"))}–${payrollAdvanceDate(cutoff)}`
-    : "Расчёт за " + payrollMonthLabel(period);
-  const opening = [title, payrollLine(row.name), ""];
+  const firstDay = start || snapshotStart || period + "-01";
+  const lastDay = cutoff || snapshotEnd || new Date(Date.UTC(Number(period.slice(0,4)),Number(period.slice(5,7)),0)).toISOString().slice(0,10);
+  const opening = [payrollGreeting(row.name), "", "Расчёт за период " + payrollPeriodTitle(firstDay,lastDay),
+    payrollSurnameInitials(row.name), ""];
   if (row.skips) opening.push(attendance,"Начислено по отчёту: " + payrollMoney(row.own) + " BYN");
   else opening.push(attendance + " — " + payrollMoney(row.own) + " BYN");
   if (row.replacements || row.replacement_count) opening.push("Замены: +" + payrollMoney(row.replacements) + " BYN");
@@ -3648,7 +3673,7 @@ function payrollMessage(row                   , period        , view            
   const closing = [
     "Остаток: " + payrollMoney(row.balance) + " BYN",
     "К выдаче: " + payrollMoney(row.due) + " BYN",
-    "Получить: " + branch,
+    branch && branch !== "филиал не выбран" ? "Можно забрать на " + branch : "Филиал выдачи пока не выбран",
   ];
   const detail           = [];
   const held = row.lessons.filter(lesson=>!lesson.replaced_name);
@@ -3682,7 +3707,7 @@ function payrollMessage(row                   , period        , view            
     }
   }
   if (detail.length) detail.push("");
-  detail.push("Если видите расхождение, ответьте на это сообщение.");
+  detail.push("Если видите расхождение, пожалуйста, напишите мне 🙏");
 
   return [...opening, ...advanceLines, ...closing, "", ...detail].join("\n").trim();
 }
@@ -4310,7 +4335,8 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
       ratesMismatch?`${payrollPaymentMoney(ratesTotal/100)} BYN по настройкам тренера · ${payrollMoney(row.replacements)} BYN в отчёте ImpulseCRM.`:"";
     rateNotice.hidden=!rateNotice.textContent;
     const message = state.updated && (!state.cutoff || !row._asOfUnknown?.length)
-      ? payrollMessage(row, state.period, state.view, row.branch ? studioName(row.branch) : "филиал не выбран", state.cutoff, state.fromDate) : null;
+      ? payrollMessage(row, state.period, state.view, row.branch ? studioName(row.branch) : "филиал не выбран",
+        state.cutoff, state.fromDate, state.rangeStart, state.rangeEnd) : null;
     get(".payroll-preview").textContent = message || (state.cutoff && row._asOfUnknown?.length
       ? "Сообщение недоступно: для выбранной даты не все суммы подтверждены." : "Расчёт появится после загрузки занятий.");
     get('[data-payroll-action="copy"]').disabled = !message;
