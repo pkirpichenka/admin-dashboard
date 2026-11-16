@@ -1849,7 +1849,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '16.11.2026-an'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '16.11.2026-ao'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -8078,7 +8078,7 @@ async function renderBonusDashboard(body){
   }catch(e){if(!stillCurrent())return;body.innerHTML='<div class="bonus-page"><div class="bp-alert">Не удалось загрузить «План и бонусы». Проверьте, что SQL из пакета установлен в Supabase.</div></div>';handleErr(e);}
 }
 
-/* ================= Зарплата администраторов · 16.11.2026-am =================
+/* ================= Зарплата администраторов · 16.11.2026-ao =================
    Серверная модель: app_admin_payroll_snapshot/save_patch/set_config/replace_days.
    Продажи и планы — app_bonus_snapshot / app_bonus_set_plan (те же, что в «План и бонусы»).
 */
@@ -8303,29 +8303,19 @@ function renderAdminPayroll(host){
   }
   async function edge(mode,month){
     let res;
-    try{res=await fetch(SUPABASE_URL+'/functions/v1/fad-admin-payroll',{
-      method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON_KEY,'apikey':SUPABASE_ANON_KEY},
-      body:JSON.stringify({token:TOKEN,month,mode}),signal:AbortSignal.timeout(115000)
+    try{res=await fetch(SUPABASE_URL+'/functions/v1/fad-payroll-sync',{
+      method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON_KEY},
+      body:JSON.stringify({action:'admin_payroll_sync',token:TOKEN,period:month,mode,force:true}),
+      signal:AbortSignal.timeout(115000)
     });}catch(err){
-      if(err?.name==='TimeoutError')throw Error('Истекло время ожидания Edge Function fad-admin-payroll (115 сек). Откройте Supabase → Edge Functions → fad-admin-payroll → Logs.');
-      let probe='GET-проверка тоже недоступна';
-      try{
-        // GET без JSON/Authorization не вызывает CORS-preflight: помогает отделить
-        // сбой POST/OPTIONS от ошибки запуска функции или блокировки шлюзом.
-        const health=await fetch(SUPABASE_URL+'/functions/v1/fad-admin-payroll',{
-          method:'GET',signal:AbortSignal.timeout(6000)
-        });
-        const check=await health.json().catch(()=>null);
-        probe=health.ok&&check?.ok===true?'GET-проверка доступна: проверьте OPTIONS, POST и настройки JWT':
-          'GET ответил HTTP '+health.status+(check?.error?' ('+String(check.error).slice(0,70)+')':'');
-      }catch(_){ /* Не делаем вывод, что причина именно CORS */ }
-      throw Error('Нет ответа на POST fad-admin-payroll. '+probe+'. Проверьте публикацию функции, Verify JWT (OFF для авторизации через FAD-токен) и Logs/Invocations.');
+      if(err?.name==='TimeoutError')throw Error('Истекло время ожидания обновления (115 сек). Проверьте Supabase → Edge Functions → fad-payroll-sync → Logs.');
+      throw Error('Не удалось вызвать действующую Edge Function fad-payroll-sync. Проверьте соединение и Supabase → Edge Functions → fad-payroll-sync → Invocations.');
     }
     const raw=await res.text();let data={};
-    try{data=raw?JSON.parse(raw):{};}catch(_){throw Error('Edge Function вернула не JSON (HTTP '+res.status+'). Проверьте Deploy и Logs.');}
+    try{data=raw?JSON.parse(raw):{};}catch(_){throw Error('Сервер вернул не JSON (HTTP '+res.status+'). Проверьте Logs для fad-payroll-sync.');}
     if(!res.ok||data?.ok!==true){
-      const detail=data?.error||data?.message||'Ответ сервера без пояснения';
-      throw Error(`${detail} (HTTP ${res.status}${data?.stage?' · '+data.stage:''})`);
+      const detail=data?.error||data?.message||'Сервер не вернул причину';
+      throw Error(`${detail} (HTTP ${res.status}${data?.stage?' · этап '+data.stage:''})`);
     }
     return data;
   }
