@@ -1829,6 +1829,31 @@ label.trainer-replacement-setting{display:flex;align-items:center;gap:8px;min-he
 @media(max-width:1100px){.adpay-kpis{grid-template-columns:repeat(2,1fr)}.adpay-branches,.adpay-detail-cols{grid-template-columns:1fr}}
 @media(max-width:630px){.adpay-kpi{padding:12px}.adpay-kpi b{font-size:20px}.adpay-controls{width:100%}.adpay-modal .adpay-settings-grid{grid-template-columns:1fr}}
 
+
+/* 16.11.2026-ap: use exactly the trainer payroll calendar geometry and controls. */
+.adpay .adpay-head .payroll-range-field{position:relative;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-soft)}
+.adpay .adpay-head .payroll-range-wrap{position:relative;flex:none}
+.adpay .adpay-head .payroll-range-trigger{min-height:40px;min-width:218px;width:auto;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 11px;font-size:14px;font-weight:600}
+.adpay .adpay-head .payroll-range-popover{position:absolute;left:0;right:auto;top:calc(100% + 6px);width:296px;max-width:calc(100vw - 24px);padding:14px;z-index:80;text-align:left}
+.adpay .adpay-head .payroll-range-header{display:grid;grid-template-columns:minmax(0,1fr) 92px;gap:7px;margin-bottom:12px}
+.adpay .adpay-head .payroll-range-header select{width:100%;min-width:0;max-width:none;padding:8px 7px;font-size:13px;font-weight:700}
+.adpay .adpay-head .payroll-range-weekdays,.adpay .adpay-head .payroll-range-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
+.adpay .adpay-head .payroll-range-day{width:100%;min-width:0;height:34px;padding:0;font-size:12px;font-weight:600}
+.adpay .adpay-head .payroll-range-weekdays span{text-align:center;font-size:10px}
+@media(max-width:650px){.adpay .adpay-head .payroll-range-popover{left:auto;right:0}}
+/* Per-day hours, not a mutable monthly total */
+.adpay-daygrid{grid-template-columns:repeat(auto-fill,minmax(255px,1fr))}
+.adpay-day.adpay-adjusted{border-color:#ddac3c;background:#fffaf0}
+.adpay-day-adjust{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin:9px 0 6px}
+.adpay-day-adjust .adpay-muted{flex:1 0 100%}
+.adpay-day-adjust button{font:inherit;font-size:11px;padding:5px 7px;border:1px solid var(--line-strong);border-radius:7px;background:#fff;cursor:pointer}
+.adpay-day-adjust .adpay-number{width:61px;max-width:61px;min-height:29px;padding:4px 5px;text-align:center}
+.adpay-day-adjust .adpay-number.ov{background:#fff3c5}
+.adpay-day-final{font-weight:800;margin:4px 0 5px}
+.adpay .adpay-day textarea{display:block;width:100%;min-height:46px;margin-top:8px;font-size:12px;padding:6px 8px;resize:vertical}
+.adpay-adjusted-cell{font-weight:800;color:#a66d09}
+.adpay-advance-readonly{font-weight:700;white-space:nowrap}
+
 </style>
 
 <div id="root"></div>
@@ -1849,7 +1874,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '16.11.2026-ao'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '16.11.2026-ap'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -8078,14 +8103,14 @@ async function renderBonusDashboard(body){
   }catch(e){if(!stillCurrent())return;body.innerHTML='<div class="bonus-page"><div class="bp-alert">Не удалось загрузить «План и бонусы». Проверьте, что SQL из пакета установлен в Supabase.</div></div>';handleErr(e);}
 }
 
-/* ================= Зарплата администраторов · 16.11.2026-ao =================
+/* ================= Зарплата администраторов · 16.11.2026-ap =================
    Серверная модель: app_admin_payroll_snapshot/save_patch/set_config/replace_days.
    Продажи и планы — app_bonus_snapshot / app_bonus_set_plan (те же, что в «План и бонусы»).
 */
 function renderAdminPayroll(host){
   if(!session||session.role!=='owner'){host.innerHTML='<div class="empty">Доступ только у руководителя.</div>';return;}
   const page=document.createElement('section');page.className='adpay fade-in';host.replaceChildren(page);
-  const state={month:BONUS_MONTH,filter:'all',open:null,model:null,days:[],byId:new Map(),busy:false,ticket:0,saving:new Map(),lastError:'',syncStatus:'',syncStatusError:false,syncWarnings:[],autoAttempted:new Set(),calendarPeriod:BONUS_MONTH,calendarOpen:false,draftDate:null,rangeFrom:null,rangeTo:null};
+  const state={month:BONUS_MONTH,filter:'all',open:null,model:null,days:[],byId:new Map(),busy:false,ticket:0,saving:new Map(),daySaving:new Map(),lastError:'',syncStatus:'',syncStatusError:false,syncWarnings:[],autoAttempted:new Set(),calendarPeriod:BONUS_MONTH,calendarOpen:false,draftDate:null,rangeFrom:null,rangeTo:null};
   // Календарь визуально и по выбору двух дат совпадает с зарплатой тренеров.
   // Важный контракт: ставки, корректировки, премии и авансы администраторов
   // хранятся помесячно. Частичный диапазон обозначает даты просмотра смен,
@@ -8128,17 +8153,22 @@ function renderAdminPayroll(host){
   const per=()=>bonusPeriodTitle(state.month).toLowerCase();
   const record=s=>state.byId.get(String(s.id))?.payroll||{};
   const days=s=>state.byId.get(String(s.id))?.days||[];
+  const dayAdjustment=d=>num(d.hours_adjustment);
+  const dayFinalHours=d=>Math.round((num(d.hours_impulse)+dayAdjustment(d))*10000)/10000;
+  const dayTotalAdjustment=s=>round2(days(s).reduce((sum,d)=>sum+dayAdjustment(d),0));
+  const legacyMonthAdjustment=s=>num(record(s).hours_adjustment);
+  const advanceFromImpulse=s=>{const t=source(s);return t?.advance_source==null?null:num(t.advance_source);};
   const branch=s=>state.model.branches.find(b=>b.id===s.studio)||null;
   const autoQuality=s=>{const checks=record(s).quality_checks||{};return criteria().length>0&&criteria().every(c=>checks[c.key]===true)?num(state.model.settings.quality_amount):0;};
   // Бонус старшего начисляется от ДРУГИХ администраторов: без рекурсивного включения себя.
   // База настраивается: общие начисления до авансов (по умолчанию) либо только оплата смен.
   function seniorId(){return String(cfg().senior_admin_id||'');}
   function basic(s){
-    const r=record(s),ds=days(s),hi=Math.round(ds.reduce((v,d)=>v+num(d.hours_impulse),0)*10000)/10000,adj=num(r.hours_adjustment),h=Math.round((hi+adj)*10000)/10000;
+    const r=record(s),ds=days(s),hi=Math.round(ds.reduce((v,d)=>v+num(d.hours_impulse),0)*10000)/10000,adj=round2(dayTotalAdjustment(s)+legacyMonthAdjustment(s)),h=Math.round((hi+adj)*10000)/10000;
     const acc=round2(h*rate()),br=branch(s),autoFil=br&&br.target?num(br.bonus):0,autoQ=autoQuality(s);
     const bf=r.bonus_filial_override==null?autoFil:num(r.bonus_filial_override);
     const bq=r.bonus_quality_override==null?autoQ:num(r.bonus_quality_override);
-    const fine=num(r.fine),advance=num(r.advance),before=round2(acc+bf+bq-fine);
+    const fine=num(r.fine),advance=advanceFromImpulse(s)??0,before=round2(acc+bf+bq-fine);
     return {hi,adj,h,acc,autoFil,autoQ,bf,bq,fine,advance,before,percent:br?.pct||0};
   }
   function calc(s){
@@ -8157,10 +8187,15 @@ function renderAdminPayroll(host){
       `Расчёт за ${per()}`,s.name,`Филиал: ${studioName(s.studio)}`,'',
       `Отработанные дни из Impulse (ставка ${fmt(rate())} Br/ч):`];
     const ds=days(s);
-    if(ds.length)for(const d of ds)list.push(`${dayTitle(d.work_date)} · ${shiftLabel(d)} · ${fmt(d.hours_impulse)} ч × ${fmt(rate())} = ${money(round2(num(d.hours_impulse)*rate()))}${sourceDay(d)}`);
+    if(ds.length)for(const d of ds){
+      const da=dayAdjustment(d),h=dayFinalHours(d);
+      list.push(`${dayTitle(d.work_date)} · ${shiftLabel(d)} · ${fmt(h)} ч × ${fmt(rate())} = ${money(round2(h*rate()))}${sourceDay(d)}`);
+      if(da)list.push(`  Корректировка дня: ${signed(da)} ч (${signed(round2(da*rate()))} Br)${d.hours_comment?' · '+d.hours_comment:''}; исходно ${fmt(d.hours_impulse)} ч`);
+    }
     else list.push('Смены за месяц пока не получены из Impulse');
     list.push('',`Часы по сменам: ${fmt(c.hi)}`);
-    if(c.adj)list.push(`Корректировка часов: ${signed(c.adj)} ч × ${fmt(rate())} = ${signed(c.adj*rate())} Br${r.hours_comment?' ('+r.hours_comment+')':''}`);
+    if(legacyMonthAdjustment(s))list.push(`Историческая месячная корректировка: ${signed(legacyMonthAdjustment(s))} ч${r.hours_comment?' ('+r.hours_comment+')':''}`);
+    if(c.adj)list.push(`Суммарная корректировка: ${signed(c.adj)} ч`);
     list.push(`Всего часов: ${fmt(c.h)}`,`Начислено за смены по ставке FAD: ${money(c.acc)}`);
     if(source(s)?.accrued_source!=null)list.push(`Начислено в Impulse: ${money(num(source(s).accrued_source))}${Math.abs(num(source(s).accrued_source)-c.acc)>1?' (проверьте расхождение)':''}`);
     if(c.bf)list.push(`Бонус Flexico (план филиала ${fmt(c.percent)}%): +${money(c.bf)}`);
@@ -8186,6 +8221,21 @@ function renderAdminPayroll(host){
       handleErr(e);throw e;
     }).finally(()=>{if(state.saving.get(id)===work)state.saving.delete(id)});
   }
+  function saveDay(s,d,patch){
+    const key=String(s.id)+':'+String(d.work_date),savingMonth=state.month;
+    const original={...d};Object.assign(d,patch);draw();
+    const previous=state.daySaving.get(key)||Promise.resolve();
+    const work=previous.catch(()=>{}).then(()=>rpc('app_admin_payroll_save_day_patch',{
+      p_token:TOKEN,p_period:savingMonth,p_admin_id:Number(s.id),p_work_date:d.work_date,p_patch:patch}));
+    state.daySaving.set(key,work);
+    return work.then(result=>{
+      if(state.daySaving.get(key)===work){Object.assign(d,result||{});draw();}
+      toast('Корректировка дня сохранена ✓');
+    }).catch(e=>{
+      if(state.daySaving.get(key)===work){Object.assign(d,original);draw();}
+      handleErr(e);throw e;
+    }).finally(()=>{if(state.daySaving.get(key)===work)state.daySaving.delete(key)});
+  }
   function renderCards(){const x=state.model,all=rows(),selected=all.filter(s=>state.filter==='all'||s.studio===state.filter),t=totals(selected);
     const card=(label,value,sub,main=false)=>`<div class="adpay-kpi"><small>${esc(label)}</small><b class="${main?'adpay-pos':''}">${esc(value)}</b><small>${esc(sub)}</small></div>`;
     const kpis=card('К выдаче (округл.)',money(t.pay),`${t.paid} из ${selected.length} выдано`,true)+card('Начислено за смены',money(t.acc),`${fmt(t.h)} ч`)+card('Бонусы','+'+money(t.bf+t.bq+t.senior),`филиала ${fmt(t.bf)} · качества ${fmt(t.bq)} · старшего ${fmt(t.senior)}`)+card('Штрафы',money(t.fine),'вычитаются из итога')+card('Авансы выданы',money(t.advance),`остаток ${money(t.rest)}`);
@@ -8206,27 +8256,42 @@ function renderAdminPayroll(host){
   };
   function rowDetail(s){const r=record(s),c=calc(s),ds=days(s),checks=r.quality_checks||{};
     const line=(l,v,cl='')=>`<div class="adpay-line"><span>${esc(l)}</span><b class="${cl}">${esc(v)}</b></div>`;
-    return `<tr class="adpay-details"><td colspan="14"><div class="adpay-days"><div class="adpay-days-head"><div><h4>Отработанные дни · данные Impulse${isPartial()?' · выделены '+dateRangeText():''}</h4><div class="adpay-muted">${ds.length} смен · ${fmt(c.hi)} ч × ${fmt(rate())} Br = ${money(c.hi*rate())}</div></div><div class="adpay-adjust"><span class="adpay-muted">Корректировка часов</span><button type="button" class="btn" data-action="adj" data-id="${s.id}" data-delta="-0.5">−0,5</button><input data-id="${s.id}" data-field="hours_adjustment" type="number" step="0.5" value="${c.adj}" aria-label="Корректировка часов ${esc(s.name)}"><button type="button" class="btn" data-action="adj" data-id="${s.id}" data-delta="0.5">+0,5</button><button type="button" class="btn" data-action="reset" data-id="${s.id}">Сбросить</button></div></div>
-    <div class="adpay-daygrid">${ds.length?ds.map(d=>`<div class="adpay-day${String(d.work_date)>=state.rangeFrom&&String(d.work_date)<=state.rangeTo?' adpay-day-in-range':' adpay-day-out-range'}"><b>${esc(dayTitle(d.work_date))}</b><span class="adpay-muted">${esc(shiftLabel(d))}</span><span class="adpay-muted">${fmt(d.hours_impulse)} ч · ${money(round2(num(d.hours_impulse)*rate()))}</span>${d.impulse_day_amount==null?'':`<span class="adpay-muted">CRM: ${money(d.impulse_day_amount)}</span>`}</div>`).join(''):'<div class="adpay-day">Данные Impulse ещё не синхронизированы</div>'}</div>
-    <textarea data-id="${s.id}" data-field="hours_comment" placeholder="Причина корректировки часов (попадёт в сообщение админу)">${esc(r.hours_comment||'')}</textarea></div>
-    <div class="adpay-detail-cols"><div><h4>Расчётный листок</h4>${line(`${fmt(c.hi)} ч по сменам × ${fmt(rate())} Br`,money(c.hi*rate()))}${source(s)?.accrued_source!=null?line('Начислено в Impulse (сверка)',money(source(s).accrued_source)):''}${line(`Корректировка ${signed(c.adj)} ч`,signed(c.adj*rate())+' Br',c.adj<0?'adpay-neg':'adpay-pos')}${line(`Бонус Flexico · ${fmt(c.percent)}% плана`,'+'+money(c.bf),'adpay-pos')}${line('Бонус за качество','+'+money(c.bq),'adpay-pos')}${c.senior?line(`Старший · ${fmt(num(cfg().senior_bonus_percent))}% от ${money(c.seniorBase)}`,'+'+money(c.senior),'adpay-pos'):''}${line('Штрафы','−'+money(c.fine),'adpay-neg')}<div class="adpay-line strong"><span>Итого</span><span>${money(c.total)}</span></div>${line('Авансы','−'+money(c.advance))}<div class="adpay-line strong"><span>К выдаче</span><span class="${c.pay<0?'adpay-neg':''}">${money(c.pay)}</span></div></div>
+    const dayCard=d=>{const initial=num(d.hours_impulse),adj=dayAdjustment(d),total=dayFinalHours(d),date=String(d.work_date),color=adj?' adpay-adjusted':'';
+      return `<div class="adpay-day${color}${date>=state.rangeFrom&&date<=state.rangeTo?' adpay-day-in-range':' adpay-day-out-range'}">
+      <b>${esc(dayTitle(date))}</b><span class="adpay-muted">${esc(shiftLabel(d))}</span>
+      <span>Impulse: ${fmt(initial)} ч · ${money(round2(initial*rate()))}</span>
+      <div class="adpay-day-adjust"><span class="adpay-muted">± часы за день</span>
+      <button type="button" data-action="day-adj" data-id="${s.id}" data-date="${date}" data-delta="-0.5" aria-label="Убавить полчаса ${esc(dayTitle(date))}">−0,5</button>
+      <input class="adpay-number${adj?' ov':''}" data-id="${s.id}" data-date="${date}" data-day-field="hours_adjustment" type="number" step="0.5" value="${fmt(adj).replace(',','.')}" aria-label="Корректировка ${esc(dayTitle(date))}">
+      <button type="button" data-action="day-adj" data-id="${s.id}" data-date="${date}" data-delta="0.5" aria-label="Добавить полчаса ${esc(dayTitle(date))}">+0,5</button>
+      <button type="button" data-action="day-reset" data-id="${s.id}" data-date="${date}">Сбросить</button></div>
+      <span class="adpay-day-final">Итого: ${fmt(total)} ч · ${money(round2(total*rate()))}</span>
+      ${d.impulse_day_amount==null?'':`<span class="adpay-muted">Начислено Impulse: ${money(d.impulse_day_amount)}</span>`}
+      <textarea data-id="${s.id}" data-date="${date}" data-day-field="hours_comment" placeholder="Причина корректировки за этот день">${esc(d.hours_comment||'')}</textarea>
+      </div>`;
+    };
+    return `<tr class="adpay-details"><td colspan="14"><div class="adpay-days"><div class="adpay-days-head"><div><h4>Отработанные дни · данные Impulse${isPartial()?' · выделены '+dateRangeText():''}</h4><div class="adpay-muted">${ds.length} дней · ${fmt(c.hi)} ч по данным Impulse · ${signed(c.adj)} ч корректировки · итого ${fmt(c.h)} ч</div></div></div>
+    ${legacyMonthAdjustment(s)?`<div class="adpay-note adpay-source-warning">Сохранена историческая месячная корректировка ${signed(legacyMonthAdjustment(s))} ч. Новые корректировки вносятся только по дням; историческая сумма сохранена, чтобы не потерять начисления.</div>`:''}
+    <div class="adpay-daygrid">${ds.length?ds.map(dayCard).join(''):'<div class="adpay-day">Данные Impulse ещё не синхронизированы</div>'}</div></div>
+    <div class="adpay-detail-cols"><div><h4>Расчётный листок</h4>${line(`${fmt(c.hi)} ч по сменам × ${fmt(rate())} Br`,money(c.hi*rate()))}${source(s)?.accrued_source!=null?line('Начислено в Impulse (сверка)',money(source(s).accrued_source)):''}${line(`Корректировки по дням: ${signed(c.adj)} ч`,signed(round2(c.adj*rate()))+' Br',c.adj<0?'adpay-neg':'adpay-pos')}${line(`Бонус Flexico · ${fmt(c.percent)}% плана`,'+'+money(c.bf),'adpay-pos')}${line('Бонус за качество','+'+money(c.bq),'adpay-pos')}${c.senior?line(`Старший · ${fmt(num(cfg().senior_bonus_percent))}% от ${money(c.seniorBase)}`,'+'+money(c.senior),'adpay-pos'):''}${line('Штрафы','−'+money(c.fine),'adpay-neg')}<div class="adpay-line strong"><span>Итого</span><span>${money(c.total)}</span></div>${line('Авансы','−'+money(c.advance))}<div class="adpay-line strong"><span>К выдаче</span><span class="${c.pay<0?'adpay-neg':''}">${money(c.pay)}</span></div></div>
     <div><h4>Качество работы · ${money(state.model.settings.quality_amount)}</h4>${criteria().map(q=>`<label class="adpay-check"><input type="checkbox" data-id="${s.id}" data-quality="${esc(q.key)}" ${checks[q.key]===true?'checked':''}><span>${esc(q.label)}</span></label>`).join('')}<div class="adpay-muted">Бонус начисляется при выполнении всех критериев</div><h4 style="margin-top:12px">Штраф / комментарий</h4><textarea class="adpay-comment" data-id="${s.id}" data-field="fine_comment" placeholder="Причина штрафа (попадёт в расчёт)">${esc(r.fine_comment||'')}</textarea></div>
     <div><h4>Сообщение в Telegram</h4><pre class="adpay-preview">${esc(dayText(s))}</pre><div class="adpay-muted">Ник Telegram</div><input class="adpay-nick" type="text" data-id="${s.id}" data-telegram-nick value="${esc(s.username||'')}" placeholder="@nickname" aria-label="Ник Telegram ${esc(s.name)}" style="max-width:215px"><div class="adpay-actions" style="margin-top:9px"><button type="button" class="btn btn-primary btn-sm" data-action="preview" data-id="${s.id}">Скопировать / Telegram</button><label class="adpay-paid-check"><input data-id="${s.id}" data-field="paid" type="checkbox" ${r.paid===true?'checked':''}> Выдано</label></div></div></div></td></tr>`;
   }
+
   function draw(){if(!page.isConnected||!state.model)return;const {kpis,branches,selected,t}=renderCards();const receipt=state.model.receivedAt?` · снимок Impulse ${new Date(state.model.receivedAt).toLocaleString('ru-RU',{timeZone:'Europe/Minsk'})}`:'';
     page.innerHTML=`<div class="adpay-head"><div><h1>Зарплата администраторов</h1><div class="adpay-muted">Часы по дням — Impulse · план и продажи — «План и бонусы»${esc(receipt)}</div></div><div class="adpay-controls"><label>Ставка, Br/ч <input id="adpay-rate" type="number" step="0.5" min="0" value="${rate()}"></label>${calendarMarkup()}<button type="button" class="btn btn-primary" data-action="sync" ${state.busy?'disabled':''}>${state.busy?'Получаем данные…':'Обновить из Impulse'}</button><button type="button" class="btn btn-sm" data-action="settings">⚙ Настройки</button></div></div>
-    <div class="adpay-note${state.lastError?' error':''}">${state.lastError?esc(state.lastError):'Расчёт предварительный. Жёлтые поля — ручные изменения. Из Impulse сохраняются время смен, часы и исходные начисления для сверки; корректировки руководителя, авансы и бонусы при пересчёте не стираются. Нажмите на строку, чтобы увидеть дни, качество работы и расчётный листок.'}</div>
+    <div class="adpay-note${state.lastError?' error':''}">${state.lastError?esc(state.lastError):'Расчёт предварительный. Часы можно корректировать отдельно за каждый день, исходные данные Impulse не меняются. Авансы автоматически загружаются из Impulse и недоступны для ручной правки. Нажмите на строку для просмотра смен и расчёта.'}</div>
     ${state.syncStatus?`<div class="adpay-sync-status${state.syncStatusError?' payroll-sync-error':''}" role="status">${esc(state.syncStatus)}</div>`:''}
     ${isPartial()?`<div class="adpay-note adpay-source-warning"><b>Выбраны даты ${dateRangeText()}.</b> В карточках дней будет выделен этот диапазон. Денежные итоги, премии и авансы по-прежнему относятся ко всему месяцу, так как Impulse и FAD хранят их помесячно; не используйте их как сумму к выдаче за отдельные дни.</div>`:''}
     ${state.syncWarnings?.length?`<div class="adpay-note adpay-source-warning"><b>Неполное сопоставление Impulse:</b> ${esc(state.syncWarnings.join(' · '))}. Часы сотрудников без подтверждённой выгрузки не удалены.</div>`:''}
     ${state.model.sourceWarnings?.length?`<div class="adpay-note adpay-source-warning"><b>Проверка Impulse:</b> ${esc(state.model.sourceWarnings.join(' · '))}. Исходные суммы сохранены для сверки; выплаты считаются по часам × ставке FAD.</div>`:''}
     <div class="adpay-kpis">${kpis}</div><div class="adpay-branches">${branches}</div>
     <div class="adpay-toolbar">${[{id:'all',name:'Все'},...BONUS_BRANCHES].map(b=>`<button type="button" class="adpay-chip${state.filter===b.id?' on':''}" data-action="filter" data-id="${b.id}">${b.id==='all'?'':`<i class="adpay-dot" style="background:${b.color}"></i>`}${esc(b.name)}</button>`).join('')}<span class="grow"></span><button type="button" class="btn btn-sm" data-action="summary">Сводка руководителю</button><button type="button" class="btn btn-sm btn-primary" data-action="all">Расчёты для копирования</button></div>
-    <div class="adpay-scroll"><table class="adpay-table"><thead><tr><th>Администратор</th><th>Часы</th><th>± часы</th><th>Продажи</th><th>Начислено</th><th>Бонус филиала</th><th>Бонус качества</th><th title="Бонус старшего администратора: процент от начислений остальных">Старший %</th><th>Штрафы</th><th>Итого</th><th>Авансы</th><th>Остаток</th><th>К выдаче</th><th>Telegram</th></tr></thead>
+    <div class="adpay-scroll"><table class="adpay-table"><thead><tr><th>Администратор</th><th>Часы</th><th>± по дням</th><th>Продажи</th><th>Начислено</th><th>Бонус филиала</th><th>Бонус качества</th><th title="Бонус старшего администратора: процент от начислений остальных">Старший %</th><th>Штрафы</th><th>Итого</th><th>Авансы</th><th>Остаток</th><th>К выдаче</th><th>Telegram</th></tr></thead>
     <tbody>${selected.map(s=>{const c=calc(s),r=record(s);
-    return `<tr class="adpay-row${r.paid===true?' adpay-paid':''}" data-open-id="${s.id}"><td class="adpay-name"><i class="adpay-dot" style="background:${studioColor(s.studio)}"></i>${esc(s.name)}${String(s.id)===seniorId()?'<span class="adpay-senior-tag">старший</span>':''}<small>${esc(studioName(s.studio))}${c.adj?' · ✎ часы скорректированы':''}</small></td><td>${fmt(c.h)}${c.adj?`<span class="adpay-hint">Impulse ${fmt(c.hi)}</span>`:''}</td><td>${numeric(s,'hours_adjustment',c.adj,{step:.5,highlight:c.adj!==0})}</td><td>${fmt(s.count)}</td><td>${money(c.acc)}</td><td>${numeric(s,'bonus_filial_override',c.bf,{override:true,auto:c.autoFil,min:0})}</td><td>${numeric(s,'bonus_quality_override',c.bq,{override:true,auto:c.autoQ,min:0})}</td><td class="adpay-pos">${c.senior?money(c.senior):'—'}</td><td>${numeric(s,'fine',c.fine,{min:0,step:.01})}</td><td><b>${money(c.total)}</b></td><td>${numeric(s,'advance',c.advance,{min:0,step:.01})}${source(s)?.advance_source!=null?`<span class="adpay-hint">Impulse ${money(source(s).advance_source)}</span>`:''}</td><td class="${c.rest<0?'adpay-neg':''}">${money(c.rest)}</td><td class="adpay-big ${c.pay<0?'adpay-neg':''}">${money(c.pay)}</td><td><button type="button" class="adpay-tg" data-action="preview" data-id="${s.id}" aria-label="Telegram ${esc(s.name)}">✈</button></td></tr>${state.open===String(s.id)?rowDetail(s):''}`;}).join('')}</tbody>
+    return `<tr class="adpay-row${r.paid===true?' adpay-paid':''}" data-open-id="${s.id}"><td class="adpay-name"><i class="adpay-dot" style="background:${studioColor(s.studio)}"></i>${esc(s.name)}${String(s.id)===seniorId()?'<span class="adpay-senior-tag">старший</span>':''}<small>${esc(studioName(s.studio))}${c.adj?' · ✎ часы скорректированы':''}</small></td><td>${fmt(c.h)}${c.adj?`<span class="adpay-hint">Impulse ${fmt(c.hi)}</span>`:''}</td><td class="${c.adj?'adpay-adjusted-cell':''}">${signed(c.adj)}</td><td>${fmt(s.count)}</td><td>${money(c.acc)}</td><td>${numeric(s,'bonus_filial_override',c.bf,{override:true,auto:c.autoFil,min:0})}</td><td>${numeric(s,'bonus_quality_override',c.bq,{override:true,auto:c.autoQ,min:0})}</td><td class="adpay-pos">${c.senior?money(c.senior):'—'}</td><td>${numeric(s,'fine',c.fine,{min:0,step:.01})}</td><td><b>${money(c.total)}</b></td><td class="adpay-advance-readonly">${source(s)?.advance_source==null?'—':money(c.advance)}</td><td class="${c.rest<0?'adpay-neg':''}">${money(c.rest)}</td><td class="adpay-big ${c.pay<0?'adpay-neg':''}">${money(c.pay)}</td><td><button type="button" class="adpay-tg" data-action="preview" data-id="${s.id}" aria-label="Telegram ${esc(s.name)}">✈</button></td></tr>${state.open===String(s.id)?rowDetail(s):''}`;}).join('')}</tbody>
     <tfoot><tr><td>Итого</td><td>${fmt(t.h)}</td><td>${signed(t.adj)}</td><td>${fmt(t.sales)}</td><td>${money(t.acc)}</td><td>${money(t.bf)}</td><td>${money(t.bq)}</td><td>${money(t.senior)}</td><td>${money(t.fine)}</td><td>${money(t.total)}</td><td>${money(t.advance)}</td><td>${money(t.rest)}</td><td class="adpay-big ${t.pay<0?'adpay-neg':''}">${money(t.pay)}</td><td></td></tr></tfoot></table></div>
-    <div class="adpay-legend"><span>Часы Impulse доступны только для просмотра</span><span>Корректировки сохраняются отдельно, с аудитом</span><span>Telegram вручную: копирование и переход в чат по нику</span><span>Бонус старшего · ${fmt(num(cfg().senior_bonus_percent))}% от начислений остальных</span><span>Округление вверх до 5 Br, включая отрицательные суммы</span><span>Зелёная строка = выдано</span></div>`;
+    <div class="adpay-legend"><span>Часы Impulse доступны только для просмотра</span><span>Часы по каждому дню можно скорректировать; сохраняется аудит</span><span>Telegram вручную: копирование и переход в чат по нику</span><span>Бонус старшего · ${fmt(num(cfg().senior_bonus_percent))}% от начислений остальных</span><span>Округление вверх до 5 Br, включая отрицательные суммы</span><span>Зелёная строка = выдано</span></div>`;
   }
   async function load(){if(!page.isConnected)return;const seq=++state.ticket,pageMonth=state.month;page.innerHTML='<div class="empty">Загружаем зарплату администраторов…</div>';
     try{const payload=await rpc('app_admin_payroll_snapshot',{p_token:TOKEN,p_period:pageMonth});if(seq!==state.ticket||!page.isConnected)return;
@@ -8334,6 +8399,18 @@ function renderAdminPayroll(host){
       const y=page.querySelector('#adpay-calendar-year')?.value||state.calendarPeriod.slice(0,4),m=page.querySelector('#adpay-calendar-month')?.value||state.calendarPeriod.slice(5,7);
       state.calendarPeriod=y+'-'+m;state.draftDate=null;state.calendarOpen=true;draw();return;
     }
+    if(el.dataset.dayField){
+      const s=rows().find(x=>String(x.id)===el.dataset.id);
+      const d=s&&days(s).find(x=>String(x.work_date)===el.dataset.date);
+      if(!d)return;
+      const field=el.dataset.dayField;
+      let val=field==='hours_comment'?String(el.value||'').trim():Number(el.value);
+      if(field==='hours_adjustment'&&(el.value===''||!Number.isFinite(val)||Math.abs(val*2-Math.round(val*2))>1e-8||dayFinalHours(d)-dayAdjustment(d)+val<-1e-8)){
+        toast('Изменение часов должно быть кратно 0,5 ч; итог дня не может быть отрицательным',true);draw();return;
+      }
+      if(field==='hours_comment'&&val.length>2000){toast('Комментарий не должен превышать 2000 символов',true);draw();return;}
+      try{await saveDay(s,d,{[field]:val});}catch(_){}return;
+    }
     if(el.id==='adpay-rate'){if(el.value===''||num(el.value)<0||num(el.value)>1000){draw();toast('Некорректная ставка',true);return;}try{await rpc('app_admin_payroll_set_config',{p_token:TOKEN,p_patch:{hourly_rate:num(el.value)}});state.model.payrollConfig.hourly_rate=num(el.value);draw();toast('Ставка сохранена');}catch(err){handleErr(err);draw();}return;}
     if(el.dataset.plan){const b=state.model.branches.find(x=>x.id===el.dataset.plan),value=el.value===''?0:Number(el.value);if(!Number.isInteger(value)||value<0){toast('План должен быть целым неотрицательным',true);draw();return;}try{await rpc('app_bonus_set_plan',{p_token:TOKEN,p_period:state.month,p_studio:el.dataset.plan,p_target:value});await load();toast('План сохранён');}catch(err){handleErr(err);draw();}return;}
     const s=rows().find(x=>String(x.id)===el.dataset.id);if(!s)return;
@@ -8343,11 +8420,11 @@ function renderAdminPayroll(host){
     }
     if(el.dataset.quality){const checks={...(record(s).quality_checks||{}),[el.dataset.quality]:el.checked};try{await save(s,{quality_checks:checks});}catch(_){}return;}
     const key=el.dataset.field;if(!key)return;
+    if(['advance','hours_adjustment','hours_comment'].includes(key)){toast('Правка доступна только по каждому рабочему дню; авансы берутся из Impulse',true);draw();return;}
     if(el.value==='' && !['bonus_filial_override','bonus_quality_override','hours_comment','fine_comment','paid'].includes(key)){toast('Пустое значение не сохранено');draw();return;}
     let value;if(key==='paid')value=el.checked;else if(['hours_comment','fine_comment'].includes(key))value=el.value.trim();else if(['bonus_filial_override','bonus_quality_override'].includes(key))value=el.value.trim()===''?null:Number(el.value);else value=Number(el.value);
     if(typeof value==='number'&&(!Number.isFinite(value)||(!['hours_adjustment'].includes(key)&&value<0))){toast('Недопустимое значение',true);draw();return;}
-    if(key==='hours_adjustment'&&(value*2!==Math.round(value*2)||calc(s).hi+value<0)){toast('Корректировка должна быть кратна 0,5 ч и не давать отрицательные часы',true);draw();return;}
-    if(['advance','fine','bonus_filial_override','bonus_quality_override'].includes(key)&&value!=null&&Math.round(value*100)!==value*100){toast('Точность суммы — до копейки',true);draw();return;}
+    if(['fine','bonus_filial_override','bonus_quality_override'].includes(key)&&value!=null&&Math.round(value*100)!==value*100){toast('Точность суммы — до копейки',true);draw();return;}
     try{await save(s,{[key]:value});}catch(_){}
   });
   page.addEventListener('click',async e=>{const button=e.target.closest('[data-action]');
@@ -8367,8 +8444,12 @@ function renderAdminPayroll(host){
     }
     if(action==='filter'){state.filter=id;state.open=null;draw();return;}
     if(action==='settings'){settingsModal();return;}if(action==='sync'){await doSync();return;}
-    if(action==='adj'&&s){const delta=Number(button.dataset.delta),value=calc(s).adj+delta;if(calc(s).hi+value<0){toast('Итого часов не может быть меньше нуля',true);return;}try{await save(s,{hours_adjustment:value});}catch(_){}return;}
-    if(action==='reset'&&s){try{await save(s,{hours_adjustment:0,hours_comment:''});}catch(_){}return;}
+    if((action==='day-adj'||action==='day-reset')&&s){
+      const d=days(s).find(x=>String(x.work_date)===button.dataset.date);if(!d)return;
+      const value=action==='day-reset'?0:round2(dayAdjustment(d)+Number(button.dataset.delta));
+      if(dayFinalHours(d)-dayAdjustment(d)+value<0){toast('Итого часов дня не может быть меньше нуля',true);return;}
+      try{await saveDay(s,d,action==='day-reset'?{hours_adjustment:0,hours_comment:''}:{hours_adjustment:value});}catch(_){}return;
+    }
     if(action==='preview'&&s){previewManual('Расчёт: '+s.name,dayText(s),s);return;}
     if(action==='summary'){previewManual('Сводка руководителю',summaryText(),null);return;}
     if(action==='all'){
