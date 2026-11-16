@@ -1729,7 +1729,27 @@ label.trainer-replacement-setting{display:flex;align-items:center;gap:8px;min-he
 .payroll-owner-summary .payroll-owner-fields{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .payroll-owner-summary .payroll-owner-fields label{display:flex;flex:1;min-width:160px;flex-direction:column;gap:5px;font-size:12px;color:var(--ink-soft);font-weight:600}
 .payroll-owner-summary .payroll-owner-fields select{width:100%;font-size:14px;padding:9px 10px}
-.payroll-owner-summary .payroll-owner-fields button{align-self:flex-end}
+.payroll-owner-summary .payroll-owner-fields button{margin-left:auto}
+/* Три филиала — единая сводка без переключателя. */
+.payroll-owner-summary{width:min(680px,calc(100% - 24px))}
+.payroll-owner-summary .payroll-owner-branches{display:grid;gap:12px;margin:12px 0}
+.payroll-owner-summary .payroll-owner-branch-card{padding:12px 13px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2)}
+.payroll-owner-summary .payroll-owner-branch-heading{font-weight:750;font-size:15px;margin:0 0 3px}
+.payroll-owner-summary .payroll-owner-branch-source{font-size:11.5px;color:var(--ink-soft);margin:0 0 9px}
+.payroll-owner-summary .payroll-owner-branch-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.payroll-owner-summary .payroll-owner-branch-value{background:#fff;border:1px solid var(--line);border-radius:9px;padding:9px;min-width:0}
+.payroll-owner-summary .payroll-owner-branch-value span{display:block;color:var(--ink-soft);font-size:11px;line-height:1.25;margin-bottom:4px}
+.payroll-owner-summary .payroll-owner-branch-value b{font-size:14px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.payroll-owner-summary .payroll-owner-branch-value.negative b,.payroll-owner-summary .payroll-owner-total-value.negative b{color:var(--clay)}
+.payroll-owner-summary .payroll-owner-branch-value.positive b,.payroll-owner-summary .payroll-owner-total-value.positive b{color:var(--accent-deep)}
+.payroll-owner-summary .payroll-owner-grand-total{border:1px solid var(--line-strong);border-radius:12px;background:#fff;padding:12px 13px;margin:12px 0}
+.payroll-owner-summary .payroll-owner-grand-total h3{font-size:14px;margin:0 0 10px}
+.payroll-owner-summary .payroll-owner-total-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.payroll-owner-summary .payroll-owner-total-value{background:var(--surface-2);padding:9px 10px;border-radius:9px;min-width:0}
+.payroll-owner-summary .payroll-owner-total-value span{display:block;font-size:11px;color:var(--ink-soft);margin-bottom:3px}
+.payroll-owner-summary .payroll-owner-total-value b{font-size:16px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.payroll-owner-summary .payroll-owner-total-value.needed{grid-column:1/-1}
+@media(max-width:520px){.payroll-owner-summary .payroll-owner-branch-grid{grid-template-columns:1fr 1fr}.payroll-owner-summary .payroll-owner-branch-value:last-child{grid-column:1/-1}.payroll-owner-summary .payroll-owner-total-grid{grid-template-columns:1fr 1fr}}
 
 </style>
 
@@ -1751,7 +1771,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '16.11.2026-ah'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '16.11.2026-ai'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -4067,17 +4087,12 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
       <header><h2 id="payrollOwnerSummaryTitle">Сводка руководителю</h2><button type="button" class="btn btn-sm" data-payroll-action="owner-summary-close" aria-label="Закрыть">✕</button></header>
       <div class="payroll-summary-content">
         <div class="payroll-owner-fields">
-          <label>Филиал<select id="payrollOwnerBranch">${STUDIOS.map(s=>`<option value="${s.id}">${escapeHtml(s.name)}</option>`).join("")}</select></label>
           <button type="button" class="btn btn-sm" data-payroll-action="owner-summary-refresh">Обновить наличные</button>
         </div>
         <p class="payroll-summary-meta" id="payrollOwnerMeta"></p>
-        <p class="payroll-owner-source" id="payrollOwnerCashSource"></p>
         <p class="payroll-summary-warning" id="payrollOwnerWarning" role="alert" hidden></p>
-        <div class="payroll-owner-figures" aria-live="polite">
-          <div class="payroll-owner-figure"><span>Наличные</span><b id="payrollOwnerCash">—</b></div>
-          <div class="payroll-owner-figure"><span>К выдаче тренерам</span><b id="payrollOwnerPayout">—</b></div>
-          <div class="payroll-owner-figure net" id="payrollOwnerNetLine"><span>Разница<small id="payrollOwnerNetNote"></small></span><b id="payrollOwnerNet">—</b></div>
-        </div>
+        <div class="payroll-owner-branches" id="payrollOwnerBranches" aria-live="polite"></div>
+        <div class="payroll-owner-grand-total" id="payrollOwnerTotals" aria-live="polite"></div>
         <pre class="payroll-preview" id="payrollOwnerPreview" tabindex="0"></pre>
       </div>
       <footer><button type="button" class="btn" data-payroll-action="owner-summary-close">Закрыть</button>
@@ -4108,18 +4123,17 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
   const summaryCopy=get('[data-payroll-action="summary-copy"]');
   const summaryState={branch:"tolbuhina",team:[],schedule:null,loadStatus:"",request:0,selectedAdmin:"",message:""};
   const ownerDialog=get(".payroll-owner-summary");
-  const ownerBranch=get("#payrollOwnerBranch");
   const ownerCopy=get('[data-payroll-action="owner-summary-copy"]');
   const ownerPreview=get("#payrollOwnerPreview");
-  const ownerState={branch:"tolbuhina",today:"",reports:null,loading:false,problem:"",message:"",request:0};
+  const ownerState={today:"",reports:null,loading:false,problem:"",message:"",request:0};
   const ownerMoney=value=>payrollMoney(value)+" BYN";
   const ownerCashNumber=value=>value!==null&&value!==undefined&&value!==""&&
     String(value).trim()!==""&&Number.isFinite(Number(String(value).replace(",",".")))
       ? Number(String(value).replace(",",".")) : null;
-  function ownerCashSource(){
+  function ownerCashSource(branch){
     if(!Array.isArray(ownerState.reports))return {available:false,description:"Нет загруженных кассовых отчётов."};
     const today=ownerState.today;
-    const rows=ownerState.reports.filter(row=>row?.studioId===ownerState.branch && typeof row.date==="string");
+    const rows=ownerState.reports.filter(row=>row?.studioId===branch && typeof row.date==="string");
     const current=rows.find(row=>row.date===today);
     const morning=current?ownerCashNumber(current.cashStart):null;
     if(morning!==null)return {available:true,amount:morning,
@@ -4127,50 +4141,88 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
       source:"на начало "+payrollAdvanceDate(today)};
     const older=rows.filter(row=>row.date<today).sort((a,b)=>b.date.localeCompare(a.date));
     const recent=older[0];
-    if(!recent)return {available:false,description:"Сегодняшняя касса не открыта и нет предыдущего остатка наличных."};
+    if(!recent)return {available:false,description:"Нет открытой смены и подтверждённого остатка наличных."};
     if(recent.status!=="closed" || ownerCashNumber(recent.cashEnd)===null)return {available:false,
-      description:"Сегодняшняя касса не открыта. В последнем отчёте ("+payrollAdvanceDate(recent.date)+") нет подтверждённого остатка на конец дня."};
+      description:"В последнем отчёте ("+payrollAdvanceDate(recent.date)+") нет подтверждённого остатка на конец дня."};
     return {available:true,amount:ownerCashNumber(recent.cashEnd),
       description:"Наличные на конец последней закрытой смены · "+payrollAdvanceDate(recent.date),
       source:"на конец "+payrollAdvanceDate(recent.date)};
   }
+  const ownerSigned=value=>(value>0?"+":value<0?"−":"")+ownerMoney(Math.abs(value));
   function updateOwnerSummary(){
     if(!ownerDialog.open)return;
-    const info=payrollBranchSummaryData(effectiveRows(),ownerState.branch);
-    const cash=ownerCashSource();
     const periodFrom=state.cutoff ? (state.fromDate||state.period+"-01") : (state.rangeStart||state.period+"-01");
     const periodTo=state.cutoff || state.rangeEnd || state.period+"-"+new Date(Date.UTC(+state.period.slice(0,4),+state.period.slice(5,7),0)).getUTCDate();
-    const amountFromCents=Math.round(info.total*100);
-    const cashCents=cash.available?Math.round(cash.amount*100):null;
-    const diff=cashCents===null?null:(cashCents-amountFromCents)/100;
+    const periodTitle=payrollPeriodTitle(periodFrom,periodTo);
+    const branches=STUDIOS.map(studio=>{
+      const info=payrollBranchSummaryData(effectiveRows(),studio.id);
+      const cash=ownerCashSource(studio.id);
+      const validPayout=!!(state.ready&&state.updated&&!info.unknown.length);
+      const validCash=cash.available&&!ownerState.loading&&!ownerState.problem;
+      const cashCents=validCash?Math.round(cash.amount*100):null;
+      const payoutCents=validPayout?Math.round(info.total*100):null;
+      const diffCents=cashCents!==null&&payoutCents!==null?cashCents-payoutCents:null;
+      return {studio,info,cash,cashCents,payoutCents,diffCents};
+    });
     const warnings=[];
     if(ownerState.loading)warnings.push("Получаем свежие данные кассы…");
     else if(ownerState.problem)warnings.push(ownerState.problem);
-    if(!cash.available && !ownerState.loading && !ownerState.problem)warnings.push(cash.description);
     if(!state.ready||!state.updated)warnings.push("Зарплата за выбранный период ещё не загружена.");
-    if(info.unknown.length)warnings.push("Не подтверждены выплаты: "+info.unknown.map(row=>payrollSurnameInitials(row.name)).join(", ")+". Разница не может считаться окончательной.");
-    get("#payrollOwnerMeta").textContent=studioName(ownerState.branch)+" · расчёт зарплаты за "+payrollPeriodTitle(periodFrom,periodTo);
-    get("#payrollOwnerCashSource").textContent=cash.description;
-    get("#payrollOwnerCash").textContent=cash.available?ownerMoney(cash.amount):"—";
-    get("#payrollOwnerPayout").textContent=state.ready&&state.updated&&!info.unknown.length?ownerMoney(info.total):"—";
-    get("#payrollOwnerNet").textContent=warnings.length||diff===null?"—":(diff>0?"+":diff<0?"−":"")+ownerMoney(Math.abs(diff));
-    get("#payrollOwnerNetNote").textContent=warnings.length?"Расчёт требует проверки":diff<0?"Не хватает наличных":diff>0?"Останется после выдачи":"Хватит ровно на выдачу";
-    const netLine=get("#payrollOwnerNetLine");
-    netLine.classList.toggle("negative",!warnings.length&&diff!==null&&diff<0);
-    netLine.classList.toggle("positive",!warnings.length&&diff!==null&&diff>0);
-    netLine.classList.toggle("zero",!warnings.length&&diff===0);
-    const warn=get("#payrollOwnerWarning");
-    warn.textContent=warnings.join(" ");warn.hidden=!warnings.length;
+    for(const item of branches){
+      if(item.info.unknown.length)warnings.push(item.studio.name+": не подтверждены выплаты — "+
+        item.info.unknown.map(row=>payrollSurnameInitials(row.name)).join(", ")+".");
+      if(!item.cash.available&&!ownerState.loading&&!ownerState.problem)
+        warnings.push(item.studio.name+": "+item.cash.description);
+    }
+    const ready=!warnings.length&&branches.every(item=>item.diffCents!==null);
+    get("#payrollOwnerMeta").textContent="Все 3 филиала · зарплата за "+periodTitle+" · "+payrollAdvanceDate(ownerState.today);
+    get("#payrollOwnerBranches").innerHTML=branches.map(item=>{
+      const cashAmount=item.cashCents!==null?ownerMoney(item.cashCents/100):"—";
+      const payout=item.payoutCents!==null?ownerMoney(item.payoutCents/100):"—";
+      const diff=item.diffCents!==null?ownerSigned(item.diffCents/100):"—";
+      const netClass=item.diffCents===null?"":item.diffCents<0?"negative":item.diffCents>0?"positive":"";
+      return `<section class="payroll-owner-branch-card">
+        <h3 class="payroll-owner-branch-heading">${esc(item.studio.name)}</h3>
+        <p class="payroll-owner-branch-source">${esc(item.cash.description)}</p>
+        <div class="payroll-owner-branch-grid">
+          <div class="payroll-owner-branch-value"><span>Наличные</span><b>${esc(cashAmount)}</b></div>
+          <div class="payroll-owner-branch-value"><span>К выдаче тренерам</span><b>${esc(payout)}</b></div>
+          <div class="payroll-owner-branch-value ${netClass}"><span>Разница</span><b>${esc(diff)}</b></div>
+        </div>
+      </section>`;
+    }).join("");
+    const totalCash=ready?branches.reduce((sum,item)=>sum+item.cashCents,0)/100:null;
+    const totalPayout=ready?branches.reduce((sum,item)=>sum+item.payoutCents,0)/100:null;
+    const net=ready?branches.reduce((sum,item)=>sum+item.diffCents,0)/100:null;
+    // Недостача считается отдельно для каждого филиала: избыток другого филиала её не скрывает.
+    const shortage=ready?branches.reduce((sum,item)=>sum+Math.max(0,-item.diffCents),0)/100:null;
+    const totalText=value=>value===null?"—":ownerMoney(value);
+    get("#payrollOwnerTotals").innerHTML=`<h3>Итого по трём филиалам</h3>
+      <div class="payroll-owner-total-grid">
+        <div class="payroll-owner-total-value"><span>Наличные всего</span><b>${totalText(totalCash)}</b></div>
+        <div class="payroll-owner-total-value"><span>Тренерам к выдаче</span><b>${totalText(totalPayout)}</b></div>
+        <div class="payroll-owner-total-value ${net!==null?(net<0?"negative":net>0?"positive":""):""}"><span>Общая разница</span><b>${net===null?"—":ownerSigned(net)}</b></div>
+        <div class="payroll-owner-total-value needed ${shortage>0?"negative":""}"><span>Необходимо довнести по филиалам</span><b>${totalText(shortage)}</b></div>
+      </div>`;
+    const warning=get("#payrollOwnerWarning");
+    warning.textContent=warnings.join(" ");warning.hidden=!warnings.length;
     ownerState.message="";
-    if(!warnings.length&&diff!==null){
-      const sign=diff<0?"−":diff>0?"+":"";
-      ownerState.message=[
-        studioName(ownerState.branch)+" · "+payrollAdvanceDate(ownerState.today),
-        "Зарплата за "+payrollPeriodTitle(periodFrom,periodTo),"",
-        "Наличные ("+cash.source+"): "+ownerMoney(cash.amount),
-        "Тренерам к выдаче: "+ownerMoney(info.total),
-        "Разница: "+sign+ownerMoney(Math.abs(diff))+(diff<0?" · не хватает":diff>0?" · останется":" · хватает ровно")
-      ].join("\n");
+    if(ready){
+      const lines=["Сводка по выдаче зарплаты · "+payrollAdvanceDate(ownerState.today),
+        "Период: "+periodTitle];
+      for(const item of branches){
+        const diff=item.diffCents/100;
+        lines.push("",item.studio.name,
+          "Наличные ("+item.cash.source+"): "+ownerMoney(item.cashCents/100),
+          "Тренерам к выдаче: "+ownerMoney(item.payoutCents/100),
+          "Разница: "+ownerSigned(diff)+(diff<0?" · не хватает":diff>0?" · останется":" · хватает ровно"));
+      }
+      lines.push("","Итого по трём филиалам",
+        "Наличные: "+ownerMoney(totalCash),
+        "Тренерам к выдаче: "+ownerMoney(totalPayout),
+        "Общая разница: "+ownerSigned(net),
+        "Необходимо довнести по филиалам: "+ownerMoney(shortage));
+      ownerState.message=lines.join("\n");
     }
     ownerPreview.textContent=ownerState.message||(ownerState.loading?"Загрузка кассовых данных…":warnings.join(" "));
     ownerCopy.disabled=!ownerState.message||ownerState.loading||state.busy;
@@ -4200,18 +4252,12 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
   }
   async function openOwnerSummary(){
     if(session?.role!=="owner")return;
-    ownerState.branch=state.branch!=="all"?state.branch:ownerState.branch;
-    ownerBranch.value=ownerState.branch;
     ownerState.today=payrollToday();
     ownerState.reports=null;
     ownerState.problem="";
     if(!ownerDialog.open)ownerDialog.showModal();
     await refreshOwnerCash();
   }
-  ownerBranch.addEventListener("change",()=>{
-    ownerState.branch=ownerBranch.value;
-    updateOwnerSummary();
-  });
   ownerDialog.addEventListener("close",()=>{
     ownerState.request++;
     get('[data-payroll-action="owner-summary-open"]')?.focus();
