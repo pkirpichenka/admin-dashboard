@@ -3832,37 +3832,67 @@ function payrollMessage(row                   , period        , view            
     "К выдаче: " + payrollMoney(row.due) + " BYN",
     branch && branch !== "филиал не выбран" ? "Можно забрать на " + branch : "Филиал выдачи пока не выбран",
   ];
-  const detail           = [];
-  const held = row.lessons.filter(lesson=>!lesson.replaced_name);
-  if (view === "dates" && held.length) {
-    detail.push("По датам:");
-    for (const lesson of held) {
-      detail.push(`${payrollDateLabel(lesson.date)} ${payrollDay(lesson.date)} · ${payrollLessonTitle(lesson)} — ${payrollPeople(lesson.attendance)}, ${payrollMoney(lesson.amount)} BYN`);
+  const detail = [];
+  // Зарплата выдаётся дважды: 16-го за 1–15 число и 1-го следующего месяца
+  // за 16-е–последний день. В Telegram разделяем ДЕТАЛИЗАЦИЮ по этим
+  // периодам, но не меняем финансовый итог выбранного в календаре диапазона.
+  const monthStart = period + "-01";
+  const halfEnd = period + "-15";
+  const secondStart = period + "-16";
+  const monthEnd = new Date(Date.UTC(Number(period.slice(0,4)), Number(period.slice(5,7)), 0))
+    .toISOString().slice(0,10);
+  const followingMonthStart = new Date(Date.UTC(Number(period.slice(0,4)), Number(period.slice(5,7)), 1))
+    .toISOString().slice(0,10);
+  const halfPeriods = [
+    {from:monthStart,to:halfEnd,payout:period+"-16"},
+    {from:secondStart,to:monthEnd,payout:followingMonthStart}
+  ].map(half=>({
+    ...half, from:half.from > firstDay ? half.from : firstDay,
+    to:half.to < lastDay ? half.to : lastDay
+  })).filter(half=>half.from<=half.to);
+  const ordered = (lessons) => lessons.slice().sort((a,b)=>
+    a.date.localeCompare(b.date)||(a.time||"").localeCompare(b.time||""));
+  for (const half of halfPeriods) {
+    const inside = lesson=>typeof lesson.date==="string" &&
+      lesson.date>=half.from && lesson.date<=half.to;
+    const halfLessons = (row.lessons || []).filter(inside);
+    const held = ordered(halfLessons.filter(lesson=>!lesson.replaced_name));
+    const replacements = ordered(halfLessons.filter(lesson=>!!lesson.replaced_name));
+    const skips = ordered((row.skipped_lessons || []).filter(inside));
+    if (detail.length) detail.push("", "──────────────", "");
+    detail.push("Период " + payrollPeriodTitle(half.from,half.to) +
+      " · выплата " + payrollAdvanceDate(half.payout));
+    if (view === "dates" && held.length) {
+      detail.push("По датам:");
+      for (const lesson of held) {
+        detail.push(`${payrollDateLabel(lesson.date)} ${payrollDay(lesson.date)} · ${payrollLessonTitle(lesson)} — ${payrollPeople(lesson.attendance)}, ${payrollMoney(lesson.amount)} BYN`);
+      }
+    } else if (view === "groups" && held.length) {
+      detail.push("По группам:");
+      for (const group of payrollGroups(held)) {
+        detail.push(`• ${[payrollLine(group.name), group.time].filter(Boolean).join(" ")} — ${group.lessons.length} зан., ${payrollMoney(payrollSum(group.lessons, lesson => lesson.attendance))} чел., ${payrollMoney(payrollSum(group.lessons, lesson => lesson.amount ?? 0))} BYN`);
+      }
     }
-  } else if (view === "groups") {
-    const groups = payrollGroups(row.lessons);
-    if (groups.length) detail.push("По группам:");
-    for (const group of groups) {
-      detail.push(`• ${[payrollLine(group.name), group.time].filter(Boolean).join(" ")} — ${group.lessons.length} зан., ${payrollMoney(payrollSum(group.lessons, lesson => lesson.attendance))} чел., ${payrollMoney(payrollSum(group.lessons, lesson => lesson.amount ?? 0))} BYN`);
+    if (replacements.length) {
+      detail.push("", "Замены:");
+      for (const lesson of replacements) {
+        const pay=lesson.amount==null?"":", −"+payrollPaymentMoney(lesson.amount)+" BYN";
+        detail.push(`• ${payrollDateLabel(lesson.date)} · ${payrollLessonTitle(lesson)} — ${payrollPeople(lesson.attendance)}${pay} — вместо ${payrollSurnameInitials(lesson.replaced_name)}`);
+      }
     }
-  }
-  const replacements = row.lessons.filter(lesson=>lesson.replaced_name);
-  if (replacements.length) {
-    detail.push("", "Замены:");
-    for (const lesson of replacements) {
-      const pay=lesson.amount==null?"":", −"+payrollPaymentMoney(lesson.amount)+" BYN";
-      detail.push(`• ${payrollDateLabel(lesson.date)} · ${payrollLessonTitle(lesson)} — ${payrollPeople(lesson.attendance)}${pay} — вместо ${payrollSurnameInitials(lesson.replaced_name)}`);
+    if (skips.length) {
+      detail.push("", "Пропуски:");
+      for (const lesson of skips) {
+        detail.push(`• ${payrollDateLabel(lesson.date)} · ${payrollLessonTitle(lesson)} — ${payrollPeople(lesson.attendance)}, −${payrollMoney(lesson.amount)} BYN${lesson.substitute_name ? " · замена " + payrollLine(lesson.substitute_name) : ""}`);
+      }
+    }
+    if (!held.length && !replacements.length && !skips.length && !row.missing_replacement_dates) {
+      detail.push("Занятий, замен и пропусков нет.");
     }
   }
   if (row.missing_replacement_dates) detail.push("", row.replacement_count
     ? "Даты замен указаны для " + row.known_replacement_count + " из " + row.replacement_count + " занятий."
     : "По заменам в Impulse приведена общая сумма.");
-  if (row.skipped_lessons.length) {
-    detail.push("", "Пропуски:");
-    for (const lesson of row.skipped_lessons) {
-      detail.push(`• ${payrollDateLabel(lesson.date)} · ${payrollLessonTitle(lesson)} — ${payrollPeople(lesson.attendance)}, −${payrollMoney(lesson.amount)} BYN${lesson.substitute_name ? " · замена " + payrollLine(lesson.substitute_name) : ""}`);
-    }
-  }
   if (detail.length) detail.push("");
   detail.push("Если видите расхождение, пожалуйста, напишите мне 🙏");
 
