@@ -1959,7 +1959,7 @@ label.trainer-replacement-setting{display:flex;align-items:center;gap:8px;min-he
 .adpay .adpay-time-reset:hover{background:#eef6f1}
 @media(max-width:380px){.adpay .adpay-time-interval label{flex-basis:85px}}
 
-/* FAD 16.11.2026-bb: payroll advance reconciliation diagnostics; unchanged calculation. */
+/* FAD 16.11.2026-bc: confirmed Impulse advances are deducted to exact kopeks; final ceil-to-5 preserved. */
 .adpay .adpay-clock-field{display:flex;flex:1 1 88px;min-width:0;flex-direction:column;gap:4px;font-size:11px;font-weight:600;color:var(--ink-soft)}
 .adpay .adpay-time-trigger{display:flex;width:100%;min-height:36px;align-items:center;justify-content:space-between;gap:4px;padding:6px 8px;border:1px solid var(--line-strong);border-radius:8px;background:#fff;color:var(--ink);cursor:pointer;text-align:left}
 .adpay .adpay-time-trigger b{font-size:13px;font-weight:800}.adpay .adpay-time-trigger svg{flex:none;color:#61766a}
@@ -2000,7 +2000,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '16.11.2026-bb'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '16.11.2026-bc'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -8825,7 +8825,7 @@ function renderAdminPayroll(host){
       const expected=advanceFromImpulse(s);
       const diag=diagnosticById.get(String(s.id));
       if(diag){
-        if(diag.status!=='matched'&&(expected>0||num(diag.ledger_amount)>0))mismatch.push({employee:s,diag,expected});
+        if(diag.status!=='matched'&&diag.status!=='rounded_match'&&(expected>0||num(diag.ledger_amount)>0))mismatch.push({employee:s,diag,expected});
       }else if(expected!=null&&expected>0){
         mismatch.push({employee:s,diag:null,expected});
       }
@@ -8844,7 +8844,7 @@ function renderAdminPayroll(host){
       });
       const hasUnavailable=mismatch.some(x=>!x.diag||x.diag.ledger_amount==null);
       out.push({severity:'warning',kind:'advances',title:`Авансы не сопоставлены у ${mismatch.length} ${mismatch.length===1?'сотрудника':'сотрудников'}`,
-        text:'По каждому сотруднику ниже показаны сумма зарплатного отчёта, сумма однозначно найденных операций и разница. Авансы в зарплате по-прежнему вычитаются по отчёту Impulse. '+(hasUnavailable?'Если журнал недоступен, разницу вычислить нельзя.':'Не подтверждённые по сумме даты выдачи не показываются.'),
+        text:'Ниже показаны сумма отчёта, найденные операции и разница. Для подтверждённых операций используется точная сумма журнала Impulse, а при настоящем расхождении — сумма отчёта. '+(hasUnavailable?'Если журнал недоступен, разницу вычислить нельзя.':'Неподтверждённые даты выдачи не показываются.'),
         employeeIds:[],details:detailRows,
         ids:mismatch.map(x=>String(x.employee.id)),actionLabel:'Показать в таблице',action:'show-table'});
     }
@@ -8875,8 +8875,9 @@ function renderAdminPayroll(host){
     const dayCount=rows().reduce((sum,s)=>sum+days(s).length,0);
     const staffCount=rows().filter(s=>days(s).length>0).length;
     const stats=state.paytechSyncStats;
+    const roundedCount=(state.advanceDiagnostics||[]).filter(d=>d.status==='rounded_match').length;
     const updated=state.model.receivedAt?new Date(state.model.receivedAt).toLocaleString('ru-RU',{timeZone:'Europe/Minsk',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}).replace(',',' ·'):state.busy?'загрузка…':'нет данных';
-    holder.innerHTML=paytechRender({id:'admin',open:state.paytechOpen,updated,period:dateRangeText(),source:'ImpulseCRM · зарплата администратора',syncWarning:!!state.syncStatusError||!!state.syncWarnings.length||!state.model.receivedAt||!!state.advanceWarnings.length||staffCount<rows().length||notes.some(n=>n.kind==='advances'||n.kind==='mapping'),notices:notes,how:true,reset:true,details:[{label:'Получено дней',value:stats?.days??dayCount},{label:'Сотрудников',value:`${stats?.returned??staffCount} из ${stats?.requested??rows().length}`}]});
+    holder.innerHTML=paytechRender({id:'admin',open:state.paytechOpen,updated,period:dateRangeText(),source:'ImpulseCRM · зарплата администратора',syncWarning:!!state.syncStatusError||!!state.syncWarnings.length||!state.model.receivedAt||!!state.advanceWarnings.length||staffCount<rows().length||notes.some(n=>n.kind==='advances'||n.kind==='mapping'),notices:notes,how:true,reset:true,details:[{label:'Получено дней',value:stats?.days??dayCount},{label:'Сотрудников',value:`${stats?.returned??staffCount} из ${stats?.requested??rows().length}`},...(roundedCount?[{label:'Авансы без округления',value:`${roundedCount} сотрудников · суммы из журнала` }]:[])]});
   }
   function showAdminTechAttention(ids=[]){
     state.paytechOpen='attention';
