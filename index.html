@@ -753,6 +753,50 @@ table th>*,table td>*{max-width:100%;box-sizing:border-box}
 }
 
 
+/* Единая карточка сотрудников · версия aw, только раздел «Сотрудники». */
+.emp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;align-items:stretch}
+.emp-card{display:flex;flex-direction:column;gap:14px;min-width:0;padding:18px;background:#fff;border:1px solid #dce5de;border-radius:16px;box-shadow:0 1px 2px rgba(20,40,30,.05);position:relative}
+.emp-card--archived{background:#f6f8f6;color:#44514a}
+.emp-head{display:flex;gap:12px;align-items:flex-start;min-width:0}
+.emp-avatar{width:44px;height:44px;min-width:44px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;letter-spacing:.01em}
+.emp-avatar--admin,.emp-role--admin{background:#e3f1ea;color:#1f5c43}
+.emp-avatar--trainer,.emp-role--trainer{background:#fbf0d4;color:#6b4e00}
+.emp-card--archived .emp-avatar,.emp-card--archived .emp-role{background:#e8ece9;color:#44514a}
+.emp-person{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:0;flex:1}
+.emp-name{font-size:16px;font-weight:700;line-height:1.25;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;overflow-wrap:anywhere}
+.emp-role{display:inline-block;border-radius:999px;padding:2px 10px;font-size:12px;line-height:1.45;font-weight:700}
+.emp-meta{display:flex;flex-direction:column;gap:8px;font-size:14px;line-height:1.35}
+.emp-meta-row{display:flex;align-items:flex-start;gap:9px;min-width:0}
+.emp-meta-row>svg{flex:none;width:16px;height:16px;stroke:#6a7770;margin-top:1px}
+.emp-meta-row>span{min-width:0;overflow-wrap:anywhere}
+.emp-meta-row b{font-weight:700;color:#2a3a32}
+.emp-empty-value{color:#55635b}
+.emp-branches{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-start;min-height:26px}
+.emp-branch{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;border:1px solid #dce5de;background:#f4f7f5;font-size:12px;line-height:1.3;font-weight:600;color:#2a3a32}
+.emp-branch .sdot{width:8px;height:8px}
+.emp-branch--none{border:1px dashed #b9c6bd;background:transparent;color:#55635b}
+.emp-footer{margin-top:auto;display:flex;align-items:center;gap:8px;padding-top:12px;border-top:1px solid #e6ede8;position:relative;min-width:0}
+.emp-footer-spacer{flex:1 1 auto;min-width:0}
+.emp-primary,.emp-icon-btn{display:inline-flex;align-items:center;justify-content:center;border-radius:12px;background:#fff;flex-shrink:0;cursor:pointer}
+.emp-primary{min-height:44px;padding:0 16px;border:1px solid #b7d3c4;color:#1f5c43;font-size:14px;font-weight:700;white-space:nowrap}
+.emp-primary:hover:not(:disabled){background:#eef6f1}
+.emp-icon-btn{width:44px;height:44px;border:1px solid #cfdcd3;color:#2a3a32}
+.emp-icon-btn svg{height:21px;width:21px;display:block}
+.emp-icon-telegram{color:#1c78ad;border-color:#d3e3ec}
+.emp-icon-viber{color:#6b4fb3;border-color:#ddd5ef}
+.emp-icon-btn:disabled,.emp-primary:disabled{opacity:.35;cursor:not-allowed}
+.emp-card :is(button,a):focus-visible{outline:3px solid #7fb89c;outline-offset:2px}
+.emp-menu{position:absolute;right:0;bottom:60px;z-index:20;min-width:232px;max-width:min(300px,calc(100vw - 40px));padding:6px;background:#fff;border:1px solid #dce5de;border-radius:14px;box-shadow:0 10px 28px rgba(20,40,30,.18)}
+.emp-menu[hidden]{display:none}
+.emp-menu>button{display:block;width:100%;height:auto;min-height:44px;padding:9px 12px;text-align:left;border:0;border-radius:10px;background:transparent;color:#2a3a32;font-size:14px;font-weight:600;cursor:pointer;line-height:1.3}
+.emp-menu>button:hover:not(:disabled){background:#f1f6f3}
+.emp-menu>button.emp-menu-danger{color:#a32a2a}
+.emp-menu>button:disabled{opacity:.45;cursor:not-allowed}
+.emp-account-panel .urow{display:block;border:0;background:#f4f7f5;padding:10px;border-radius:12px}
+.emp-account-panel .u-ctl{margin:12px 0 0;display:flex;flex-wrap:wrap;gap:10px}
+@media(max-width:650px){.emp-grid{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}}
+@media(max-width:380px){.emp-card{padding:14px}.emp-footer{gap:5px}.emp-primary{padding:0 8px;font-size:12px}.emp-icon-btn{height:44px;width:44px}}
+
 /* ================= Employees + Calendar 14.10.2026-w ================= */
 .staff-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 14px}
 .staff-toolbar .grow{flex:1}
@@ -1186,25 +1230,6 @@ label.trainer-replacement-setting{display:flex;align-items:center;gap:8px;min-he
   .cal-day{min-height:94px}
 }
 
-
-/* FLEXICO / единый раздел сотрудников. Права и учётная запись в карточке. */
-.staff-account-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,390px),1fr));gap:12px;align-items:start}
-.staff-account-box{min-width:0;border-radius:14px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);overflow:hidden}
-.staff-account-box>.staff-card{border:0;box-shadow:none;border-radius:0}
-.staff-account-details{border-top:1px solid var(--line);padding:0 14px 12px}
-.staff-account-details>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:12px 0;color:var(--accent-deep);font-size:12px;font-weight:750}
-.staff-account-details>summary::-webkit-details-marker{display:none}
-.staff-account-details>summary:before{content:'▸';font-size:13px}
-.staff-account-details[open]>summary:before{content:'▾'}
-.staff-account-details .urow{border:0;border-radius:9px;background:var(--surface-2);padding:10px;margin:0;box-shadow:none;display:block}
-.staff-account-details .u-main{margin-bottom:8px}
-.staff-account-details .u-ctl{margin-left:0;gap:9px}
-.staff-account-details .u-ctl>*{max-width:100%}
-.staff-account-details .u-name{font-size:12px}
-.staff-account-details .u-login{font-size:11px}
-.staff-hub-empty{color:var(--ink-soft);font-size:13px;padding:12px 0}
-.staff-archive-grid{margin-top:12px}
-@media(max-width:560px){.staff-account-grid{grid-template-columns:1fr}.staff-account-details .u-ctl{display:flex}}
 
 /* FLEXICO / План и бонусы — scoped styles (no changes to other tabs) */
 .wrap:has(> #tabbody > .bonus-page){max-width:1152px;padding-left:20px;padding-right:20px}
@@ -1924,7 +1949,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '16.11.2026-av'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '16.11.2026-aw'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -5793,129 +5818,259 @@ function ageLabel(age){
   const word=(n10===1&&n100!==11)?'год':(n10>=2&&n10<=4&&(n100<12||n100>14))?'года':'лет';
   return `${n} ${word}`;
 }
-function employeeCard(e,manage){
-  const studios=employeeStudios(e);
-  const dial=staffPhoneDial(e.phone);
-  const phone=e.phone?`<span class="staff-phone">☎ <b>${escapeHtml(belarusPhoneNumber(dial)||e.phone)}</b></span>`:'';
-  const messengers=(e.employee_type==='trainer'||e.employee_type==='admin')?trainerMessengerLinks(e,dial):'';
-  return `<div class="staff-card${e.is_active?'':' staff-muted'}" data-eid="${e.id}">
-    <div class="staff-head"><div class="grow"><div class="staff-name">${escapeHtml(e.full_name||'')}</div></div><span class="staff-role ${e.employee_type==='trainer'?'trainer':''}">${escapeHtml(employeeRoleLabel(e))}</span></div>
-    <div class="staff-meta">
-      <div>🎂 <b>${escapeHtml(birthdayShort(e.birth_date))}</b>${e.birth_date&&employeeAge(e.birth_date)!=null?` · <b>${escapeHtml(ageLabel(employeeAge(e.birth_date)))}</b>`:''}</div>
-      ${phone||messengers?`<div class="staff-contacts">${phone}${messengers}</div>`:''}
-      ${e.hire_date?`<div>Приём: <b>${escapeHtml(fmtLong(e.hire_date))}</b></div>`:''}
-      <div class="staff-studios">${studios.length?studios.map(s=>`<span class="staff-studio">${sdot(s)}${escapeHtml(studioName(s))}</span>`).join(''):'<span style="color:var(--ink-faint)">филиал не указан</span>'}</div>
-      ${e.note?`<div>${escapeHtml(e.note)}</div>`:''}
-      ${e.app_login?`<div style="color:var(--ink-faint)">логин: ${escapeHtml(e.app_login)}</div>`:''}
-    </div>
-    ${manage?`<div class="staff-actions"><button class="btn btn-sm" data-edit-employee="${e.id}">Изменить</button></div>`:''}
-  </div>`;
+/* Единая карточка — единственный визуальный шаблон для всех четырёх списков. */
+const EMP_CARD_ICONS={
+  birthday:'<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="12" rx="2"/><path d="M3 14h18M7 9V5m5 4V5m5 4V5M7 3v2m5-2v2m5-2v2"/></svg>',
+  phone:'<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2A19.6 19.6 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7l.5 2.7a2 2 0 0 1-.6 1.8l-1.5 1.5a16 16 0 0 0 6.8 6.8l1.5-1.5a2 2 0 0 1 1.8-.6l2.7.5a2 2 0 0 1 1.7 2Z"/></svg>',
+  calendar:'<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 2v6M17 2v6M3 10h18"/></svg>',
+  login:'<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="4"/><path d="M5 21v-3a7 7 0 0 1 14 0v3"/></svg>',
+  telegram:'<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 9.5 14.5M22 2l-5 20-7.5-7.5L2 7z"/></svg>',
+  viber:'<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 19.5 4.5 22v-4A5.5 5.5 0 0 1 2 13.5v-5A5.5 5.5 0 0 1 7.5 3h9A5.5 5.5 0 0 1 22 8.5v5a6 6 0 0 1-6 6Z"/><path d="M8 8c.5 4 3 6.5 7 8l2-2m-7-6 2 2m2-3a5 5 0 0 1 4 4"/></svg>',
+  more:'<svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>'
+};
+function employeeInitials(name){
+  const words=String(name||'').trim().split(/\s+/).filter(Boolean);
+  return ((words[0]?.[0]||'')+(words[1]?.[0]||words[0]?.[1]||'')).toLocaleUpperCase('ru-RU');
 }
+function renderEmployeeCard(emp,{archived=false,canEdit=false,canPermissions=false,canHistory=false,canArchive=false,canDelete=false,canAccountSettings=false}={}){
+  const admin=emp.employee_type==='admin';
+  const isVirtual=String(emp.id??'').startsWith('account:');
+  const safeKey=escapeHtml(String(emp._cardKey??(isVirtual?'account:'+emp.app_login:'employee:'+emp.id)));
+  const name=escapeHtml(emp.full_name||'');
+  const number=trainerInternationalPhone(staffPhoneDial(emp.phone||''));
+  const shownPhone=belarusPhoneNumber(staffPhoneDial(emp.phone||''))||emp.phone||'';
+  const nick=normalizeTrainerTelegramUsername(emp.telegram_username);
+  const telegramHref=number?(nick?'https://t.me/'+encodeURIComponent(nick):'https://t.me/'+encodeURIComponent(number)):'';
+  const viberHref=number?'viber://chat?number='+encodeURIComponent(number):'';
+  const messenger=(which,url,icon)=>url
+    ?`<a class="emp-icon-btn emp-icon-${which}" href="${escapeHtml(url)}" title="Написать в ${which==='telegram'?'Telegram':'Viber'}" aria-label="Написать в ${which==='telegram'?'Telegram':'Viber'}"${which==='telegram'?' target="_blank" rel="noopener noreferrer"':''}>${icon}</a>`
+    :`<button type="button" class="emp-icon-btn emp-icon-${which}" disabled title="Телефон не указан" aria-label="${which==='telegram'?'Telegram':'Viber'} недоступен">${icon}</button>`;
+  const menuItems=[];
+  if(archived){
+    if(canArchive)menuItems.push(['restore','Восстановить доступ']);
+    if(canDelete)menuItems.push(['delete','Удалить навсегда',true]);
+    else if(!admin&&canArchive)menuItems.push(['unavailable-delete','Удалить навсегда',true,true]);
+  }else if(admin){
+    if(canPermissions)menuItems.push(['permissions','Настроить права']);
+    if(canHistory)menuItems.push(['history','История филиала / перевод']);
+    // Дополнительные функции из прежнего раскрытия не удалены: доступны в отдельном окне.
+    if(canAccountSettings)menuItems.push(['account','Настройки аккаунта']);
+    if(canArchive)menuItems.push(['archive','Перенести в архив',true]);
+  }else if(canArchive){menuItems.push(['archive','Перенести в архив',true]);}
+  const studios=employeeStudios(emp);
+  const age=employeeAge(emp.birth_date);
+  return `<article class="emp-card${archived?' emp-card--archived':''}" data-emp-key="${safeKey}">
+    <div class="emp-head"><span class="emp-avatar${admin?' emp-avatar--admin':' emp-avatar--trainer'}" aria-hidden="true">${escapeHtml(employeeInitials(emp.full_name))}</span>
+      <div class="emp-person"><div class="emp-name" title="${name}">${name}</div><span class="emp-role${admin?' emp-role--admin':' emp-role--trainer'}">${admin?'Администратор':'Тренер'}${archived?' · архив':''}</span></div></div>
+    <div class="emp-meta">
+      <div class="emp-meta-row">${EMP_CARD_ICONS.birthday}<span>${emp.birth_date?`<b>${escapeHtml(birthdayShort(emp.birth_date))}${age!=null?' · '+escapeHtml(ageLabel(age)):''}</b>`:'<span class="emp-empty-value">дата рождения не указана</span>'}</span></div>
+      <div class="emp-meta-row">${EMP_CARD_ICONS.phone}<span>${shownPhone?escapeHtml(shownPhone):'<span class="emp-empty-value">телефон не указан</span>'}</span></div>
+      ${admin?`<div class="emp-meta-row">${EMP_CARD_ICONS.calendar}<span>Приём: ${emp.hire_date?`<b>${escapeHtml(fmtLong(emp.hire_date))}</b>`:'<span class="emp-empty-value">не указана</span>'}</span></div>
+      <div class="emp-meta-row">${EMP_CARD_ICONS.login}<span>логин: <b>${escapeHtml(emp.app_login||'—')}</b></span></div>`:''}
+    </div>
+    <div class="emp-branches">${studios.length?studios.map(s=>`<span class="emp-branch">${sdot(s)}${escapeHtml(studioName(s))}</span>`).join(''):'<span class="emp-branch emp-branch--none">Филиал не указан</span>'}</div>
+    <div class="emp-footer">
+      <button type="button" class="emp-primary" data-emp-action="${archived?'restore':'edit'}"${archived?!canArchive?' disabled':'':!canEdit?' disabled':''}>${archived?'Восстановить':'Изменить'}</button>
+      <span class="emp-footer-spacer"></span>
+      ${messenger('telegram',telegramHref,EMP_CARD_ICONS.telegram)}${messenger('viber',viberHref,EMP_CARD_ICONS.viber)}
+      <button type="button" class="emp-icon-btn emp-more" aria-label="Ещё действия" title="Ещё действия" aria-haspopup="menu" aria-expanded="false"${!menuItems.length?' disabled':''}>${EMP_CARD_ICONS.more}</button>
+      ${menuItems.length?`<div class="emp-menu" role="menu" aria-label="Действия сотрудника" hidden>${menuItems.map(([action,label,danger,disabled])=>`<button type="button" role="menuitem" data-emp-action="${action}"${danger?' class="emp-menu-danger"':''}${disabled?' disabled title="Для тренеров серверная функция удаления не предусмотрена"':''}>${label}</button>`).join('')}</div>`:''}
+    </div>
+  </article>`;
+}
+
+/* Сохраняем прежние настройки учётной записи (телефон, кофе, права, доступы),
+   не возвращая неодинаковый раскрывающийся блок внутрь карточки. */
+async function employeeAccountSettingsModal(u,emp,onDone){
+  if(!u)return;
+  const manageAdmins=session.role==='owner'||can('admins.manage');
+  const managePerms=session.role==='owner'||can('admins.permissions');
+  const settings=await apiGetSettings().catch(()=>({}));
+  settings.adminPhones=settings.adminPhones||{};
+  const el=modal(`<h3>Настройки аккаунта</h3><p>${escapeHtml(u.name)} · ${escapeHtml(u.login)}</p><div class="emp-account-panel">${userRow(u,settings.adminPhones[u.login]||emp?.phone||'',{manage:manageAdmins,permissions:managePerms})}</div><div id="empExtraAccess"></div><div class="actions"><button class="btn" data-x>Закрыть</button></div>`);
+  const row=el.querySelector('.urow');
+  const done=()=>{if(el.isConnected)closeModal(el);if(onDone)onDone();};
+  row.querySelector('[data-perms]')?.addEventListener('click',()=>permissionsModal(u,done));
+  row.querySelector('[data-act="reset"]')?.addEventListener('click',()=>resetPwModal(u,done));
+  row.querySelector('[data-act="active"]')?.addEventListener('click',async()=>{
+    try{await apiSetActive(u.login,!u.active);toast(u.active?'Перемещён в «Уволенные»':'Доступ включён');done();}catch(err){handleErr(err);}
+  });
+  const hire=row.querySelector('[data-hire]');if(hire)hire.onchange=async()=>{try{await apiSetHire(u.login,hire.value);toast('Дата приёма сохранена');}catch(err){handleErr(err);}};
+  const coffee=row.querySelector('[data-coffee]');if(coffee)coffee.onchange=async()=>{try{await apiSetCoffee(u.login,coffee.checked);toast('Сохранено');}catch(err){handleErr(err);}};
+  const phone=row.querySelector('[data-phone]');if(phone){
+    bindStaffPhoneInput(phone);phone.onchange=async()=>{
+      const normalized=readStaffPhoneInput(phone);if(normalized===null)return;
+      const phones={...settings.adminPhones};if(normalized)phones[u.login]=normalized;else delete phones[u.login];
+      try{await apiSaveSettings({...settings,adminPhones:phones});settings.adminPhones=ADMIN_PHONES=phones;await apiSetEmployeePhone(u.login,normalized);void auditAction('Изменён телефон администратора','admin',u.login,{phone:normalized});toast('Телефон сохранён');}catch(err){handleErr(err);}
+    };
+  }
+  if(session.role==='owner'&&emp&&!String(emp.id).startsWith('account:')){
+    const extra=el.querySelector('#empExtraAccess');
+    try{
+      const [access,grants]=await Promise.all([
+        rpc('app_trainer_payroll_access_list',{p_token:TOKEN}).catch(()=>null),
+        rpc('app_bonus_access_list',{p_token:TOKEN}).catch(()=>null)
+      ]);
+      if(!el.isConnected)return;
+      const id=String(emp.id),hasPay=Array.isArray(access)&&access.map(String).includes(id);
+      const grant=Array.isArray(grants)?grants.find(g=>String(g.employee_id)===id):null;
+      extra.innerHTML=`${Array.isArray(access)?`<div class="staff-bonus-access"><div><b>Зарплата тренеров</b><small>Просмотр и управление выплатами</small></div><button type="button" class="sw ${hasPay?'on':''}" data-emp-payaccess role="switch" aria-checked="${hasPay}" aria-label="Доступ к зарплатам тренеров"></button></div>`:''}${grant?`<div class="staff-bonus-access"><div><b>Доступ к планам и бонусам</b><small>${grant.scope==='all'?'Все филиалы':'Свой филиал'}</small></div><button type="button" class="sw ${grant.scope==='all'?'on':''}" data-emp-bonusaccess role="switch" aria-checked="${grant.scope==='all'}"></button></div>`:''}`;
+      extra.querySelector('[data-emp-payaccess]')?.addEventListener('click',async event=>{
+        const button=event.currentTarget,next=button.getAttribute('aria-checked')!=='true';button.disabled=true;
+        try{await rpc('app_trainer_payroll_set_access',{p_token:TOKEN,p_employee_id:id,p_enabled:next});button.setAttribute('aria-checked',String(next));button.classList.toggle('on',next);void auditAction('Изменён доступ к зарплатам тренеров','admin',id,{enabled:next});toast('Доступ сохранён');}catch(err){handleErr(err);}finally{button.disabled=false;}
+      });
+      extra.querySelector('[data-emp-bonusaccess]')?.addEventListener('click',async event=>{
+        const button=event.currentTarget,next=button.getAttribute('aria-checked')==='true'?'branch':'all';button.disabled=true;
+        try{await rpc('app_bonus_set_view_scope',{p_token:TOKEN,p_employee_id:Number(id),p_scope:next});button.setAttribute('aria-checked',String(next==='all'));button.classList.toggle('on',next==='all');button.parentElement.querySelector('small').textContent=next==='all'?'Все филиалы':'Свой филиал';toast('Доступ к бонусам сохранён');}catch(err){handleErr(err);}finally{button.disabled=false;}
+      });
+    }catch(err){handleErr(err);}
+  }
+}
+
 async function renderEmployees(body){
   const canEmployees=session.role==='owner'||can('employees.view')||can('employees.manage');
   const manageEmployees=session.role==='owner'||can('employees.manage');
   const canAdmins=session.role==='owner'||can('admins.view')||can('admins.manage')||can('admins.permissions');
   const canManagePermissions=session.role==='owner'||can('admins.permissions');
+  const manageAdmins=session.role==='owner'||can('admins.manage');
   const canTelegram=session.role==='owner'||can('telegram.manage');
   const canAudit=session.role==='owner'||can('admins.audit');
-  const canPayroll=session.role==='owner'||session.payrollAccess===true;
   body.innerHTML='<div class="empty">Загрузка сотрудников…</div>';
-  let rows=[],adminAccounts=[];
-  if(canEmployees){
-    try{ rows=await apiListEmployees(); }
-    catch(e){return handleErr(e);}
+  let rows=[],accounts=[],staffSettings={};
+  if(canEmployees){try{rows=await apiListEmployees();}catch(err){return handleErr(err);}}
+  if(canAdmins){
+    try{accounts=(await apiListUsers()||[]).filter(u=>u.role!=='owner');}catch(err){/* Список профилей продолжает работать без списка аккаунтов. */}
+    try{staffSettings=await apiGetSettings()||{};}catch(err){}
   }
   if(!body.isConnected)return;
-  rows.sort((a,b)=>{
-    if(a.is_active!==b.is_active)return a.is_active?-1:1;
+  const byLogin=new Map(accounts.map(u=>[u.login,u]));
+  const represented=new Set(rows.filter(e=>e.app_login).map(e=>e.app_login));
+  const virtuals=canAdmins?accounts.filter(u=>!represented.has(u.login)).map(u=>({
+    id:'account:'+u.login,full_name:u.name,employee_type:'admin',is_active:u.active,app_login:u.login,
+    phone:staffSettings?.adminPhones?.[u.login]||'',hire_date:u.hire||'',primary_studio:u.home||'',studios:u.home?[u.home]:[],
+    birth_date:null,telegram_username:''
+  })):[];
+  const allStaff=[...rows,...virtuals];
+  function isArchived(e){const acc=e.employee_type==='admin'&&e.app_login?byLogin.get(e.app_login):null;return acc?!acc.active:!e.is_active;}
+  allStaff.sort((a,b)=>{
+    const aa=isArchived(a),bb=isArchived(b);if(aa!==bb)return aa?1:-1;
     if(a.employee_type!==b.employee_type)return a.employee_type==='admin'?-1:1;
     return String(a.full_name||'').localeCompare(String(b.full_name||''),'ru');
   });
-  if(canManagePermissions){
-    try{adminAccounts=(await apiListUsers()||[]).filter(u=>u.role!=='owner');}
-    catch(e){ /* каталог сотрудников должен работать даже при недоступном RPC аккаунтов */ }
-  }
-  const byLogin=Object.fromEntries(adminAccounts.map(x=>[x.login,x]));
-  const counts={all:rows.filter(x=>x.is_active).length,
-    admin:rows.filter(x=>x.is_active&&x.employee_type==='admin').length,
-    trainer:rows.filter(x=>x.is_active&&x.employee_type==='trainer').length,
-    archive:rows.filter(x=>!x.is_active).length};
+  const counts={all:allStaff.filter(e=>!isArchived(e)).length,admin:allStaff.filter(e=>!isArchived(e)&&e.employee_type==='admin').length,trainer:allStaff.filter(e=>!isArchived(e)&&e.employee_type==='trainer').length,archive:allStaff.filter(isArchived).length};
   const sections=[];
   if(canEmployees)sections.push(['all',`Все (${counts.all})`]);
-  if(canEmployees||canAdmins)sections.push(['admin',`Администраторы${canEmployees?' ('+counts.admin+')':''}`]);
+  if(canEmployees||canAdmins)sections.push(['admin',`Администраторы (${counts.admin})`]);
   if(canEmployees)sections.push(['trainer',`Тренеры (${counts.trainer})`]);
   if(canTelegram)sections.push(['telegram','Telegram']);
   if(canAudit)sections.push(['log','Лог']);
-  if(canEmployees||canAdmins)sections.push(['archive','Архив']);
+  if(canEmployees||canAdmins)sections.push(['archive',`Архив (${counts.archive})`]);
   if(!sections.length){body.innerHTML='<div class="empty">Нет доступных разделов.</div>';return;}
   if(!sections.some(([key])=>key===EMP_VIEW))EMP_VIEW=sections[0][0];
   body.innerHTML=`<div class="staff-toolbar fade-in"><div class="grow"><div class="section-title" style="margin:0">Сотрудники</div></div>
     ${manageEmployees?'<button class="btn btn-primary" id="addTrainer">+ Добавить тренера</button>':''}
-    ${(session.role==='owner'||can('admins.manage'))?'<button class="btn" id="addEmployeeAdmin">+ Добавить администратора</button>':''}</div>
-    <div class="subtabs">${sections.map(([v,label])=>`<button class="subtab${EMP_VIEW===v?' on':''}" data-empv="${v}">${label}</button>`).join('')}</div>
+    ${manageAdmins?'<button class="btn" id="addEmployeeAdmin">+ Добавить администратора</button>':''}</div>
+    <div class="subtabs">${sections.map(([v,label])=>`<button type="button" class="subtab${EMP_VIEW===v?' on':''}" data-empv="${v}">${label}</button>`).join('')}</div>
     <div id="empList"></div>`;
   const list=body.querySelector('#empList');
-  let displayRequest=0;
+  let shownItems=new Map(),openedMenu=null,displayRequest=0;
+  const closeMenu=()=>{
+    if(!openedMenu)return;
+    openedMenu.querySelector('.emp-menu')?.setAttribute('hidden','');
+    openedMenu.querySelector('.emp-more')?.setAttribute('aria-expanded','false');openedMenu=null;
+  };
+  // При повторном открытии раздела снимаем прежние document-listeners.
+  if(renderEmployees._outsideAbort)renderEmployees._outsideAbort.abort();
+  const listenerAbort=new AbortController();renderEmployees._outsideAbort=listenerAbort;
+  document.addEventListener('pointerdown',event=>{
+    if(openedMenu&&!openedMenu.contains(event.target))closeMenu();
+  },{signal:listenerAbort.signal});
+  document.addEventListener('keydown',event=>{
+    if(event.key==='Escape'&&openedMenu){const trigger=openedMenu.querySelector('.emp-more');closeMenu();trigger?.focus({preventScroll:true});event.preventDefault();}
+  },{signal:listenerAbort.signal});
+  const refresh=()=>renderEmployees(body);
+  function lookup(key){return shownItems.get(key)||null;}
+  function confirmEmployeeStatus(e,active,onConfirmed){
+    const verb=active?'Восстановить':'Перенести в архив';
+    const dialog=modal(`<h3>Подтвердите</h3><p>${escapeHtml(verb+' «'+e.full_name+'»?')}</p>
+      <div class="actions"><button class="btn" data-x>Отмена</button><button type="button" class="btn btn-primary" id="empConfirmStatus">${verb}</button></div>`);
+    dialog.querySelector('#empConfirmStatus').onclick=async()=>{
+      closeModal(dialog);await onConfirmed();
+    };
+  }
+  async function archiveTrainer(e,active){
+    // Тот же серверный app_save_staff_profile, что и переключатель «Работает» в прежней карточке.
+    return apiSaveEmployee({id:e.id,full_name:e.full_name,phone:null,birth_date:e.birth_date||null,
+      hire_date:e.hire_date||null,primary_studio:e.primary_studio||'',studios:employeeStudios(e),
+      is_active:active,note:e.note||''});
+  }
+  async function act(action,entry){
+    const {e,account,archived}=entry;
+    const virtual=String(e.id).startsWith('account:');
+    if(action==='edit'){
+      if(!virtual&&manageEmployees)employeeModal(e,refresh,allStaff.filter(x=>!String(x.id).startsWith('account:')));
+      else if(account&&manageAdmins)void employeeAccountSettingsModal(account,e,refresh);
+    }else if(action==='permissions'&&account&&canManagePermissions){permissionsModal(account,refresh);
+    }else if(action==='history'&&e.employee_type==='admin'&&session.role==='owner'&&!virtual){bonusBranchHistoryModal(e,refresh);
+    }else if(action==='account'&&account&&manageAdmins){void employeeAccountSettingsModal(account,e,refresh);
+    }else if(action==='archive'||action==='restore'){
+      const newActive=action==='restore';
+      confirmEmployeeStatus(e,newActive,async()=>{
+        try{
+          if(account&&e.employee_type==='admin'&&manageAdmins)await apiSetActive(account.login,newActive);
+          else if(!virtual&&manageEmployees)await archiveTrainer(e,newActive);
+          else throw new Error('Недостаточно прав для изменения статуса');
+          void auditAction(newActive?'Восстановлен сотрудник':'Сотрудник переведён в архив','employee',String(e.id),{login:e.app_login||'',active:newActive});
+          toast(newActive?'Сотрудник восстановлен':'Сотрудник перенесён в архив');refresh();
+        }catch(err){handleErr(err);}
+      });
+    }else if(action==='delete'&&archived&&account&&manageAdmins){
+      confirmModal(`Удалить «${account.name}» окончательно? Он исчезнет из списков. Отчёты останутся в логе.`,async()=>{
+        try{await apiDeleteAdmin(account.login);toast('Аккаунт удалён');refresh();}catch(err){handleErr(err);}
+      });
+    }
+  }
+  list.addEventListener('click',event=>{
+    const trigger=event.target.closest('.emp-more');
+    if(trigger){
+      const card=trigger.closest('.emp-card');if(!card)return;
+      if(openedMenu===card){closeMenu();return;}
+      closeMenu();openedMenu=card;
+      card.querySelector('.emp-menu')?.removeAttribute('hidden');trigger.setAttribute('aria-expanded','true');return;
+    }
+    const button=event.target.closest('[data-emp-action]');if(!button||button.disabled)return;
+    const card=button.closest('.emp-card'),entry=card&&lookup(card.dataset.empKey);if(!entry)return;
+    closeMenu();void act(button.dataset.empAction,entry);
+  });
   async function draw(){
-    const ticket=++displayRequest;
-    const view=EMP_VIEW;
-    if((view==='admin'||view==='archive')&&canEmployees&&!canAdmins){
-      const plain=rows.filter(e=>view==='admin'?e.is_active&&e.employee_type==='admin':!e.is_active);
-      list.innerHTML=plain.length?`<div class="staff-grid">${plain.map(e=>employeeCard(e,manageEmployees)).join('')}</div>`:'<div class="empty">Сотрудников в этом разделе нет.</div>';
-      list.querySelectorAll('[data-edit-employee]').forEach(b=>b.onclick=()=>{
-        const e=rows.find(x=>String(x.id)===String(b.dataset.editEmployee));
-        if(e)employeeModal(e,()=>renderEmployees(body),rows);
-      });
-      return;
-    }
-    if(['admin','telegram','log','archive'].includes(view)){
-      // Прежний обработчик администраторов используется как встроенный модуль.
-      // Его RPC, логика Telegram, аудит и защита серверных прав не изменяются.
+    const ticket=++displayRequest,view=EMP_VIEW;closeMenu();
+    if(view==='telegram'||view==='log'){
       list.innerHTML='<div class="empty">Загрузка…</div>';
-      await renderUsers(list,{embedded:true,view:view==='admin'?'admins':view,employeeRows:rows,manageEmployees});
-      return;
+      await renderUsers(list,{embedded:true,view,employeeRows:rows,manageEmployees});return;
     }
-    const selected=rows.filter(x=>x.is_active&&(view==='all'||x.employee_type==='trainer'));
+    const selected=allStaff.filter(e=>view==='archive'?isArchived(e):!isArchived(e)&&(view==='all'||(view==='admin'&&e.employee_type==='admin')||(view==='trainer'&&e.employee_type==='trainer')));
     if(ticket!==displayRequest)return;
-    list.innerHTML=selected.length?`<div class="staff-grid">${selected.map(x=>{
-      const a=x.employee_type==='admin' && canManagePermissions && byLogin[x.app_login];
-      return employeeCard(x,manageEmployees);
+    shownItems=new Map();
+    list.innerHTML=selected.length?`<div class="emp-grid">${selected.map(e=>{
+      const account=e.employee_type==='admin'&&e.app_login?byLogin.get(e.app_login):null;
+      const archived=isArchived(e),virtual=String(e.id).startsWith('account:');
+      const key=virtual?'account:'+e.app_login:'employee:'+e.id;
+      shownItems.set(key,{e,account,archived});
+      return renderEmployeeCard({...e,_cardKey:key},{archived,
+        canEdit:!virtual?manageEmployees:manageAdmins,
+        canPermissions:!!account&&canManagePermissions,
+        canHistory:session.role==='owner'&&!virtual,
+        canArchive:!!account?manageAdmins:!virtual&&manageEmployees,
+        canDelete:!!account&&manageAdmins,
+        canAccountSettings:!!account&&manageAdmins});
     }).join('')}</div>`:'<div class="empty">Сотрудников в этом разделе нет.</div>';
-    // Каждому администратору доступна настройка прав прямо в его карточке.
-    if(canManagePermissions){
-      selected.filter(e=>e.employee_type==='admin').forEach(e=>{
-        const u=byLogin[e.app_login];if(!u)return;
-        const card=[...list.querySelectorAll('.staff-card')].find(x=>x.dataset.eid===String(e.id));
-        if(!card)return;
-        let actions=card.querySelector('.staff-actions');
-        if(!actions){actions=document.createElement('div');actions.className='staff-actions';card.appendChild(actions);}
-        const b=document.createElement('button');b.className='btn btn-sm';b.textContent='Настроить права';
-        b.onclick=()=>permissionsModal(u,()=>renderEmployees(body));actions.appendChild(b);
-      });
-    }
-    if(session.role==='owner'){
-      selected.filter(x=>x.employee_type==='admin').forEach(e=>{
-        const card=[...list.querySelectorAll('.staff-card')].find(x=>x.dataset.eid===String(e.id));
-        if(!card)return;
-        let actions=card.querySelector('.staff-actions');
-        if(!actions){actions=document.createElement('div');actions.className='staff-actions';card.appendChild(actions);}
-        const b=document.createElement('button');b.type='button';b.className='btn btn-sm';b.textContent='История филиала / перевод';
-        b.onclick=()=>bonusBranchHistoryModal(e,()=>renderEmployees(body));actions.appendChild(b);
-      });
-    }
-    list.querySelectorAll('[data-edit-employee]').forEach(b=>b.onclick=()=>{
-      const e=rows.find(x=>String(x.id)===String(b.dataset.editEmployee));
-      if(e)employeeModal(e,()=>renderEmployees(body),rows);
-    });
   }
   body.querySelectorAll('[data-empv]').forEach(b=>b.onclick=()=>{
     if(appHasUnsavedWork()){toast('Сначала сохраните изменения',true);return;}
-    EMP_VIEW=b.dataset.empv;
-    body.querySelectorAll('[data-empv]').forEach(x=>x.classList.toggle('on',x.dataset.empv===EMP_VIEW));
-    void draw();
+    EMP_VIEW=b.dataset.empv;body.querySelectorAll('[data-empv]').forEach(x=>x.classList.toggle('on',x.dataset.empv===EMP_VIEW));void draw();
   });
-  const add=body.querySelector('#addTrainer');if(add)add.onclick=()=>employeeModal(null,()=>renderEmployees(body),rows);
-  const addAdmin=body.querySelector('#addEmployeeAdmin');if(addAdmin)addAdmin.onclick=()=>addAdminModal(()=>{EMP_VIEW='admin';renderEmployees(body);});
+  const add=body.querySelector('#addTrainer');if(add)add.onclick=()=>employeeModal(null,refresh,rows);
+  const addAdmin=body.querySelector('#addEmployeeAdmin');if(addAdmin)addAdmin.onclick=()=>addAdminModal(()=>{EMP_VIEW='admin';refresh();});
   await draw();
 }
 /* ================= Зарплаты · самостоятельная вкладка =================
@@ -5955,7 +6110,7 @@ async function renderSalaries(body){
           const trainer=employees.find(e=>e.employee_type==='trainer'&&String(e.id)===String(id));
           if(!trainer){toast('Карточка тренера недоступна',true);return;}
           if(session.role==='owner'||can('employees.manage'))employeeModal(trainer,()=>renderSalaries(body),employees);
-          else modal(employeeCard(trainer,false)+'<div class="actions"><button class="btn" data-x>Закрыть</button></div>');
+          else modal(renderEmployeeCard(trainer,{archived:!trainer.is_active,canEdit:false,canArchive:false})+'<div class="actions"><button class="btn" data-x>Закрыть</button></div>');
         }catch(err){handleErr(err);}
       };
       renderTrainerPayroll(panel,employees,openCard);
@@ -6735,74 +6890,8 @@ async function renderUsers(body,options={}){
       });
     }
   }
-  function drawAdmins(el){
-    const staffRows=Array.isArray(options.employeeRows)?options.employeeRows:[];
-    const staffByLogin=Object.fromEntries(staffRows.filter(e=>e.app_login).map(e=>[e.app_login,e]));
-    const canEditStaff=!!options.manageEmployees;
-    el.innerHTML=`<div class="bar fade-in"><div class="grow"><div class="section-title" style="margin:0">Администраторы (${active.length})</div></div></div>
-      <p class="msg-sub">Данные сотрудника и настройки учётной записи объединены. Права, филиал, телефон и доступ находятся внутри карточки.</p>
-      <div id="ulist" class="staff-account-grid">${active.length?active.map(u=>{
-        const e=staffByLogin[u.login];
-        const profile=e?employeeCard(e,canEditStaff):`<div class="staff-card"><div class="staff-head"><b class="staff-name">${escapeHtml(u.name)}</b><span class="staff-role">Администратор</span></div><div class="staff-meta">Логин: ${escapeHtml(u.login)}</div></div>`;
-        return `<div class="staff-account-box">${profile}<details class="staff-account-details"><summary>Учётная запись и права</summary>${userRow(u,(settings.adminPhones||{})[u.login]||'',{manage:manageAdmins,permissions:managePerms})}${session.role==='owner'&&e&&payrollAccess?`<div class="staff-bonus-access"><div><b>Зарплата тренеров</b><small>Просмотр, авансы и отправка в Telegram</small></div><button type="button" class="sw${payrollAccess.has(String(e.id))?' on':''}" role="switch" aria-checked="${payrollAccess.has(String(e.id))}" aria-label="Доступ к зарплатам тренеров" data-payroll-access="${escapeHtml(e.id)}"></button></div>`:''}${session.role==='owner'&&e?`<div class="staff-bonus-access"><div><b>Доступ к планам и бонусам</b><small>${bonusAccessReady?(bonusAccess.get(String(e.id))==='all'?'Все филиалы и администраторы':'Свой филиал и коллеги'):'Настройки временно недоступны'}</small></div><button type="button" class="sw ${bonusAccess.get(String(e.id))==='all'?'on':''}" data-ba-access="${e.id}" role="switch" aria-label="Показать все филиалы ${escapeHtml(e.full_name||u.name)}" aria-checked="${bonusAccess.get(String(e.id))==='all'}" ${bonusAccessReady?'':'disabled'}></button></div>`:''}${session.role==='owner'&&e?`<div class="bh-card-controls"><button type="button" class="btn btn-sm" data-bh-open="${e.id}">История филиала / перевод</button><span class="bh-note">С начала выбранного месяца · предыдущие периоды сохраняются</span></div>`:''}</details></div>`;
-      }).join(''):'<div class="empty">Активных администраторов нет.</div>'}</div>`;
-    const main=el.querySelector('#ulist');
-    wireRows(main);
-    if(payrollAccess)main.querySelectorAll('[data-payroll-access]').forEach(button=>button.onclick=async()=>{
-      const id=button.dataset.payrollAccess;
-      const enabled=!payrollAccess.has(id);
-      button.disabled=true;
-      try{
-        await rpc('app_trainer_payroll_set_access',{p_token:TOKEN,p_employee_id:id,p_enabled:enabled});
-        if(enabled)payrollAccess.add(id);else payrollAccess.delete(id);
-        button.classList.toggle('on',enabled);
-        button.setAttribute('aria-checked',String(enabled));
-        void auditAction('Изменён доступ к зарплатам тренеров','admin',id,{enabled});
-        toast(enabled?'Доступ к зарплатам выдан':'Доступ к зарплатам отозван');
-      }catch(e){handleErr(e);}finally{button.disabled=false;}
-    });
-    if(session.role==='owner')main.querySelectorAll('[data-ba-access]').forEach(btn=>btn.onclick=async()=>{
-      if(!bonusAccessReady)return;
-      const id=String(btn.dataset.baAccess);
-      const current=bonusAccess.get(id)==='all';
-      const next=current?'branch':'all';
-      btn.disabled=true;
-      try{
-        await rpc('app_bonus_set_view_scope',{p_token:TOKEN,p_employee_id:Number(id),p_scope:next});
-        bonusAccess.set(id,next);
-        btn.classList.toggle('on',next==='all');btn.setAttribute('aria-checked',String(next==='all'));
-        btn.parentElement.querySelector('small').textContent=next==='all'?'Все филиалы и администраторы':'Свой филиал и коллеги';
-        toast('Права просмотра бонусов сохранены');
-      }catch(e){handleErr(e);}finally{btn.disabled=false;}
-    });
-    if(session.role==='owner')main.querySelectorAll('[data-bh-open]').forEach(b=>b.onclick=()=>{
-      const e=staffRows.find(x=>String(x.id)===String(b.dataset.bhOpen));
-      if(e)bonusBranchHistoryModal(e,refreshPanel);
-    });
-    main.querySelectorAll('[data-edit-employee]').forEach(b=>b.onclick=()=>{
-      const e=staffRows.find(x=>String(x.id)===String(b.dataset.editEmployee));
-      if(e)employeeModal(e,refreshPanel,options.employeeRows);
-    });
-  }
-  function drawArchive(el){
-    const staffRows=Array.isArray(options.employeeRows)?options.employeeRows:[];
-    const archivedLogins=new Set(archived.map(u=>u.login));
-    const inactiveStaff=staffRows.filter(e=>!e.is_active&&!archivedLogins.has(e.app_login));
-    el.innerHTML=`<div class="section-title" style="margin-top:0">Архив сотрудников</div>
-      <p class="msg-sub">Неактивные тренеры и уволенные администраторы в одном месте. Удаление аккаунта необратимо; восстановление возвращает доступ к FAD.</p>
-      <div id="empArchived" class="staff-grid staff-archive-grid">${inactiveStaff.map(e=>employeeCard(e,!!options.manageEmployees)).join('')}</div>
-      <div id="ulist" style="margin-top:12px">${archived.length?archived.map(u=>archRow(u,manageAdmins)).join(''):'<div class="staff-hub-empty">Уволенных администраторов нет.</div>'}</div>
-      ${!archived.length&&!inactiveStaff.length?'<div class="empty">Архив пуст.</div>':''}`;
-    el.querySelectorAll('[data-edit-employee]').forEach(b=>b.onclick=()=>{
-      const e=inactiveStaff.find(x=>String(x.id)===String(b.dataset.editEmployee));
-      if(e)employeeModal(e,refreshPanel,options.employeeRows);
-    });
-    const listEl=el.querySelector('#ulist');
-    if(manageAdmins){
-      listEl.querySelectorAll('[data-restore]').forEach(b=>b.onclick=async()=>{ const u=byLogin[b.dataset.restore]; try{ await apiSetActive(u.login,true); toast('Сотрудник возвращён в работу'); refreshPanel(); }catch(e){ handleErr(e); } });
-      listEl.querySelectorAll('[data-del2]').forEach(b=>b.onclick=()=>{ const u=byLogin[b.dataset.del2]; confirmModal(`Удалить «${u.name}» окончательно? Он исчезнет из списков. Отчёты останутся в логе.`, async()=>{ try{ await apiDeleteAdmin(u.login); toast('Удалён'); refreshPanel(); }catch(e){ handleErr(e); } }); });
-    }
-  }
+  // Все карточки сотрудников (включая администраторов и архив) теперь
+  // отображаются только renderEmployees → renderEmployeeCard.
   async function drawAudit(el){
     const today=todayStr(), from=isoAddDays(today,-29);
     el.innerHTML=`<div class="bar fade-in"><div class="grow"><div class="section-title" style="margin:0">Лог действий пользователей</div></div></div>
@@ -6903,7 +6992,7 @@ async function renderUsers(body,options={}){
     }
     el.querySelector('#tgSave').onclick=async()=>{ const ind=el.querySelector('#tgInd'); try{ await apiSaveSettings(Object.assign({},settings,{telegram:TG})); settings.telegram=TG; void auditAction('Изменены настройки Telegram','telegram','recipients',{recipients:TG.recipients}); clearAppDirty('telegram'); ind.textContent='✓ Сохранено'; setTimeout(()=>{ if(ind) ind.textContent=''; },2500); }catch(e){ handleErr(e); } };
   }
-  function drawU(){ const el=body.querySelector('#uBody'); if(selectedView==='telegram') drawTelegram(el); else if(selectedView==='archive') drawArchive(el); else if(selectedView==='log') void drawAudit(el); else drawAdmins(el); }
+  function drawU(){ const el=body.querySelector('#uBody'); if(selectedView==='telegram') drawTelegram(el); else if(selectedView==='log') void drawAudit(el); else el.innerHTML='<div class="empty">Откройте раздел «Администраторы» во вкладке сотрудников.</div>';  }
   drawU();
 }
 function userPermissions(u){
@@ -6911,11 +7000,6 @@ function userPermissions(u){
   if(u&&u.senior) SENIOR_PERMISSION_KEYS.forEach(k=>p[k]=true);
   if(u&&u.canEdit) p['reports.edit_morning']=true;
   return p;
-}
-function archRow(u,manage){
-  const p=userPermissions(u);
-  return `<div class="urow" data-login="${escapeHtml(u.login)}"><div class="u-main"><div class="u-name">${escapeHtml(u.name)}</div><div class="u-login">логин: ${escapeHtml(u.login)}${u.home?' · '+studioName(u.home):''} · ${escapeHtml(permissionPresetName(p))}</div></div>
-    <div class="u-ctl"><span class="st-pill st-off">уволен</span>${manage?`<button class="btn btn-sm" data-restore="${escapeHtml(u.login)}">Вернуть в работу</button><button class="btn btn-sm btn-ghost" data-del2="${escapeHtml(u.login)}">Удалить</button>`:''}</div></div>`;
 }
 function userRow(u,phone,opts){
   opts=opts||{}; const p=userPermissions(u), pName=permissionPresetName(p), disabled=opts.manage?'':' disabled';
