@@ -3,7 +3,7 @@
   Студии: Машерова 11 · Куйбышева 22 · Толбухина 2
   Роли: Руководитель (все права) / Администратор с индивидуальным набором прав.
   Учётные записи с паролями; руководитель может делегировать управление и права доступа.
-  Валюта: BYN (Br). Записи сохраняются между сессиями, выгрузка лога в Excel.
+  Валюта: BYN (BYN). Записи сохраняются между сессиями, выгрузка лога в Excel.
 -->
 <meta charset="utf-8" />
 <title>Flexico-Admin-Dashboard</title>
@@ -1879,7 +1879,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '16.11.2026-as'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '16.11.2026-at'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -2710,8 +2710,9 @@ function renderApp(){
   tabs.push({label:'План и бонусы',render:renderBonusDashboard});
   if(session.role==='owner'||session.role==='admin') tabs.push({label:'Замены',key:'replacements',render:renderReplacements});
   if(session && (session.role==='owner'||session.role==='admin')) tabs.push({label:'Маркетинг',render:renderMarketing});
+  if(session.role==='owner'||session.payrollAccess===true) tabs.push({label:'Зарплаты',key:'salaries',render:renderSalaries});
   if(session.role!=='owner' && can('reports.view_all')) tabs.push({label:'Все отчёты',render:renderAllReports});
-  if(session.role==='owner' || session.payrollAccess || ['employees.view','employees.manage','admins.view','admins.manage','admins.permissions','admins.audit','telegram.manage'].some(k=>can(k))) tabs.push({label:'Сотрудники',key:'employees',render:renderEmployees});
+  if(session.role==='owner' || ['employees.view','employees.manage','admins.view','admins.manage','admins.permissions','admins.audit','telegram.manage'].some(k=>can(k))) tabs.push({label:'Сотрудники',key:'employees',render:renderEmployees});
   if(session.role==='owner' || can('calendar.view') || can('calendar.manage')) tabs.push({label:'Календарь',render:renderCalendar});
   if(session.role==='owner' || can('messages.manage')) tabs.push({label:'Сообщения',render:renderMessages});
   renderRoleUI(tabs);
@@ -2733,7 +2734,7 @@ function renderRoleUI(tabs){
       return;
     }
     body.removeAttribute('data-bonus-token');
-    if(['replacements','employees'].includes(tabs[i].key)||['replacements','employees'].includes(tabs[currentTab]?.key)){
+    if(['replacements','employees','salaries'].includes(tabs[i].key)||['replacements','employees','salaries'].includes(tabs[currentTab]?.key)){
       // A pending renderer from the previous tab can still update its own detached panel.
       const nextBody=document.createElement('div');
       nextBody.id='tabbody';
@@ -5682,8 +5683,6 @@ async function renderEmployees(body){
   if(canEmployees)sections.push(['all',`Все (${counts.all})`]);
   if(canEmployees||canAdmins)sections.push(['admin',`Администраторы${canEmployees?' ('+counts.admin+')':''}`]);
   if(canEmployees)sections.push(['trainer',`Тренеры (${counts.trainer})`]);
-  if(canPayroll)sections.push(['payroll','Зарплата тренеров']);
-  if(session.role==='owner')sections.push(['admin_payroll','Зарплата админов']);
   if(canTelegram)sections.push(['telegram','Telegram']);
   if(canAudit)sections.push(['log','Лог']);
   if(canEmployees||canAdmins)sections.push(['archive','Архив']);
@@ -5695,22 +5694,10 @@ async function renderEmployees(body){
     <div class="subtabs">${sections.map(([v,label])=>`<button class="subtab${EMP_VIEW===v?' on':''}" data-empv="${v}">${label}</button>`).join('')}</div>
     <div id="empList"></div>`;
   const list=body.querySelector('#empList');
-  const openTrainerCard=canEmployees?async id=>{
-    try{
-      const employees=rows.some(e=>String(e.id)===id)?rows:await apiListEmployees();
-      if(!list.isConnected||EMP_VIEW!=='payroll')return;
-      const trainer=employees.find(e=>e.employee_type==='trainer'&&String(e.id)===id);
-      if(!trainer){toast('Карточка тренера недоступна',true);return;}
-      if(manageEmployees)employeeModal(trainer,()=>renderEmployees(body),employees);
-      else modal(employeeCard(trainer,false)+'<div class="actions"><button class="btn" data-x>Закрыть</button></div>');
-    }catch(e){handleErr(e);}
-  }:null;
   let displayRequest=0;
   async function draw(){
     const ticket=++displayRequest;
     const view=EMP_VIEW;
-    if(view==='payroll'){renderTrainerPayroll(list,rows,openTrainerCard);return;}
-    if(view==='admin_payroll'){renderAdminPayroll(list);return;}
     if((view==='admin'||view==='archive')&&canEmployees&&!canAdmins){
       const plain=rows.filter(e=>view==='admin'?e.is_active&&e.employee_type==='admin':!e.is_active);
       list.innerHTML=plain.length?`<div class="staff-grid">${plain.map(e=>employeeCard(e,manageEmployees)).join('')}</div>`:'<div class="empty">Сотрудников в этом разделе нет.</div>';
@@ -5770,6 +5757,58 @@ async function renderEmployees(body){
   const addAdmin=body.querySelector('#addEmployeeAdmin');if(addAdmin)addAdmin.onclick=()=>addAdminModal(()=>{EMP_VIEW='admin';renderEmployees(body);});
   await draw();
 }
+/* ================= Зарплаты · самостоятельная вкладка =================
+   У руководителя обе зарплаты, сотрудникам с делегированным доступом —
+   только зарплата тренеров. RPC по-прежнему выполняют серверную проверку прав.
+*/
+let SALARIES_VIEW='trainer';
+async function renderSalaries(body){
+  const canTrainers=session?.role==='owner'||session?.payrollAccess===true;
+  const canAdmins=session?.role==='owner';
+  if(!canTrainers&&!canAdmins){body.innerHTML='<div class="empty">Нет доступа к зарплатам.</div>';return;}
+  if(SALARIES_VIEW==='admin'&&!canAdmins)SALARIES_VIEW='trainer';
+  body.innerHTML=`<div class="subtabs" role="tablist" aria-label="Разделы зарплаты">
+    ${canTrainers?`<button type="button" class="subtab${SALARIES_VIEW==='trainer'?' on':''}" data-salary="trainer" role="tab" aria-selected="${SALARIES_VIEW==='trainer'}">Зарплата тренеров</button>`:''}
+    ${canAdmins?`<button type="button" class="subtab${SALARIES_VIEW==='admin'?' on':''}" data-salary="admin" role="tab" aria-selected="${SALARIES_VIEW==='admin'}">Зарплата админов</button>`:''}
+  </div><div id="salaryPanel"></div>`;
+  const panel=body.querySelector('#salaryPanel');
+  let request=0;
+  async function draw(){
+    const ticket=++request,view=SALARIES_VIEW;
+    panel.replaceChildren();
+    if(view==='admin'){
+      if(!canAdmins){panel.innerHTML='<div class="empty">Доступ только у руководителя.</div>';return;}
+      renderAdminPayroll(panel);return;
+    }
+    if(!canTrainers){panel.innerHTML='<div class="empty">Нет доступа к зарплате тренеров.</div>';return;}
+    panel.innerHTML='<div class="empty">Загружаем сотрудников…</div>';
+    try{
+      // Доступ к расчёту тренеров может быть выдан отдельно от права
+      // просмотра общего справочника сотрудников. Сохраняем прежний режим:
+      // без employees.view расчёт открывается, а карточки недоступны.
+      const employees=(session.role==='owner'||can('employees.view')||can('employees.manage'))
+        ?await apiListEmployees():[];
+      if(ticket!==request||!panel.isConnected||SALARIES_VIEW!==view)return;
+      const openCard=async id=>{
+        try{
+          const trainer=employees.find(e=>e.employee_type==='trainer'&&String(e.id)===String(id));
+          if(!trainer){toast('Карточка тренера недоступна',true);return;}
+          if(session.role==='owner'||can('employees.manage'))employeeModal(trainer,()=>renderSalaries(body),employees);
+          else modal(employeeCard(trainer,false)+'<div class="actions"><button class="btn" data-x>Закрыть</button></div>');
+        }catch(err){handleErr(err);}
+      };
+      renderTrainerPayroll(panel,employees,openCard);
+    }catch(err){if(ticket===request&&panel.isConnected){panel.innerHTML='<div class="empty">Не удалось получить список сотрудников.</div>';handleErr(err);}}
+  }
+  body.querySelectorAll('[data-salary]').forEach(b=>b.onclick=()=>{
+    if(appHasUnsavedWork()){toast('Сначала сохраните изменения',true);return;}
+    SALARIES_VIEW=b.dataset.salary;
+    body.querySelectorAll('[data-salary]').forEach(x=>{x.classList.toggle('on',x.dataset.salary===SALARIES_VIEW);x.setAttribute('aria-selected',String(x.dataset.salary===SALARIES_VIEW));});
+    void draw();
+  });
+  await draw();
+}
+
 /* Branch history: only the owner can schedule a home-studio transfer.
    All updates go through server-checked app_bonus_transfer_branch. */
 function bonusBranchMonthNow(){return new Date(Date.now()+3*3600000).toISOString().slice(0,7);}
@@ -7529,7 +7568,7 @@ let BONUS_OPEN_SEQUENCE=0;
 // Sales sync now runs in Supabase Cron independently of the current viewer.
 // Browser clients only read scoped data through app_bonus_snapshot.
 const bonusFormat=n=>Number(n||0).toLocaleString('ru-RU',{maximumFractionDigits:2});
-const bonusMoney=n=>bonusFormat(n)+' Br';
+const bonusMoney=n=>bonusFormat(n)+' BYN';
 const bonusPct=n=>n===null?'—':Number(n).toLocaleString('ru-RU',{minimumFractionDigits:1,maximumFractionDigits:1})+'%';
 const bonusHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const bonusPeriodTitle=p=>{const [y,m]=p.split('-').map(Number);return new Intl.DateTimeFormat('ru-RU',{month:'long',year:'numeric'}).format(new Date(y,m-1,1)).replace(/^./,c=>c.toUpperCase());};
@@ -7646,12 +7685,12 @@ function bonusRenderHtml(model){const owner=model.owner,branches=model.branches;
 }
 function bonusSettingsEditor(model,callback){
   if(!model.owner)return;
-  const current=model.settings,labels=model.tiers.map(t=>t.pct+'%: '+t.amount+' Br').join(' · ');
-  const price=prompt('Шкала бонусов (в Br). Текущая: '+labels+'\nВведите пять сумм через запятую (90%,95%,100%,105%,110%):',model.tiers.map(t=>t.amount).join(', '));
+  const current=model.settings,labels=model.tiers.map(t=>t.pct+'%: '+t.amount+' BYN').join(' · ');
+  const price=prompt('Шкала бонусов (в BYN). Текущая: '+labels+'\nВведите пять сумм через запятую (90%,95%,100%,105%,110%):',model.tiers.map(t=>t.amount).join(', '));
   if(price===null)return;
   const nums=price.split(',').map(x=>Number(x.trim()));
   if(nums.length!==5||nums.some(x=>!Number.isInteger(x)||x<0||x>100000)){toast('Нужно указать 5 целых сумм',true);return;}
-  const q=prompt('Бонус за качество (Br):',String(current.quality_amount));if(q===null)return;
+  const q=prompt('Бонус за качество (BYN):',String(current.quality_amount));if(q===null)return;
   const amount=Number(q);if(!Number.isInteger(amount)||amount<0||amount>99999){toast('Некорректная сумма качества',true);return;}
   const mode=prompt('Режим выплаты: per_admin (каждому полностью) или split (делить):',current.bonus_mode||'per_admin');if(mode===null)return;
   if(!['per_admin','split'].includes(mode)){toast('Неизвестный режим бонуса',true);return;}
@@ -8173,7 +8212,7 @@ function renderAdminPayroll(host){
   };
   const fmt=x=>Number(x||0).toLocaleString('ru-RU',{maximumFractionDigits:2});
   const signed=x=>(x>0?'+':x<0?'−':'')+fmt(Math.abs(x));
-  const money=x=>fmt(x)+' Br';
+  const money=x=>fmt(x)+' BYN';
   const round2=x=>Math.round((Number(x)||0)*100)/100;
   const ceil5=x=>Math.ceil(Math.round((Number(x)||0)*100)/500)*5;
   const num=x=>{const n=Number(x);return Number.isFinite(n)?n:0;};
@@ -8188,6 +8227,7 @@ function renderAdminPayroll(host){
   const per=()=>bonusPeriodTitle(state.month).toLowerCase();
   const record=s=>state.byId.get(String(s.id))?.payroll||{};
   const days=s=>state.byId.get(String(s.id))?.days||[];
+  const advanceDetails=s=>(state.advanceDetails||[]).filter(a=>String(a.admin_id)===String(s.id)).sort((a,b)=>String(a.payment_date).localeCompare(String(b.payment_date)));
   const dayAdjustment=d=>num(d.hours_adjustment);
   const dayFinalHours=d=>Math.round((num(d.hours_impulse)+dayAdjustment(d))*10000)/10000;
   const dayTotalAdjustment=s=>round2(days(s).reduce((sum,d)=>sum+dayAdjustment(d),0));
@@ -8219,12 +8259,12 @@ function renderAdminPayroll(host){
   function dayText(s){
     const c=calc(s),r=record(s),list=[`${s.name.split(' ')[1]||'Здравствуйте'}, ${(()=>{const hr=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Minsk',hour:'2-digit',hourCycle:'h23'}).format(new Date()));return hr>=5&&hr<12?'доброе утро':hr>=12&&hr<18?'добрый день':'добрый вечер';})()} 🌼`,'',
       `Расчёт за ${per()}`,s.name,`Филиал: ${studioName(s.studio)}`,'',
-      `Отработанные дни (ставка ${fmt(rate())} Br/ч):`];
+      `Отработанные дни:`];
     const ds=days(s);
     if(ds.length)for(const d of ds){
       const da=dayAdjustment(d),h=dayFinalHours(d);
       list.push(`${dayTitle(d.work_date)} · ${shiftLabel(d)} · ${fmt(h)} ч × ${fmt(rate())} = ${money(round2(h*rate()))}`);
-      if(da)list.push(`  Корректировка дня: ${signed(da)} ч (${signed(round2(da*rate()))} Br)${d.hours_comment?' · '+d.hours_comment:''}; исходно ${fmt(d.hours_impulse)} ч`);
+      if(da)list.push(`  Корректировка дня: ${signed(da)} ч (${signed(round2(da*rate()))} BYN)${d.hours_comment?' · '+d.hours_comment:''}; исходно ${fmt(d.hours_impulse)} ч`);
     }
     else list.push('Отработанные смены за месяц пока не получены');
     list.push('',`Часы по сменам: ${fmt(c.hi)}`);
@@ -8235,8 +8275,12 @@ function renderAdminPayroll(host){
     if(c.bq)list.push(`Бонус за качество работы: +${money(c.bq)}`);
     if(c.senior)list.push(`Бонус старшего администратора: +${money(c.senior)}`);
     if(c.fine)list.push(`Штрафы: −${money(c.fine)}${r.fine_comment?' ('+r.fine_comment+')':''}`);
-    list.push(`Итого начислено: ${money(c.total)}`,`Выдано авансом: −${money(c.advance)}`,'',
-      c.rest<0?`Аванс превышает начисление на ${money(-c.rest)} — будет учтён в следующем периоде`:`К выдаче: ${money(c.pay)}`);
+    list.push(`Итого начислено: ${money(c.total)}`,`Авансы: ${c.advance?'−'+money(c.advance):'нет'}`);
+    const payments=advanceDetails(s);
+    if(c.advance>0&&payments.length&&round2(payments.reduce((sum,x)=>sum+num(x.amount),0))===round2(c.advance)){
+      for(const item of payments)list.push(`  • ${money(item.amount)} — ${dateLabel(item.payment_date)}`);
+    }
+    list.push('',c.rest<0?`Аванс превышает начисление на ${money(-c.rest)} — будет учтён в следующем периоде`:`К выдаче: ${money(c.pay)}`);
     if(c.rest<0)list.push(`Округлённый остаток: ${money(c.pay)}`);
     list.push('','Если заметите расхождение по сменам, пожалуйста, напишите мне 🙏');
     return list.join('\n');
@@ -8306,13 +8350,13 @@ function renderAdminPayroll(host){
     return `<tr class="adpay-details"><td colspan="14"><div class="adpay-days"><div class="adpay-days-head"><div><h4>Отработанные дни · данные Impulse${isPartial()?' · выделены '+dateRangeText():''}</h4><div class="adpay-muted">${ds.length} дней · ${fmt(c.hi)} ч по данным Impulse · ${signed(c.adj)} ч корректировки · итого ${fmt(c.h)} ч</div></div><button type="button" class="btn btn-sm adpay-reset-manual" data-action="reset-manual-one" data-id="${s.id}" ${state.busy||state.resetting?'disabled':''}>Сбросить все правки администратора</button></div>
     ${legacyMonthAdjustment(s)?`<div class="adpay-note adpay-source-warning">Сохранена историческая месячная корректировка ${signed(legacyMonthAdjustment(s))} ч. Новые корректировки вносятся только по дням; историческая сумма сохранена, чтобы не потерять начисления.</div>`:''}
     <div class="adpay-daygrid">${ds.length?ds.map(dayCard).join(''):'<div class="adpay-day">Данные Impulse ещё не синхронизированы</div>'}</div></div>
-    <div class="adpay-detail-cols"><div><h4>Расчётный листок</h4>${line(`${fmt(c.hi)} ч по сменам × ${fmt(rate())} Br`,money(c.hi*rate()))}${source(s)?.accrued_source!=null?line('Начислено в Impulse (сверка)',money(source(s).accrued_source)):''}${line(`Корректировки по дням: ${signed(c.adj)} ч`,signed(round2(c.adj*rate()))+' Br',c.adj<0?'adpay-neg':'adpay-pos')}${line(`Бонус Flexico · ${fmt(c.percent)}% плана`,'+'+money(c.bf),'adpay-pos')}${line('Бонус за качество','+'+money(c.bq),'adpay-pos')}${c.senior?line(`Старший · ${fmt(num(cfg().senior_bonus_percent))}% от ${money(c.seniorBase)}`,'+'+money(c.senior),'adpay-pos'):''}${line('Штрафы','−'+money(c.fine),'adpay-neg')}<div class="adpay-line strong"><span>Итого</span><span>${money(c.total)}</span></div>${line('Авансы','−'+money(c.advance))}<div class="adpay-line strong"><span>К выдаче</span><span class="${c.pay<0?'adpay-neg':''}">${money(c.pay)}</span></div></div>
+    <div class="adpay-detail-cols"><div><h4>Расчётный листок</h4>${line(`${fmt(c.hi)} ч по сменам × ${fmt(rate())} BYN`,money(c.hi*rate()))}${source(s)?.accrued_source!=null?line('Начислено в Impulse (сверка)',money(source(s).accrued_source)):''}${line(`Корректировки по дням: ${signed(c.adj)} ч`,signed(round2(c.adj*rate()))+' BYN',c.adj<0?'adpay-neg':'adpay-pos')}${line(`Бонус Flexico · ${fmt(c.percent)}% плана`,'+'+money(c.bf),'adpay-pos')}${line('Бонус за качество','+'+money(c.bq),'adpay-pos')}${c.senior?line(`Старший · ${fmt(num(cfg().senior_bonus_percent))}% от ${money(c.seniorBase)}`,'+'+money(c.senior),'adpay-pos'):''}${line('Штрафы','−'+money(c.fine),'adpay-neg')}<div class="adpay-line strong"><span>Итого</span><span>${money(c.total)}</span></div>${line('Авансы','−'+money(c.advance))}${advanceDetails(s).length?advanceDetails(s).map(a=>line('  • '+dateLabel(a.payment_date),money(a.amount))).join(''):(c.advance>0?'<p class="adpay-muted">Даты авансов ещё не подтверждены журналом Impulse. Обновите расчёт для сверки.</p>':'')}<div class="adpay-line strong"><span>К выдаче</span><span class="${c.pay<0?'adpay-neg':''}">${money(c.pay)}</span></div></div>
     <div><h4>Качество работы · ${money(state.model.settings.quality_amount)}</h4>${criteria().map(q=>`<label class="adpay-check"><input type="checkbox" data-id="${s.id}" data-quality="${esc(q.key)}" ${checks[q.key]===true?'checked':''}><span>${esc(q.label)}</span></label>`).join('')}<div class="adpay-muted">Бонус начисляется при выполнении всех критериев</div><h4 style="margin-top:12px">Штраф / комментарий</h4><textarea class="adpay-comment" data-id="${s.id}" data-field="fine_comment" placeholder="Причина штрафа (попадёт в расчёт)">${esc(r.fine_comment||'')}</textarea></div>
     <div><h4>Сообщение в Telegram</h4><pre class="adpay-preview">${esc(dayText(s))}</pre><div class="adpay-muted">Ник Telegram</div><input class="adpay-nick" type="text" data-id="${s.id}" data-telegram-nick value="${esc(s.username||'')}" placeholder="@nickname" aria-label="Ник Telegram ${esc(s.name)}" style="max-width:215px"><div class="adpay-actions" style="margin-top:9px"><button type="button" class="btn btn-primary btn-sm" data-action="preview" data-id="${s.id}">Скопировать / Telegram</button><label class="adpay-paid-check"><input data-id="${s.id}" data-field="paid" type="checkbox" ${r.paid===true?'checked':''}> Выдано</label></div></div></div></td></tr>`;
   }
 
   function draw(){if(!page.isConnected||!state.model)return;const {kpis,branches,selected,t}=renderCards();const receipt=state.model.receivedAt?` · снимок Impulse ${new Date(state.model.receivedAt).toLocaleString('ru-RU',{timeZone:'Europe/Minsk'})}`:'';
-    page.innerHTML=`<div class="adpay-head"><div><h1>Зарплата администраторов</h1><div class="adpay-muted">Часы по дням — Impulse · план и продажи — «План и бонусы»${esc(receipt)}</div></div><div class="adpay-controls"><label>Ставка, Br/ч <input id="adpay-rate" type="number" step="0.5" min="0" value="${rate()}"></label>${calendarMarkup()}<button type="button" class="btn btn-primary" data-action="sync" ${state.busy?'disabled':''}>${state.busy?'Получаем данные…':'Обновить из Impulse'}</button><button type="button" class="btn btn-sm" data-action="settings">⚙ Настройки</button></div></div>
+    page.innerHTML=`<div class="adpay-head"><div><h1>Зарплата администраторов</h1><div class="adpay-muted">Часы по дням — Impulse · план и продажи — «План и бонусы»${esc(receipt)}</div></div><div class="adpay-controls"><label>Ставка, BYN/ч <input id="adpay-rate" type="number" step="0.5" min="0" value="${rate()}"></label>${calendarMarkup()}<button type="button" class="btn btn-primary" data-action="sync" ${state.busy?'disabled':''}>${state.busy?'Получаем данные…':'Обновить из Impulse'}</button><button type="button" class="btn btn-sm" data-action="settings">⚙ Настройки</button></div></div>
     <div class="adpay-note${state.lastError?' error':''}">${state.lastError?esc(state.lastError):'Расчёт предварительный. Часы можно корректировать отдельно за каждый день, исходные данные Impulse не меняются. Авансы автоматически загружаются из Impulse и недоступны для ручной правки. Нажмите на строку для просмотра смен и расчёта. Для возврата к данным Impulse и автоматическим бонусам предусмотрен «Сбросить все правки».'}</div>
     ${state.syncStatus?`<div class="adpay-sync-status${state.syncStatusError?' payroll-sync-error':''}" role="status">${esc(state.syncStatus)}</div>`:''}
     ${isPartial()?`<div class="adpay-note adpay-source-warning"><b>Выбраны даты ${dateRangeText()}.</b> В карточках дней будет выделен этот диапазон. Денежные итоги, премии и авансы по-прежнему относятся ко всему месяцу, так как Impulse и FAD хранят их помесячно; не используйте их как сумму к выдаче за отдельные дни.</div>`:''}
@@ -8324,10 +8368,16 @@ function renderAdminPayroll(host){
     <tbody>${selected.map(s=>{const c=calc(s),r=record(s);
     return `<tr class="adpay-row${r.paid===true?' adpay-paid':''}" data-open-id="${s.id}"><td class="adpay-name"><i class="adpay-dot" style="background:${studioColor(s.studio)}"></i>${esc(s.name)}${String(s.id)===seniorId()?'<span class="adpay-senior-tag">старший</span>':''}<small>${esc(studioName(s.studio))}${c.adj?' · ✎ часы скорректированы':''}</small></td><td>${fmt(c.h)}${c.adj?`<span class="adpay-hint">Impulse ${fmt(c.hi)}</span>`:''}</td><td class="${c.adj?'adpay-adjusted-cell':''}">${signed(c.adj)}</td><td>${fmt(s.count)}</td><td>${money(c.acc)}</td><td>${numeric(s,'bonus_filial_override',c.bf,{override:true,auto:c.autoFil,min:0})}</td><td>${numeric(s,'bonus_quality_override',c.bq,{override:true,auto:c.autoQ,min:0})}</td><td class="adpay-pos">${c.senior?money(c.senior):'—'}</td><td>${numeric(s,'fine',c.fine,{min:0,step:.01})}</td><td><b>${money(c.total)}</b></td><td class="adpay-advance-readonly">${source(s)?.advance_source==null?'—':money(c.advance)}</td><td class="${c.rest<0?'adpay-neg':''}">${money(c.rest)}</td><td class="adpay-big ${c.pay<0?'adpay-neg':''}">${money(c.pay)}</td><td><button type="button" class="adpay-tg" data-action="preview" data-id="${s.id}" aria-label="Telegram ${esc(s.name)}">✈</button></td></tr>${state.open===String(s.id)?rowDetail(s):''}`;}).join('')}</tbody>
     <tfoot><tr><td>Итого</td><td>${fmt(t.h)}</td><td>${signed(t.adj)}</td><td>${fmt(t.sales)}</td><td>${money(t.acc)}</td><td>${money(t.bf)}</td><td>${money(t.bq)}</td><td>${money(t.senior)}</td><td>${money(t.fine)}</td><td>${money(t.total)}</td><td>${money(t.advance)}</td><td>${money(t.rest)}</td><td class="adpay-big ${t.pay<0?'adpay-neg':''}">${money(t.pay)}</td><td></td></tr></tfoot></table></div>
-    <div class="adpay-legend"><span>Часы Impulse доступны только для просмотра</span><span>Часы по каждому дню можно скорректировать; сохраняется аудит</span><span>Telegram вручную: копирование и переход в чат по нику</span><span>Бонус старшего · ${fmt(num(cfg().senior_bonus_percent))}% от начислений остальных</span><span>Округление вверх до 5 Br, включая отрицательные суммы</span><span>Зелёная строка = выдано</span></div>`;
+    <div class="adpay-legend"><span>Часы Impulse доступны только для просмотра</span><span>Часы по каждому дню можно скорректировать; сохраняется аудит</span><span>Telegram вручную: копирование и переход в чат по нику</span><span>Бонус старшего · ${fmt(num(cfg().senior_bonus_percent))}% от начислений остальных</span><span>Округление вверх до 5 BYN, включая отрицательные суммы</span><span>Зелёная строка = выдано</span></div>`;
   }
   async function load(){if(!page.isConnected)return;const seq=++state.ticket,pageMonth=state.month;page.innerHTML='<div class="empty">Загружаем зарплату администраторов…</div>';
-    try{const payload=await rpc('app_admin_payroll_snapshot',{p_token:TOKEN,p_period:pageMonth});if(seq!==state.ticket||!page.isConnected)return;
+    try{
+      const [payload,advances]=await Promise.all([
+        rpc('app_admin_payroll_snapshot',{p_token:TOKEN,p_period:pageMonth}),
+        rpc('app_admin_payroll_advance_details',{p_token:TOKEN,p_period:pageMonth})
+      ]);
+      if(seq!==state.ticket||!page.isConnected)return;
+      state.advanceDetails=Array.isArray(advances)?advances:[];
       if(!payload?.bonus||payload.bonus.owner!==true)throw Error('Недостаточно прав для расчёта зарплаты администраторов');
       const model=calcBonuses(pageMonth,payload.bonus);model.bonus=payload.bonus;model.payrollConfig=payload.config||{};model.receivedAt=payload.hours_updated_at;
       const seen=new Set(model.staff.map(s=>String(s.id)));
@@ -8383,6 +8433,7 @@ function renderAdminPayroll(host){
       if(result.unmapped?.length)state.syncWarnings.push('Нет ID Impulse: '+result.unmapped.join(', '));
       if(result.notReturned?.length)state.syncWarnings.push('Не вошли в отчёт: '+result.notReturned.join(', '));
       if(result.warnings?.length)state.syncWarnings.push('В отчёте есть расхождения между начислением и суммой дней');
+      if(result.advanceWarnings?.length)state.syncWarnings.push('Авансы: '+result.advanceWarnings.join('; '));
       const returned=Number(result.returned??result.covered??0),requested=Number(result.requested??0),daysCount=Number(result.days??0);
       if(!returned||!daysCount)throw Error('Impulse не вернул ни одной подтверждённой смены; сохранённые сведения не изменены.');
       state.syncStatus=`ImpulseCRM: получено ${daysCount} дней · ${returned} из ${requested} сотрудников. Обновлено ${new Intl.DateTimeFormat('ru-RU',{timeZone:'Europe/Minsk',dateStyle:'short',timeStyle:'short'}).format(new Date())}.`;
@@ -8458,7 +8509,7 @@ function renderAdminPayroll(host){
       finally{state.resetting=false;if(page.isConnected)draw();}
     };
   }
-  function settingsModal(){const conf=cfg(),tiers=state.model.tiers,fields=criteria();const ov=modal(`<div class="adpay-modal"><h3>Настройки зарплаты администраторов</h3><p>Суммы порогов и бонус качества общие с вкладкой «План и бонусы». Ставка и критерии относятся только к зарплате администраторов.</p><div class="adpay-settings-grid"><label>Ставка, Br/ч<input id="ap-setting-rate" type="number" min="0" step="0.5" value="${rate()}"></label><label>Бонус качества, Br<input id="ap-setting-quality" type="number" min="0" step="1" value="${num(state.model.settings.quality_amount)}"></label>${tiers.map((t,i)=>`<label>Порог ${t.pct}% · Br<input data-tier="${i}" type="number" min="0" step="1" value="${t.amount}"></label>`).join('')}${fields.map((f,i)=>`<label>Критерий ${i+1}<input data-criterion="${esc(f.key)}" value="${esc(f.label)}" maxlength="200"></label>`).join('')}<label>Старший администратор<select id="ap-senior-id">${rows().map(s=>`<option value="${s.id}"${String(s.id)===seniorId()?' selected':''}>${esc(s.name)}</option>`).join('')}</select></label><label>Бонус старшего, %<input id="ap-senior-pct" type="number" min="0" max="100" step="0.5" value="${num(cfg().senior_bonus_percent)}"></label><label>База бонуса старшего<select id="ap-senior-basis"><option value="total_before_advance"${cfg().senior_bonus_basis!=='hours_only'?' selected':''}>Итого коллег до авансов</option><option value="hours_only"${cfg().senior_bonus_basis==='hours_only'?' selected':''}>Только начислено за часы</option></select></label></div><div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="ap-settings-save">Сохранить настройки</button></div></div>`);
+  function settingsModal(){const conf=cfg(),tiers=state.model.tiers,fields=criteria();const ov=modal(`<div class="adpay-modal"><h3>Настройки зарплаты администраторов</h3><p>Суммы порогов и бонус качества общие с вкладкой «План и бонусы». Ставка и критерии относятся только к зарплате администраторов.</p><div class="adpay-settings-grid"><label>Ставка, BYN/ч<input id="ap-setting-rate" type="number" min="0" step="0.5" value="${rate()}"></label><label>Бонус качества, BYN<input id="ap-setting-quality" type="number" min="0" step="1" value="${num(state.model.settings.quality_amount)}"></label>${tiers.map((t,i)=>`<label>Порог ${t.pct}% · BYN<input data-tier="${i}" type="number" min="0" step="1" value="${t.amount}"></label>`).join('')}${fields.map((f,i)=>`<label>Критерий ${i+1}<input data-criterion="${esc(f.key)}" value="${esc(f.label)}" maxlength="200"></label>`).join('')}<label>Старший администратор<select id="ap-senior-id">${rows().map(s=>`<option value="${s.id}"${String(s.id)===seniorId()?' selected':''}>${esc(s.name)}</option>`).join('')}</select></label><label>Бонус старшего, %<input id="ap-senior-pct" type="number" min="0" max="100" step="0.5" value="${num(cfg().senior_bonus_percent)}"></label><label>База бонуса старшего<select id="ap-senior-basis"><option value="total_before_advance"${cfg().senior_bonus_basis!=='hours_only'?' selected':''}>Итого коллег до авансов</option><option value="hours_only"${cfg().senior_bonus_basis==='hours_only'?' selected':''}>Только начислено за часы</option></select></label></div><div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="ap-settings-save">Сохранить настройки</button></div></div>`);
     ov.querySelector('.modal').style.maxWidth='850px';
     ov.querySelector('#ap-settings-save').onclick=async()=>{const newRate=num(ov.querySelector('#ap-setting-rate').value),q=num(ov.querySelector('#ap-setting-quality').value);const amounts=[...ov.querySelectorAll('[data-tier]')].map(e=>Number(e.value));const edited=[...ov.querySelectorAll('[data-criterion]')].map(e=>({key:e.dataset.criterion,label:e.value.trim()}));const pct=Number(ov.querySelector('#ap-senior-pct').value),seniorId=Number(ov.querySelector('#ap-senior-id').value),seniorBasis=ov.querySelector('#ap-senior-basis').value;
       if(newRate<0||newRate>1000||Math.round(newRate*2)!==newRate*2||!Number.isFinite(q)||q<0||amounts.length!==tiers.length||amounts.some(n=>!Number.isFinite(n)||n<0)||edited.some(x=>!x.label)||!Number.isFinite(pct)||pct<0||pct>100||!Number.isInteger(seniorId)){toast('Проверьте ставку, суммы и критерии',true);return;}
