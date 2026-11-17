@@ -1851,7 +1851,7 @@ label.trainer-replacement-setting{display:flex;align-items:center;gap:8px;min-he
 .adpay-check input{width:auto;flex:none;margin:2px 0 0}.adpay-comment{width:100%;min-height:58px}
 .adpay-preview{background:#fff;border:1px solid var(--line);border-radius:9px;padding:11px;white-space:pre-wrap;overflow-wrap:anywhere;font-family:inherit;font-size:11.5px;line-height:1.4;max-height:320px;overflow-y:auto}
 .adpay-paid-check{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700}.adpay-paid-check input{width:auto}
-.adpay-legend{color:var(--ink-soft);font-size:11.5px;display:flex;gap:10px 20px;flex-wrap:wrap;margin-top:10px}
+
 .adpay-modal{max-width:830px!important}.adpay-modal pre{max-height:55vh;overflow:auto;white-space:pre-wrap;font-size:12px;background:var(--surface-2);padding:12px;border-radius:9px}
 .adpay-modal .adpay-settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
 .adpay-modal .adpay-settings-grid label{display:block;font-size:12px}.adpay-modal .adpay-settings-grid input{width:100%;margin-top:5px}
@@ -2004,7 +2004,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '16.11.2026-be'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '16.11.2026-bf'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -8951,7 +8951,7 @@ function renderAdminPayroll(host){
     <tbody>${selected.map(s=>{const c=calc(s),r=record(s);
     return `<tr class="adpay-row${r.paid===true?' adpay-paid':''}${state.paytechHighlightIds.includes(String(s.id))?' paytech-row-highlight':''}" data-open-id="${s.id}"><td class="adpay-name"><i class="adpay-dot" style="background:${studioColor(s.studio)}"></i>${esc(s.name)}${String(s.id)===seniorId()?'<span class="adpay-senior-tag">старший</span>':''}<small>${esc(studioName(s.studio))}${c.adj?' · ✎ часы скорректированы':''}</small></td><td>${fmt(c.h)}${c.adj?`<span class="adpay-hint">Impulse ${fmt(c.hi)}</span>`:''}</td><td class="${c.adj?'adpay-adjusted-cell':''}">${signed(c.adj)}</td><td>${fmt(s.count)}</td><td>${money(c.acc)}${badRateIds.has(String(s.id))?paytechMarker('Начисление отличается от отчёта Impulse, открыть панель предупреждений'):""}</td><td>${numeric(s,'bonus_filial_override',c.bf,{override:true,auto:c.autoFil,min:0})}</td><td>${numeric(s,'bonus_quality_override',c.bq,{override:true,auto:c.autoQ,min:0})}</td><td class="adpay-pos">${c.senior?money(c.senior):'—'}</td><td>${numeric(s,'fine',c.fine,{min:0,step:.01})}</td><td><b>${money(c.total)}</b></td><td class="adpay-advance-readonly">${source(s)?.advance_source==null?'—':money(c.advance)}${badAdvanceIds.has(String(s.id))?paytechMarker('Даты авансов не сопоставлены, открыть панель предупреждений'):''}</td><td class="${c.rest<0?'adpay-neg':''}">${money(c.rest)}</td><td class="adpay-big ${c.pay<0?'adpay-neg':''}">${money(c.pay)}</td><td><button type="button" class="adpay-tg" data-action="preview" data-id="${s.id}" aria-label="Telegram ${esc(s.name)}">✈</button></td></tr>${state.open===String(s.id)?rowDetail(s):''}`;}).join('')}</tbody>
     <tfoot><tr><td>Итого</td><td>${fmt(t.h)}</td><td>${signed(t.adj)}</td><td>${fmt(t.sales)}</td><td>${money(t.acc)}</td><td>${money(t.bf)}</td><td>${money(t.bq)}</td><td>${money(t.senior)}</td><td>${money(t.fine)}</td><td>${money(t.total)}</td><td>${money(t.advance)}</td><td>${money(t.rest)}</td><td class="adpay-big ${t.pay<0?'adpay-neg':''}">${money(t.pay)}</td><td></td></tr></tfoot></table></div>
-    <div class="adpay-legend"><span>Часы Impulse доступны только для просмотра</span><span>Время выбирается мышкой; периоды можно объединять; сохраняется аудит</span><span>Telegram вручную: копирование и переход в чат по нику</span><span>Бонус старшего · ${fmt(num(cfg().senior_bonus_percent))}% от начислений остальных</span><span>Округление вверх до 5 BYN, включая отрицательные суммы</span><span>Зелёная строка = выдано</span></div>`;
+    `;
     renderAdminTech();
   }
   async function load(){if(!page.isConnected)return;const seq=++state.ticket,pageMonth=state.month;page.innerHTML='<div class="empty">Загружаем зарплату администраторов…</div>';
