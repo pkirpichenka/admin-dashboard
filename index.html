@@ -753,7 +753,7 @@ table th>*,table td>*{max-width:100%;box-sizing:border-box}
 }
 
 
-/* Единая карточка сотрудников · версия aw, только раздел «Сотрудники». */
+/* Единая карточка сотрудников · версия ax, только раздел «Сотрудники». */
 .emp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;align-items:stretch}
 .emp-card{display:flex;flex-direction:column;gap:14px;min-width:0;padding:18px;background:#fff;border:1px solid #dce5de;border-radius:16px;box-shadow:0 1px 2px rgba(20,40,30,.05);position:relative}
 .emp-card--archived{background:#f6f8f6;color:#44514a}
@@ -785,6 +785,12 @@ table th>*,table td>*{max-width:100%;box-sizing:border-box}
 .emp-icon-telegram{color:#1c78ad;border-color:#d3e3ec}
 .emp-icon-viber{color:#6b4fb3;border-color:#ddd5ef}
 .emp-icon-btn:disabled,.emp-primary:disabled{opacity:.35;cursor:not-allowed}
+/* AX: компактный футер архивных карточек в узкой 3-колоночной сетке.
+   Оставляем все четыре действия в один ряд без переполнения карточки. */
+.emp-card--archived .emp-footer{gap:3px}
+.emp-card--archived .emp-primary{padding:0 6px;font-size:12px;min-width:0}
+.emp-card--archived .emp-icon-btn{width:36px;min-width:36px;height:44px}
+
 .emp-card :is(button,a):focus-visible{outline:3px solid #7fb89c;outline-offset:2px}
 .emp-menu{position:absolute;right:0;bottom:60px;z-index:20;min-width:232px;max-width:min(300px,calc(100vw - 40px));padding:6px;background:#fff;border:1px solid #dce5de;border-radius:14px;box-shadow:0 10px 28px rgba(20,40,30,.18)}
 .emp-menu[hidden]{display:none}
@@ -1949,7 +1955,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '16.11.2026-aw'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '16.11.2026-ax'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
