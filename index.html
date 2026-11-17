@@ -1237,7 +1237,7 @@ label.trainer-replacement-setting{display:flex;align-items:center;gap:8px;min-he
 }
 
 
-/* FLEXICO / План и бонусы — scoped styles (no changes to other tabs) */
+/* FLEXICO / План — scoped styles (no changes to other tabs) */
 .wrap:has(> #tabbody > .bonus-page){max-width:1152px;padding-left:20px;padding-right:20px}
 .bonus-page{font-family:Inter,'Segoe UI',Arial,sans-serif;background:#f2f4f7;color:#202938;border-radius:10px;padding:31px 24px 52px;min-height:900px;font-size:14px;line-height:1.45}
 .bonus-page *{box-sizing:border-box}.bonus-page button,.bonus-page input,.bonus-page select{font:inherit}
@@ -1955,7 +1955,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '16.11.2026-ax'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '16.11.2026-ay'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -2153,7 +2153,7 @@ let TOKEN = null;
 
 /* ================= Granular access permissions ================= */
 const PERMISSION_DEFS = [
-  {key:'reports.view_all', group:'Отчёты', label:'Все отчёты', desc:'Открывать общий журнал отчётов.'},
+  {key:'reports.view_all', group:'Отчёты', label:'Отчёты', desc:'Открывать общий журнал отчётов.'},
   {key:'reports.view_totals', group:'Отчёты', label:'Итоги за день', desc:'Показывать итоговые карточки для выбранного дня.'},
   {key:'reports.period', group:'Отчёты', label:'Период', desc:'Показывать выбор дат и студии для работы с периодом.'},
   {key:'reports.period_totals', group:'Отчёты', label:'Отображение периода', desc:'Показывать итоги за выбранный период, юрлица и прогноз.'},
@@ -2525,7 +2525,7 @@ async function apiSaveReportNow(studio,date,payload){
   let r;
   if(session && session.role!=='owner'){
     // Сначала всегда используем обычное сохранение смены. Это важно для текущей
-    // рабочей смены: ограничение периода в праве «Все отчёты» не должно мешать
+    // рабочей смены: ограничение периода в праве «Отчёты» не должно мешать
     // администратору заполнять сегодняшний отчёт.
     try{
       r=await rpc('app_save_report', {p_token:TOKEN, p_studio:studio, p_date:date, p_payload:payload});
@@ -2778,20 +2778,50 @@ function header(){
     <button class="btn btn-ghost btn-sm" id="logout">Выйти</button>
   </div>`;
 }
+// Order of visible tabs is deliberately separate from the permission checks.
+// Горовая has an individually configured admin account, not a separate database role.
+function isGorovayaNavigation(){
+  if(!session || session.role!=='admin') return false;
+  const login=String(session.login||'').trim().toLowerCase();
+  const name=String(session.name||'').trim().toLowerCase();
+  return login==='a.gorovaya' || /^горовая(?:\s|$)/u.test(name);
+}
+function getNavigationTabs(){
+  const isOwner=!!session && session.role==='owner';
+  const isGorovaya=!isOwner && isGorovayaNavigation();
+  // Stable keys are for routing only. Original renderers and access checks are reused.
+  const definitions={
+    shift:{label:'Смена',render:renderShift},
+    plan:{label:'План',render:renderBonusDashboard},
+    reports:{label:'Отчёты',render:renderAllReports},
+    schedule:{label:'Расписание',render:renderSchedule},
+    salaries:{label:'Зарплаты',key:'salaries',render:renderSalaries},
+    replacements:{label:'Замены',key:'replacements',render:renderReplacements},
+    employees:{label:'Сотрудники',key:'employees',render:renderEmployees},
+    marketing:{label:'Маркетинг',render:renderMarketing},
+    calendar:{label:'Календарь',render:renderCalendar},
+    messages:{label:'Сообщения',render:renderMessages}
+  };
+  const ownerOrder=['reports','plan','schedule','salaries','replacements','employees','marketing','calendar','messages'];
+  const gorovayaOrder=['shift','plan','reports','schedule','replacements','employees','marketing','calendar','messages'];
+  const adminOrder=['shift','plan','schedule','replacements','marketing'];
+  const order=isOwner?ownerOrder:(isGorovaya?gorovayaOrder:adminOrder);
+  const canSee={
+    shift:!isOwner,
+    plan:true,
+    reports:isOwner||(isGorovaya&&can('reports.view_all')),
+    schedule:true,
+    salaries:isOwner,
+    replacements:isOwner||session.role==='admin',
+    employees:isOwner||(isGorovaya&&['employees.view','employees.manage','admins.view','admins.manage','admins.permissions','admins.audit','telegram.manage'].some(k=>can(k))),
+    marketing:isOwner||session.role==='admin',
+    calendar:isOwner||(isGorovaya&&(can('calendar.view')||can('calendar.manage'))),
+    messages:isOwner||(isGorovaya&&can('messages.manage'))
+  };
+  return order.filter(key=>canSee[key]).map(key=>definitions[key]);
+}
 function renderApp(){
-  const tabs=[];
-  if(session.role==='owner') tabs.push({label:'Отчёты',render:renderAllReports});
-  else tabs.push({label:'Смена',render:renderShift});
-  tabs.push({label:'Расписание',render:renderSchedule});
-  tabs.push({label:'План и бонусы',render:renderBonusDashboard});
-  if(session.role==='owner'||session.role==='admin') tabs.push({label:'Замены',key:'replacements',render:renderReplacements});
-  if(session && (session.role==='owner'||session.role==='admin')) tabs.push({label:'Маркетинг',render:renderMarketing});
-  if(session.role==='owner'||session.payrollAccess===true) tabs.push({label:'Зарплаты',key:'salaries',render:renderSalaries});
-  if(session.role!=='owner' && can('reports.view_all')) tabs.push({label:'Все отчёты',render:renderAllReports});
-  if(session.role==='owner' || ['employees.view','employees.manage','admins.view','admins.manage','admins.permissions','admins.audit','telegram.manage'].some(k=>can(k))) tabs.push({label:'Сотрудники',key:'employees',render:renderEmployees});
-  if(session.role==='owner' || can('calendar.view') || can('calendar.manage')) tabs.push({label:'Календарь',render:renderCalendar});
-  if(session.role==='owner' || can('messages.manage')) tabs.push({label:'Сообщения',render:renderMessages});
-  renderRoleUI(tabs);
+  renderRoleUI(getNavigationTabs());
 }
 function renderRoleUI(tabs){
   const root=document.getElementById('root');
@@ -3368,7 +3398,7 @@ async function renderAllReports(body){
       ${allowExport?`<button class="btn icon-only" id="export" title="Выгрузить в Excel" aria-label="Выгрузить в Excel"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" fill="#217346"/><path d="M8.7 8l2.6 4-2.6 4M15.3 8l-2.6 4 2.6 4" stroke="#fff" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`:''}
     </div>
     <div id="periodsum"></div>`:''}
-    <div class="section-title">Все отчёты (<span id="cnt">0</span>)</div>
+    <div class="section-title">Отчёты (<span id="cnt">0</span>)</div>
     <div id="alllist"></div>`;
   fillBanner(body.querySelector('#banner'), (s,d)=>openShiftEditor(body,s,d,()=>renderAllReports(body)));
   const pick=body.querySelector('#pick'),stf=body.querySelector('#stf'),stfP=body.querySelector('#stfP'),
@@ -7810,7 +7840,7 @@ async function toggleApprove(){
 initSafeAutoUpdate();
 boot();
 
-/* ================= FAD · План и бонусы · 11.11.2026 ================= */
+/* ================= FAD · План · 11.11.2026 ================= */
 const BONUS_BRANCHES=[
   {id:'tolbuhina',name:'Толбухина',color:'#E2711D'},
   {id:'masherova',name:'Машерова',color:'#2F6FB5'},
@@ -7909,7 +7939,7 @@ function bonusRenderHtml(model){const owner=model.owner,branches=model.branches;
   const stale=model.period===liveMonth && minskHour>=8 && minskHour<=23 && (!model.updatedAt || Date.now()-new Date(model.updatedAt).getTime()>90*60*1000);
   const freshnessNotice=stale?'<span style="color:#ae4529;font-weight:600"> · ⚠️ Автоматическое обновление задерживается — последние подтверждённые данные сохранены</span>':'';
   return `<div class="bonus-page fade-in">
-    <div class="bp-head"><div><div class="bp-eyebrow">FLEXICO · АДМИНИСТРАТОРЫ</div><h1 class="bp-h1">План и бонусы</h1></div><div class="bp-month-row"><span>Период</span><select class="bp-month" id="bp-month">${bonusMonthOptions(model.period)}</select><button type="button" id="bp-refresh" class="bp-refresh-btn" aria-label="${owner&&model.period===liveMonth?'Запросить свежие продажи из ImpulseCRM':'Обновить данные из Supabase'}" title="${owner&&model.period===liveMonth?'Обновить продажи из ImpulseCRM':'Обновить отображение из Supabase'}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14-5L3 9m0-6v6h6M4 13a8 8 0 0 0 14 5l3-3m0 6v-6h-6"/></svg></button></div></div>
+    <div class="bp-head"><div><div class="bp-eyebrow">FLEXICO · АДМИНИСТРАТОРЫ</div><h1 class="bp-h1">План</h1></div><div class="bp-month-row"><span>Период</span><select class="bp-month" id="bp-month">${bonusMonthOptions(model.period)}</select><button type="button" id="bp-refresh" class="bp-refresh-btn" aria-label="${owner&&model.period===liveMonth?'Запросить свежие продажи из ImpulseCRM':'Обновить данные из Supabase'}" title="${owner&&model.period===liveMonth?'Обновить продажи из ImpulseCRM':'Обновить отображение из Supabase'}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14-5L3 9m0-6v6h6M4 13a8 8 0 0 0 14 5l3-3m0 6v-6h-6"/></svg></button></div></div>
     <section class="bp-totals">
       <div class="bp-total"><div class="bp-label">${model.viewAll?'План, все филиалы':'План своего филиала'}</div><div class="bp-total-value">${bonusFormat(model.planTotal)}</div><div class="bp-sub">${model.branches.map(b=>bonusHtml(b.name)+' '+(b.target??'—')).join(' · ')}</div></div>
       <div class="bp-total"><div class="bp-label">Факт</div><div class="bp-total-value">${bonusFormat(model.factTotal)}</div><div class="bp-sub">${model.branches.map(b=>bonusHtml(b.name)+' '+bonusFormat(b.fact)+' (в студии '+bonusFormat(b.physicalFact)+')').join(' · ')}</div></div>
@@ -8428,12 +8458,12 @@ async function renderBonusDashboard(body){
     });
     const cfg=body.querySelector('#bp-settings-trigger');if(cfg)cfg.onclick=()=>bonusSettingsEditor(model,()=>renderBonusDashboard(body));
     // Rights are enforced in app_bonus_snapshot; readonly UI is not an authorization boundary.
-  }catch(e){if(!stillCurrent())return;body.innerHTML='<div class="bonus-page"><div class="bp-alert">Не удалось загрузить «План и бонусы». Проверьте, что SQL из пакета установлен в Supabase.</div></div>';handleErr(e);}
+  }catch(e){if(!stillCurrent())return;body.innerHTML='<div class="bonus-page"><div class="bp-alert">Не удалось загрузить «План». Проверьте, что SQL из пакета установлен в Supabase.</div></div>';handleErr(e);}
 }
 
 /* ================= Зарплата администраторов · 16.11.2026-as =================
    Серверная модель: app_admin_payroll_snapshot/save_patch/set_config/replace_days.
-   Продажи и планы — app_bonus_snapshot / app_bonus_set_plan (те же, что в «План и бонусы»).
+   Продажи и планы — app_bonus_snapshot / app_bonus_set_plan (те же, что в «План»).
 */
 function renderAdminPayroll(host){
   if(!session||session.role!=='owner'){host.innerHTML='<div class="empty">Доступ только у руководителя.</div>';return;}
@@ -8687,7 +8717,7 @@ function renderAdminPayroll(host){
 
   function draw(){if(!page.isConnected||!state.model)return;const {kpis,branches,selected,t}=renderCards();
     const warnings=adminTechNotices();const badAdvanceIds=new Set(warnings.filter(n=>n.kind==='advances').flatMap(n=>n.ids||[]));const badRateIds=new Set(warnings.filter(n=>n.kind==='rate').flatMap(n=>n.ids||[]));const receipt=state.model.receivedAt?` · снимок Impulse ${new Date(state.model.receivedAt).toLocaleString('ru-RU',{timeZone:'Europe/Minsk'})}`:'';
-    page.innerHTML=`<div class="adpay-head"><div><h1>Зарплата администраторов</h1><div class="adpay-muted">Часы по дням — Impulse · план и продажи — «План и бонусы»</div></div><div class="adpay-controls"><label>Ставка, BYN/ч <input id="adpay-rate" type="number" step="0.5" min="0" value="${rate()}"></label>${calendarMarkup()}<button type="button" class="btn btn-primary" data-action="sync" ${state.busy?'disabled':''}>${state.busy?'Получаем данные…':'Обновить из Impulse'}</button><button type="button" class="btn btn-sm" data-action="settings">⚙ Настройки</button></div></div>
+    page.innerHTML=`<div class="adpay-head"><div><h1>Зарплата администраторов</h1><div class="adpay-muted">Часы по дням — Impulse · план и продажи — «План»</div></div><div class="adpay-controls"><label>Ставка, BYN/ч <input id="adpay-rate" type="number" step="0.5" min="0" value="${rate()}"></label>${calendarMarkup()}<button type="button" class="btn btn-primary" data-action="sync" ${state.busy?'disabled':''}>${state.busy?'Получаем данные…':'Обновить из Impulse'}</button><button type="button" class="btn btn-sm" data-action="settings">⚙ Настройки</button></div></div>
     <div class="paytech-holder" id="paytechAdmin"></div>
     <div class="adpay-kpis">${kpis}</div><div class="adpay-branches">${branches}</div>
     <div class="adpay-toolbar">${[{id:'all',name:'Все'},...BONUS_BRANCHES].map(b=>`<button type="button" class="adpay-chip${state.filter===b.id?' on':''}" data-action="filter" data-id="${b.id}">${b.id==='all'?'':`<i class="adpay-dot" style="background:${b.color}"></i>`}${esc(b.name)}</button>`).join('')}<span class="grow"></span><button type="button" class="btn btn-sm" data-action="summary">Сводка руководителю</button><button type="button" class="btn btn-sm btn-primary" data-action="all">Расчёты для копирования</button></div>
@@ -8839,7 +8869,7 @@ function renderAdminPayroll(host){
       finally{state.resetting=false;if(page.isConnected)draw();}
     };
   }
-  function settingsModal(){const conf=cfg(),tiers=state.model.tiers,fields=criteria();const ov=modal(`<div class="adpay-modal"><h3>Настройки зарплаты администраторов</h3><p>Суммы порогов и бонус качества общие с вкладкой «План и бонусы». Ставка и критерии относятся только к зарплате администраторов.</p><div class="adpay-settings-grid"><label>Ставка, BYN/ч<input id="ap-setting-rate" type="number" min="0" step="0.5" value="${rate()}"></label><label>Бонус качества, BYN<input id="ap-setting-quality" type="number" min="0" step="1" value="${num(state.model.settings.quality_amount)}"></label>${tiers.map((t,i)=>`<label>Порог ${t.pct}% · BYN<input data-tier="${i}" type="number" min="0" step="1" value="${t.amount}"></label>`).join('')}${fields.map((f,i)=>`<label>Критерий ${i+1}<input data-criterion="${esc(f.key)}" value="${esc(f.label)}" maxlength="200"></label>`).join('')}<label>Старший администратор<select id="ap-senior-id">${rows().map(s=>`<option value="${s.id}"${String(s.id)===seniorId()?' selected':''}>${esc(s.name)}</option>`).join('')}</select></label><label>Бонус старшего, %<input id="ap-senior-pct" type="number" min="0" max="100" step="0.5" value="${num(cfg().senior_bonus_percent)}"></label><label>База бонуса старшего<select id="ap-senior-basis"><option value="total_before_advance"${cfg().senior_bonus_basis!=='hours_only'?' selected':''}>Итого коллег до авансов</option><option value="hours_only"${cfg().senior_bonus_basis==='hours_only'?' selected':''}>Только начислено за часы</option></select></label></div><div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="ap-settings-save">Сохранить настройки</button></div></div>`);
+  function settingsModal(){const conf=cfg(),tiers=state.model.tiers,fields=criteria();const ov=modal(`<div class="adpay-modal"><h3>Настройки зарплаты администраторов</h3><p>Суммы порогов и бонус качества общие с вкладкой «План». Ставка и критерии относятся только к зарплате администраторов.</p><div class="adpay-settings-grid"><label>Ставка, BYN/ч<input id="ap-setting-rate" type="number" min="0" step="0.5" value="${rate()}"></label><label>Бонус качества, BYN<input id="ap-setting-quality" type="number" min="0" step="1" value="${num(state.model.settings.quality_amount)}"></label>${tiers.map((t,i)=>`<label>Порог ${t.pct}% · BYN<input data-tier="${i}" type="number" min="0" step="1" value="${t.amount}"></label>`).join('')}${fields.map((f,i)=>`<label>Критерий ${i+1}<input data-criterion="${esc(f.key)}" value="${esc(f.label)}" maxlength="200"></label>`).join('')}<label>Старший администратор<select id="ap-senior-id">${rows().map(s=>`<option value="${s.id}"${String(s.id)===seniorId()?' selected':''}>${esc(s.name)}</option>`).join('')}</select></label><label>Бонус старшего, %<input id="ap-senior-pct" type="number" min="0" max="100" step="0.5" value="${num(cfg().senior_bonus_percent)}"></label><label>База бонуса старшего<select id="ap-senior-basis"><option value="total_before_advance"${cfg().senior_bonus_basis!=='hours_only'?' selected':''}>Итого коллег до авансов</option><option value="hours_only"${cfg().senior_bonus_basis==='hours_only'?' selected':''}>Только начислено за часы</option></select></label></div><div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="ap-settings-save">Сохранить настройки</button></div></div>`);
     ov.querySelector('.modal').style.maxWidth='850px';
     ov.querySelector('#ap-settings-save').onclick=async()=>{const newRate=num(ov.querySelector('#ap-setting-rate').value),q=num(ov.querySelector('#ap-setting-quality').value);const amounts=[...ov.querySelectorAll('[data-tier]')].map(e=>Number(e.value));const edited=[...ov.querySelectorAll('[data-criterion]')].map(e=>({key:e.dataset.criterion,label:e.value.trim()}));const pct=Number(ov.querySelector('#ap-senior-pct').value),seniorId=Number(ov.querySelector('#ap-senior-id').value),seniorBasis=ov.querySelector('#ap-senior-basis').value;
       if(newRate<0||newRate>1000||Math.round(newRate*2)!==newRate*2||!Number.isFinite(q)||q<0||amounts.length!==tiers.length||amounts.some(n=>!Number.isFinite(n)||n<0)||edited.some(x=>!x.label)||!Number.isFinite(pct)||pct<0||pct>100||!Number.isInteger(seniorId)){toast('Проверьте ставку, суммы и критерии',true);return;}
