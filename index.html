@@ -1854,7 +1854,7 @@ label.trainer-replacement-setting{display:flex;align-items:center;gap:8px;min-he
 .adpay-adjusted-cell{font-weight:800;color:#a66d09}
 .adpay-advance-readonly{font-weight:700;white-space:nowrap}
 
-/* FAD 16.11.2026-ar: сброс ручных начислений (без значка) */
+/* FAD 16.11.2026-as: чистый Telegram-расчёт без служебных подписей */
 .adpay-reset-manual{white-space:normal;line-height:1.3;border-color:#E4C9AC;color:#85522A;background:#FFF9F2}
 .adpay-reset-manual:hover{background:#FFF0DB;border-color:#C99263;color:#6E3817}
 .adpay-reset-manual:disabled{opacity:.55;cursor:not-allowed}
@@ -1879,7 +1879,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '16.11.2026-ar'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '16.11.2026-as'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -8138,7 +8138,7 @@ async function renderBonusDashboard(body){
   }catch(e){if(!stillCurrent())return;body.innerHTML='<div class="bonus-page"><div class="bp-alert">Не удалось загрузить «План и бонусы». Проверьте, что SQL из пакета установлен в Supabase.</div></div>';handleErr(e);}
 }
 
-/* ================= Зарплата администраторов · 16.11.2026-ar =================
+/* ================= Зарплата администраторов · 16.11.2026-as =================
    Серверная модель: app_admin_payroll_snapshot/save_patch/set_config/replace_days.
    Продажи и планы — app_bonus_snapshot / app_bonus_set_plan (те же, что в «План и бонусы»).
 */
@@ -8216,26 +8216,24 @@ function renderAdminPayroll(host){
   }
   function totals(selected){return selected.reduce((o,s)=>{const c=calc(s);for(const k of ['h','adj','acc','bf','bq','senior','fine','advance','total','rest','pay'])o[k]=round2(o[k]+c[k]);o.sales+=num(s.count);o.paid+=record(s).paid===true?1:0;return o;},{h:0,adj:0,acc:0,bf:0,bq:0,senior:0,fine:0,advance:0,total:0,rest:0,pay:0,sales:0,paid:0});}
   const shiftLabel=d=>d.shift_label||d.shift_start&&d.shift_end?String(d.shift_label||`${d.shift_start}–${d.shift_end}`):'';
-  const sourceDay=d=>d.impulse_day_amount==null?'':` · в Impulse: ${money(num(d.impulse_day_amount))}`;
   function dayText(s){
     const c=calc(s),r=record(s),list=[`${s.name.split(' ')[1]||'Здравствуйте'}, ${(()=>{const hr=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Minsk',hour:'2-digit',hourCycle:'h23'}).format(new Date()));return hr>=5&&hr<12?'доброе утро':hr>=12&&hr<18?'добрый день':'добрый вечер';})()} 🌼`,'',
       `Расчёт за ${per()}`,s.name,`Филиал: ${studioName(s.studio)}`,'',
-      `Отработанные дни из Impulse (ставка ${fmt(rate())} Br/ч):`];
+      `Отработанные дни (ставка ${fmt(rate())} Br/ч):`];
     const ds=days(s);
     if(ds.length)for(const d of ds){
       const da=dayAdjustment(d),h=dayFinalHours(d);
-      list.push(`${dayTitle(d.work_date)} · ${shiftLabel(d)} · ${fmt(h)} ч × ${fmt(rate())} = ${money(round2(h*rate()))}${sourceDay(d)}`);
+      list.push(`${dayTitle(d.work_date)} · ${shiftLabel(d)} · ${fmt(h)} ч × ${fmt(rate())} = ${money(round2(h*rate()))}`);
       if(da)list.push(`  Корректировка дня: ${signed(da)} ч (${signed(round2(da*rate()))} Br)${d.hours_comment?' · '+d.hours_comment:''}; исходно ${fmt(d.hours_impulse)} ч`);
     }
-    else list.push('Смены за месяц пока не получены из Impulse');
+    else list.push('Отработанные смены за месяц пока не получены');
     list.push('',`Часы по сменам: ${fmt(c.hi)}`);
     if(legacyMonthAdjustment(s))list.push(`Историческая месячная корректировка: ${signed(legacyMonthAdjustment(s))} ч${r.hours_comment?' ('+r.hours_comment+')':''}`);
     if(c.adj)list.push(`Суммарная корректировка: ${signed(c.adj)} ч`);
-    list.push(`Всего часов: ${fmt(c.h)}`,`Начислено за смены по ставке FAD: ${money(c.acc)}`);
-    if(source(s)?.accrued_source!=null)list.push(`Начислено в Impulse: ${money(num(source(s).accrued_source))}${Math.abs(num(source(s).accrued_source)-c.acc)>1?' (проверьте расхождение)':''}`);
+    list.push(`Всего часов: ${fmt(c.h)}`,`Начислено за смены: ${money(c.acc)}`);
     if(c.bf)list.push(`Бонус Flexico (план филиала ${fmt(c.percent)}%): +${money(c.bf)}`);
     if(c.bq)list.push(`Бонус за качество работы: +${money(c.bq)}`);
-    if(c.senior)list.push(`Бонус старшего администратора (${fmt(num(cfg().senior_bonus_percent))}% от ${money(c.seniorBase)} начислений коллег): +${money(c.senior)}`);
+    if(c.senior)list.push(`Бонус старшего администратора: +${money(c.senior)}`);
     if(c.fine)list.push(`Штрафы: −${money(c.fine)}${r.fine_comment?' ('+r.fine_comment+')':''}`);
     list.push(`Итого начислено: ${money(c.total)}`,`Выдано авансом: −${money(c.advance)}`,'',
       c.rest<0?`Аванс превышает начисление на ${money(-c.rest)} — будет учтён в следующем периоде`:`К выдаче: ${money(c.pay)}`);
