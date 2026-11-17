@@ -1879,7 +1879,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '16.11.2026-at'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '16.11.2026-au'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -5098,10 +5098,13 @@ function trainerTelegramAnchor(recipient,className,label,hint=''){
 }
 
 function trainerTelegramLink(username,className,iconOnly=false){
-  if(typeof username!=='string'||!TRAINER_TELEGRAM_USERNAME.test(username)) return '';
+  // Исторические записи могут содержать @, а новые хранятся без него.
+  // Используем один формат ссылки для администраторов и тренеров.
+  const nick=normalizeTrainerTelegramUsername(username);
+  if(!nick) return '';
   return iconOnly
-    ? trainerTelegramAnchor(username,className,'','Написать в Telegram')
-    : trainerTelegramAnchor(username,className,`<span>@${username}</span>`);
+    ? trainerTelegramAnchor(nick,className,'','Написать в Telegram')
+    : trainerTelegramAnchor(nick,className,`<span>@${escapeHtml(nick)}</span>`);
 }
 
 const STAFF_PHONE_ERROR='Введите белорусский номер в формате +375 и 9 цифр.';
@@ -5636,7 +5639,7 @@ function employeeCard(e,manage){
   const studios=employeeStudios(e);
   const dial=staffPhoneDial(e.phone);
   const phone=e.phone?`<span class="staff-phone">☎ <b>${escapeHtml(belarusPhoneNumber(dial)||e.phone)}</b></span>`:'';
-  const messengers=e.employee_type==='trainer'?trainerMessengerLinks(e,dial):e.employee_type==='admin'?trainerTelegramLink(e.telegram_username,'rep-contact rep-contact-icon rep-telegram',true):'';
+  const messengers=(e.employee_type==='trainer'||e.employee_type==='admin')?trainerMessengerLinks(e,dial):'';
   return `<div class="staff-card${e.is_active?'':' staff-muted'}" data-eid="${e.id}">
     <div class="staff-head"><div class="grow"><div class="staff-name">${escapeHtml(e.full_name||'')}</div></div><span class="staff-role ${e.employee_type==='trainer'?'trainer':''}">${escapeHtml(employeeRoleLabel(e))}</span></div>
     <div class="staff-meta">
@@ -5920,8 +5923,8 @@ function employeeModal(e,onDone,employeeRows=[]){
       showTelegramMessage(showError?TRAINER_TELEGRAM_ERROR:'',showError);
       return null;
     }
-    const duplicateNames=username?employeeRows.filter(row=>(isNew?row.employee_type==='trainer':row.employee_type===e.employee_type)&&
-      String(row.id)!==String(e?.id)&&row.telegram_username?.toLowerCase()===username.toLowerCase())
+    const duplicateNames=username?employeeRows.filter(row=>String(row.id)!==String(e?.id)&&
+      normalizeTrainerTelegramUsername(row.telegram_username)?.toLowerCase()===username.toLowerCase())
       .map(row=>row.full_name):[];
     showTelegramMessage(duplicateNames.length?`Этот ник уже указан у: ${duplicateNames.join(', ')}`:'');
     return username;
@@ -6037,8 +6040,11 @@ function employeeModal(e,onDone,employeeRows=[]){
       save.disabled=false;
       if(addDirection) addDirection.disabled=!loadedDirectionIds;
       if(excludeReplacements) excludeReplacements.disabled=savedExclusion===null;
-      if(telegramInput&&err?.message==='invalid_telegram_username'){
-        showTelegramMessage(TRAINER_TELEGRAM_ERROR,true);
+      if(telegramInput&&(err?.message==='invalid_telegram_username'||
+          (err?.code==='23514'&&String(err?.message||'').includes('employees_telegram_username_valid')))){
+        showTelegramMessage(err?.code==='23514'
+          ? 'База отклонила ник: выполните SQL-миграцию версии au в Supabase.'
+          : TRAINER_TELEGRAM_ERROR,true);
         telegramInput.focus();
       }else if(phoneInput&&err?.message==='invalid_employee_phone'){
         phoneInput.setAttribute('aria-invalid','true');
