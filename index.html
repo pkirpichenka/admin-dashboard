@@ -1981,6 +1981,9 @@ label.trainer-replacement-setting{display:flex;align-items:center;gap:8px;min-he
 .paytech-advance-details{display:grid;grid-template-columns:repeat(auto-fit,minmax(275px,1fr));gap:8px;margin-top:12px}
 .paytech-advance-item{border:1px solid #dfe6e0;background:#f8faf8;border-radius:9px;padding:10px 11px;color:#324b3d;font-size:12px;line-height:1.5;white-space:normal;overflow-wrap:anywhere}
 .adpay-readonly-rate{display:inline-flex;align-items:center;min-height:35px;padding:4px 11px;background:#f4f7f5;border:1px solid #dce5de;border-radius:8px;color:#1f5c43;font-size:14px}
+.adpay-readonly-value{display:inline-block;padding:7px 5px;font-size:12px;font-weight:750;color:#44544b;white-space:nowrap}
+.adpay-time-trigger:disabled{opacity:.75;cursor:default;background:#f5f7f5}
+.adpay-check input:disabled{cursor:default}
 </style>
 
 <div id="root"></div>
@@ -2001,7 +2004,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '16.11.2026-bd'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '16.11.2026-be'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -7115,9 +7118,35 @@ async function permissionsModal(u,onDone){
   const el=modal(`<h3>Права доступа</h3><p>${escapeHtml(u.name)} · ${escapeHtml(u.login)}</p>
     <div class="perm-presets"><button class="btn btn-sm" data-preset="basic">Обычный</button><button class="btn btn-sm" data-preset="senior">Старший</button><button class="btn btn-sm btn-primary" data-preset="full">Полный доступ</button></div>
     <div class="perm-groups">${groups.map(g=>`<div class="perm-group"><div class="perm-group-title">${escapeHtml(g)}</div>${PERMISSION_DEFS.filter(x=>x.group===g).map(d=>`<label class="perm-row"><input type="checkbox" data-pkey="${d.key}" ${state[d.key]?'checked':''}/><span><b>${escapeHtml(d.label)}</b><small>${escapeHtml(d.desc)}</small></span></label>`).join('')}${g==='Отчёты'?`<div class="perm-days ${state['reports.view_all']?'':'hidden'}" id="permDaysBox"><div class="perm-days-title">Период доступа к отчётам</div><div class="perm-days-line"><span>Последние</span><input id="permDays" type="number" inputmode="numeric" min="0" max="3650" step="1" value="${state['reports.days']||0}"/><span>дней, включая сегодня</span></div><small>Например: 40 дней — доступны сегодняшний день и предыдущие 39 дней. Окно автоматически сдвигается каждый день. 0 дней — без ограничения.</small></div>`:''}</div>`).join('')}</div>
+    ${session.role==='owner'&&u.login==='a.gorovaya'?`<div class="perm-group" id="permAdminPayrollEditGroup"><div class="perm-group-title">Зарплата администраторов</div><label class="perm-row"><input type="checkbox" id="permAdminPayrollEdit" disabled/><span><b>Разрешить редактирование зарплат</b><small>Просмотр расчётов всех администраторов останется доступен. При отключении нельзя менять смены, премии, штрафы, качество и отметки выдачи. Настройка сохраняется сразу.</small></span></label><small id="permAdminPayrollEditStatus" role="status">Загружаем право…</small></div>`:''}
     <div class="perm-note">Ограничение периода доступа применяется на сервере: считаются последние N дней от текущего дня включительно, и окно автоматически сдвигается каждый день. Отчёты вне этого окна не отображаются и недоступны для редактирования/удаления. Отдельно можно включить итоги за день, сам блок «Период», отображение итогов периода и скачивание Excel. Полный доступ без ограничения — значение 0. Аккаунт руководителя этими правами изменить или удалить нельзя.</div>
     <div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="permSave">Сохранить права</button></div>`);
   const modalBox=el.querySelector('.modal'); if(modalBox) modalBox.classList.add('perm-modal');
+  const payrollEditCheck=el.querySelector('#permAdminPayrollEdit');
+  const payrollEditStatus=el.querySelector('#permAdminPayrollEditStatus');
+  if(payrollEditCheck){
+    rpc('app_admin_payroll_delegate_edit_status',{p_token:TOKEN}).then(data=>{
+      if(!el.isConnected)return;
+      payrollEditCheck.checked=data?.can_edit===true;
+      payrollEditCheck.disabled=false;
+      payrollEditStatus.textContent=data?.can_edit===true?'Редактирование разрешено':'Только просмотр';
+    }).catch(err=>{if(el.isConnected){payrollEditCheck.disabled=true;payrollEditStatus.textContent='Не удалось загрузить право. Проверьте миграцию BE.';}});
+    payrollEditCheck.addEventListener('change',async()=>{
+      const next=payrollEditCheck.checked;
+      payrollEditCheck.disabled=true;
+      payrollEditStatus.textContent='Сохраняем…';
+      try{
+        const result=await rpc('app_admin_payroll_delegate_set_edit',{p_token:TOKEN,p_enabled:next});
+        if(!el.isConnected)return;
+        payrollEditCheck.checked=result?.can_edit===true;
+        payrollEditStatus.textContent=payrollEditCheck.checked?'Редактирование разрешено':'Только просмотр';
+        toast(payrollEditCheck.checked?'Горовой разрешено редактирование зарплат':'Редактирование зарплат Горовой отключено');
+      }catch(err){
+        if(el.isConnected){payrollEditCheck.checked=!next;payrollEditStatus.textContent='Не удалось сохранить настройку';}
+        handleErr(err);
+      }finally{if(el.isConnected)payrollEditCheck.disabled=false;}
+    });
+  }
   const daysBox=el.querySelector('#permDaysBox'), daysInp=el.querySelector('#permDays'), viewAllChk=el.querySelector('[data-pkey="reports.view_all"]');
   function syncDaysVisibility(){ if(daysBox)daysBox.classList.toggle('hidden',!(viewAllChk&&viewAllChk.checked)); }
   function apply(p){
@@ -8517,6 +8546,7 @@ async function renderBonusDashboard(body){
 function renderAdminPayroll(host){
   if(!session||(session.role!=='owner'&&session.adminPayrollAccess!==true)){host.innerHTML='<div class="empty">Недостаточно прав.</div>';return;}
   const isPayrollOwner=session.role==='owner';
+  const canPayrollEdit=()=>isPayrollOwner||state.model?.can_edit===true;
   const page=document.createElement('section');page.className='adpay fade-in';host.replaceChildren(page);
   const state={month:BONUS_MONTH,filter:'all',open:null,model:null,days:[],byId:new Map(),busy:false,resetting:false,ticket:0,saving:new Map(),daySaving:new Map(),lastError:'',syncStatus:'',syncStatusError:false,syncWarnings:[],autoAttempted:new Set(),calendarPeriod:BONUS_MONTH,calendarOpen:false,draftDate:null,rangeFrom:null,rangeTo:null,paytechOpen:'',paytechNotices:[],paytechHighlightIds:[],paytechSyncStats:null,advanceWarnings:[],advanceDiagnostics:[]};
   // Календарь визуально и по выбору двух дат совпадает с зарплатой тренеров.
@@ -8694,6 +8724,7 @@ function renderAdminPayroll(host){
   function item(s){let x=state.byId.get(String(s.id));if(!x){x={payroll:{},days:[],sent:[]};state.byId.set(String(s.id),x)}return x;}
   function updateLocal(s,patch){const x=item(s);x.payroll={...x.payroll,...patch};}
   function save(s,patch){
+    if(!canPayrollEdit()){toast('Редактирование зарплат отключено руководителем',true);return Promise.resolve();}
     if(!page.isConnected)return Promise.resolve();
     const id=String(s.id),x=item(s),old={...x.payroll},savingMonth=state.month;updateLocal(s,patch);draw();
     const prior=state.saving.get(id)||Promise.resolve();
@@ -8705,6 +8736,7 @@ function renderAdminPayroll(host){
     }).finally(()=>{if(state.saving.get(id)===work)state.saving.delete(id)});
   }
   function saveDay(s,d,patch){
+    if(!canPayrollEdit()){toast('Редактирование зарплат отключено руководителем',true);return Promise.resolve();}
     const key=String(s.id)+':'+String(d.work_date),savingMonth=state.month;
     const original={...d};Object.assign(d,patch);draw();
     const previous=state.daySaving.get(key)||Promise.resolve();
@@ -8787,6 +8819,7 @@ function renderAdminPayroll(host){
   }
   const numeric=(s,k,v,opts={})=>{const r=record(s),hasOverride=opts.override&&r[k]!==null&&r[k]!==undefined;
     const val=hasOverride?num(r[k]):opts.auto!==undefined?num(opts.auto):num(v);
+    if(!canPayrollEdit())return `<span class="adpay-readonly-value" title="Редактирование отключено руководителем">${money(val)}</span>${hasOverride?`<span class="adpay-hint">ручная сумма · авто ${fmt(opts.auto)}</span>`:''}`;
     return `<input class="adpay-number${hasOverride?' ov':opts.highlight?' ov':''}" data-id="${esc(s.id)}" data-field="${k}" type="number" step="${opts.step||1}" ${opts.min!==undefined?'min="'+opts.min+'"':''} value="${val}" placeholder="${opts.override?fmt(opts.auto):''}" aria-label="${esc(k)} ${esc(s.name)}">${hasOverride?`<span class="adpay-hint">авто ${fmt(opts.auto)}</span>`:''}`;
   };
   function rowDetail(s){const r=record(s),c=calc(s),ds=days(s),checks=r.quality_checks||{};
@@ -8795,26 +8828,26 @@ function renderAdminPayroll(host){
       const triangle=warnings?`<button type="button" class="adpay-shift-alert" title="${esc(tm.reasons.join(' '))}" aria-label="${esc(tm.reasons.join(' '))}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.72 3h16.92a2 2 0 0 0 1.72-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></button>`:'';
       const editors=tm.intervals.map((it,i)=>`<div class="adpay-time-interval">
         ${tm.intervals.length>1?`<div class="adpay-time-index">Интервал ${i+1}</div>`:''}
-        ${['start','end'].map(field=>`<div class="adpay-clock-field"><span>${field==='start'?'Начало':'Конец'}</span><button type="button" class="adpay-time-trigger${tm.edited?' ov':''}" data-action="time-picker" data-id="${esc(s.id)}" data-date="${esc(date)}" data-time-field="${field}" data-interval="${i}" data-time-value="${it[field]}" aria-expanded="false" aria-label="${field==='start'?'Начало':'Конец'}, ${esc(dayTitle(date))}, интервал ${i+1}: ${it[field]}"><b>${it[field]}</b><svg aria-hidden="true" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2"/></svg></button></div>`).join('')}
+        ${['start','end'].map(field=>`<div class="adpay-clock-field"><span>${field==='start'?'Начало':'Конец'}</span><button type="button" class="adpay-time-trigger${tm.edited?' ov':''}" data-action="time-picker" data-id="${esc(s.id)}" data-date="${esc(date)}" data-time-field="${field}" data-interval="${i}" data-time-value="${it[field]}" ${canPayrollEdit()?'':'disabled title="Редактирование отключено руководителем"'} aria-expanded="false" aria-label="${field==='start'?'Начало':'Конец'}, ${esc(dayTitle(date))}, интервал ${i+1}: ${it[field]}"><b>${it[field]}</b><svg aria-hidden="true" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2"/></svg></button></div>`).join('')}
       </div>`).join('');
-      const mergeAction=tm.original.length>1?`<button type="button" class="adpay-merge-button" data-action="${tm.merged?'split-intervals':'merge-intervals'}" data-id="${esc(s.id)}" data-date="${esc(date)}">${tm.merged?'Разделить обратно':'Объединить периоды'}</button>`:'';
+      const mergeAction=canPayrollEdit()&&tm.original.length>1?`<button type="button" class="adpay-merge-button" data-action="${tm.merged?'split-intervals':'merge-intervals'}" data-id="${esc(s.id)}" data-date="${esc(date)}">${tm.merged?'Разделить обратно':'Объединить периоды'}</button>`:'';
       return `<div class="adpay-day${color}${warnings?' adpay-day-flag':''}${date>=state.rangeFrom&&date<=state.rangeTo?' adpay-day-in-range':' adpay-day-out-range'}">
       <div class="adpay-day-headline"><b>${esc(dayTitle(date))}</b>${triangle}</div>
       <span class="adpay-muted">${esc(shiftLabel(d))}</span>
       <span>${fmt(initial)} ч · ${money(round2(initial*rate()))}</span>
       <div class="adpay-time-intervals">${editors||'<span class="adpay-muted">Время этой смены недоступно для редактирования</span>'}</div>
-      <div class="adpay-day-adjust">${mergeAction}<button type="button" class="adpay-time-reset" data-action="day-reset" data-id="${s.id}" data-date="${date}">Сбросить</button></div>
+      <div class="adpay-day-adjust">${mergeAction}${canPayrollEdit()?`<button type="button" class="adpay-time-reset" data-action="day-reset" data-id="${s.id}" data-date="${date}">Сбросить</button>`:''}</div>
       <span class="adpay-day-final">Итого: ${hoursLong(tm.minutes)}${tm.legacyUnresolved?` (${fmt(total)} ч с прежней корректировкой)`:''} · ${money(round2((dayWorkingHours(d)+legacyAdditionalHours(d))*rate()))}</span>
       ${d.impulse_day_amount==null?'':`<span class="adpay-muted">По отчёту: ${money(d.impulse_day_amount)}</span>`}
-      <textarea data-id="${s.id}" data-date="${date}" data-day-field="hours_comment" placeholder="Причина корректировки за этот день">${esc(d.hours_comment||'')}</textarea>
+      <textarea data-id="${s.id}" data-date="${date}" data-day-field="hours_comment" ${canPayrollEdit()?'':'disabled'} placeholder="Причина корректировки за этот день">${esc(d.hours_comment||'')}</textarea>
       </div>`;
     };
     return `<tr class="adpay-details"><td colspan="14"><div class="adpay-days"><div class="adpay-days-head"><div><h4>Отработанные дни · данные Impulse${isPartial()?' · выделены '+dateRangeText():''}</h4><div class="adpay-muted">${ds.length} дней · ${fmt(c.hi)} ч по данным Impulse · ${signed(c.adj)} ч корректировки · итого ${fmt(c.h)} ч</div></div>${isPayrollOwner?`<button type="button" class="btn btn-sm adpay-reset-manual" data-action="reset-manual-one" data-id="${s.id}" ${state.busy||state.resetting?'disabled':''}>Сбросить все правки администратора</button>`:''}</div>
     ${legacyMonthAdjustment(s)?`<div class="adpay-note adpay-source-warning">Сохранена историческая месячная корректировка ${signed(legacyMonthAdjustment(s))} ч. Новые корректировки вносятся только по дням; историческая сумма сохранена, чтобы не потерять начисления.</div>`:''}
     <div class="adpay-daygrid">${ds.length?ds.map(dayCard).join(''):'<div class="adpay-day">Данные Impulse ещё не синхронизированы</div>'}</div></div>
     ${r.updated_by?`<div class="adpay-muted" style="padding:5px 18px">Последнее изменение: ${esc(r.updated_by)}${r.updated_at?' · '+esc(new Date(r.updated_at).toLocaleString('ru-RU',{timeZone:'Europe/Minsk'})):''}</div>`:''}<div class="adpay-detail-cols"><div><h4>Расчётный листок</h4>${line(`${fmt(c.hi)} ч по сменам × ${fmt(rate())} BYN`,money(c.hi*rate()))}${source(s)?.accrued_source!=null?line('Начислено в Impulse (сверка)',money(source(s).accrued_source)):''}${line(`Корректировки по дням: ${signed(c.adj)} ч`,signed(round2(c.adj*rate()))+' BYN',c.adj<0?'adpay-neg':'adpay-pos')}${line(`Бонус Flexico · ${fmt(c.percent)}% плана`,'+'+money(c.bf),'adpay-pos')}${line('Бонус за качество','+'+money(c.bq),'adpay-pos')}${c.senior?line(`Старший · ${fmt(num(cfg().senior_bonus_percent))}% от ${money(c.seniorBase)}`,'+'+money(c.senior),'adpay-pos'):''}${line('Штрафы','−'+money(c.fine),'adpay-neg')}<div class="adpay-line strong"><span>Итого</span><span>${money(c.total)}</span></div>${line('Авансы','−'+money(c.advance))}${advanceDetails(s).length?advanceDetails(s).map(a=>line('  • '+dateLabel(a.payment_date),money(a.amount))).join(''):(c.advance>0?'<p class="adpay-muted">Даты авансов ещё не подтверждены журналом Impulse. Обновите расчёт для сверки.</p>':'')}<div class="adpay-line strong"><span>К выдаче</span><span class="${c.pay<0?'adpay-neg':''}">${money(c.pay)}</span></div></div>
-    <div><h4>Качество работы · ${money(state.model.settings.quality_amount)}</h4>${criteria().map(q=>`<label class="adpay-check"><input type="checkbox" data-id="${s.id}" data-quality="${esc(q.key)}" ${checks[q.key]===true?'checked':''}><span>${esc(q.label)}</span></label>`).join('')}<div class="adpay-muted">Бонус начисляется при выполнении всех критериев</div><h4 style="margin-top:12px">Штраф / комментарий</h4><textarea class="adpay-comment" data-id="${s.id}" data-field="fine_comment" placeholder="Причина штрафа (попадёт в расчёт)">${esc(r.fine_comment||'')}</textarea></div>
-    <div><h4>Сообщение в Telegram</h4><pre class="adpay-preview">${esc(dayText(s))}</pre><div class="adpay-muted">Ник Telegram</div>${isPayrollOwner?`<input class="adpay-nick" type="text" data-id="${s.id}" data-telegram-nick value="${esc(s.username||'')}" placeholder="@nickname" aria-label="Ник Telegram ${esc(s.name)}" style="max-width:215px">`:`<div class="adpay-muted">${esc(s.username?'@'+String(s.username).replace(/^@/,''):'не указан')}</div>`}<div class="adpay-actions" style="margin-top:9px"><button type="button" class="btn btn-primary btn-sm" data-action="preview" data-id="${s.id}">Скопировать / Telegram</button><label class="adpay-paid-check"><input data-id="${s.id}" data-field="paid" type="checkbox" ${r.paid===true?'checked':''}> Выдано</label></div></div></div></td></tr>`;
+    <div><h4>Качество работы · ${money(state.model.settings.quality_amount)}</h4>${criteria().map(q=>`<label class="adpay-check"><input type="checkbox" data-id="${s.id}" data-quality="${esc(q.key)}" ${checks[q.key]===true?'checked':''} ${canPayrollEdit()?'':'disabled'}><span>${esc(q.label)}</span></label>`).join('')}<div class="adpay-muted">Бонус начисляется при выполнении всех критериев</div><h4 style="margin-top:12px">Штраф / комментарий</h4><textarea class="adpay-comment" data-id="${s.id}" data-field="fine_comment" ${canPayrollEdit()?'':'disabled'} placeholder="Причина штрафа (попадёт в расчёт)">${esc(r.fine_comment||'')}</textarea></div>
+    <div><h4>Сообщение в Telegram</h4><pre class="adpay-preview">${esc(dayText(s))}</pre><div class="adpay-muted">Ник Telegram</div>${isPayrollOwner?`<input class="adpay-nick" type="text" data-id="${s.id}" data-telegram-nick value="${esc(s.username||'')}" placeholder="@nickname" aria-label="Ник Telegram ${esc(s.name)}" style="max-width:215px">`:`<div class="adpay-muted">${esc(s.username?'@'+String(s.username).replace(/^@/,''):'не указан')}</div>`}<div class="adpay-actions" style="margin-top:9px"><button type="button" class="btn btn-primary btn-sm" data-action="preview" data-id="${s.id}">Скопировать / Telegram</button><label class="adpay-paid-check"><input data-id="${s.id}" data-field="paid" type="checkbox" ${r.paid===true?'checked':''} ${canPayrollEdit()?'':'disabled'}> Выдано</label></div></div></div></td></tr>`;
   }
 
 
@@ -8910,6 +8943,7 @@ function renderAdminPayroll(host){
   function draw(){if(!page.isConnected||!state.model)return;const {kpis,branches,selected,t}=renderCards();
     const warnings=adminTechNotices();const badAdvanceIds=new Set(warnings.filter(n=>n.kind==='advances').flatMap(n=>n.ids||[]));const badRateIds=new Set(warnings.filter(n=>n.kind==='rate').flatMap(n=>n.ids||[]));const receipt=state.model.receivedAt?` · снимок Impulse ${new Date(state.model.receivedAt).toLocaleString('ru-RU',{timeZone:'Europe/Minsk'})}`:'';
     page.innerHTML=`<div class="adpay-head"><div><h1>Зарплата администраторов</h1><div class="adpay-muted">Часы по дням — Impulse · план и продажи — «План»</div></div><div class="adpay-controls"><label>Ставка, BYN/ч ${isPayrollOwner?`<input id="adpay-rate" type="number" step="0.5" min="0" value="${rate()}">`:`<strong class="adpay-readonly-rate">${fmt(rate())}</strong>`}</label>${calendarMarkup()}<button type="button" class="btn btn-primary" data-action="sync" ${state.busy?'disabled':''}>${state.busy?'Получаем данные…':isPayrollOwner?'Обновить из Impulse':'Обновить данные'}</button>${isPayrollOwner?'<button type="button" class="btn btn-sm" data-action="settings">⚙ Настройки</button>':''}</div></div>
+    ${canPayrollEdit()?'':'<div class="adpay-note" role="status">Режим просмотра: руководитель отключил редактирование зарплат. Все расчёты и расшифровки доступны.</div>'}
     <div class="paytech-holder" id="paytechAdmin"></div>
     <div class="adpay-kpis">${kpis}</div><div class="adpay-branches">${branches}</div>
     <div class="adpay-toolbar">${[{id:'all',name:'Все'},...BONUS_BRANCHES].map(b=>`<button type="button" class="adpay-chip${state.filter===b.id?' on':''}" data-action="filter" data-id="${b.id}">${b.id==='all'?'':`<i class="adpay-dot" style="background:${b.color}"></i>`}${esc(b.name)}</button>`).join('')}<span class="grow"></span><button type="button" class="btn btn-sm" data-action="summary">Сводка руководителю</button><button type="button" class="btn btn-sm btn-primary" data-action="all">Расчёты для копирования</button></div>
@@ -8930,8 +8964,8 @@ function renderAdminPayroll(host){
       if(seq!==state.ticket||!page.isConnected)return;
       state.advanceDetails=Array.isArray(advances)?advances:[];
       state.advanceDiagnostics=Array.isArray(diagnostics)?diagnostics:[];
-      if(!payload?.bonus||(isPayrollOwner?payload.bonus.owner!==true:payload.can_edit!==true))throw Error('Недостаточно прав для расчёта зарплаты администраторов');
-      const model=calcBonuses(pageMonth,payload.bonus);model.bonus=payload.bonus;model.payrollConfig=payload.config||{};model.receivedAt=payload.hours_updated_at;
+      if(!payload?.bonus||(isPayrollOwner?payload.bonus.owner!==true:typeof payload.can_edit!=='boolean'))throw Error('Недостаточно прав для просмотра зарплаты администраторов');
+      const model=calcBonuses(pageMonth,payload.bonus);model.bonus=payload.bonus;model.can_edit=isPayrollOwner||payload.can_edit===true;model.payrollConfig=payload.config||{};model.receivedAt=payload.hours_updated_at;
       const seen=new Set(model.staff.map(s=>String(s.id)));
       for(const a of payload.staff||[]){if(!BONUS_BRANCHES.some(b=>b.id===(a.home||a.studio)))continue;
         if(!seen.has(String(a.id))){model.staff.push({id:a.id,name:a.name,studio:a.home||a.studio,count:0});seen.add(String(a.id));}
@@ -9081,6 +9115,7 @@ function renderAdminPayroll(host){
       state.calendarPeriod=y+'-'+m;state.draftDate=null;state.calendarOpen=true;draw();return;
     }
     if(el.dataset.dayField){
+      if(!canPayrollEdit()){toast('Редактирование зарплат отключено руководителем',true);draw();return;}
       const s=rows().find(x=>String(x.id)===el.dataset.id);
       const d=s&&days(s).find(x=>String(x.work_date)===el.dataset.date);
       if(!d)return;
@@ -9099,8 +9134,9 @@ function renderAdminPayroll(host){
       if(nickname&&!/^[A-Za-z][A-Za-z0-9_]{4,31}$/.test(nickname)){toast('Ник Telegram: начинается с буквы, 5–32 символа (латиница, цифры, _)',true);draw();return;}
       try{await rpc('app_admin_payroll_set_telegram',{p_token:TOKEN,p_admin_id:Number(s.id),p_username:nickname});s.username=nickname;draw();toast('Ник Telegram сохранён');}catch(e){handleErr(e);draw();}return;
     }
-    if(el.dataset.quality){const checks={...(record(s).quality_checks||{}),[el.dataset.quality]:el.checked};try{await save(s,{quality_checks:checks});}catch(_){}return;}
+    if(el.dataset.quality){if(!canPayrollEdit()){toast('Редактирование зарплат отключено руководителем',true);draw();return;}const checks={...(record(s).quality_checks||{}),[el.dataset.quality]:el.checked};try{await save(s,{quality_checks:checks});}catch(_){}return;}
     const key=el.dataset.field;if(!key)return;
+    if(!canPayrollEdit()){toast('Редактирование зарплат отключено руководителем',true);draw();return;}
     if(['advance','hours_adjustment','hours_comment'].includes(key)){toast('Правка доступна только по каждому рабочему дню; авансы берутся из Impulse',true);draw();return;}
     if(el.value==='' && !['bonus_filial_override','bonus_quality_override','hours_comment','fine_comment','paid'].includes(key)){toast('Пустое значение не сохранено');draw();return;}
     let value;if(key==='paid')value=el.checked;else if(['hours_comment','fine_comment'].includes(key))value=el.value.trim();else if(['bonus_filial_override','bonus_quality_override'].includes(key))value=el.value.trim()===''?null:Number(el.value);else value=Number(el.value);
@@ -9129,8 +9165,9 @@ function renderAdminPayroll(host){
       else draw();
       return;
     }
-    if(action==='time-picker'){openTimePicker(button);return;}
+    if(action==='time-picker'){if(!canPayrollEdit()){toast('Редактирование зарплат отключено руководителем',true);return;}openTimePicker(button);return;}
     if((action==='merge-intervals'||action==='split-intervals')&&s){
+      if(!canPayrollEdit()){toast('Редактирование зарплат отключено руководителем',true);return;}
       const d=days(s).find(x=>String(x.work_date)===button.dataset.date);if(!d)return;
       const tm=dayTimeModel(d);
       if(action==='merge-intervals'&&tm.original.length>1&&!tm.merged){
@@ -9150,6 +9187,7 @@ function renderAdminPayroll(host){
     if(action==='filter'){state.filter=id;state.open=null;draw();return;}
     if(action==='settings'){if(!isPayrollOwner){toast('Настройки доступны руководителю',true);return;}settingsModal();return;}if(action==='sync'){await doSync();return;}
     if(action==='day-reset'&&s){
+      if(!canPayrollEdit()){toast('Редактирование зарплат отключено руководителем',true);return;}
       const d=days(s).find(x=>String(x.work_date)===button.dataset.date);if(!d)return;
       try{await saveDay(s,d,{time_overrides:null,hours_adjustment:0,hours_comment:''});}catch(_){}return;
     }
