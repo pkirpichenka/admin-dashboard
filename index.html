@@ -2511,6 +2511,25 @@ body,.login,.modal,.fad-main,.fad-main :is(button,input,textarea,select){font-fa
 
 .rep-plan .rep-mode button[aria-pressed="true"]{background:var(--fad-green);color:#fff;box-shadow:none;}
 
+
+/* FAD CC · связи преподавателей с Impulse и импорт уроков */
+.rep-map-card{padding:16px;margin:0 0 16px;}
+.rep-map-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:10px;}
+.rep-map-head h3{margin:0 0 4px;font-size:14px;color:var(--fad-text);}
+.rep-map-head p{margin:0;font-size:12px;color:var(--fad-muted);}
+.rep-map-alert{font-size:12px;color:var(--fad-warn);padding:9px 12px;background:var(--fad-warning-soft);border-radius:9px;}
+.rep-map-list{display:flex;flex-direction:column;gap:8px;max-height:420px;overflow-y:auto;}
+.rep-map-row{display:grid;grid-template-columns:minmax(170px,1fr) minmax(190px,1.5fr) auto auto;align-items:center;gap:8px;padding:9px;border:1px solid var(--fad-border);border-radius:10px;}
+.rep-map-person b{font-size:12px;display:block;}
+.rep-map-person small{display:block;color:var(--fad-muted);font-size:11px;}
+.rep-map-person .rep-map-unmatched,.rep-map-unmatched{color:var(--fad-warn);}
+.rep-map-row select{min-width:0;max-width:100%;font-size:12px;padding:8px;}
+.rep-map-row button{font-size:12px;white-space:nowrap;}
+.rep-pull-item{align-items:flex-start!important;}
+.rep-pull-item>span{min-width:0;flex:1;}
+.rep-pull-item select{display:block;margin-top:6px;padding:6px 8px;font-size:12px;background:var(--fad-surface);}
+@media(max-width:900px){.rep-map-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}.rep-map-person{grid-column:1/-1}.rep-map-row select{grid-column:1/-1}}
+@media(max-width:480px){.rep-map-row{grid-template-columns:1fr 1fr;}.rep-map-row select{grid-column:1/-1;}.rep-map-card{padding:12px;}}
 </style>
 
 <div id="root"></div>
@@ -2531,7 +2550,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '18.11.2026-bv'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '18.11.2026-cc'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -6479,7 +6498,11 @@ const REP_SCHEDULE_ERROR_MESSAGES={
   impulse_schedule_recurrence_invalid:'Не удалось определить даты регулярного занятия',
   impulse_schedule_pagination_incomplete:'Не удалось загрузить все страницы расписания',
   impulse_schedule_time_invalid:'Некорректное время занятия Impulse',
-  impulse_schedule_teacher_list_invalid:'Неожиданный ответ списка тренеров Impulse'
+  impulse_schedule_teacher_list_invalid:'Неожиданный ответ списка тренеров Impulse',
+  mapping_migration_required:'Для ручной привязки тренеров требуется SQL CC',
+  mapping_storage_unavailable:'Недоступна таблица связей тренеров',
+  mapping_impulse_already_linked:'Преподаватель Impulse уже привязан к другой карточке',
+  mapping_owner_only:'Изменять связи может только руководитель'
 };
 const REP_DOW=['вс','пн','вт','ср','чт','пт','сб'];
 const REP_BRANCHES=[['','Любой филиал'],['masherova','Машерова'],['tolbuhina','Толбухина'],['kuibysheva','Куйбышева']];
@@ -6499,7 +6522,9 @@ const REP_IMPULSE_DIRECTION_ALIASES={
   'аэро light':'аэро','аэро flow':'аэро','аэро soft':'аэро','аэро intro':'аэро',
   'аэро start':'аэро','аэро pro':'аэро','аэро relax':'аэро',
   'пилатес start':'пилатес','пилатес classic':'пилатес','пилатес power':'пилатес',
-  'здоровая спина':'спина'
+  'здоровая спина':'спина','здоровая спина старт':'спина',
+  'аэро middle':'аэро','аэро kids':'аэро',
+  'пилатес мат':'пилатес','мфр мобилити':'мфр'
 };
 function repMatchDirection(catalog,impulseLabel){
   const key=repOneNameKey(impulseLabel);
@@ -6560,10 +6585,10 @@ async function renderReplacements(body){
     assignmentCounts.set(Number(a.direction_id),(assignmentCounts.get(Number(a.direction_id))||0)+1);
   }
   const today=repMinskToday(),lastDay=repShiftDate(today,56);
-  const emptyLesson=()=>({date:today,start:'18:00',end:'19:00',directionId:0,branch:''});
+  const emptyLesson=()=>({date:today,start:'18:00',end:'19:00',directionId:0,branch:'',_placeholder:true});
   const st={mode:'trainer',trainerId:'',directionId:0,lessons:[emptyLesson()],buf:15,onlyFull:false,
-    schedule:{state:'idle',from:'',to:'',updated:'',items:[],teachers:[],error:'',request:0},
-    pull:{open:false,date:today,selected:new Set()},timer:null};
+    schedule:{state:'idle',from:'',to:'',updated:'',items:[],teachers:[],mappings:[],mapping_status:'',cache_status:'',error:'',request:0},
+    pull:{open:false,date:today,selected:new Set(),directions:new Map()},mappingOpen:false,timer:null};
   let scheduleAbortController=null; // Per-tab request; abort when range changes or user cancels.
   const canManage=canDirectionAction('directions.create')||canDirectionAction('directions.delete');
   page.innerHTML=`<div class="rep-plan-head">
@@ -6596,6 +6621,7 @@ async function renderReplacements(body){
     <div id="rep-pull-box"></div>
   </section>
   <div id="rep-status" class="rep-plan-status" role="status"></div>
+  <div id="rep-map-panel"></div>
   <div class="rep-plan-summary"><b id="rep-summary"></b><button type="button" class="btn btn-secondary" id="rep-copy">Скопировать текст запроса</button></div>
   <div id="rep-results" class="rep-plan-results"></div>
   ${canManage?`<dialog class="modal direction-dialog" id="rep-direction-manager" aria-labelledby="rep-manager-title">
@@ -6652,30 +6678,109 @@ async function renderReplacements(body){
     get('rep-unavailable').textContent='У выбранного тренера нет направлений. Добавьте их через «Управление направлениями».';
   }
   function scheduleMatch(trainer){
-    const ids=new Set(st.schedule.teachers.map(x=>String(x.impulse_trainer_id)));
+    const teachers=Array.isArray(st.schedule.teachers)?st.schedule.teachers:[];
+    const ids=new Set(teachers.map(x=>String(x.impulse_trainer_id)));
+    const links=Array.isArray(st.schedule.mappings)?st.schedule.mappings:[];
+    const employee=String(trainer.id);
+    const manual=links.find(x=>x.source==='manual'&&String(x.fad_employee_id)===employee);
+    // Manual mappings take precedence, including when they point to a removed ID:
+    // the trainer is then "unverified" rather than automatically matched elsewhere.
+    if(manual)return ids.has(String(manual.impulse_teacher_id))?String(manual.impulse_teacher_id):null;
+    const reserved=new Map(links.filter(x=>x.source==='manual')
+      .map(x=>[String(x.impulse_teacher_id),String(x.fad_employee_id)]));
+    const available=id=>ids.has(id)&&(!reserved.has(id)||reserved.get(id)===employee);
     const explicit=String(trainer.impulse_teacher_id||trainer.impulse_trainer_id||'');
-    if(explicit&&ids.has(explicit))return explicit;
-    const byExact=st.schedule.teachers.filter(x=>repNameKey(x.trainer_name)===repNameKey(trainer.full_name));
-    return byExact.length===1?String(byExact[0].impulse_trainer_id):null;
+    if(explicit)return available(explicit)&&!links.some(x=>String(x.impulse_teacher_id)===explicit&&String(x.fad_employee_id)!==employee)?explicit:null;
+    const payroll=links.find(x=>x.source==='payroll'&&String(x.fad_employee_id)===employee);
+    if(payroll&&available(String(payroll.impulse_teacher_id)))return String(payroll.impulse_teacher_id);
+    const nameKey=repNameKey(trainer.full_name);
+    const otherFad=trainers.filter(t=>repNameKey(t.full_name)===nameKey);
+    const exact=teachers.filter(x=>repNameKey(x.trainer_name)===nameKey);
+    if(otherFad.length===1&&exact.length===1){
+      const id=String(exact[0].impulse_trainer_id);
+      if(available(id)&&!links.some(x=>String(x.impulse_teacher_id)===id&&String(x.fad_employee_id)!==employee))return id;
+    }
+    // Unique surname + first name, when patronymics differ or are omitted.
+    const two=name=>repOneNameKey(name).split(' ').filter(Boolean).slice(0,2).join(' ');
+    const short=two(trainer.full_name);
+    if(short.split(' ').length!==2)return null;
+    const candidates=teachers.filter(t=>two(t.trainer_name)===short);
+    const fadCandidates=trainers.filter(t=>two(t.full_name)===short);
+    if(candidates.length===1&&fadCandidates.length===1){
+      const id=String(candidates[0].impulse_trainer_id);
+      if(available(id)&&!links.some(x=>String(x.impulse_teacher_id)===id&&String(x.fad_employee_id)!==employee))return id;
+    }
+    return null;
   }
   function reportStatus(){
-    const s=st.schedule;
+    const state=st.schedule;
     let msg='';
-    if(s.state==='loading')msg='◌ Impulse · проверяем расписание… (максимум 60 с)';
-    else if(s.state==='ready'){
-      const t=new Intl.DateTimeFormat('ru-RU',{timeZone:'Europe/Minsk',hour:'2-digit',minute:'2-digit'}).format(new Date(s.updated));
-      msg=`● Impulse · расписание ${s.from} — ${s.to} · обновлено ${t}`;
-    }else if(s.state==='error'){
-      const display=REP_SCHEDULE_ERROR_MESSAGES[s.error]||s.error||'Ошибка запроса';
+    if(state.state==='loading')msg='◌ Impulse · проверяем расписание… (максимум 60 с)';
+    else if(state.state==='ready'){
+      const t=new Intl.DateTimeFormat('ru-RU',{timeZone:'Europe/Minsk',hour:'2-digit',minute:'2-digit'}).format(new Date(state.updated));
+      msg=`● Impulse · расписание ${state.from} — ${state.to} · обновлено ${t}`;
+      if(state.cache_status&&state.cache_status!=='ok')msg+=' · кеш не сохранён ('+state.cache_status+')';
+      if(state.mapping_status&&state.mapping_status!=='ok')msg+=' · связи тренеров: '+state.mapping_status;
+    }else if(state.state==='error'){
+      const display=REP_SCHEDULE_ERROR_MESSAGES[state.error]||state.error||'Ошибка запроса';
       msg=`● Impulse · занятость не проверена: ${display}`;
-      if(display!==s.error&&s.error)msg+=` (${s.error})`;
-      if(s.stage)msg+=` · этап: ${s.stage}`;
+      if(display!==state.error&&state.error)msg+=` (${state.error})`;
+      if(state.stage)msg+=` · этап: ${state.stage}`;
     }else msg='● Укажите тренера или направление — проверим занятость по Impulse';
-    const count=s.state==='ready'?trainers.filter(t=>t.is_active&&!t.exclude_from_replacements&&!scheduleMatch(t)).length:0;
+    const count=state.state==='ready'?trainers.filter(t=>t.is_active&&!t.exclude_from_replacements&&!scheduleMatch(t)).length:0;
     if(count)msg+=` · не сопоставлены с Impulse: ${count}`;
-    get('rep-status').innerHTML=`<span class="${s.state==='error'?'rep-plan-status-error':s.state==='ready'?'rep-plan-status-ok':''}">${escapeHtml(msg)}</span>
-      <button type="button" id="rep-refresh-schedule" class="btn btn-ghost">${s.state==='loading'?'Отменить':'обновить'}</button>`;
-    get('rep-refresh-schedule').onclick=()=>s.state==='loading'?cancelSchedule():void loadSchedule(true);
+    get('rep-status').innerHTML=`<span class="${state.state==='error'?'rep-plan-status-error':state.state==='ready'?'rep-plan-status-ok':''}">${escapeHtml(msg)}</span>
+      <button type="button" id="rep-refresh-schedule" class="btn btn-ghost">${state.state==='loading'?'Отменить':'обновить'}</button>
+      ${session.role==='owner'&&state.state==='ready'?'<button type="button" class="btn btn-secondary" id="rep-map-toggle" aria-expanded="'+st.mappingOpen+'">Связи тренеров · '+count+'</button>':''}`;
+    get('rep-refresh-schedule').onclick=()=>state.state==='loading'?cancelSchedule():void loadSchedule(true);
+    const toggle=get('rep-map-toggle');
+    if(toggle)toggle.onclick=()=>{st.mappingOpen=!st.mappingOpen;reportStatus();};
+    drawMappingPanel();
+  }
+  function drawMappingPanel(){
+    const box=get('rep-map-panel');if(!box)return;
+    if(!st.mappingOpen||session.role!=='owner'||st.schedule.state!=='ready'){box.innerHTML='';return;}
+    const teachers=st.schedule.teachers||[],links=st.schedule.mappings||[];
+    const matched=trainers.filter(t=>t.is_active&&!t.exclude_from_replacements)
+      .sort((a,b)=>Number(!!scheduleMatch(a))-Number(!!scheduleMatch(b))||a.full_name.localeCompare(b.full_name,'ru'));
+    const ready=st.schedule.mapping_status==='ok';
+    box.innerHTML=`<section class="card rep-map-card"><div class="rep-map-head"><div><h3>Связи тренеров FAD ↔ Impulse</h3>
+      <p>Автоматически учитываются точное ФИО и подтверждённые связи из зарплат. Остальные ID можно закрепить вручную.</p></div>
+      <button type="button" class="btn btn-ghost" id="rep-map-close" aria-label="Закрыть">✕</button></div>
+      ${ready?'':'<p class="rep-map-alert">Для сохранения связей необходимо выполнить SQL-скрипт CC. Пока используется только автоматическое сопоставление.</p>'}
+      <div class="rep-map-list">${matched.map(t=>{
+        const id=String(t.id),actual=scheduleMatch(t),manual=links.find(x=>x.source==='manual'&&String(x.fad_employee_id)===id);
+        const payroll=links.find(x=>x.source==='payroll'&&String(x.fad_employee_id)===id);
+        const source=manual?'ручная привязка':payroll?'синхронизация зарплат':actual?'по ФИО':'не сопоставлен';
+        const reserved=new Set(links.filter(x=>x.source==='manual'&&String(x.fad_employee_id)!==id).map(x=>String(x.impulse_teacher_id)));
+        return `<div class="rep-map-row"><div class="rep-map-person"><b>${escapeHtml(t.full_name)}</b>
+          <small class="${actual?'':'rep-map-unmatched'}">${escapeHtml(source)}</small></div>
+          <select data-map-trainer="${escapeHtml(id)}" aria-label="Преподаватель Impulse для ${escapeHtml(t.full_name)}" ${ready?'':'disabled'}>
+            <option value="">— без ручной привязки —</option>
+            ${teachers.slice().sort((a,b)=>a.trainer_name.localeCompare(b.trainer_name,'ru')).map(x=>{
+              const tid=String(x.impulse_trainer_id);return `<option value="${escapeHtml(tid)}" ${tid===actual?'selected':''} ${reserved.has(tid)?'disabled':''}>${escapeHtml(x.trainer_name)} · ID ${escapeHtml(tid)}</option>`;
+            }).join('')}</select>
+          <button type="button" class="btn btn-secondary" data-map-save="${escapeHtml(id)}" ${ready?'':'disabled'}>Сохранить</button>
+          ${manual?`<button type="button" class="btn btn-ghost" data-map-clear="${escapeHtml(id)}" ${ready?'':'disabled'}>Сбросить</button>`:''}</div>`;
+      }).join('')}</div></section>`;
+    get('rep-map-close').onclick=()=>{st.mappingOpen=false;reportStatus();};
+    box.querySelectorAll('[data-map-save]').forEach(btn=>btn.onclick=()=>void saveMapping(btn.dataset.mapSave,
+      box.querySelector(`[data-map-trainer="${btn.dataset.mapSave}"]`)?.value||''));
+    box.querySelectorAll('[data-map-clear]').forEach(btn=>btn.onclick=()=>void saveMapping(btn.dataset.mapClear,''));
+  }
+  async function saveMapping(employeeId,impulseId){
+    if(st.schedule.mapping_status!=='ok')return;
+    const controls=get('rep-map-panel').querySelectorAll('button,select');controls.forEach(x=>x.disabled=true);
+    try{
+      const response=await fetch(SUPABASE_URL+'/functions/v1/impulse-schedule',{
+        method:'POST',headers:{'Content-Type':'application/json',apikey:SUPABASE_ANON_KEY,Authorization:'Bearer '+SUPABASE_ANON_KEY},
+        body:JSON.stringify({action:'map_set',token:TOKEN,employee_id:employeeId,impulse_teacher_id:impulseId})
+      });
+      const result=await response.json().catch(()=>null);
+      if(!response.ok||!result?.ok||!Array.isArray(result.mappings))throw new Error(result?.error||'Не удалось сохранить связь');
+      st.schedule.mappings=result.mappings;st.schedule.mapping_status=result.mapping_status;
+      toast('Связь тренеров сохранена');reportStatus();drawResults();drawPull();
+    }catch(e){toast('Ошибка привязки: '+String(e.message||e).slice(0,80),true);drawMappingPanel();}
   }
   function validDateWindow(){
     const dates=usableLessons().map(l=>l.date).filter(date=>date<=lastDay);
@@ -6687,7 +6792,7 @@ async function renderReplacements(body){
     if(st.timer){clearTimeout(st.timer);st.timer=null;}
     ++st.schedule.request; // Discard any late response from an aborted request.
     if(scheduleAbortController){scheduleAbortController.abort();scheduleAbortController=null;}
-    st.schedule={...st.schedule,state:'error',from:'',to:'',updated:'',items:[],teachers:[],error:'Загрузка отменена',request:st.schedule.request};
+    st.schedule={...st.schedule,state:'error',from:'',to:'',updated:'',items:[],teachers:[],mappings:[],error:'Загрузка отменена',request:st.schedule.request};
     reportStatus();drawResults();drawPull();
   }
   async function loadSchedule(force=false){
@@ -6737,10 +6842,12 @@ async function renderReplacements(body){
         throw failure;
       }
       if(request!==st.schedule.request||!page.isConnected)return;
-      st.schedule={state:'ready',from:reply.from,to:reply.to,updated:reply.updated_at,items:reply.items,teachers:reply.teachers,error:'',request};
+      st.schedule={state:'ready',from:reply.from,to:reply.to,updated:reply.updated_at,items:reply.items,teachers:reply.teachers,
+        mappings:Array.isArray(reply.mappings)?reply.mappings:[],mapping_status:String(reply.mapping_status||''),
+        cache_status:String(reply.cache_status||''),error:'',request};
     }catch(err){
       if(request!==st.schedule.request||!page.isConnected)return;
-      st.schedule={state:'error',from:'',to:'',updated:'',items:[],teachers:[],
+      st.schedule={state:'error',from:'',to:'',updated:'',items:[],teachers:[],mappings:[],
         error:String(err?.message||'Ошибка соединения').slice(0,120),stage:String(err?.stage||''),request};
     }finally{
       clearTimeout(timeoutId);
@@ -6813,34 +6920,52 @@ async function renderReplacements(body){
     const box=get('rep-pull-box');
     if(!st.pull.open||st.mode!=='trainer'){box.innerHTML='';return;}
     const trainer=chosen(),id=trainer&&scheduleMatch(trainer),loaded=scheduleOk({date:st.pull.date});
-    const items=id&&loaded?st.schedule.items.filter(x=>String(x.impulse_trainer_id)===id&&x.date===st.pull.date&&x.status!=='cancelled'):[];
+    const items=id&&loaded?st.schedule.items.filter(x=>String(x.impulse_trainer_id)===id&&x.date===st.pull.date&&x.status!=='cancelled')
+      .sort((a,b)=>a.start_time.localeCompare(b.start_time)):[];
+    const availableDirs=catalog.filter(d=>allowed().has(Number(d.id)));
+    const targetDir=(item,i)=>Number(st.pull.directions.get(i)||repMatchDirection(catalog,item.direction)?.id||0);
+    const oneDay=item=>item.end_date===item.date&&repMinutes(item.end_time)>repMinutes(item.start_time);
     box.innerHTML=`<div class="rep-plan-pull"><div class="rep-plan-pull-head"><b>Занятия тренера из Impulse</b>
        <input type="date" id="rep-pull-date" min="${today}" value="${st.pull.date}"></div>
       ${!loaded?'<p>Расписание на эту дату не подтверждено. Проверьте статус Impulse.</p>':
-        !id?'<p>Тренер не сопоставлен с Impulse. Занятия нельзя импортировать автоматически.</p>':
-        items.length?`<div class="rep-plan-pull-list">${items.map((x,i)=>{
-          const matched=repMatchDirection(catalog,x.direction);
-          const canAdd=!!matched&&allowed().has(Number(matched.id));
-          return `<label><input type="checkbox" data-pull-index="${i}" ${st.pull.selected.has(i)?'checked':''} ${canAdd?'':'disabled'}>
-            <span><b>${escapeHtml(x.start_time.slice(0,5))}–${escapeHtml(x.end_time.slice(0,5))}</b> · ${escapeHtml(x.direction||'Неизвестно')} · ${escapeHtml(repBranchLabel(x.branch))}, ${escapeHtml(x.hall||'зал не указан')}
-            ${canAdd?'':' · направление не сопоставлено с карточкой тренера'}</span></label>`;}).join('')}</div>`:'<p>На выбранный день у тренера нет занятий в подтверждённой выгрузке.</p>'}
+        !id?'<p>Тренер не сопоставлен с Impulse. Откройте «Связи тренеров» и выберите Impulse ID.</p>':
+        items.length?`<div class="rep-plan-pull-list">${items.map((item,i)=>{
+          const dir=targetDir(item,i),known=availableDirs.some(x=>Number(x.id)===dir);
+          const canAdd=oneDay(item)&&availableDirs.length>0;
+          return `<label class="rep-pull-item"><input type="checkbox" data-pull-index="${i}" ${st.pull.selected.has(i)?'checked':''} ${canAdd?'':'disabled'}>
+            <span><b>${escapeHtml(item.start_time.slice(0,5))}–${escapeHtml(item.end_time.slice(0,5))}</b> · ${escapeHtml(item.direction||'Название отсутствует')}
+            · ${escapeHtml(repBranchLabel(item.branch))}, ${escapeHtml(item.hall||'зал не указан')}
+            ${!oneDay(item)?'<em class="rep-map-unmatched">· занятие через полночь: добавьте вручную</em>':''}
+            ${canAdd?`<select data-pull-direction="${i}" aria-label="Направление для импорта">
+                <option value="">${known?'Выберите направление':'Укажите направление FAD'}</option>
+                ${availableDirs.map(d=>`<option value="${d.id}" ${Number(d.id)===dir?'selected':''}>${escapeHtml(d.name)}</option>`).join('')}
+              </select>`:''}</span></label>`;
+        }).join('')}</div>`:'<p>На выбранный день у тренера нет занятий в подтверждённой выгрузке.</p>'}
       <div class="rep-plan-pull-actions"><button type="button" class="btn btn-primary" id="rep-pull-add" ${!id||!loaded?'disabled':''}>Добавить выбранные</button>
-        <button type="button" class="btn btn-secondary" id="rep-pull-all">Выбрать все</button></div></div>`;
-    const date=get('rep-pull-date');date.onchange=()=>{st.pull.date=date.value;st.pull.selected.clear();drawPull();queueLoad();};
+        <button type="button" class="btn btn-secondary" id="rep-pull-all" ${!id||!loaded?'disabled':''}>Выбрать все</button></div></div>`;
+    get('rep-pull-date').onchange=e=>{st.pull.date=e.target.value;st.pull.selected.clear();st.pull.directions.clear();drawPull();queueLoad();};
     box.querySelectorAll('[data-pull-index]').forEach(x=>x.onchange=()=>{
       const i=Number(x.dataset.pullIndex);if(x.checked)st.pull.selected.add(i);else st.pull.selected.delete(i);
     });
+    box.querySelectorAll('[data-pull-direction]').forEach(x=>x.onchange=()=>{st.pull.directions.set(Number(x.dataset.pullDirection),Number(x.value));});
     get('rep-pull-all').onclick=()=>{box.querySelectorAll('[data-pull-index]:not(:disabled)').forEach(x=>{x.checked=true;st.pull.selected.add(Number(x.dataset.pullIndex));});};
     get('rep-pull-add').onclick=()=>{
-      const chosenItems=[...st.pull.selected].sort((a,b)=>a-b).map(i=>items[i]).filter(Boolean);
-      const additions=chosenItems.map(x=>{
-        const dir=repMatchDirection(catalog,x.direction);
-        return dir&&allowed().has(Number(dir.id))?{date:st.pull.date,start:x.start_time.slice(0,5),end:x.end_time.slice(0,5),directionId:Number(dir.id),branch:REP_BRANCHES.some(b=>b[0]===x.branch)?x.branch:''}:null;
-      }).filter(Boolean);
-      if(!additions.length){toast('Выберите занятия с распознанными направлениями',true);return;}
-      if(st.lessons.length===1&&!st.lessons[0].directionId)st.lessons=[];
+      const indexes=[...st.pull.selected].sort((a,b)=>a-b);
+      if(!indexes.length){toast('Отметьте занятия для импорта',true);return;}
+      const additions=[];
+      for(const i of indexes){const item=items[i];if(!item||!oneDay(item))continue;
+        const dir=Number(st.pull.directions.get(i)||repMatchDirection(catalog,item.direction)?.id||0);
+        if(!availableDirs.some(d=>Number(d.id)===dir)){
+          toast('Укажите направление FAD для каждого выбранного занятия',true);return;
+        }
+        additions.push({date:st.pull.date,start:item.start_time.slice(0,5),end:item.end_time.slice(0,5),
+          directionId:dir,branch:REP_BRANCHES.some(b=>b[0]===item.branch)?item.branch:''});
+      }
+      if(!additions.length){toast('Нет занятий, которые можно импортировать',true);return;}
+      if(st.lessons.length===1&&st.lessons[0]._placeholder)st.lessons=[];
       const count=Math.min(15-st.lessons.length,additions.length);
-      st.lessons.push(...additions.slice(0,count));st.pull.open=false;st.pull.selected.clear();
+      if(count<=0){toast('Не больше 15 занятий в запросе',true);return;}
+      st.lessons.push(...additions.slice(0,count));st.pull.open=false;st.pull.selected.clear();st.pull.directions.clear();
       drawLessons();drawPull();drawDirections();drawResults();queueLoad();toast(`Добавлено занятий: ${count}`);
     };
   }
@@ -6853,25 +6978,25 @@ async function renderReplacements(body){
   page.querySelectorAll('[data-rep-mode]').forEach(b=>b.onclick=()=>{
     const mode=b.dataset.repMode;if(mode===st.mode)return;
     st.mode=mode;st.trainerId='';st.directionId=0;st.lessons=[emptyLesson()];
-    st.pull.open=false;updateMode();
+    st.pull.open=false;st.pull.selected.clear();st.pull.directions.clear();updateMode();
   });
   get('rep-trainer').onchange=e=>{
     st.trainerId=e.target.value;
     const dirs=catalog.filter(d=>allowed().has(Number(d.id)));
     st.lessons.forEach(l=>{if(!allowed().has(Number(l.directionId)))l.directionId=Number(dirs[0]?.id||0);});
-    st.pull.open=false;updateMode();
+    st.pull.open=false;st.pull.selected.clear();st.pull.directions.clear();updateMode();
   };
   get('rep-directions').onclick=e=>{
     const btn=e.target.closest('[data-rep-direction]');if(!btn||btn.disabled)return;
     const id=Number(btn.dataset.repDirection);
-    if(st.mode==='direction'){st.directionId=id;st.lessons.forEach(l=>l.directionId=id);}
-    else st.lessons[0].directionId=id;
+    if(st.mode==='direction'){st.directionId=id;st.lessons.forEach(l=>{l.directionId=id;l._placeholder=false;});}
+    else {st.lessons[0].directionId=id;st.lessons[0]._placeholder=false;}
     drawLessons();drawDirections();drawResults();queueLoad();
   };
   get('rep-lessons').addEventListener('input',e=>{
     const row=e.target.closest('[data-lesson]');if(!row)return;
     const index=Number(row.dataset.lesson),field=e.target.dataset.field;if(!field)return;
-    const lesson=st.lessons[index];lesson[field]=field==='directionId'?Number(e.target.value):e.target.value;
+    const lesson=st.lessons[index];lesson[field]=field==='directionId'?Number(e.target.value):e.target.value;lesson._placeholder=false;
     if(field==='start'&&repMinutes(lesson.start)!==null&&repMinutes(lesson.end)<=repMinutes(lesson.start)){
       lesson.end=repTime(repMinutes(lesson.start)+60);
       row.querySelector('[data-field="end"]').value=lesson.end;
@@ -6888,7 +7013,7 @@ async function renderReplacements(body){
     if(st.lessons.length>=15)return;
     st.lessons.push({...st.lessons[st.lessons.length-1]});drawLessons();drawDirections();drawResults();queueLoad();
   };
-  get('rep-pull-toggle').onclick=()=>{st.pull.open=!st.pull.open;st.pull.selected.clear();drawPull();queueLoad();};
+  get('rep-pull-toggle').onclick=()=>{st.pull.open=!st.pull.open;st.pull.selected.clear();st.pull.directions.clear();drawPull();queueLoad();};
   get('rep-buffer').onchange=e=>{st.buf=Number(e.target.value);drawResults();};
   get('rep-only-full').onchange=e=>{st.onlyFull=e.target.checked;drawResults();};
   get('rep-copy').onclick=async()=>{
