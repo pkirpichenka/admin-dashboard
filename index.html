@@ -2447,7 +2447,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '18.11.2026-bo'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '18.11.2026-bp'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -3086,6 +3086,7 @@ async function apiCreateAdmin(login,name,password){ return await rpc('app_perm_c
 async function apiSetActive(login,val){ return await rpc('app_perm_set_active',{p_token:TOKEN,p_login:login,p_active:!!val}); }
 async function apiResetPassword(login,password){ return await rpc('app_perm_reset_password',{p_token:TOKEN,p_login:login,p_new_password:password}); }
 async function apiDeleteAdmin(login){ return await rpc('app_perm_delete_admin',{p_token:TOKEN,p_login:login}); }
+async function apiDeleteEmployeeProfile(id,fullName){ return await rpc('app_owner_delete_employee_profile',{p_token:TOKEN,p_employee_id:Number(id),p_confirm_name:fullName}); }
 async function apiSetPermissions(login,permissions){ return await rpc('app_set_admin_permissions',{p_token:TOKEN,p_login:login,p_permissions:normalizePermissions(permissions)}); }
 async function apiSetAuditPermission(login,val){ return await rpc('app_set_audit_permission',{p_token:TOKEN,p_login:login,p_value:!!val}); }
 async function apiSetHome(login,home){ return await rpc('app_perm_set_home',{p_token:TOKEN,p_login:login,p_home:home||''}); }
@@ -6704,7 +6705,6 @@ function renderEmployeeCard(emp,{archived=false,canEdit=false,canDirectionOnly=f
   if(archived){
     if(canArchive)menuItems.push(['restore','Восстановить доступ']);
     if(canDelete)menuItems.push(['delete','Удалить навсегда',true]);
-    else if(!admin&&canArchive)menuItems.push(['unavailable-delete','Удалить навсегда',true,true]);
   }else if(admin){
     if(canPermissions)menuItems.push(['permissions','Настроить права']);
     if(canHistory)menuItems.push(['history','История филиала / перевод']);
@@ -6732,7 +6732,7 @@ function renderEmployeeCard(emp,{archived=false,canEdit=false,canDirectionOnly=f
       <span class="emp-footer-spacer"></span>
       ${messenger('telegram',telegramHref,EMP_CARD_ICONS.telegram)}${messenger('viber',viberHref,EMP_CARD_ICONS.viber)}
       <button type="button" class="emp-icon-btn emp-more" aria-label="Ещё действия" title="Ещё действия" aria-haspopup="menu" aria-expanded="false"${!menuItems.length?' disabled':''}>${EMP_CARD_ICONS.more}</button>
-      ${menuItems.length?`<div class="emp-menu" role="menu" aria-label="Действия сотрудника" hidden>${menuItems.map(([action,label,danger,disabled])=>`<button type="button" role="menuitem" data-emp-action="${action}"${danger?' class="emp-menu-danger"':''}${disabled?' disabled title="Для тренеров серверная функция удаления не предусмотрена"':''}>${label}</button>`).join('')}</div>`:''}
+      ${menuItems.length?`<div class="emp-menu" role="menu" aria-label="Действия сотрудника" hidden>${menuItems.map(([action,label,danger,disabled])=>`<button type="button" role="menuitem" data-emp-action="${action}"${danger?' class="emp-menu-danger"':''}${disabled?' disabled':''}>${label}</button>`).join('')}</div>`:''}
     </div>
   </article>`;
 }
@@ -6863,6 +6863,60 @@ async function renderEmployees(body){
       hire_date:e.hire_date||null,primary_studio:e.primary_studio||'',studios:employeeStudios(e),
       is_active:active,note:e.note||''});
   }
+  // Безвозвратное удаление доступно только руководителю и только в архиве.
+  // Не пропускаем старую быструю кнопку удаления аккаунта без подтверждения ФИО.
+  function confirmPermanentDelete(entry){
+    const {e,account,archived}=entry;
+    if(session.role!=='owner'||!archived)return;
+    const employeeName=String(e.full_name||'').trim();
+    const accountOnly=String(e.id).startsWith('account:');
+    const dialog=modal(`<h3>Удалить навсегда?</h3>
+      <p>Это необратимое действие. Чтобы подтвердить удаление, введи полное ФИО сотрудника.</p>
+      <p style="font-weight:700" id="emp-delete-fullname"></p>
+      <p style="color:var(--fad-muted,#5b6b62);font-size:12px">Сотрудников с историей зарплат, замен и других операций удалить нельзя — сначала необходимо сохранить историю.</p>
+      <div class="field"><div class="lbl">Полное ФИО для подтверждения</div><input id="emp-delete-confirm-name" class="input" autocomplete="off" spellcheck="false" placeholder="ФИО сотрудника"></div>
+      <div class="actions"><button type="button" class="btn" data-x>Отмена</button><button type="button" class="btn" id="emp-delete-forever" disabled style="background:var(--fad-danger,#c0392b);color:#fff;border-color:var(--fad-danger,#c0392b)">Удалить навсегда</button></div>`);
+    dialog.querySelector('#emp-delete-fullname').textContent=employeeName;
+    const input=dialog.querySelector('#emp-delete-confirm-name');
+    const button=dialog.querySelector('#emp-delete-forever');
+    const check=()=>{button.disabled=input.value.trim()!==employeeName;};
+    input.addEventListener('input',check);
+    input.addEventListener('keydown',event=>{if(event.key==='Enter'&&!button.disabled){event.preventDefault();button.click();}});
+    button.onclick=async()=>{
+      if(input.value.trim()!==employeeName||session?.role!=='owner')return;
+      button.disabled=true;
+      try{
+        if(accountOnly){
+          // Виртуальные администраторы: только существующая защищённая RPC аккаунтов.
+          if(!account||account.active)throw new Error('Сначала переместите администратора в архив');
+          await apiDeleteAdmin(account.login);
+        }else if(e.employee_type==='admin'&&account){
+          // У архивных администраторов, имеющих аккаунт, прежняя RPC отвечает
+          // за его удаление. Не вызываем новую RPC, чтобы не затронуть записи о зарплатах.
+          await apiDeleteAdmin(account.login);
+        }else{
+          await apiDeleteEmployeeProfile(e.id,employeeName);
+        }
+        closeModal(dialog);
+        toast('Удаление выполнено');
+        void auditAction('Удалён архивный сотрудник','employee',String(e.id),{type:e.employee_type});
+        refresh();
+      }catch(err){
+        const detail=String(err?.message||err||'');
+        if(/employee_has_history|employee_has_history_or_links|foreign key|violates foreign key/i.test(detail)){
+          toast('Удаление запрещено: у сотрудника есть зарплаты, замены или другие связанные записи.',true);
+        }else if(/employee_has_account/.test(detail)){
+          toast('Сначала удалите архивную учётную запись администратора.',true);
+        }else if(/archive_employee_first/.test(detail)){
+          toast('Сначала перенесите сотрудника в архив.',true);
+        }else{
+          handleErr(err);
+        }
+        check();
+      }
+    };
+    input.focus();
+  }
   async function act(action,entry){
     const {e,account,archived}=entry;
     const virtual=String(e.id).startsWith('account:');
@@ -6885,10 +6939,8 @@ async function renderEmployees(body){
           toast(newActive?'Сотрудник восстановлен':'Сотрудник перенесён в архив');refresh();
         }catch(err){handleErr(err);}
       });
-    }else if(action==='delete'&&archived&&account&&manageAdmins){
-      confirmModal(`Удалить «${account.name}» окончательно? Он исчезнет из списков. Отчёты останутся в логе.`,async()=>{
-        try{await apiDeleteAdmin(account.login);toast('Аккаунт удалён');refresh();}catch(err){handleErr(err);}
-      });
+    }else if(action==='delete'&&archived&&session.role==='owner'){
+      confirmPermanentDelete(entry);
     }
   }
   list.addEventListener('click',event=>{
@@ -6924,7 +6976,7 @@ async function renderEmployees(body){
         canPermissions:!!account&&canManagePermissions,
         canHistory:session.role==='owner'&&!virtual,
         canArchive:!!account?manageAdmins:!virtual&&manageEmployees,
-        canDelete:!!account&&manageAdmins,
+        canDelete:session.role==='owner'&&archived,
         canAccountSettings:!!account&&manageAdmins});
     }).join('')}</div>`:'<div class="empty">Сотрудников в этом разделе нет.</div>';
   }
