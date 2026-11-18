@@ -2530,6 +2530,31 @@ body,.login,.modal,.fad-main,.fad-main :is(button,input,textarea,select){font-fa
 .rep-pull-item select{display:block;margin-top:6px;padding:6px 8px;font-size:12px;background:var(--fad-surface);}
 @media(max-width:900px){.rep-map-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}.rep-map-person{grid-column:1/-1}.rep-map-row select{grid-column:1/-1}}
 @media(max-width:480px){.rep-map-row{grid-template-columns:1fr 1fr;}.rep-map-row select{grid-column:1/-1;}.rep-map-card{padding:12px;}}
+
+/* FAD CD · переключатель простой и новой версий внутри вкладки «Замены» */
+.rep-version-shell{width:100%;min-width:0}
+.rep-version-toolbar{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;
+  max-width:960px;margin:0 auto 18px;padding:13px 16px;background:var(--surface);
+  border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+.rep-version-caption{font-size:12px;font-weight:700;color:var(--ink-soft);white-space:nowrap}
+.rep-version-switch{display:inline-flex;gap:3px;padding:4px;border-radius:10px;background:var(--surface-2);
+  border:1px solid var(--line)}
+.rep-version-button{border:0;border-radius:8px;padding:8px 13px;font-size:13px;font-weight:700;
+  color:var(--ink-soft);background:transparent;white-space:nowrap}
+.rep-version-button:hover{color:var(--accent-deep)}
+.rep-version-button[aria-pressed="true"]{color:#fff;background:var(--accent)}
+.rep-version-button:focus-visible{outline:3px solid #83b89f;outline-offset:2px}
+.rep-version-test{font-size:11px;font-weight:600;opacity:.86;margin-left:2px}
+.rep-version-note{font-size:12px;color:var(--ink-faint);flex:1;min-width:190px}
+.rep-version-content{min-width:0}
+.rep-version-error{max-width:960px;margin:0 auto;padding:18px;background:#fff;border:1px solid var(--line);
+  border-radius:12px;color:var(--clay)}
+@media(max-width:640px){
+ .rep-version-toolbar{padding:12px;gap:8px}
+ .rep-version-note{flex-basis:100%;min-width:0}
+ .rep-version-button{padding:9px 11px}
+}
+
 </style>
 
 <div id="root"></div>
@@ -2550,7 +2575,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '18.11.2026-cc'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '18.11.2026-cd'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -6563,7 +6588,7 @@ function repRequestedConflict(lesson,other,buffer){
   return repUtcMinutes(other.date,other.start)<repUtcMinutes(lesson.date,lesson.end)+pad&&
     repUtcMinutes(other.date,other.end)>repUtcMinutes(lesson.date,lesson.start)-pad;
 }
-async function renderReplacements(body){
+async function renderReplacementsAdvanced(body){
   const page=document.createElement('section');page.className='replacements rep-plan fade-in';
   page.innerHTML='<div class="rep-loading" role="status">Загружаем тренеров и направления…</div>';
   body.replaceChildren(page);
@@ -6571,7 +6596,7 @@ async function renderReplacements(body){
   try{data=await apiListReplacements();}catch(err){
     if(!page.isConnected)return;
     page.innerHTML='<p class="rep-empty">Не удалось загрузить тренеров и направления. <button type="button" class="btn" id="rep-retry">Повторить</button></p>';
-    page.querySelector('#rep-retry').onclick=()=>void renderReplacements(body);
+    page.querySelector('#rep-retry').onclick=()=>void renderReplacementsAdvanced(body);
     if(isForbiddenErr(err))handleErr(err);return;
   }
   if(!page.isConnected)return;
@@ -6796,6 +6821,7 @@ async function renderReplacements(body){
     reportStatus();drawResults();drawPull();
   }
   async function loadSchedule(force=false){
+    if(!page.isConnected)return;
     const range=validDateWindow();
     if(!range){
       if(scheduleAbortController){++st.schedule.request;scheduleAbortController.abort();scheduleAbortController=null;}
@@ -6860,7 +6886,7 @@ async function renderReplacements(body){
       get('rep-results').innerHTML='<p class="rep-plan-empty">Ошибка отображения результатов. Проверьте Console.</p>';
     }
   }
-  function queueLoad(){if(st.timer)clearTimeout(st.timer);st.timer=setTimeout(()=>void loadSchedule(),220);}
+  function queueLoad(){if(st.timer)clearTimeout(st.timer);st.timer=setTimeout(()=>{if(page.isConnected)void loadSchedule();},220);}
   function candidateEval(trainer,lessons){
     const own=byTrainer.get(String(trainer.id))||new Set(),impulseId=scheduleMatch(trainer);
     const matched=lessons.some(l=>own.has(Number(l.directionId)));
@@ -7039,6 +7065,365 @@ async function renderReplacements(body){
     });
   }
   updateMode();
+}
+
+/* FAD CD · старая версия «Замены» из index(20261118-161357).html.
+   Исходный код изолирован, чтобы имена функций не конфликтовали с новой версией. */
+const renderReplacementsSimple = (() => {
+/* ================= Замены ================= */
+function replacementCandidates(trainers,directionsByTrainer,excludedId,requested){
+  const counts=new Map(), full=[], partial=[];
+  const eligible=trainers.filter(t=>t.id!==excludedId&&!t.exclude_from_replacements);
+  for(const trainer of eligible){
+    for(const id of directionsByTrainer.get(trainer.id)||[]){
+      counts.set(id,(counts.get(id)||0)+1);
+    }
+  }
+  const needed=requested.filter(d=>counts.has(d.id));
+  const unavailable=requested.filter(d=>!counts.has(d.id));
+  if(!needed.length) return {counts,needed,unavailable,full,partial};
+
+  for(const trainer of eligible){
+    const directions=directionsByTrainer.get(trainer.id)||new Set();
+    const missing=needed.filter(d=>!directions.has(d.id));
+    if(missing.length<needed.length){
+      (missing.length?partial:full).push({trainer,missing});
+    }
+  }
+  // По ФИО уже отсортировано, поэтому при одинаковом числе пропусков порядок сохраняется.
+  partial.sort((a,b)=>a.missing.length-b.missing.length);
+  return {counts,needed,unavailable,full,partial};
+}
+
+const REPLACEMENT_PHONE_ICON='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16.5v3a2 2 0 0 1-2.2 2 17 17 0 0 1-7.4-2.6 17 17 0 0 1-5.3-5.3A17 17 0 0 1 3.5 6.2 2 2 0 0 1 5.5 4h3a2 2 0 0 1 2 1.7l.4 2.4a2 2 0 0 1-.6 2l-1.2 1.2a13 13 0 0 0 4.6 4.6l1.2-1.2a2 2 0 0 1 2-.6l2.4.4a2 2 0 0 1 1.7 2z"/></svg>';
+const REPLACEMENT_CHEVRON='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
+
+function replacementRow({trainer,missing}){
+  const name=escapeHtml(trainer.full_name);
+  const branches=employeeStudios(trainer);
+  const dial=staffPhoneDial(trainer.phone);
+  const number=trainerInternationalPhone(dial);
+  const username=trainer.telegram_username;
+  const telegram=typeof username==='string'&&TRAINER_TELEGRAM_USERNAME.test(username)?username:number;
+  const contacts=[
+    {title:'Телефон',action:'Позвонить',href:/^\+?\d+$/.test(dial)?`tel:${dial}`:'',icon:REPLACEMENT_PHONE_ICON},
+    {title:'Telegram',action:'Написать в Telegram',href:telegram?`https://t.me/${telegram}`:'',icon:TRAINER_TELEGRAM_ICON,newTab:true},
+    {title:'Viber',action:'Написать в Viber',href:number?`viber://chat?number=${encodeURIComponent(number)}`:'',icon:TRAINER_VIBER_ICON}
+  ].map(({title,action,href,icon,newTab})=>{
+    const label=`${action}: ${name}`;
+    return href
+      ? `<a class="rep-row-contact" href="${escapeHtml(href)}" title="${title}" aria-label="${label}"${newTab?' target="_blank" rel="noopener noreferrer"':''}>${icon}</a>`
+      : `<button type="button" class="rep-row-contact" disabled title="Не указан" aria-label="${label} — не указан">${icon}</button>`;
+  }).join('');
+  const branchLabels=branches.map(s=>`<span class="rep-branch">${sdot(s)}${escapeHtml(studioName(s))}</span>`).join('');
+  const meta=(branchLabels?`<span class="rep-branches">${branchLabels}</span>`:'')
+    +(missing.length?`<span class="rep-missing">Нет: ${escapeHtml(missing.map(d=>d.name).join(', '))}</span>`:'');
+  return `<li class="rep-row">
+    <div class="rep-row-info"><div class="rep-name">${name}</div>${meta?`<div class="rep-row-meta">${meta}</div>`:''}</div>
+    <div class="rep-row-contacts">${contacts}</div>
+  </li>`;
+}
+
+function replacementResultGroup(id,heading=''){
+  const fullHeading=heading?'h3':'h2';
+  const partialHeading=heading?'h4':'h3';
+  return `<section id="${id}" aria-labelledby="${id}-title" hidden>
+    ${heading?`<h2 class="rep-result-heading rep-archive-heading" id="${id}-title">${heading}</h2>`:''}
+    <${fullHeading} class="rep-result-heading" ${heading?'':`id="${id}-title"`} data-rep-full-title></${fullHeading}>
+    <p class="rep-empty" data-rep-full-empty hidden></p>
+    <ol class="rep-rows" role="list" data-rep-full-rows></ol>
+    <button type="button" class="rep-partial-toggle" aria-controls="${id}-partial" aria-expanded="false" hidden>
+      <span></span>${REPLACEMENT_CHEVRON}
+    </button>
+    <div id="${id}-partial" data-rep-partial-content hidden>
+      <div data-rep-partial-one hidden>
+        <${partialHeading} class="rep-subheading">Не хватает одного направления</${partialHeading}>
+        <ol class="rep-rows" role="list"></ol>
+      </div>
+      <div data-rep-partial-many hidden>
+        <${partialHeading} class="rep-subheading">Не хватает двух и более</${partialHeading}>
+        <ol class="rep-rows" role="list"></ol>
+      </div>
+    </div>
+  </section>`;
+}
+
+async function renderReplacements(body){
+  const page=document.createElement('section');
+  page.className='replacements fade-in';
+  page.setAttribute('aria-labelledby','rep-title');
+  page.innerHTML='<h1 id="rep-title" class="rep-title">Подбор замены</h1><div class="rep-loading" role="status">Загружаем тренеров и направления…</div>';
+  body.replaceChildren(page);
+
+  let data;
+  try{ data=await apiListReplacements(); }
+  catch(err){
+    if(!page.isConnected) return;
+    page.querySelector('.rep-loading').innerHTML='Не удалось загрузить тренеров и направления.<button type="button" class="btn">Повторить</button>';
+    page.querySelector('.rep-loading button').onclick=()=>{ void renderReplacements(body); };
+    if(isForbiddenErr(err)) handleErr(err);
+    return;
+  }
+  if(!page.isConnected) return;
+
+  let catalog=data.directions;
+  const trainers=data.trainers.sort((a,b)=>a.full_name.trim().localeCompare(b.full_name.trim(),'ru'));
+  const workingTrainers=trainers.filter(t=>t.is_active);
+  const directionsByTrainer=new Map(trainers.map(t=>[t.id,new Set()]));
+  const assignmentCounts=new Map();
+  for(const {trainer_id,direction_id} of data.trainer_directions){
+    directionsByTrainer.get(trainer_id)?.add(direction_id);
+    assignmentCounts.set(direction_id,(assignmentCounts.get(direction_id)||0)+1);
+  }
+
+  const state={mode:'trainer',trainerId:'',selected:new Set(),onlyFull:false};
+  page.querySelector('.rep-loading').remove();
+  page.insertAdjacentHTML('beforeend',`<div class="rep-query">
+    <div class="rep-query-top">
+      <div class="rep-mode" role="group" aria-label="Способ подбора">
+        <button type="button" data-rep-mode="trainer" aria-pressed="true">По тренеру</button>
+        <button type="button" data-rep-mode="direction" aria-pressed="false">По направлению</button>
+      </div>
+      <div class="rep-trainer-field" id="rep-trainer-field">
+        <select class="rep-trainer" id="rep-trainer" aria-label="Кого заменяем">
+          <option value="">Кого заменяем…</option>
+          ${workingTrainers.map(t=>`<option value="${escapeHtml(t.id)}">${escapeHtml(t.full_name)}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div>
+      <div class="rep-label" id="rep-dir-label">Направления занятия</div>
+      <div class="rep-directions" id="rep-directions" role="group" aria-labelledby="rep-dir-label"></div>
+    </div>
+    <div class="rep-query-footer">
+      <div class="rep-need">
+        <p class="rep-needed" id="rep-needed" aria-live="polite" hidden></p>
+        <button type="button" class="rep-link" id="rep-restore" hidden>Вернуть направления тренера</button>
+      </div>
+      <button type="button" class="rep-switch" id="rep-only-full" aria-pressed="false">Только полное совпадение</button>
+    </div>
+    <p class="rep-unavailable" id="rep-unavailable" role="status" hidden></p>
+  </div>
+  <div class="rep-results">
+    <p id="rep-empty" class="rep-empty" role="status" hidden></p>
+    ${replacementResultGroup('rep-working')}
+    ${replacementResultGroup('rep-archived','Тренеры из архива')}
+  </div>
+  ${(canDirectionAction('directions.create')||canDirectionAction('directions.delete'))?`<button type="button" class="rep-link rep-manage" id="rep-manage" aria-haspopup="dialog">Управление направлениями</button>
+    <dialog class="modal direction-dialog" id="rep-direction-manager" aria-labelledby="rep-manager-title">
+      <h3 id="rep-manager-title">Управление направлениями</h3>
+      <div class="rep-manage-actions">
+        ${canDirectionAction('directions.create')?'<button type="button" class="btn" id="rep-add-direction">Добавить направление</button>':''}
+        ${canDirectionAction('directions.delete')?'<button type="button" class="btn" id="rep-delete-direction">Удалить направление</button>':''}
+      </div>
+      <div class="actions"><button type="button" class="btn" id="rep-manager-close">Закрыть</button></div>
+    </dialog>`:''}`);
+
+  const get=id=>page.querySelector('#'+id);
+  const modeButtons=page.querySelectorAll('[data-rep-mode]');
+  const directionList=get('rep-directions');
+  const select=get('rep-trainer'), onlyFull=get('rep-only-full'), restore=get('rep-restore');
+  const addDirection=get('rep-add-direction'), deleteDirection=get('rep-delete-direction');
+  const groups=['rep-working','rep-archived'].map(id=>{
+    const element=get(id);
+    const toggle=element.querySelector('.rep-partial-toggle');
+    const group={
+      element,toggle,expanded:null,
+      fullTitle:element.querySelector('[data-rep-full-title]'),
+      fullEmpty:element.querySelector('[data-rep-full-empty]'),
+      fullRows:element.querySelector('[data-rep-full-rows]'),
+      partialContent:element.querySelector('[data-rep-partial-content]'),
+      oneMissing:element.querySelector('[data-rep-partial-one]'),
+      moreMissing:element.querySelector('[data-rep-partial-many]')
+    };
+    toggle.onclick=()=>{
+      group.expanded=toggle.getAttribute('aria-expanded')!=='true';
+      setPartialExpanded(group,group.expanded);
+    };
+    return group;
+  });
+
+  function setPartialExpanded(group,expanded){
+    group.toggle.setAttribute('aria-expanded',String(expanded));
+    group.partialContent.hidden=!expanded;
+  }
+
+  function renderDirectionButtons(){
+    if(deleteDirection) deleteDirection.disabled=!catalog.length;
+    directionList.innerHTML=catalog.map(d=>`<button type="button" class="rep-direction" data-rep-direction="${d.id}" aria-pressed="false">
+      <span>${escapeHtml(d.name)}</span><span class="rep-direction-count" data-rep-count></span>
+    </button>`).join('');
+  }
+
+  function drawGroup(group,full,partial){
+    group.element.hidden=!(full.length||partial.length);
+    group.fullTitle.textContent=`Подходят полностью · ${full.length}`;
+    group.fullEmpty.hidden=full.length>0;
+    group.fullEmpty.textContent=state.onlyFull
+      ? 'Полностью подходящих нет. Выключите «Только полное совпадение», чтобы увидеть частичные.'
+      : 'Полностью подходящих нет — смотрите частичные совпадения ниже.';
+    group.fullRows.innerHTML=full.map(replacementRow).join('');
+
+    group.toggle.hidden=state.onlyFull||!partial.length;
+    group.toggle.querySelector('span').textContent=`Частичные совпадения · ${partial.length}`;
+    const oneMissing=partial.filter(c=>c.missing.length===1);
+    const moreMissing=partial.slice(oneMissing.length);
+    group.oneMissing.hidden=!oneMissing.length;
+    group.moreMissing.hidden=!moreMissing.length;
+    group.oneMissing.querySelector('ol').innerHTML=oneMissing.map(replacementRow).join('');
+    group.moreMissing.querySelector('ol').innerHTML=moreMissing.map(replacementRow).join('');
+    setPartialExpanded(group,!group.toggle.hidden&&(group.expanded??!full.length));
+  }
+
+  function draw(){
+    const byTrainer=state.mode==='trainer';
+    const selectedTrainer=byTrainer?workingTrainers.find(t=>t.id===state.trainerId):null;
+    const defaults=selectedTrainer?directionsByTrainer.get(selectedTrainer.id):null;
+    const requested=catalog.filter(d=>state.selected.has(d.id));
+    const {counts,needed,unavailable,full,partial}=replacementCandidates(trainers,directionsByTrainer,state.trainerId,requested);
+
+    modeButtons.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.repMode===state.mode)));
+    get('rep-trainer-field').hidden=!byTrainer;
+    select.value=state.trainerId;
+    onlyFull.setAttribute('aria-pressed',String(state.onlyFull));
+    restore.hidden=!defaults||(defaults.size===state.selected.size&&[...defaults].every(id=>state.selected.has(id)));
+    directionList.querySelectorAll('[data-rep-direction]').forEach(button=>{
+      const id=Number(button.dataset.repDirection);
+      const count=counts.get(id)||0;
+      button.disabled=!count||(byTrainer&&!selectedTrainer);
+      button.classList.toggle('rep-direction-empty',!count);
+      button.title=count?'':'Других тренеров с этим направлением нет';
+      button.setAttribute('aria-pressed',String(state.selected.has(id)));
+      button.querySelector('[data-rep-count]').textContent=count;
+    });
+
+    const need=get('rep-needed');
+    need.hidden=!needed.length;
+    need.textContent=needed.length?`Нужно: ${needed.map(d=>d.name).join(', ')}`:'';
+    const warning=get('rep-unavailable');
+    warning.hidden=!unavailable.length;
+    const omitted=unavailable.map(d=>d.name).join(', ');
+    warning.textContent=unavailable.length===1
+      ? `${omitted} — других тренеров с этим направлением нет, в подборе не учитывается.`
+      : `${omitted} — других тренеров с этими направлениями нет, в подборе не учитываются.`;
+
+    let emptyText='';
+    if(!catalog.length) emptyText='Направлений пока нет.';
+    else if(byTrainer&&!selectedTrainer) emptyText='Выберите тренера — покажем, кто может его заменить.';
+    else if(!requested.length) emptyText='Отметьте направления — покажем, кто их ведёт.';
+    else if(!full.length&&!partial.length) emptyText='По выбранным направлениям нет доступных тренеров.';
+    const empty=get('rep-empty');
+    empty.hidden=!emptyText;
+    empty.textContent=emptyText;
+
+    drawGroup(groups[0], full.filter(c=>c.trainer.is_active), partial.filter(c=>c.trainer.is_active));
+    drawGroup(groups[1], full.filter(c=>!c.trainer.is_active), partial.filter(c=>!c.trainer.is_active));
+  }
+
+  function updateSearch(){
+    groups.forEach(group=>{group.expanded=null;});
+    draw();
+  }
+
+  modeButtons.forEach(b=>b.onclick=()=>{
+    if(state.mode===b.dataset.repMode) return;
+    state.mode=b.dataset.repMode;
+    state.trainerId='';
+    state.selected.clear();
+    updateSearch();
+  });
+  select.onchange=()=>{
+    state.trainerId=select.value;
+    state.selected=new Set(directionsByTrainer.get(select.value));
+    updateSearch();
+  };
+  directionList.onclick=event=>{
+    const button=event.target.closest('[data-rep-direction]');
+    if(!button||button.disabled) return;
+    const id=Number(button.dataset.repDirection);
+    if(state.selected.has(id)) state.selected.delete(id); else state.selected.add(id);
+    updateSearch();
+  };
+  restore.onclick=()=>{
+    state.selected=new Set(directionsByTrainer.get(state.trainerId));
+    select.focus({preventScroll:true});
+    updateSearch();
+  };
+  onlyFull.onclick=()=>{ state.onlyFull=!state.onlyFull; draw(); };
+
+  if(addDirection||deleteDirection){
+    const manager=get('rep-direction-manager');
+    get('rep-manage').onclick=()=>manager.showModal();
+    get('rep-manager-close').onclick=()=>manager.close();
+    if(addDirection)addDirection.onclick=()=>directionModal(addDirection,direction=>{
+      if(!page.isConnected) return;
+      mergeTrainerDirection(catalog,direction);
+      renderDirectionButtons();
+      draw();
+    });
+    if(deleteDirection)deleteDirection.onclick=()=>deleteDirectionModal(deleteDirection,catalog,assignmentCounts,id=>{
+      if(!page.isConnected) return;
+      catalog=catalog.filter(d=>d.id!==id);
+      assignmentCounts.delete(id);
+      directionsByTrainer.forEach(ids=>ids.delete(id));
+      state.selected.delete(id);
+      renderDirectionButtons();
+      updateSearch();
+      if(deleteDirection.disabled) (addDirection||get('rep-manage'))?.focus();
+    });
+  }
+  renderDirectionButtons();
+  draw();
+}
+
+
+return renderReplacements;
+})();
+
+/* FAD CD · безопасное переключение двух независимых интерфейсов замен.
+   По умолчанию — простая проверенная версия. Серверный API/SQL не меняются. */
+let REPLACEMENTS_ACTIVE_VERSION = 'simple';
+function renderReplacements(body){
+  const shell = document.createElement('section');
+  shell.className = 'rep-version-shell fade-in';
+  shell.innerHTML = `<div class="rep-version-toolbar" role="group" aria-label="Версия вкладки Замены">
+    <span class="rep-version-caption">Режим замен</span>
+    <div class="rep-version-switch">
+      <button type="button" class="rep-version-button" data-rep-version="simple" aria-pressed="true">Простая</button>
+      <button type="button" class="rep-version-button" data-rep-version="advanced" aria-pressed="false">Новая <span class="rep-version-test">тест</span></button>
+    </div>
+    <span class="rep-version-note" data-rep-version-note></span>
+  </div><div class="rep-version-content" data-rep-version-content></div>`;
+  body.replaceChildren(shell);
+  const target = shell.querySelector('[data-rep-version-content]');
+  const buttons = [...shell.querySelectorAll('[data-rep-version]')];
+  const note = shell.querySelector('[data-rep-version-note]');
+  function activate(version){
+    if(!shell.isConnected)return;
+    const mode=version==='advanced'?'advanced':'simple';
+    REPLACEMENTS_ACTIVE_VERSION=mode;
+    buttons.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.repVersion===mode)));
+    note.textContent=mode==='simple'
+      ? 'Подбор по направлениям без проверки занятости в ImpulseCRM'
+      : 'Проверка дат и занятости по ImpulseCRM · дорабатывается';
+    target.replaceChildren();
+    try{
+      const load=(mode==='simple'?renderReplacementsSimple:renderReplacementsAdvanced)(target);
+      Promise.resolve(load).catch(err=>{
+        if(!target.isConnected || mode!==REPLACEMENTS_ACTIVE_VERSION)return;
+        console.error('FAD: ошибка загрузки версии замен',err);
+        target.innerHTML='<p class="rep-version-error">Не удалось открыть выбранную версию.</p>';
+      });
+    }catch(err){
+      console.error('FAD: ошибка запуска версии замен',err);
+      target.innerHTML='<p class="rep-version-error">Не удалось открыть выбранную версию.</p>';
+    }
+  }
+  buttons.forEach(button=>button.addEventListener('click',()=>{
+    if(button.dataset.repVersion===REPLACEMENTS_ACTIVE_VERSION)return;
+    activate(button.dataset.repVersion);
+  }));
+  activate(REPLACEMENTS_ACTIVE_VERSION);
 }
 
 /* ================= Employees ================= */
