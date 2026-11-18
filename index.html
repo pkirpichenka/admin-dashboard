@@ -1945,7 +1945,11 @@ label.trainer-replacement-setting{display:flex;align-items:center;gap:8px;min-he
 .adpay-days-head{gap:10px;flex-wrap:wrap}
 
 /* AV · общая строка технического статуса зарплат */
-.payroll .payroll-sync-status,.payroll .payroll-cutoff-notice,.payroll #payrollNotice{display:none!important}
+/* CG: предыдущий стиль скрывал сообщения об ошибке и ходе синхронизации. */
+.payroll .payroll-cutoff-notice,.payroll #payrollNotice{display:none!important}
+.payroll .payroll-sync-status[hidden],.payroll #payrollNotice[hidden]{display:none!important}
+.payroll .payroll-sync-status:not([hidden]){display:block!important;max-width:100%;margin:10px 0 12px;overflow-wrap:anywhere}
+.payroll #payrollNotice.error:not([hidden]){display:block!important;max-width:100%;margin:10px 0 12px;overflow-wrap:anywhere}
 .paytech-holder{margin:14px 0 16px;font-family:Manrope,sans-serif}
 .paytech-shell{position:relative}
 .paytech-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;min-height:38px}
@@ -2859,7 +2863,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '18.11.2026-cf'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '18.11.2026-cg'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -5414,6 +5418,7 @@ function bindPayrollSync(page, refresh){
   const notice=page.querySelector(".payroll-sync-status");
   const pending=new Map();
   let period="";
+  let requestSerial=0;
   function feedback(message,error=false){
     notice.textContent=message;
     notice.hidden=!message;
@@ -5431,7 +5436,8 @@ function bindPayrollSync(page, refresh){
     if(!month||!page.isConnected)return;
     if(pending.has(month))return pending.get(month);
     trigger.disabled=true;
-    feedback("Получаем тренеров и начисления из ImpulseCRM…");
+    const requestNo=++requestSerial;
+    feedback("Обновляем данные тренеров за "+month+" в ImpulseCRM… (запрос №"+requestNo+")");
     const current=()=>page.isConnected&&period===month;
     const work=(async()=>{
       try{
@@ -5457,12 +5463,13 @@ function bindPayrollSync(page, refresh){
           if(typeof result?.reason==="string" && /^[a-z_]{3,60}$/.test(result.reason))extra.push("причина: "+result.reason);
           if(typeof result?.error==="string" && /^[a-z_]{3,80}$/.test(result.error))extra.push("код: "+result.error);
           if(!result?.service)extra.push("HTTP "+response.status+" — версия функции не подтверждена");
+          if(result?.service && !response.ok)extra.push("HTTP "+response.status);
           feedback(text+suffix+(extra.length?" ["+extra.join(" · ")+"]":"")+". Показан последний сохранённый расчёт.",true);
           if(result?.error==="forbidden")void handleForbiddenErr();
           return;
         }
         if(result.status==="running"){
-          feedback("Отчёт обновляется в другой вкладке.");
+          feedback("Импорт зарплаты уже выполняется в другой вкладке или запросе. Ожидаем завершения…");
           setTimeout(()=>{if(current())void run(false);},5000);
           return;
         }
@@ -5475,6 +5482,7 @@ function bindPayrollSync(page, refresh){
             return;
           }
           if(current()){
+            feedback("Данные тренеров успешно обновлены из ImpulseCRM.");
             page.dispatchEvent(new CustomEvent("paytech-sync-result",{detail:result}));
             const notices=[];
             if(Number(result.archivedCarried)>0){
@@ -5494,8 +5502,10 @@ function bindPayrollSync(page, refresh){
           return;
         }
         feedback("Не удалось проверить состояние обновления.",true);
-      }catch(_){
-        if(current())feedback("Связь с синхронизацией прервана. Нажмите «Обновить из Impulse».",true);
+      }catch(error){
+        const reason=error?.name==="TimeoutError"?"Превышено время ожидания (115 секунд)":
+          error?.name==="AbortError"?"Запрос прерван":"Сетевая ошибка при обращении к fad-payroll-sync";
+        if(current())feedback(reason+". Последний сохранённый расчёт не изменён. Нажмите «Обновить из Impulse» ещё раз.",true);
       }finally{
         pending.delete(month);
         if(page.isConnected&&period===month)trigger.disabled=false;
@@ -6092,10 +6102,10 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
     if(state.paytechOpen==='attention'&&!notes.some(n=>n.severity==='warning'))state.paytechOpen='';
     if(state.paytechOpen==='archive'&&!archiveCount)state.paytechOpen='';
     const sync=get('.payroll-sync-status');
-    const pending=sync&&/Получаем|обновляется|прервана/i.test(sync.textContent);
+    const syncing=!!(sync&&!sync.hidden&&!sync.classList.contains('payroll-sync-error')&&/Обновляем|Получаем|Ожидаем|выполняется/i.test(sync.textContent));
     const isError=!!(sync?.classList.contains('payroll-sync-error')||!state.updated||state.paytechResult?.advanceWarning||(state.paytechResult?.replacementWarning&&state.paytechResult.replacementWarning!=='impulse_replacement_rate_mismatch'));
-    const updateLabel=state.updated?payrollAt(state.updated):pending?'загрузка…':'нет данных';
-    holder.innerHTML=paytechRender({id:'trainer',open:state.paytechOpen,updated:updateLabel,period:payrollMonthLabel(state.period),source:state.source==='impulse_api'?'ImpulseCRM API':'ImpulseCRM',syncWarning:isError,details:[{label:'Тренеров в отчёте',value:state.rows.length},{label:'Период',value:state.range||payrollMonthLabel(state.period)},...(sync&&!sync.hidden&&sync.textContent.trim()?[{label:'Статус',value:sync.textContent.trim()}]:[])],notices:notes,archiveCount});
+    const updateLabel=syncing?'обновляется…':state.updated?payrollAt(state.updated):'нет данных';
+    holder.innerHTML=paytechRender({id:'trainer',open:state.paytechOpen,updated:updateLabel,period:payrollMonthLabel(state.period),source:state.source==='impulse_api'?'ImpulseCRM API':'ImpulseCRM',syncWarning:isError||syncing,details:[{label:'Тренеров в отчёте',value:state.rows.length},{label:'Период',value:state.range||payrollMonthLabel(state.period)},...(sync&&!sync.hidden&&sync.textContent.trim()?[{label:'Статус',value:sync.textContent.trim()}]:[])],notices:notes,archiveCount});
     get('#paytechTrainerReplacement').innerHTML=notes.some(n=>n.kind==='replacements')?paytechMarker('Расхождение сумм по заменам, открыть панель «Требует внимания»'):'';
   }
   function openTrainerTech(key){
