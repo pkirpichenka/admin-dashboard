@@ -2555,6 +2555,290 @@ body,.login,.modal,.fad-main,.fad-main :is(button,input,textarea,select){font-fa
  .rep-version-button{padding:9px 11px}
 }
 
+
+/* ================= FAD CE · visual second pass · 18.11.2026 =================
+   Presentation only. No calculation, RPC, data or business-handler changes.
+   Scope the overrides to FAD's real tab panel, keep dialogs and table scroll areas working. */
+:root{
+  --fad-bg:#EDF1EE;--fad-page:#EDF1EE;--fad-surface:#FFFFFF;--fad-surface-soft:#F4F7F5;
+  --fad-border:#DCE3DD;--fad-border-strong:#C5D0C8;--fad-text:#17261E;
+  --fad-muted:#56685D;--fad-green:#2E7556;--fad-green-dark:#173F2E;
+  --fad-side:#173F2E;--fad-ok:#1D6B3F;--fad-warn:#B7791F;--fad-danger:#C0392B;
+  --fad-masherova:#2F6FB5;--fad-kuibysheva:#E6A700;--fad-tolbukhina:#E2711D;
+  --fad-page-width:2200px;--fad-radius-card:14px;--fad-radius-control:10px;
+  --fad-text-page:20px;--fad-text-section:15px;--fad-text-card:15px;
+  --fad-text-body:14px;--fad-text-caption:11px;--fad-text-kpi:26px;
+}
+html,body,#root,.fad-app-shell{max-width:100%;min-width:0;overflow-x:clip}
+.fad-app-shell{background:var(--fad-bg)}
+.fad-sidebar{background:#173F2E}
+.fad-main{min-width:0;overflow-x:hidden;scrollbar-gutter:auto;background:#EDF1EE}
+.fad-main-topline{padding-inline:32px}
+.fad-main-heading h1{font:800 20px/1.2 Manrope,system-ui,sans-serif}
+.fad-main .wrap,
+.fad-main .wrap:has(> #tabbody > .bonus-page),
+.fad-main .wrap:has(.adpay),
+.fad-main .wrap:has(> #tabbody > .rep-version-shell){
+  box-sizing:border-box;width:100%;min-width:0;max-width:2200px;
+  margin:0;padding:24px 32px 48px;
+}
+.fad-main #tabbody.page{width:100%;min-width:0;max-width:100%;margin:0;overflow:visible}
+.fad-main #tabbody.page > :not(.overlay){min-width:0;max-width:100%}
+.fad-main #tabbody.page :is(.bonus-page,.adpay,.payroll,.replacements,.rep-version-shell,.rep-version-content,.mk-app,.roles-screen,.msg-grid,.cal-layout){
+  box-sizing:border-box;max-width:none;width:100%;min-width:0;margin-left:0;margin-right:0;
+}
+/* No section may cut descendants on the *page* level. Scrolling belongs to its own table/calendars. */
+.fad-main #tabbody.page :is(.adpay,.payroll,.roles-screen,.bonus-page,.rep-version-shell,.rep-version-content,.mk-app,.msg-grid){overflow:visible}
+.fad-main #tabbody.page :is(.card,.fad-card,.adpay-branch,.bp-branch,.cn-item,.dayplan,.payroll-owner-branch-card,.emp-card,.msg-card,.mk-card,.rep-query,.rep-results,.roles-panel){
+  min-width:0;max-width:100%;border:1px solid #DCE3DD;border-radius:14px;
+}
+.fad-main #tabbody.page :is(.cn-item.cn-shift,.payroll-owner-branch-card,.sumcard.legal){
+  border-left:1px solid #DCE3DD;box-shadow:var(--fad-shadow);
+}
+.fad-main #tabbody.page :is(.adpay-branch,.bp-branch,.cn-item,.dayplan,.emp-card,.roles-panel,.mk-card,.msg-card,.rep-query,.payroll-owner-branch-card){padding:20px}
+.fad-main #tabbody.page .card{margin-bottom:20px}
+.fad-main #tabbody.page :is(.adpay-head,.payroll-head,.staff-toolbar,.roles-toolbar,.cal-toolbar,.mk-top,.bp-head){
+  min-width:0;gap:12px 16px;flex-wrap:wrap;align-items:flex-end;margin-bottom:20px;
+}
+.fad-main #tabbody.page :is(.adpay-kpis,.payroll-kpis,.bp-totals,.mk-sum,.cn-grid,.sumcards,.staff-grid,.emp-grid){
+  min-width:0;gap:16px;
+}
+.fad-main #tabbody.page :is(.adpay-kpis,.payroll-kpis,.bp-totals,.mk-sum,.cn-grid){
+  grid-template-columns:repeat(auto-fit,minmax(175px,1fr));
+}
+.fad-main #tabbody.page .cn-grid{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.fad-main #tabbody.page :is(.emp-grid,.staff-grid){grid-template-columns:repeat(auto-fill,minmax(285px,1fr))}
+.fad-main #tabbody.page .msg-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.fad-main #tabbody.page :is(.adpay-branches,.bp-branches){
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:20px;
+}
+.fad-main #tabbody.page .bp-branches-single{grid-template-columns:repeat(auto-fit,minmax(280px,420px))}
+.fad-main #tabbody.page :is(.adpay-branch,.bp-branch){container-type:inline-size;box-shadow:var(--fad-shadow)}
+/* Pinned studio dot only; strip/color borders are no longer the branch indicator. */
+.fad-main #tabbody.page :is(.adpay-branch,.bp-branch,.sumcard,.payroll-owner-branch-card,.cn-item){border-color:#DCE3DD}
+/* Supersede inline 4px studio stripes and the older .fad-has-studio !important rule. */
+.fad-main #tabbody.page :is(.cn-item,.adpay-branch,.bp-branch).fad-has-studio,
+.fad-main #tabbody.page :is(.cn-item,.adpay-branch,.bp-branch)[style*="border-left"],
+.fad-main #tabbody.page .cn-item.cn-shift{
+  border-left:1px solid #DCE3DD!important;
+}
+
+.fad-main #tabbody.page :is(.adpay-dot,.bp-dot,.sdot,.mk-dot){flex:none;border-radius:50%}
+.fad-main #tabbody.page .adpay-branch-numbers{display:flex;gap:14px;align-items:end;flex-wrap:wrap}
+.fad-main #tabbody.page .adpay-branch-numbers > div{min-width:66px}
+.fad-main #tabbody.page .adpay-branch-numbers input,
+.fad-main #tabbody.page .bp-target{
+  box-sizing:border-box!important;width:80px!important;min-width:80px!important;max-width:80px!important;
+  height:32px!important;min-height:32px!important;padding:3px 7px!important;
+  border-radius:8px!important;font:600 14px/1.2 Manrope,system-ui,sans-serif!important;
+  font-variant-numeric:tabular-nums;text-align:right;
+}
+.fad-main #tabbody.page .bp-branch-fields{grid-template-columns:minmax(0,1fr) 80px minmax(0,1.2fr);gap:10px}
+.fad-main #tabbody.page .bp-branch-fields > *{min-width:0}
+.fad-main #tabbody.page .bp-ticks,.fad-main #tabbody.page .adpay-ticks{min-width:0;gap:3px;justify-content:space-between}
+.fad-main #tabbody.page .bp-tick,.fad-main #tabbody.page .adpay-ticks>*{white-space:nowrap}
+@container (max-width:325px){
+ .fad-main #tabbody.page .bp-ticks > :not(:first-child):not(:last-child),
+ .fad-main #tabbody.page .adpay-ticks > :not(:first-child):not(:last-child){display:none}
+}
+/* Consistent typography and toolbar geometry; all actual labels stay above their fields. */
+.fad-main #tabbody.page :is(.field .lbl,.bp-field-label,.rep-label,.roles-field,.mk-fld label,.msg-target-lbl,.adpay-clock-field>span,.adpay-time-interval>label,.payroll-range-label){
+  font:700 11px/1.3 Manrope,system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#56685D;
+}
+.fad-main #tabbody.page .adpay-controls{display:flex;align-items:flex-end;gap:10px 12px;flex-wrap:wrap}
+.fad-main #tabbody.page .adpay-controls>label,
+.fad-main #tabbody.page .payroll-range-field,
+.fad-main #tabbody.page .payroll-summary-fields>label,
+.fad-main #tabbody.page .payroll-owner-fields>label{
+  display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;gap:5px;min-width:0;
+  font:700 11px/1.3 Manrope,system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#56685D;
+}
+.fad-main #tabbody.page .adpay-controls>label input{width:80px}
+.fad-main #tabbody.page .payroll-period-actions{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.fad-main #tabbody.page :is(.payroll-range-trigger,.adpay-controls>label>input,.adpay-readonly-rate){height:40px;min-height:40px}
+.fad-main #tabbody.page :is(.paytech-row,.adpay-toolbar,.payroll-toolbar,.rep-version-toolbar){display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap}
+.fad-main #tabbody.page .paytech-holder{margin:10px 0 20px}
+.fad-main #tabbody.page .paytech-row{min-height:36px}
+.fad-main #tabbody.page :is(.paytech-chip,.paytech-chip-amber,.paytech-chip-warning){
+  min-height:30px;border:0;border-radius:7px;padding:5px 10px;background:#EAF3ED;color:#1D6B3F;font:700 12px/1.4 Manrope,system-ui,sans-serif;
+}
+.fad-main #tabbody.page :is(.paytech-chip-amber,.paytech-chip-warning){background:#FFF3DF;color:#B7791F}
+.fad-main #tabbody.page :is(.paytech-action,.paytech-reset,.paytech-collapse){
+  min-height:32px;border:0;background:transparent;border-radius:8px;padding:6px 9px;color:#2E7556;font:700 12px/1.3 Manrope,system-ui,sans-serif;
+}
+.fad-main #tabbody.page :is(.paytech-action,.paytech-reset,.paytech-collapse):hover{background:#EAF3ED}
+.fad-main #tabbody.page :is(.subtabs,.tabs,.rep-version-switch,.rep-mode,.mk-seg){border:0;box-shadow:none;background:#E4EAE5}
+.fad-main #tabbody.page .rep-version-toolbar{margin:0 0 20px;padding:12px 16px;max-width:none;width:100%;justify-content:flex-start}
+.fad-main #tabbody.page .rep-version-error{margin:0;max-width:100%}
+/* Universal fields and buttons; compact dimensions in tables and per-day cards below. */
+.fad-main #tabbody.page :is(button,.btn,.btn-primary,.btn-secondary,.btn-ghost,.mk-btn){font-family:Manrope,system-ui,sans-serif}
+.fad-main #tabbody.page :is(.btn:not(.btn-sm),.btn-primary,.btn-secondary,.mk-btn){min-height:40px;border-radius:10px}
+.fad-main #tabbody.page :is(.btn-sm,.btn-s,.adpay-time-reset,.adpay-merge-button,.adpay-reset-manual){
+  height:32px;min-height:32px;max-height:none;padding:5px 10px;border-radius:8px;font:700 12px/1.3 Manrope,system-ui,sans-serif;
+}
+.fad-main #tabbody.page :is(.adpay-time-reset,.adpay-merge-button,.adpay-reset-manual){
+  border:1px solid #DCE3DD;background:#FFFFFF;color:#2E7556;
+}
+.fad-main #tabbody.page :is(.payroll-grid-scroll,.payroll-table-scroll,.payroll-table-wrap,.adpay-scroll,.bp-table-scroll,.roles-table-wrap,.sch-scroll,.audit-wrap,.cal-card,.mk-card){
+  min-width:0;max-width:100%;overscroll-behavior-inline:contain;
+}
+/* Tables: no page-level clipping; compact headers, numeric inputs and consistent row height. */
+.fad-main #tabbody.page :is(.adpay-table,.payroll-table,.bp-table,.roles-table,.ds-table){
+  width:100%;table-layout:auto;border-collapse:collapse;font-size:12px;
+}
+.fad-main #tabbody.page :is(.adpay-table,.payroll-table,.bp-table,.roles-table,.ds-table) th{
+  padding:9px 7px;white-space:nowrap;text-transform:uppercase;
+  font:800 11px/1.25 Manrope,system-ui,sans-serif;letter-spacing:.06em;color:#56685D;
+  background:#F4F7F5;border-bottom:1px solid #DCE3DD;
+}
+.fad-main #tabbody.page :is(.adpay-table,.payroll-table,.bp-table,.roles-table,.ds-table) td{
+  padding:7px;vertical-align:middle;border-bottom:1px solid #DCE3DD;
+}
+.fad-main #tabbody.page :is(.adpay-table,.payroll-table,.bp-table,.roles-table) tbody tr:not(.adpay-details)>td{height:54px}
+.fad-main #tabbody.page .adpay-scroll{overflow-x:auto;overflow-y:auto;container-type:inline-size;border-radius:14px}
+.fad-main #tabbody.page .adpay-table{min-width:1100px;width:100%;table-layout:auto}
+.fad-main #tabbody.page .adpay-table :is(th,td){padding-left:5px;padding-right:5px}
+.fad-main #tabbody.page .adpay-table :is(th,td):first-child{padding-left:12px;text-align:left}
+.fad-main #tabbody.page .adpay-table .adpay-name{
+  min-width:240px;width:240px;white-space:nowrap!important;text-align:left;font-size:13px;font-weight:800;
+}
+.fad-main #tabbody.page .adpay-table .adpay-name small{
+  white-space:nowrap;display:block;font-size:11px;color:#56685D;font-weight:500;line-height:1.5;
+}
+.fad-main #tabbody.page .adpay-table .adpay-senior-tag{white-space:nowrap}
+.fad-main #tabbody.page .adpay-table :is(th,td):not(:first-child){text-align:right}
+.fad-main #tabbody.page .adpay-table input.adpay-number,
+.fad-main #tabbody.page .adpay-details input[type="number"],
+.fad-main #tabbody.page .payroll-table input[type="number"]{
+  box-sizing:border-box;width:80px;min-width:72px;max-width:96px;height:32px!important;min-height:32px!important;
+  padding:3px 7px!important;border-radius:8px!important;text-align:right;
+  font:600 14px/1.25 Manrope,system-ui,sans-serif!important;font-variant-numeric:tabular-nums;
+}
+.fad-main #tabbody.page .adpay-table .adpay-hint{
+  display:block;margin-top:1px;white-space:nowrap;font:500 12px/1.25 Manrope,system-ui,sans-serif;color:#7A897F;
+}
+.fad-main #tabbody.page .adpay-table .adpay-big{white-space:nowrap;font-size:14px}
+.fad-main #tabbody.page .payroll-table{min-width:1020px}
+.fad-main #tabbody.page .payroll-table :is(td,th){padding:8px 9px}
+.fad-main #tabbody.page .payroll-table :is(td,th):not(:first-child){text-align:right}
+.fad-main #tabbody.page .payroll-table :is(th,td):first-child{min-width:210px;text-align:left}
+.fad-main #tabbody.page .bp-table{min-width:800px}
+.fad-main #tabbody.page :is(.adpay-scroll,.payroll-table-scroll,.payroll-grid-scroll,.bp-table-scroll,.roles-table-wrap){overflow-x:auto}
+/* The expanded administrator day row is sized to the visible table viewport, not the entire wide table. */
+.fad-main #tabbody.page .adpay-details>td{padding:0!important;white-space:normal!important;vertical-align:top}
+.fad-main #tabbody.page .adpay-details .adpay-days{
+  box-sizing:border-box;display:block;width:100cqw;max-width:100%;min-width:0;padding:20px;
+}
+.fad-main #tabbody.page .adpay-days-head{display:flex;align-items:center;justify-content:space-between;gap:10px 16px;flex-wrap:wrap;margin:0 0 16px}
+.fad-main #tabbody.page .adpay-days-head>div{min-width:0;flex:1 1 240px}
+.fad-main #tabbody.page .adpay-days-head>button{flex:none;margin-left:auto;max-width:100%;white-space:normal}
+.fad-main #tabbody.page .adpay-daygrid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;width:100%;min-width:0;
+}
+.fad-main #tabbody.page .adpay-day{
+  min-width:0;padding:14px;border:1px solid #DCE3DD!important;border-radius:14px;
+  box-shadow:none;background:#FFFFFF!important;color:#17261E;font-size:13px;
+}
+.fad-main #tabbody.page .adpay-day.adpay-day-in-range{background:#FFFFFF!important;border-color:#DCE3DD!important}
+.fad-main #tabbody.page .adpay-day.adpay-adjusted:not(.adpay-day-flag){border-color:#DCE3DD!important;background:#FFFFFF!important}
+.fad-main #tabbody.page .adpay-day.adpay-day-flag{border-color:#D9AC58!important;background:#FFF9ED!important}
+.fad-main #tabbody.page .adpay-day-headline{gap:6px}
+.fad-main #tabbody.page .adpay-day-headline b{font-size:14px;font-weight:800}
+.fad-main #tabbody.page .adpay-time-intervals{gap:9px;margin:10px 0}
+.fad-main #tabbody.page .adpay-time-interval{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end}
+.fad-main #tabbody.page .adpay-clock-field{min-width:0;flex:1 1 90px;gap:5px}
+.fad-main #tabbody.page .adpay-clock-field>span{
+  font:700 11px/1.3 Manrope,system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#56685D;
+}
+.fad-main #tabbody.page :is(.adpay-time-trigger,.adpay-time-interval input[data-time-field]){
+  box-sizing:border-box;min-width:0;width:100%;height:32px!important;min-height:32px!important;
+  border:1px solid #DCE3DD;border-radius:8px;padding:4px 8px;
+  font:600 14px/1.25 Manrope,system-ui,sans-serif;
+}
+.fad-main #tabbody.page .adpay-time-trigger b{font-size:14px}
+.fad-main #tabbody.page .adpay-time-reset,.fad-main #tabbody.page .adpay-merge-button{height:32px!important;min-height:32px!important;align-self:flex-end}
+.fad-main #tabbody.page .adpay-day-adjust{gap:6px 8px;margin:10px 0 8px;flex-wrap:wrap}
+.fad-main #tabbody.page .adpay-day-adjust .adpay-muted{font-size:12px}
+.fad-main #tabbody.page .adpay-day-final{font:700 13px/1.5 Manrope,system-ui,sans-serif}
+.fad-main #tabbody.page .adpay-day-final+.adpay-muted{font:500 12px/1.45 Manrope,system-ui,sans-serif;color:#56685D}
+.fad-main #tabbody.page .adpay-days textarea[data-day-field="hours_comment"]{
+  box-sizing:border-box;width:100%;height:54px;min-height:54px;padding:8px 10px;
+  margin-top:10px;border:1px solid #DCE3DD;border-radius:8px;
+  font:500 13px/1.4 Manrope,system-ui,sans-serif;resize:vertical;
+}
+.fad-main #tabbody.page .adpay-days textarea::placeholder{color:#849489;opacity:1}
+.fad-main #tabbody.page .adpay-details .adpay-detail-cols{width:100cqw;max-width:100%;min-width:0;gap:20px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));padding:20px}
+.fad-main #tabbody.page .adpay-day .adpay-source-warning{border-color:#D9AC58}
+/* Reports & plan have consistent neutral cards and shared left edge. */
+.fad-main #tabbody.page .sumcards{
+  grid-template-columns:repeat(auto-fit,minmax(265px,1fr));align-items:stretch;margin:0 0 20px;
+}
+.fad-main #tabbody.page .sumcards>.sumcard,
+.fad-main #tabbody.page .sumcards>.sumcard:not(.tot):not(.legal):not(.forecast),
+.fad-main #tabbody.page .sumcards>.sumcard.tot,
+.fad-main #tabbody.page .sumcards>.sumcard.legal,
+.fad-main #tabbody.page .sumcards>.sumcard.forecast{grid-column:auto;min-width:0;max-width:100%}
+.fad-main #tabbody.page :is(.sumcard,.daysum,.cn-item,.bp-tier,.bp-total){
+  border:1px solid #DCE3DD;background:#FFFFFF;border-radius:14px;box-shadow:var(--fad-shadow);
+}
+.fad-main #tabbody.page .sumcard{padding:20px}
+.fad-main #tabbody.page .sumcard.legal{background:#FFFFFF}
+.fad-main #tabbody.page .bp-branch-head{flex-wrap:wrap}
+.fad-main #tabbody.page .bp-branch-name{white-space:normal}
+/* Calendar, marketing and schedule are fluid; side details are 320–360 px. */
+.fad-main #tabbody.page .cal-layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start}
+.fad-main #tabbody.page .mk-layout{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:20px;align-items:start;width:100%;min-width:0}
+.fad-main #tabbody.page :is(.cal-layout>*,.mk-layout>*,.cal-card,.mk-card,.mk-mainhead){min-width:0;max-width:100%}
+.fad-main #tabbody.page .cal-week,.fad-main #tabbody.page .cal-grid,
+.fad-main #tabbody.page .mk-wk,.fad-main #tabbody.page .mk-grid{grid-template-columns:repeat(7,minmax(0,1fr));width:100%;min-width:0}
+.fad-main #tabbody.page .cal-card{overflow-x:auto;overflow-y:visible}
+.fad-main #tabbody.page .cal-day,.fad-main #tabbody.page .mk-cell{min-width:0;overflow-wrap:anywhere}
+.fad-main #tabbody.page .mk-app{display:block;width:100%}
+.fad-main #tabbody.page .mk-app .mk-side{width:100%;max-width:100%;box-sizing:border-box}
+.fad-main #tabbody.page .mk-card{overflow:visible}
+.fad-main #tabbody.page #schedRoot{width:100%;max-width:100%;min-width:0}
+.fad-main #tabbody.page #schedRoot .sch-cal{min-width:0;max-width:100%;overflow-x:auto}
+.fad-main #tabbody.page #schedRoot .sch-grid,
+.fad-main #tabbody.page #schedRoot .sch-grid-head{display:grid;width:100%;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.fad-main #tabbody.page #schedRoot .sch-cell{min-width:0;overflow:hidden}
+.fad-main #tabbody.page #schedRoot .sch-sh{overflow:hidden;text-overflow:ellipsis}
+.fad-main #tabbody.page #schedRoot .sch-scroll{overflow-x:auto;max-width:100%}
+.fad-main #tabbody.page .roles-shell{display:grid;grid-template-columns:minmax(285px,0.32fr) minmax(0,1fr);gap:20px;width:100%;min-width:0}
+.fad-main #tabbody.page .roles-shell>*{min-width:0}
+.fad-main #tabbody.page .roles-grid{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.fad-main #tabbody.page .msg-card{width:100%;min-width:0;padding:20px}
+.fad-main #tabbody.page .msg-grid>*{min-width:0}
+.fad-main #tabbody.page .rep-version-toolbar,.fad-main #tabbody.page .replacements{max-width:100%}
+.fad-main #tabbody.page .rep-query,.fad-main #tabbody.page .rep-results{min-width:0;width:100%}
+.fad-main #tabbody.page .rep-plan-lesson{max-width:100%}
+/* Wrap at the inner scroller's own width, not at a page fixed width. */
+@media(max-width:1320px){
+ .fad-main #tabbody.page .adpay-branch-numbers{gap:10px}
+ .fad-main #tabbody.page :is(.cal-layout,.mk-layout){grid-template-columns:minmax(0,1fr) 320px}
+}
+@media(max-width:1100px){
+ .fad-main #tabbody.page :is(.cal-layout,.mk-layout){grid-template-columns:1fr}
+ .fad-main #tabbody.page .roles-shell{grid-template-columns:minmax(235px,0.4fr) minmax(0,1fr)}
+ .fad-main #tabbody.page .mk-app .mk-side{position:static;max-height:none}
+}
+@media(max-width:899px){
+ .fad-main .wrap,.fad-main .wrap:has(> #tabbody > .bonus-page),.fad-main .wrap:has(.adpay),.fad-main .wrap:has(> #tabbody > .rep-version-shell){padding:16px 16px 48px;max-width:100%}
+ .fad-main-topline{padding-inline:16px}
+ .fad-main #tabbody.page .roles-shell{grid-template-columns:1fr}
+ .fad-main #tabbody.page :is(.cal-layout,.mk-layout,.msg-grid){grid-template-columns:1fr}
+ .fad-main #tabbody.page #schedRoot .sch-grid,
+ .fad-main #tabbody.page #schedRoot .sch-grid-head{min-width:560px}
+ .fad-main #tabbody.page .cal-week,.fad-main #tabbody.page .cal-grid{min-width:600px}
+ .fad-main #tabbody.page .mk-wk,.fad-main #tabbody.page .mk-grid{min-width:600px}
+}
+@media(max-width:560px){
+ .fad-main .wrap,.fad-main .wrap:has(> #tabbody > .bonus-page),.fad-main .wrap:has(.adpay),.fad-main .wrap:has(> #tabbody > .rep-version-shell){padding:14px 12px 40px}
+ .fad-main #tabbody.page :is(.adpay-daygrid,.adpay-branches,.bp-branches,.msg-grid,.emp-grid,.staff-grid){grid-template-columns:1fr}
+ .fad-main #tabbody.page :is(.adpay-day,.adpay-branch,.bp-branch,.emp-card,.msg-card,.mk-card){padding:14px}
+ .fad-main #tabbody.page .adpay-days{padding:12px}
+ .fad-main #tabbody.page .adpay-detail-cols{padding:12px}
+}
+
 </style>
 
 <div id="root"></div>
@@ -2575,7 +2859,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '18.11.2026-cd'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '18.11.2026-ce'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
