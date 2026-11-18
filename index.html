@@ -827,6 +827,15 @@ table th>*,table td>*{max-width:100%;box-sizing:border-box}
 .emp-icon-telegram{color:#1c78ad;border-color:#d3e3ec}
 .emp-icon-viber{color:#6b4fb3;border-color:#ddd5ef}
 .emp-icon-btn:disabled,.emp-primary:disabled{opacity:.35;cursor:not-allowed}
+/* BQ: корзина сотрудников. Значок без подписи, но доступен с клавиатуры. */
+.emp-trash-tab{display:inline-flex;align-items:center;justify-content:center;width:40px;min-width:40px;padding:0!important}
+.emp-trash-tab svg{width:19px;height:19px;display:block;stroke:currentColor}
+.emp-card--deleted{background:var(--fad-surface-soft,#f3f6f2);border-style:dashed;opacity:.88}
+.emp-card--deleted .emp-role{background:#e5e9e5;color:var(--fad-muted,#5c6e64)}
+.emp-trash-caption{font-size:11px;color:var(--fad-muted,#5c6e64);white-space:nowrap}
+.emp-trash-explanation{font-size:13px;color:var(--fad-muted,#5c6e64);line-height:1.5}
+.emp-trash-empty{display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap}
+.emp-trash-empty svg{width:24px;height:24px;flex:none}
 /* AX: компактный футер архивных карточек в узкой 3-колоночной сетке.
    Оставляем все четыре действия в один ряд без переполнения карточки. */
 .emp-card--archived .emp-footer{gap:3px}
@@ -2447,7 +2456,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '18.11.2026-bp'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '18.11.2026-bq'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -3086,7 +3095,26 @@ async function apiCreateAdmin(login,name,password){ return await rpc('app_perm_c
 async function apiSetActive(login,val){ return await rpc('app_perm_set_active',{p_token:TOKEN,p_login:login,p_active:!!val}); }
 async function apiResetPassword(login,password){ return await rpc('app_perm_reset_password',{p_token:TOKEN,p_login:login,p_new_password:password}); }
 async function apiDeleteAdmin(login){ return await rpc('app_perm_delete_admin',{p_token:TOKEN,p_login:login}); }
-async function apiDeleteEmployeeProfile(id,fullName){ return await rpc('app_owner_delete_employee_profile',{p_token:TOKEN,p_employee_id:Number(id),p_confirm_name:fullName}); }
+// Корзина: запись остаётся в базе, а в архиве скрывается.
+async function apiStaffTrashList(){
+  const data=await rpc('app_staff_trash_list',{p_token:TOKEN});
+  if(!Array.isArray(data))throw new Error('Некорректный ответ справочника удалённых сотрудников');
+  return data;
+}
+async function apiMoveStaffToTrash(employee,confirmName){
+  const virtual=String(employee.id??'').startsWith('account:');
+  return rpc('app_owner_staff_trash',{
+    p_token:TOKEN,p_employee_id:virtual?null:Number(employee.id),
+    p_account_login:employee.app_login||null,p_confirm_name:confirmName
+  });
+}
+async function apiRestoreStaffFromTrash(employee){
+  const virtual=String(employee.id??'').startsWith('account:');
+  return rpc('app_owner_staff_restore',{
+    p_token:TOKEN,p_employee_id:virtual?null:Number(employee.id),
+    p_account_login:employee.app_login||null
+  });
+}
 async function apiSetPermissions(login,permissions){ return await rpc('app_set_admin_permissions',{p_token:TOKEN,p_login:login,p_permissions:normalizePermissions(permissions)}); }
 async function apiSetAuditPermission(login,val){ return await rpc('app_set_audit_permission',{p_token:TOKEN,p_login:login,p_value:!!val}); }
 async function apiSetHome(login,home){ return await rpc('app_perm_set_home',{p_token:TOKEN,p_login:login,p_home:home||''}); }
@@ -6682,13 +6710,14 @@ const EMP_CARD_ICONS={
   login:'<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="4"/><path d="M5 21v-3a7 7 0 0 1 14 0v3"/></svg>',
   telegram:'<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 9.5 14.5M22 2l-5 20-7.5-7.5L2 7z"/></svg>',
   viber:'<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 19.5 4.5 22v-4A5.5 5.5 0 0 1 2 13.5v-5A5.5 5.5 0 0 1 7.5 3h9A5.5 5.5 0 0 1 22 8.5v5a6 6 0 0 1-6 6Z"/><path d="M8 8c.5 4 3 6.5 7 8l2-2m-7-6 2 2m2-3a5 5 0 0 1 4 4"/></svg>',
-  more:'<svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>'
+  more:'<svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>',
+  trash:'<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M5 6l1 15h12l1-15M10 10v7m4-7v7"/></svg>'
 };
 function employeeInitials(name){
   const words=String(name||'').trim().split(/\s+/).filter(Boolean);
   return ((words[0]?.[0]||'')+(words[1]?.[0]||words[0]?.[1]||'')).toLocaleUpperCase('ru-RU');
 }
-function renderEmployeeCard(emp,{archived=false,canEdit=false,canDirectionOnly=false,canDirections=false,canPermissions=false,canHistory=false,canArchive=false,canDelete=false,canAccountSettings=false}={}){
+function renderEmployeeCard(emp,{archived=false,deleted=false,canRestoreTrash=false,canEdit=false,canDirectionOnly=false,canDirections=false,canPermissions=false,canHistory=false,canArchive=false,canDelete=false,canAccountSettings=false}={}){
   const admin=emp.employee_type==='admin';
   const isVirtual=String(emp.id??'').startsWith('account:');
   const safeKey=escapeHtml(String(emp._cardKey??(isVirtual?'account:'+emp.app_login:'employee:'+emp.id)));
@@ -6702,9 +6731,11 @@ function renderEmployeeCard(emp,{archived=false,canEdit=false,canDirectionOnly=f
     ?`<a class="emp-icon-btn emp-icon-${which}" href="${escapeHtml(url)}" title="Написать в ${which==='telegram'?'Telegram':'Viber'}" aria-label="Написать в ${which==='telegram'?'Telegram':'Viber'}"${which==='telegram'?' target="_blank" rel="noopener noreferrer"':''}>${icon}</a>`
     :`<button type="button" class="emp-icon-btn emp-icon-${which}" disabled title="Телефон не указан" aria-label="${which==='telegram'?'Telegram':'Viber'} недоступен">${icon}</button>`;
   const menuItems=[];
-  if(archived){
+  if(deleted){
+    // В корзине не разрешаем операции с карточкой и контактами.
+  }else if(archived){
     if(canArchive)menuItems.push(['restore','Восстановить доступ']);
-    if(canDelete)menuItems.push(['delete','Удалить навсегда',true]);
+    if(canDelete)menuItems.push(['delete','Удалить',true]);
   }else if(admin){
     if(canPermissions)menuItems.push(['permissions','Настроить права']);
     if(canHistory)menuItems.push(['history','История филиала / перевод']);
@@ -6717,9 +6748,9 @@ function renderEmployeeCard(emp,{archived=false,canEdit=false,canDirectionOnly=f
   }
   const studios=employeeStudios(emp);
   const age=employeeAge(emp.birth_date);
-  return `<article class="emp-card${archived?' emp-card--archived':''}" data-emp-key="${safeKey}">
+  return `<article class="emp-card${archived?' emp-card--archived':''}${deleted?' emp-card--deleted':''}" data-emp-key="${safeKey}">
     <div class="emp-head"><span class="emp-avatar${admin?' emp-avatar--admin':' emp-avatar--trainer'}" aria-hidden="true">${escapeHtml(employeeInitials(emp.full_name))}</span>
-      <div class="emp-person"><div class="emp-name" title="${name}">${name}</div><span class="emp-role${admin?' emp-role--admin':' emp-role--trainer'}">${admin?'Администратор':'Тренер'}${archived?' · архив':''}</span></div></div>
+      <div class="emp-person"><div class="emp-name" title="${name}">${name}</div><span class="emp-role${admin?' emp-role--admin':' emp-role--trainer'}">${admin?'Администратор':'Тренер'}${deleted?' · удалён':archived?' · архив':''}</span></div></div>
     <div class="emp-meta">
       <div class="emp-meta-row">${EMP_CARD_ICONS.birthday}<span>${emp.birth_date?`<b>${escapeHtml(birthdayShort(emp.birth_date))}${age!=null?' · '+escapeHtml(ageLabel(age)):''}</b>`:'<span class="emp-empty-value">дата рождения не указана</span>'}</span></div>
       <div class="emp-meta-row">${EMP_CARD_ICONS.phone}<span>${shownPhone?escapeHtml(shownPhone):'<span class="emp-empty-value">телефон не указан</span>'}</span></div>
@@ -6728,10 +6759,10 @@ function renderEmployeeCard(emp,{archived=false,canEdit=false,canDirectionOnly=f
     </div>
     <div class="emp-branches">${studios.length?studios.map(s=>`<span class="emp-branch">${sdot(s)}${escapeHtml(studioName(s))}</span>`).join(''):'<span class="emp-branch emp-branch--none">Филиал не указан</span>'}</div>
     <div class="emp-footer">
-      <button type="button" class="emp-primary" data-emp-action="${archived?'restore':canDirectionOnly?'edit-directions':'edit'}"${archived?!canArchive?' disabled':'':!(canEdit||canDirectionOnly)?' disabled':''}>${archived?'Восстановить':canDirectionOnly?'Направления':'Изменить'}</button>
+      <button type="button" class="emp-primary" data-emp-action="${deleted?'restore-trash':archived?'restore':canDirectionOnly?'edit-directions':'edit'}"${deleted?!canRestoreTrash?' disabled':'':archived?!canArchive?' disabled':'':!(canEdit||canDirectionOnly)?' disabled':''}>${deleted?'Вернуть в архив':archived?'Восстановить':canDirectionOnly?'Направления':'Изменить'}</button>
       <span class="emp-footer-spacer"></span>
-      ${messenger('telegram',telegramHref,EMP_CARD_ICONS.telegram)}${messenger('viber',viberHref,EMP_CARD_ICONS.viber)}
-      <button type="button" class="emp-icon-btn emp-more" aria-label="Ещё действия" title="Ещё действия" aria-haspopup="menu" aria-expanded="false"${!menuItems.length?' disabled':''}>${EMP_CARD_ICONS.more}</button>
+      ${deleted?'<span class="emp-trash-caption">Данные сохранены</span>':messenger('telegram',telegramHref,EMP_CARD_ICONS.telegram)+messenger('viber',viberHref,EMP_CARD_ICONS.viber)}
+      ${deleted?'':`<button type="button" class="emp-icon-btn emp-more" aria-label="Ещё действия" title="Ещё действия" aria-haspopup="menu" aria-expanded="false"${!menuItems.length?' disabled':''}>${EMP_CARD_ICONS.more}</button>`}
       ${menuItems.length?`<div class="emp-menu" role="menu" aria-label="Действия сотрудника" hidden>${menuItems.map(([action,label,danger,disabled])=>`<button type="button" role="menuitem" data-emp-action="${action}"${danger?' class="emp-menu-danger"':''}${disabled?' disabled':''}>${label}</button>`).join('')}</div>`:''}
     </div>
   </article>`;
@@ -6795,7 +6826,10 @@ async function renderEmployees(body){
   const canTelegram=session.role==='owner'||can('telegram.manage');
   const canAudit=session.role==='owner'||can('admins.audit');
   body.innerHTML='<div class="empty">Загрузка сотрудников…</div>';
-  let rows=[],accounts=[],staffSettings={};
+  let rows=[],accounts=[],staffSettings={},trashRows=[];
+  // Статусы корзины загружаются для всех: иначе сотрудники с доступом к архиву
+  // продолжили бы видеть в нём перемещённые карточки.
+  try{trashRows=await apiStaffTrashList();}catch(err){return handleErr(err);}
   if(canEmployees){try{rows=await apiListEmployees();}catch(err){return handleErr(err);}}
   if(canAdmins){
     try{accounts=(await apiListUsers()||[]).filter(u=>u.role!=='owner');}catch(err){/* Список профилей продолжает работать без списка аккаунтов. */}
@@ -6810,13 +6844,21 @@ async function renderEmployees(body){
     birth_date:null,telegram_username:''
   })):[];
   const allStaff=[...rows,...virtuals];
+  const trashedIds=new Set(trashRows.filter(x=>x.employee_id!=null).map(x=>String(x.employee_id)));
+  const trashedLogins=new Set(trashRows.filter(x=>x.account_login).map(x=>String(x.account_login)));
+  function isTrashed(e){return trashedIds.has(String(e.id))||!!(e.app_login&&trashedLogins.has(String(e.app_login)));}
   function isArchived(e){const acc=e.employee_type==='admin'&&e.app_login?byLogin.get(e.app_login):null;return acc?!acc.active:!e.is_active;}
   allStaff.sort((a,b)=>{
     const aa=isArchived(a),bb=isArchived(b);if(aa!==bb)return aa?1:-1;
     if(a.employee_type!==b.employee_type)return a.employee_type==='admin'?-1:1;
     return String(a.full_name||'').localeCompare(String(b.full_name||''),'ru');
   });
-  const counts={all:allStaff.filter(e=>!isArchived(e)).length,admin:allStaff.filter(e=>!isArchived(e)&&e.employee_type==='admin').length,trainer:allStaff.filter(e=>!isArchived(e)&&e.employee_type==='trainer').length,archive:allStaff.filter(isArchived).length};
+  const visibleStaff=allStaff.filter(e=>!isTrashed(e));
+  const counts={all:visibleStaff.filter(e=>!isArchived(e)).length,
+    admin:visibleStaff.filter(e=>!isArchived(e)&&e.employee_type==='admin').length,
+    trainer:visibleStaff.filter(e=>!isArchived(e)&&e.employee_type==='trainer').length,
+    archive:visibleStaff.filter(isArchived).length,
+    trash:allStaff.filter(isTrashed).length};
   const sections=[];
   if(canEmployees)sections.push(['all',`Все (${counts.all})`]);
   if(canEmployees||canAdmins)sections.push(['admin',`Администраторы (${counts.admin})`]);
@@ -6824,12 +6866,15 @@ async function renderEmployees(body){
   if(canTelegram)sections.push(['telegram','Telegram']);
   if(canAudit)sections.push(['log','Лог']);
   if(canEmployees||canAdmins)sections.push(['archive',`Архив (${counts.archive})`]);
+  if(session.role==='owner')sections.push(['trash',`Удалённые (${counts.trash})`]);
   if(!sections.length){body.innerHTML='<div class="empty">Нет доступных разделов.</div>';return;}
   if(!sections.some(([key])=>key===EMP_VIEW))EMP_VIEW=sections[0][0];
   body.innerHTML=`<div class="staff-toolbar fade-in"><div class="grow"><div class="section-title" style="margin:0">Сотрудники</div></div>
     ${manageEmployees?'<button class="btn btn-primary" id="addTrainer">+ Добавить тренера</button>':''}
     ${manageAdmins?'<button class="btn" id="addEmployeeAdmin">+ Добавить администратора</button>':''}</div>
-    <div class="subtabs">${sections.map(([v,label])=>`<button type="button" class="subtab${EMP_VIEW===v?' on':''}" data-empv="${v}">${label}</button>`).join('')}</div>
+    <div class="subtabs">${sections.map(([v,label])=>v==='trash'
+      ?`<button type="button" class="subtab emp-trash-tab${EMP_VIEW===v?' on':''}" data-empv="trash" aria-label="Удалённые, ${counts.trash}" title="Удалённые (${counts.trash})" aria-pressed="${EMP_VIEW===v}">${EMP_CARD_ICONS.trash}</button>`
+      :`<button type="button" class="subtab${EMP_VIEW===v?' on':''}" data-empv="${v}">${label}</button>`).join('')}</div>
     <div id="empList"></div>`;
   const list=body.querySelector('#empList');
   let shownItems=new Map(),openedMenu=null,displayRequest=0;
@@ -6863,62 +6908,40 @@ async function renderEmployees(body){
       hire_date:e.hire_date||null,primary_studio:e.primary_studio||'',studios:employeeStudios(e),
       is_active:active,note:e.note||''});
   }
-  // Безвозвратное удаление доступно только руководителю и только в архиве.
-  // Не пропускаем старую быструю кнопку удаления аккаунта без подтверждения ФИО.
-  function confirmPermanentDelete(entry){
-    const {e,account,archived}=entry;
-    if(session.role!=='owner'||!archived)return;
-    const employeeName=String(e.full_name||'').trim();
-    const accountOnly=String(e.id).startsWith('account:');
-    const dialog=modal(`<h3>Удалить навсегда?</h3>
-      <p>Это необратимое действие. Чтобы подтвердить удаление, введи полное ФИО сотрудника.</p>
-      <p style="font-weight:700" id="emp-delete-fullname"></p>
-      <p style="color:var(--fad-muted,#5b6b62);font-size:12px">Сотрудников с историей зарплат, замен и других операций удалить нельзя — сначала необходимо сохранить историю.</p>
-      <div class="field"><div class="lbl">Полное ФИО для подтверждения</div><input id="emp-delete-confirm-name" class="input" autocomplete="off" spellcheck="false" placeholder="ФИО сотрудника"></div>
-      <div class="actions"><button type="button" class="btn" data-x>Отмена</button><button type="button" class="btn" id="emp-delete-forever" disabled style="background:var(--fad-danger,#c0392b);color:#fff;border-color:var(--fad-danger,#c0392b)">Удалить навсегда</button></div>`);
-    dialog.querySelector('#emp-delete-fullname').textContent=employeeName;
-    const input=dialog.querySelector('#emp-delete-confirm-name');
-    const button=dialog.querySelector('#emp-delete-forever');
-    const check=()=>{button.disabled=input.value.trim()!==employeeName;};
-    input.addEventListener('input',check);
-    input.addEventListener('keydown',event=>{if(event.key==='Enter'&&!button.disabled){event.preventDefault();button.click();}});
+  // Удаление теперь означает перемещение в корзину: физического DELETE нет.
+  function confirmMoveToTrash(entry){
+    const {e,archived}=entry;
+    if(session.role!=='owner'||!archived||isTrashed(e))return;
+    const name=String(e.full_name||'').trim();
+    const dialog=modal(`<h3>Удалить сотрудника?</h3>
+      <p>«${escapeHtml(name)}» будет перемещён в корзину.</p>
+      <p class="emp-trash-explanation">Зарплаты, смены, замены, история и данные карточки сохраняются. В любой момент можно вернуть сотрудника в архив.</p>
+      <div class="actions"><button type="button" class="btn" data-x>Отмена</button><button type="button" class="btn" id="emp-move-to-trash" style="background:var(--fad-danger,#b94133);color:#fff;border-color:var(--fad-danger,#b94133)">Удалить</button></div>`);
+    const button=dialog.querySelector('#emp-move-to-trash');
     button.onclick=async()=>{
-      if(input.value.trim()!==employeeName||session?.role!=='owner')return;
       button.disabled=true;
       try{
-        if(accountOnly){
-          // Виртуальные администраторы: только существующая защищённая RPC аккаунтов.
-          if(!account||account.active)throw new Error('Сначала переместите администратора в архив');
-          await apiDeleteAdmin(account.login);
-        }else if(e.employee_type==='admin'&&account){
-          // У архивных администраторов, имеющих аккаунт, прежняя RPC отвечает
-          // за его удаление. Не вызываем новую RPC, чтобы не затронуть записи о зарплатах.
-          await apiDeleteAdmin(account.login);
-        }else{
-          await apiDeleteEmployeeProfile(e.id,employeeName);
-        }
+        await apiMoveStaffToTrash(e,name);
         closeModal(dialog);
-        toast('Удаление выполнено');
-        void auditAction('Удалён архивный сотрудник','employee',String(e.id),{type:e.employee_type});
-        refresh();
-      }catch(err){
-        const detail=String(err?.message||err||'');
-        if(/employee_has_history|employee_has_history_or_links|foreign key|violates foreign key/i.test(detail)){
-          toast('Удаление запрещено: у сотрудника есть зарплаты, замены или другие связанные записи.',true);
-        }else if(/employee_has_account/.test(detail)){
-          toast('Сначала удалите архивную учётную запись администратора.',true);
-        }else if(/archive_employee_first/.test(detail)){
-          toast('Сначала перенесите сотрудника в архив.',true);
-        }else{
-          handleErr(err);
-        }
-        check();
-      }
+        void auditAction('Сотрудник перемещён в корзину','employee',String(e.id),{type:e.employee_type});
+        toast('Сотрудник перемещён в корзину');
+        await refresh();
+      }catch(err){handleErr(err);button.disabled=false;}
     };
-    input.focus();
   }
   async function act(action,entry){
     const {e,account,archived}=entry;
+    if(isTrashed(e)){
+      if(action==='restore-trash'&&session.role==='owner'){
+        try{
+          await apiRestoreStaffFromTrash(e);
+          void auditAction('Сотрудник возвращён из корзины в архив','employee',String(e.id),{type:e.employee_type});
+          toast('Сотрудник возвращён в архив');
+          await refresh();
+        }catch(err){handleErr(err);}
+      }
+      return;
+    }
     const virtual=String(e.id).startsWith('account:');
     if(action==='edit-directions'&&!virtual&&e.employee_type==='trainer'&&manageTrainerDirections){
       await trainerDirectionsModal(e,refresh);
@@ -6940,7 +6963,7 @@ async function renderEmployees(body){
         }catch(err){handleErr(err);}
       });
     }else if(action==='delete'&&archived&&session.role==='owner'){
-      confirmPermanentDelete(entry);
+      confirmMoveToTrash(entry);
     }
   }
   list.addEventListener('click',event=>{
@@ -6961,7 +6984,7 @@ async function renderEmployees(body){
       list.innerHTML='<div class="empty">Загрузка…</div>';
       await renderUsers(list,{embedded:true,view,employeeRows:rows,manageEmployees});return;
     }
-    const selected=allStaff.filter(e=>view==='archive'?isArchived(e):!isArchived(e)&&(view==='all'||(view==='admin'&&e.employee_type==='admin')||(view==='trainer'&&e.employee_type==='trainer')));
+    const selected=allStaff.filter(e=>view==='trash'?isTrashed(e):!isTrashed(e)&&(view==='archive'?isArchived(e):!isArchived(e)&&(view==='all'||(view==='admin'&&e.employee_type==='admin')||(view==='trainer'&&e.employee_type==='trainer'))));
     if(ticket!==displayRequest)return;
     shownItems=new Map();
     list.innerHTML=selected.length?`<div class="emp-grid">${selected.map(e=>{
@@ -6969,7 +6992,9 @@ async function renderEmployees(body){
       const archived=isArchived(e),virtual=String(e.id).startsWith('account:');
       const key=virtual?'account:'+e.app_login:'employee:'+e.id;
       shownItems.set(key,{e,account,archived});
-      return renderEmployeeCard({...e,_cardKey:key},{archived,
+      const deleted=isTrashed(e);
+      return renderEmployeeCard({...e,_cardKey:key},{archived,deleted,
+        canRestoreTrash:session.role==='owner'&&deleted,
         canEdit:!virtual?manageEmployees:manageAdmins,
         canDirectionOnly:!virtual&&e.employee_type==='trainer'&&!manageEmployees&&manageTrainerDirections,
         canDirections:!virtual&&e.employee_type==='trainer'&&manageTrainerDirections,
@@ -6978,7 +7003,7 @@ async function renderEmployees(body){
         canArchive:!!account?manageAdmins:!virtual&&manageEmployees,
         canDelete:session.role==='owner'&&archived,
         canAccountSettings:!!account&&manageAdmins});
-    }).join('')}</div>`:'<div class="empty">Сотрудников в этом разделе нет.</div>';
+    }).join('')}</div>`:view==='trash'?`<div class="empty emp-trash-empty">${EMP_CARD_ICONS.trash}<span>Корзина пуста. Удалённые сотрудники появятся здесь.</span></div>`:'<div class="empty">Сотрудников в этом разделе нет.</div>';
   }
   body.querySelectorAll('[data-empv]').forEach(b=>b.onclick=()=>{
     if(appHasUnsavedWork()){toast('Сначала сохраните изменения',true);return;}
@@ -7783,7 +7808,7 @@ const ROLE_FUTURE_DEFS={
   'Зарплата тренеров':['Видеть все зарплаты тренеров','Редактировать ставки тренеров','Редактировать замены и пропуски','Проводить авансы','Подтверждать зарплату','Сбрасывать ручные изменения','Синхронизировать с Impulse'],
   'Зарплата администраторов':['Утверждать окончательный расчёт','Менять ставку и шкалу премий','Сбрасывать все правки','Синхронизировать с Impulse','Экспортировать зарплатную ведомость','Ограничивать просмотр по филиалам'],
   'Замены':['Создавать запрос замены','Подтверждать замену','Редактировать/отменять замену','Управлять кандидатами на замены'],
-  'Сотрудники':['Редактировать только контактные данные','Назначать филиал','Архивировать сотрудника','Восстанавливать сотрудника','Удалять сотрудника навсегда','Редактировать мотивацию тренера'],
+  'Сотрудники':['Редактировать только контактные данные','Назначать филиал','Архивировать сотрудника','Восстанавливать сотрудника','Перемещать сотрудника в корзину','Редактировать мотивацию тренера'],
   'Маркетинг':['Просматривать маркетинговую аналитику','Создавать кампании','Редактировать рекламный бюджет','Управлять блогерами и публикациями'],
   'Календарь / Telegram':['Создавать персональные напоминания','Настраивать рассылки','Отправлять сообщения сотрудникам','Управлять Telegram-чатами','Редактировать системные уведомления'],
   'Безопасность / аудит':['Экспортировать журнал аудита','Видеть действия только своего филиала','Блокировать учётные записи','Управлять ролями и назначениям','Просматривать историю изменения прав']
