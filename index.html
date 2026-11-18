@@ -2531,7 +2531,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '18.11.2026-bs'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '18.11.2026-bt'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -6444,15 +6444,17 @@ function mergeTrainerDirection(catalog,direction){
 }
 
 /* ================= Замены · BR: реальные даты и проверка расписания ================= */
-const REP_SCHEDULE_SERVICE='fad-impulse-schedule-18.11.2026-br';
-const REP_SCHEDULE_TIMEOUT_MS=38000; // Limiting browser wait; Edge Function has a shorter overall deadline.
+const REP_SCHEDULE_SERVICE='fad-impulse-schedule-18.11.2026-bt';
+const REP_SCHEDULE_TIMEOUT_MS=25000; // Hard deadline: Promise.race below does not rely solely on AbortController.
 const REP_SCHEDULE_ERROR_MESSAGES={
   impulse_schedule_endpoint_unavailable:'Метод расписания Impulse недоступен',
   impulse_schedule_response_unverified:'Формат ответа Impulse не подтверждён',
   impulse_schedule_empty_unverified:'Impulse вернул пустое неподтверждённое расписание',
   impulse_schedule_timeout:'Превышено время ожидания Impulse',
   impulse_schedule_pagination_incomplete:'Impulse вернул неполное расписание',
-  impulse_schedule_forbidden:'У технического пользователя нет доступа к расписанию'
+  impulse_schedule_forbidden:'У технического пользователя нет доступа к расписанию',
+  impulse_schedule_probe_timeout:'Метод расписания Impulse не ответил на проверочный запрос',
+  impulse_schedule_teacher_list_invalid:'Неожиданный ответ списка тренеров Impulse'
 };
 const REP_DOW=['вс','пн','вт','ср','чт','пт','сб'];
 const REP_BRANCHES=[['','Любой филиал'],['masherova','Машерова'],['tolbuhina','Толбухина'],['kuibysheva','Куйбышева']];
@@ -6634,7 +6636,7 @@ async function renderReplacements(body){
   function reportStatus(){
     const s=st.schedule;
     let msg='';
-    if(s.state==='loading')msg='◌ Impulse · загружаем расписание… (не более 38 с)';
+    if(s.state==='loading')msg='◌ Impulse · проверяем расписание… (максимум 25 с)';
     else if(s.state==='ready'){
       const t=new Intl.DateTimeFormat('ru-RU',{timeZone:'Europe/Minsk',hour:'2-digit',minute:'2-digit'}).format(new Date(s.updated));
       msg=`● Impulse · расписание ${s.from} — ${s.to} · обновлено ${t}`;
@@ -6642,6 +6644,7 @@ async function renderReplacements(body){
       const display=REP_SCHEDULE_ERROR_MESSAGES[s.error]||s.error||'Ошибка запроса';
       msg=`● Impulse · занятость не проверена: ${display}`;
       if(display!==s.error&&s.error)msg+=` (${s.error})`;
+      if(s.stage)msg+=` · этап: ${s.stage}`;
     }else msg='● Укажите тренера или направление — проверим занятость по Impulse';
     const count=s.state==='ready'?trainers.filter(t=>t.is_active&&!t.exclude_from_replacements&&!scheduleMatch(t)).length:0;
     if(count)msg+=` · не сопоставлены с Impulse: ${count}`;
@@ -6677,25 +6680,41 @@ async function renderReplacements(body){
     const request=++st.schedule.request;
     st.schedule={...st.schedule,state:'loading',error:'',request,requestFrom:range.from,requestTo:range.to};
     reportStatus();drawResults();
-    let timedOut=false;
-    const timeout=setTimeout(()=>{timedOut=true;controller.abort();},REP_SCHEDULE_TIMEOUT_MS);
+    // A hard Promise.race watchdog settles the UI even if a browser/network stack does not reject an aborted fetch.
+    let timeoutId=null;
     try{
-      const response=await fetch(SUPABASE_URL+'/functions/v1/impulse-schedule',{
-        method:'POST',headers:{'Content-Type':'application/json',apikey:SUPABASE_ANON_KEY,Authorization:'Bearer '+SUPABASE_ANON_KEY},
-        body:JSON.stringify({token:TOKEN,from:range.from,to:range.to,force}),signal:controller.signal
-      });
-      const reply=await response.json().catch(()=>null);
-      if(!response.ok)throw new Error(String(reply?.error||`Ошибка сервера · HTTP ${response.status}`));
-      if(!reply?.ok||!reply?.verified||reply?.service!==REP_SCHEDULE_SERVICE||!Array.isArray(reply.items)||!Array.isArray(reply.teachers))
-        throw new Error(String(reply?.error||'Ответ сервера не подтверждён'));
+      const reply=await Promise.race([
+        (async()=>{
+          const response=await fetch(SUPABASE_URL+'/functions/v1/impulse-schedule',{
+            method:'POST',headers:{'Content-Type':'application/json',apikey:SUPABASE_ANON_KEY,Authorization:'Bearer '+SUPABASE_ANON_KEY},
+            body:JSON.stringify({token:TOKEN,from:range.from,to:range.to,force}),signal:controller.signal
+          });
+          const payload=await response.json().catch(()=>null);
+          if(!response.ok){
+            const failure=new Error(String(payload?.error||`Ошибка сервера · HTTP ${response.status}`));
+            failure.stage=String(payload?.stage||'');
+            throw failure;
+          }
+          return payload;
+        })(),
+        new Promise((_,reject)=>{timeoutId=setTimeout(()=>{
+          controller.abort();
+          reject(new Error('impulse_schedule_timeout'));
+        },REP_SCHEDULE_TIMEOUT_MS);})
+      ]);
+      if(!reply?.ok||!reply?.verified||reply?.service!==REP_SCHEDULE_SERVICE||!Array.isArray(reply.items)||!Array.isArray(reply.teachers)){
+        const failure=new Error(String(reply?.error||'Ответ сервера не подтверждён'));
+        failure.stage=String(reply?.stage||'');
+        throw failure;
+      }
       if(request!==st.schedule.request||!page.isConnected)return;
       st.schedule={state:'ready',from:reply.from,to:reply.to,updated:reply.updated_at,items:reply.items,teachers:reply.teachers,error:'',request};
     }catch(err){
       if(request!==st.schedule.request||!page.isConnected)return;
-      const reason=timedOut?'Превышено время ожидания (38 с)':String(err?.message||'Ошибка соединения').slice(0,120);
-      st.schedule={state:'error',from:'',to:'',updated:'',items:[],teachers:[],error:reason,request};
+      st.schedule={state:'error',from:'',to:'',updated:'',items:[],teachers:[],
+        error:String(err?.message||'Ошибка соединения').slice(0,120),stage:String(err?.stage||''),request};
     }finally{
-      clearTimeout(timeout);
+      clearTimeout(timeoutId);
       if(scheduleAbortController===controller)scheduleAbortController=null;
     }
     reportStatus();drawResults();drawPull();st.lessons.forEach((_,i)=>markRow(i));
