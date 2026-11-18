@@ -2531,7 +2531,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '18.11.2026-bt'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '18.11.2026-bu'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -6444,8 +6444,8 @@ function mergeTrainerDirection(catalog,direction){
 }
 
 /* ================= Замены · BR: реальные даты и проверка расписания ================= */
-const REP_SCHEDULE_SERVICE='fad-impulse-schedule-18.11.2026-bt';
-const REP_SCHEDULE_TIMEOUT_MS=25000; // Hard deadline: Promise.race below does not rely solely on AbortController.
+const REP_SCHEDULE_SERVICE='fad-impulse-schedule-18.11.2026-bu';
+const REP_SCHEDULE_TIMEOUT_MS=60000; // Hard deadline: Promise.race below does not rely solely on AbortController.
 const REP_SCHEDULE_ERROR_MESSAGES={
   impulse_schedule_endpoint_unavailable:'Метод расписания Impulse недоступен',
   impulse_schedule_response_unverified:'Формат ответа Impulse не подтверждён',
@@ -6454,6 +6454,11 @@ const REP_SCHEDULE_ERROR_MESSAGES={
   impulse_schedule_pagination_incomplete:'Impulse вернул неполное расписание',
   impulse_schedule_forbidden:'У технического пользователя нет доступа к расписанию',
   impulse_schedule_probe_timeout:'Метод расписания Impulse не ответил на проверочный запрос',
+  impulse_schedule_rate_limited:'Impulse ограничил частоту запросов',
+  impulse_schedule_teacher_missing:'У занятия не указан преподаватель — проверка занятости остановлена',
+  impulse_schedule_recurrence_invalid:'Не удалось определить даты регулярного занятия',
+  impulse_schedule_pagination_incomplete:'Не удалось загрузить все страницы расписания',
+  impulse_schedule_time_invalid:'Некорректное время занятия Impulse',
   impulse_schedule_teacher_list_invalid:'Неожиданный ответ списка тренеров Impulse'
 };
 const REP_DOW=['вс','пн','вт','ср','чт','пт','сб'];
@@ -6636,7 +6641,7 @@ async function renderReplacements(body){
   function reportStatus(){
     const s=st.schedule;
     let msg='';
-    if(s.state==='loading')msg='◌ Impulse · проверяем расписание… (максимум 25 с)';
+    if(s.state==='loading')msg='◌ Impulse · проверяем расписание… (максимум 60 с)';
     else if(s.state==='ready'){
       const t=new Intl.DateTimeFormat('ru-RU',{timeZone:'Europe/Minsk',hour:'2-digit',minute:'2-digit'}).format(new Date(s.updated));
       msg=`● Impulse · расписание ${s.from} — ${s.to} · обновлено ${t}`;
