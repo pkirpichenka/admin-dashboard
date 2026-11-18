@@ -2843,6 +2843,130 @@ html,body,#root,.fad-app-shell{max-width:100%;min-width:0;overflow-x:clip}
  .fad-main #tabbody.page .adpay-detail-cols{padding:12px}
 }
 
+
+/* ===== FAD 18.11.2026-ch — marketing + schedule visual safeguards ===== */
+:root{--ch-border:#DCE3DD;--ch-divider:#EDF1EE;--ch-danger:#C0392B}
+.fad-main .wrap,.fad-main .wrap:has(> #tabbody > .bonus-page),
+.fad-main .wrap:has(.adpay),.fad-main .wrap:has(> #tabbody > .rep-version-shell){
+  width:100%;max-width:2200px;margin-inline:0;padding:24px 32px 48px;min-width:0;
+}
+.fad-main #tabbody.page{min-width:0;width:100%;max-width:none;overflow:visible}
+.fad-main #tabbody.page :is(.mk-app,.cal-layout,.roles-shell,.msg-grid,.emp-grid,.staff-grid,.sumcards){min-width:0;max-width:100%}
+.fad-main #tabbody.page :is(.mk-card,.cal-card,.sumcard,.emp-card,.staff-card,.adpay-day){box-sizing:border-box;min-width:0}
+/* The old .wrap:has(#mk-app) has ID specificity and capped marketing at 1320px. */
+.fad-main .wrap:has(#mk-app){width:100%;max-width:2200px;margin:0;padding:24px 32px 48px;min-width:0}
+/* Marketing: remove competing width/height caps and ensure the sidebar is one full white card. */
+.fad-main #tabbody.page .mk-app{display:flex;flex-direction:column;align-items:stretch;gap:16px;max-width:2200px;width:100%;margin:0;min-width:0}
+.fad-main #tabbody.page .mk-app .mk-top{display:none}
+.fad-main #tabbody.page .mk-app .mk-sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin:0;min-width:0}
+.fad-main #tabbody.page .mk-app .mk-tile{min-width:0;min-height:105px;height:100%;padding:16px 18px;border:1px solid var(--ch-border);border-radius:14px;box-shadow:none}
+.fad-main #tabbody.page .mk-app .mk-tile .mk-k{font:800 11px/1.35 Manrope,system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#56685D}
+.fad-main #tabbody.page .mk-app .mk-tile .mk-v{font:800 26px/1.2 Manrope,system-ui,sans-serif;font-variant-numeric:tabular-nums;margin:6px 0 4px;min-width:0}
+.fad-main #tabbody.page .mk-app .mk-tile .mk-v.mk-sm{font-size:15px;line-height:1.35;overflow-wrap:anywhere}
+.fad-main #tabbody.page .mk-app .mk-tile .mk-s{font:500 12px/1.35 Manrope,system-ui,sans-serif;color:#56685D}
+.fad-main #tabbody.page .mk-app .mk-filters{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:0;margin:0;background:transparent;border:0;min-width:0}
+.fad-main #tabbody.page .mk-app .mk-top-actions{display:flex;align-items:center;gap:8px;min-height:40px;flex:0 0 auto}
+.fad-main #tabbody.page .mk-app .mk-seg{min-height:40px;padding:4px;border-radius:10px;border:0;background:#E4EAE5;align-items:center}
+.fad-main #tabbody.page .mk-app .mk-seg button{height:32px;min-height:32px;padding:5px 10px;border-radius:8px;font-size:13px;white-space:nowrap}
+.fad-main #tabbody.page .mk-app .mk-seg button[aria-pressed="true"]{background:#FFFFFF;color:#17261E;box-shadow:0 1px 3px rgba(23,38,30,.10)}
+.fad-main #tabbody.page .mk-app .mk-filters>select{height:40px;min-height:40px;max-width:220px;width:auto;min-width:140px;border-radius:10px;padding:0 34px 0 12px;font-size:14px}
+.fad-main #tabbody.page .mk-app .mk-layout{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:20px;align-items:start;width:100%;min-width:0;margin:0}
+.fad-main #tabbody.page .mk-app .mk-layout>*{min-width:0;max-width:100%}
+.fad-main #tabbody.page .mk-app .mk-card{background:#FFFFFF;border:1px solid var(--ch-border);border-radius:14px;overflow:visible;max-height:none;height:auto;min-height:0}
+.fad-main #tabbody.page .mk-app .mk-side{
+  position:static!important;top:auto!important;align-self:start;
+  box-sizing:border-box;width:360px;max-width:100%;height:auto!important;min-height:0;
+  max-height:none!important;overflow:visible!important;padding:20px;
+  display:flex;flex-direction:column;gap:0;background:#FFFFFF;border:1px solid var(--ch-border);
+  border-radius:14px;box-shadow:none;overflow-wrap:anywhere;
+}
+.fad-main #tabbody.page .mk-app .mk-side>*{min-width:0;flex-shrink:0}
+.fad-main #tabbody.page .mk-app .mk-side>*+*:not(.mk-sect){margin-top:12px}
+.fad-main #tabbody.page .mk-app .mk-side h2{font:800 15px/1.4 Manrope,system-ui,sans-serif;overflow-wrap:anywhere}
+.fad-main #tabbody.page .mk-app .mk-side .mk-sect{border-top:1px solid var(--ch-divider);margin-top:16px;padding-top:16px;gap:8px}
+.fad-main #tabbody.page .mk-app .mk-sect h3{font:800 11px/1.35 Manrope,system-ui,sans-serif;text-transform:uppercase;letter-spacing:.06em;color:#56685D;white-space:normal}
+.fad-main #tabbody.page .mk-app .mk-kv{grid-template-columns:87px minmax(0,1fr);gap:8px 10px}
+.fad-main #tabbody.page .mk-app .mk-kpi{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;min-width:0}
+.fad-main #tabbody.page .mk-app .mk-fld{min-width:0}
+.fad-main #tabbody.page .mk-app .mk-fld label{font:800 11px/1.35 Manrope,system-ui,sans-serif;letter-spacing:.03em;text-transform:uppercase;color:#56685D;white-space:nowrap;display:block;overflow:hidden;text-overflow:ellipsis;margin:0 0 6px}
+.fad-main #tabbody.page .mk-app :is(.mk-kpi input,.mk-fld>input,.mk-fld>select,.mk-side>select,.mk-sect>select){height:40px;min-height:40px;box-sizing:border-box;min-width:0;width:100%;border:1px solid var(--ch-border);border-radius:10px;padding:7px 12px;font-size:14px}
+.fad-main #tabbody.page .mk-app .mk-kpi input{font-variant-numeric:tabular-nums}
+.fad-main #tabbody.page .mk-app .mk-bar{margin-top:8px;margin-bottom:8px}
+.fad-main #tabbody.page .mk-app .mk-chk{display:grid;grid-template-columns:18px minmax(0,1fr);gap:8px;align-items:start;min-width:0;font:500 14px/1.4 Manrope,system-ui,sans-serif}
+.fad-main #tabbody.page .mk-app .mk-chk input{margin:2px 0 0}
+.fad-main #tabbody.page .mk-app .mk-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid var(--ch-divider);align-items:center}
+.fad-main #tabbody.page .mk-app .mk-acts .mk-btn{height:32px;min-height:32px;max-height:32px;padding:5px 12px;font:700 12px/1.2 Manrope,system-ui,sans-serif;border:1px solid var(--ch-border);border-radius:8px}
+.fad-main #tabbody.page .mk-app .mk-acts .mk-btn.mk-danger{color:var(--ch-danger);border-color:var(--ch-border);background:#FFFFFF}
+.fad-main #tabbody.page .mk-app .mk-mainhead{min-height:68px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:16px 20px;margin:0;border-bottom:1px solid var(--ch-divider)}
+.fad-main #tabbody.page .mk-app .mk-mainhead h2{font:800 17px/1.4 Manrope,system-ui,sans-serif}
+.fad-main #tabbody.page .mk-app .mk-mainhead .mk-btn{height:32px;min-height:32px;border-radius:8px;padding:5px 10px}
+.fad-main #tabbody.page .mk-app .mk-wk,.fad-main #tabbody.page .mk-app .mk-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));width:100%;min-width:0}
+.fad-main #tabbody.page .mk-app .mk-cell{min-height:112px;min-width:0;padding:7px 6px;overflow:hidden}
+.fad-main #tabbody.page .mk-app .mk-chip{width:100%;max-width:100%;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:19px}
+.fad-main #tabbody.page .mk-app .mk-chip::before{top:50%;bottom:auto;left:7px;transform:translateY(-50%);height:7px;width:7px;border-radius:50%}
+.fad-main #tabbody.page .mk-app .mk-row{min-height:56px;width:100%;max-width:100%;box-sizing:border-box;grid-template-columns:118px minmax(0,1fr) auto auto;gap:8px 12px}
+.fad-main #tabbody.page .mk-app .mk-row .mk-t{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.fad-main #tabbody.page .mk-app .mk-tag,.fad-main #tabbody.page .mk-app .mk-pill{border-radius:999px;white-space:nowrap}
+/* Full-size layout for sidebar content below 1100px; no stray max-height/clip. */
+@media(max-width:1100px){
+ .fad-main #tabbody.page .mk-app .mk-layout{grid-template-columns:minmax(0,1fr)}
+ .fad-main #tabbody.page .mk-app .mk-side{width:100%;max-width:none}
+}
+@media(max-width:899px){
+ .fad-main .wrap,.fad-main .wrap:has(> #tabbody > .bonus-page),
+ .fad-main .wrap:has(.adpay),.fad-main .wrap:has(> #tabbody > .rep-version-shell){padding:16px 16px 48px}
+ .fad-main .wrap:has(#mk-app){padding:16px 16px 48px}
+ .fad-main #tabbody.page .mk-app .mk-mainhead{padding:12px 16px}
+ .fad-main #tabbody.page .mk-app .mk-wk,.fad-main #tabbody.page .mk-app .mk-grid{min-width:600px}
+ .fad-main #tabbody.page .mk-app #mk-main{overflow-x:auto;overflow-y:visible}
+}
+@media(max-width:560px){
+ .fad-main .wrap,.fad-main .wrap:has(> #tabbody > .bonus-page),
+ .fad-main .wrap:has(.adpay),.fad-main .wrap:has(> #tabbody > .rep-version-shell){padding:14px 12px 40px}
+ .fad-main .wrap:has(#mk-app){padding:14px 12px 40px}
+ .fad-main #tabbody.page .mk-app .mk-sum{grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr))}
+ .fad-main #tabbody.page .mk-app .mk-kpi,.fad-main #tabbody.page .mk-app .mk-frow{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .fad-main #tabbody.page .mk-app .mk-side{padding:16px}
+ .fad-main #tabbody.page .mk-app .mk-filters>select{max-width:calc(50% - 6px);min-width:0}
+ .fad-main #tabbody.page .mk-app .mk-row{grid-template-columns:minmax(0,1fr) auto}
+ .fad-main #tabbody.page .mk-app .mk-row .mk-d{grid-column:1/-1}
+}
+/* All modals use one visual system; dedicated shift modal is 520–640px. */
+.overlay{background:rgba(23,38,30,.45);align-items:center;justify-items:center}
+.overlay>.modal{box-sizing:border-box;border-radius:14px;padding:24px;background:#FFFFFF;min-width:0;max-width:min(640px,calc(100vw - 24px));max-height:calc(100dvh - 40px);overflow-y:auto}
+.overlay>.modal h3{font:800 18px/1.3 Manrope,system-ui,sans-serif;margin-bottom:8px;overflow-wrap:anywhere}
+.overlay>.modal .actions{gap:12px;justify-content:flex-end;align-items:center;flex-wrap:wrap;margin-top:16px;padding:16px 0 0;border-top:1px solid var(--ch-divider);position:static;bottom:auto;background:transparent}
+.overlay>.modal .actions :is(.btn,.btn-primary){min-height:40px;height:40px;border-radius:10px;padding:8px 16px;font:700 14px/1.2 Manrope,system-ui,sans-serif}
+.overlay>.modal:has(#dmBody){width:min(640px,calc(100vw - 24px));max-width:640px;min-width:min(520px,calc(100vw - 24px));padding:24px}
+.overlay>.modal:has(#dmBody) #dmBody{min-width:0}
+.overlay>.modal:has(#dmBody) #dmBody>.chk{display:flex;align-items:center;gap:8px;flex-wrap:nowrap;white-space:nowrap;font:500 14px/1.4 Manrope,system-ui,sans-serif;margin-bottom:12px}
+.overlay>.modal:has(#dmBody) #dmBody>.chk input[type=checkbox]{width:16px;height:16px;min-width:16px;flex:none;margin:0}
+.overlay>.modal:has(#dmBody) .sch-erow{display:grid;grid-template-columns:minmax(140px,1.4fr) 112px 16px 112px 32px;gap:8px;align-items:center;min-width:0;margin:0 0 8px}
+.overlay>.modal:has(#dmBody) .sch-erow .dm-adm{box-sizing:border-box;width:100%;height:40px;min-width:0;max-width:100%;padding:0 24px 0 10px;font:500 14px/1.3 Manrope,system-ui,sans-serif;text-overflow:ellipsis;border-radius:10px}
+.overlay>.modal:has(#dmBody) .sch-erow>span{text-align:center;white-space:nowrap}
+.overlay>.modal:has(#dmBody) .sch-erow .dm-del{width:32px;min-width:32px;height:32px;min-height:32px;max-height:32px;padding:0;border:0;background:transparent;border-radius:8px;color:#56685D;display:inline-flex;align-items:center;justify-content:center}
+.overlay>.modal:has(#dmBody) #dmShifts>div:last-child>button{height:32px;min-height:32px;padding:5px 10px;border-radius:8px;font:700 12px/1.2 Manrope,system-ui,sans-serif}
+/* Time inputs across shift, wage, messages, calendar and modals. Keep native picker outside the value. */
+input[type="time"]{box-sizing:border-box;position:relative;font:500 14px/1.3 Manrope,system-ui,sans-serif;font-variant-numeric:tabular-nums;min-width:104px;height:40px;min-height:40px;padding:0 32px 0 12px;line-height:normal;border:1px solid var(--ch-border);border-radius:10px;background-color:#FFFFFF}
+input[type="time"]::-webkit-calendar-picker-indicator{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:16px;height:16px;margin:0;padding:0;opacity:.78;cursor:pointer}
+.overlay>.modal:has(#dmBody) .sch-erow input[type="time"]{width:112px;min-width:112px;max-width:112px;height:40px;min-height:40px;padding:0 32px 0 12px;font:500 14px/1.3 Manrope,system-ui,sans-serif;font-variant-numeric:tabular-nums}
+.fad-main #tabbody.page .adpay-time-interval input[type="time"],
+.fad-main #tabbody.page .tg-tbl input[type="time"]{height:32px!important;min-height:32px!important;min-width:104px;padding:0 29px 0 8px;border-radius:8px}
+.fad-main #tabbody.page table :is(input[type="time"],input[type="date"]){height:32px!important;min-height:32px!important;min-width:0;padding-right:29px;border-radius:8px}
+.fad-main #tabbody.page :is(input[type="date"],input[type="datetime-local"]),.overlay>.modal :is(input[type="date"],input[type="datetime-local"]){box-sizing:border-box;min-width:0;height:40px;min-height:40px;padding-right:32px;font-variant-numeric:tabular-nums}
+.fad-main #tabbody.page :is(.payroll-table-scroll,.adpay-scroll,.bp-table-scroll,.roles-table-wrap,.sch-scroll,.audit-wrap){max-width:100%;min-width:0;overflow-x:auto}
+@media(max-width:600px){
+ .overlay>.modal:has(#dmBody){width:calc(100vw - 24px);min-width:0;max-width:none;padding:18px 16px}
+ .overlay>.modal:has(#dmBody) .sch-erow{grid-template-columns:minmax(0,1fr) 16px minmax(0,1fr) 32px;gap:8px}
+ .overlay>.modal:has(#dmBody) .sch-erow .dm-adm{grid-column:1/-1}
+ .overlay>.modal:has(#dmBody) .sch-erow .dm-s{grid-column:1;min-width:0;max-width:100%;width:100%}
+ .overlay>.modal:has(#dmBody) .sch-erow>span{grid-column:2}
+ .overlay>.modal:has(#dmBody) .sch-erow .dm-e{grid-column:3;min-width:0;max-width:100%;width:100%}
+ .overlay>.modal:has(#dmBody) .sch-erow .dm-del{grid-column:4}
+ .overlay>.modal .actions{gap:8px}
+}
+/* ===== end CH ===== */
+
 </style>
 
 <div id="root"></div>
@@ -2863,7 +2987,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '18.11.2026-cg'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '18.11.2026-ch'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -10224,11 +10348,10 @@ async function renderMarketing(body){
   const studioDots=e=>e.studios.map(k=>`<span class="mk-sdot"><i class="mk-dot" style="background:${STUD[k].c}"></i>${STUD[k].n}</span>`).join(' ');
   const pill=st=>`<span class="mk-pill ${esc(st)}">${ST[st]||'План'}</span>`;
   page.innerHTML=`
-    <header class="mk-top"><div><p class="mk-eyebrow">Flexico · Дашборд администраторов</p><h1>Маркетинг-календарь</h1></div>
-      <div class="mk-top-actions">${owner?'<button class="mk-btn mk-primary" id="mk-addTop" data-mk-act="add" type="button">+ Активность</button>':'<span class="mk-ro">Режим просмотра</span>'}</div>
-    </header>
+    <header class="mk-top"><div><p class="mk-eyebrow">Flexico · Дашборд администраторов</p><h1>Маркетинг-календарь</h1></div></header>
     <section class="mk-sum" id="mk-sum" aria-label="Сводка месяца"></section>
     <section class="mk-filters" aria-label="Фильтры">
+      <div class="mk-top-actions">${owner?'<button class="mk-btn mk-primary" id="mk-addTop" data-mk-act="add" type="button">+ Активность</button>':'<span class="mk-ro">Режим просмотра</span>'}</div>
       <div class="mk-seg" id="mk-studioSeg" role="group" aria-label="Филиал"></div>
       <select id="mk-fChannel" aria-label="Канал"></select>
       <select id="mk-fStatus" aria-label="Статус"></select>
