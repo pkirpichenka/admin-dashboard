@@ -2111,7 +2111,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '18.11.2026-bh'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '18.11.2026-bj'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -3126,10 +3126,14 @@ function renderRoleUI(tabs){
   document.addEventListener('keydown',onKeydown);
   fadSidebarCleanup=()=>document.removeEventListener('keydown',onKeydown);
   root.querySelector('#logout').onclick=()=>doLogout();
-  const _rb=root.querySelector('#refreshBtn'); if(_rb) _rb.onclick=async()=>{
-    if(appHasUnsavedWork()){ toast('Есть несохранённые изменения — сначала сохраните их',true); return; }
-    await checkForAppUpdate(false);
-    if(APP_UPDATE_AVAILABLE) reloadToLatestVersion(); else location.reload();
+  const _rb=root.querySelector('#refreshBtn'); if(_rb) _rb.onclick=()=>{
+    if(appHasUnsavedWork()){toast('Есть несохранённые изменения — сначала сохраните их',true);return;}
+    // Пока идёт получение зарплаты из Impulse, не пересоздаём активный экран:
+    // его собственный обработчик перечитает данные после успешного ответа.
+    if(root.querySelector('#tabbody .payroll [data-payroll-sync]:disabled, #tabbody .adpay .adpay-head [data-action="sync"]:disabled')){
+      toast('Идёт обновление зарплаты — дождитесь завершения',true);return;
+    }
+    if(currentTab>=0)show(currentTab); // Тот же рендерер/права, без перезагрузки страницы.
   };
   let body=root.querySelector('#tabbody');
   let currentTab=-1;
@@ -4467,7 +4471,9 @@ const PAYROLL_SYNC_STAGE_LABELS = {
   advances_and_replacements:"авансы и замены",archive_verification:"проверка архива преподавателей",employee_mapping:"карточки сотрудников",
   payroll_database_write:"запись зарплаты в Supabase"
 };
-const PAYROLL_EXPECTED_SERVICE = "fad-payroll-impulse-15.11.2026-ab";
+// Номер развёртывания Edge Function может меняться независимо от HTML.
+// Проверяем семейство API, а не привязываем интерфейс к конкретному суффиксу.
+const PAYROLL_COMPATIBLE_SERVICE = /^fad-payroll-impulse-\d{2}\.\d{2}\.\d{4}-[a-z0-9-]+$/;
 // Фронтенд AC совместим с опубликованной Edge Function AB: режим просмотра на дату не записывает данные в базу.
 
 const PAYROLL_ADVANCE_WARNINGS = {
@@ -4509,8 +4515,8 @@ function bindPayrollSync(page, refresh){
         });
         const result=await response.json().catch(()=>null);
         if(!current())return;
-        if(result?.service && result.service!==PAYROLL_EXPECTED_SERVICE){
-          feedback("В Supabase опубликована другая версия fad-payroll-sync ("+String(result.service).slice(0,100)+"). Нужна версия "+PAYROLL_EXPECTED_SERVICE+". Данные не обновлены.",true);
+        if(result?.service && !PAYROLL_COMPATIBLE_SERVICE.test(String(result.service))){
+          feedback("Ответ пришёл от несовместимой версии fad-payroll-sync ("+String(result.service).slice(0,100)+"). Данные не обновлены.",true);
           return;
         }
         if(!response.ok||!result?.ok){
@@ -4535,7 +4541,13 @@ function bindPayrollSync(page, refresh){
           return;
         }
         if(result.status==="updated"||result.status==="fresh"){
-          await refresh(month);
+          // Сервер завершил запись в БД: перечитываем новый снимок и обновляем
+          // текущую вкладку на месте, не вызывая location.reload().
+          const loaded=await refresh(month);
+          if(loaded===false){
+            if(current())feedback("Импорт выполнен, но не удалось загрузить обновлённый расчёт из Supabase. Повторите обновление данных.",true);
+            return;
+          }
           if(current()){
             page.dispatchEvent(new CustomEvent("paytech-sync-result",{detail:result}));
             const notices=[];
@@ -4962,7 +4974,8 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
     get('[data-payroll-action="summary-open"]')?.focus();
   });
   const syncControl = bindPayrollSync(page,async current=>{
-    if(state.period===current)await load(false);
+    if(state.period!==current)return false;
+    return await load(false);
   });
   let lastFocus = null;
   // Наличие аванса и удержания не превращает месяц без проведённых занятий/замен
@@ -5263,6 +5276,7 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
         (state.updated ? "" : "Авансы загружаются из ImpulseCRM вместе с начислениями."));
       render();
       if(autoSync)void syncControl.run();
+      return true;
     }catch(error){
       if (!page.isConnected || id !== state.ticket) return;
       state.ready = false;
@@ -5270,6 +5284,7 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
       render();
       showNotice(error?.code === "PGRST202" ? "Сначала выполните SQL для вкладки «Зарплата тренеров» в Supabase." : payrollError(error), true);
       if (isForbiddenErr(error)) handleErr(error);
+      return false;
     }finally{
       if (id === state.ticket) state.loading = false;
     }
