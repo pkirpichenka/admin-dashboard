@@ -2531,7 +2531,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '18.11.2026-br'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '18.11.2026-bs'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -6445,6 +6445,15 @@ function mergeTrainerDirection(catalog,direction){
 
 /* ================= Замены · BR: реальные даты и проверка расписания ================= */
 const REP_SCHEDULE_SERVICE='fad-impulse-schedule-18.11.2026-br';
+const REP_SCHEDULE_TIMEOUT_MS=38000; // Limiting browser wait; Edge Function has a shorter overall deadline.
+const REP_SCHEDULE_ERROR_MESSAGES={
+  impulse_schedule_endpoint_unavailable:'Метод расписания Impulse недоступен',
+  impulse_schedule_response_unverified:'Формат ответа Impulse не подтверждён',
+  impulse_schedule_empty_unverified:'Impulse вернул пустое неподтверждённое расписание',
+  impulse_schedule_timeout:'Превышено время ожидания Impulse',
+  impulse_schedule_pagination_incomplete:'Impulse вернул неполное расписание',
+  impulse_schedule_forbidden:'У технического пользователя нет доступа к расписанию'
+};
 const REP_DOW=['вс','пн','вт','ср','чт','пт','сб'];
 const REP_BRANCHES=[['','Любой филиал'],['masherova','Машерова'],['tolbuhina','Толбухина'],['kuibysheva','Куйбышева']];
 function repMinskToday(){
@@ -6528,6 +6537,7 @@ async function renderReplacements(body){
   const st={mode:'trainer',trainerId:'',directionId:0,lessons:[emptyLesson()],buf:15,onlyFull:false,
     schedule:{state:'idle',from:'',to:'',updated:'',items:[],teachers:[],error:'',request:0},
     pull:{open:false,date:today,selected:new Set()},timer:null};
+  let scheduleAbortController=null; // Per-tab request; abort when range changes or user cancels.
   const canManage=canDirectionAction('directions.create')||canDirectionAction('directions.delete');
   page.innerHTML=`<div class="rep-plan-head">
     <span>Выберите тренера или направление и укажите, какие занятия нужно заменить.</span>
@@ -6624,17 +6634,20 @@ async function renderReplacements(body){
   function reportStatus(){
     const s=st.schedule;
     let msg='';
-    if(s.state==='loading')msg='◌ Impulse · загружаем расписание…';
+    if(s.state==='loading')msg='◌ Impulse · загружаем расписание… (не более 38 с)';
     else if(s.state==='ready'){
       const t=new Intl.DateTimeFormat('ru-RU',{timeZone:'Europe/Minsk',hour:'2-digit',minute:'2-digit'}).format(new Date(s.updated));
       msg=`● Impulse · расписание ${s.from} — ${s.to} · обновлено ${t}`;
-    }else if(s.state==='error')msg='● Impulse недоступен — занятость не проверена ('+s.error+')';
-    else msg='● Укажите тренера или направление — проверим занятость по Impulse';
+    }else if(s.state==='error'){
+      const display=REP_SCHEDULE_ERROR_MESSAGES[s.error]||s.error||'Ошибка запроса';
+      msg=`● Impulse · занятость не проверена: ${display}`;
+      if(display!==s.error&&s.error)msg+=` (${s.error})`;
+    }else msg='● Укажите тренера или направление — проверим занятость по Impulse';
     const count=s.state==='ready'?trainers.filter(t=>t.is_active&&!t.exclude_from_replacements&&!scheduleMatch(t)).length:0;
     if(count)msg+=` · не сопоставлены с Impulse: ${count}`;
     get('rep-status').innerHTML=`<span class="${s.state==='error'?'rep-plan-status-error':s.state==='ready'?'rep-plan-status-ok':''}">${escapeHtml(msg)}</span>
-      <button type="button" id="rep-refresh-schedule" class="btn btn-ghost" ${s.state==='loading'?'disabled':''}>обновить</button>`;
-    get('rep-refresh-schedule').onclick=()=>void loadSchedule(true);
+      <button type="button" id="rep-refresh-schedule" class="btn btn-ghost">${s.state==='loading'?'Отменить':'обновить'}</button>`;
+    get('rep-refresh-schedule').onclick=()=>s.state==='loading'?cancelSchedule():void loadSchedule(true);
   }
   function validDateWindow(){
     const dates=usableLessons().map(l=>l.date).filter(date=>date<=lastDay);
@@ -6642,28 +6655,48 @@ async function renderReplacements(body){
     if(!dates.length)return null;
     dates.sort();return {from:dates[0],to:dates[dates.length-1]};
   }
+  function cancelSchedule(){
+    if(st.timer){clearTimeout(st.timer);st.timer=null;}
+    ++st.schedule.request; // Discard any late response from an aborted request.
+    if(scheduleAbortController){scheduleAbortController.abort();scheduleAbortController=null;}
+    st.schedule={...st.schedule,state:'error',from:'',to:'',updated:'',items:[],teachers:[],error:'Загрузка отменена',request:st.schedule.request};
+    reportStatus();drawResults();drawPull();
+  }
   async function loadSchedule(force=false){
     const range=validDateWindow();
-    if(!range){st.schedule.state='idle';reportStatus();drawResults();drawPull();return;}
+    if(!range){
+      if(scheduleAbortController){++st.schedule.request;scheduleAbortController.abort();scheduleAbortController=null;}
+      st.schedule={...st.schedule,state:'idle'};
+      reportStatus();drawResults();drawPull();return;
+    }
     if(!force&&st.schedule.state==='ready'&&st.schedule.from<=range.from&&st.schedule.to>=range.to&&
       Date.now()-Date.parse(st.schedule.updated)<10*60000)return;
     if(!force&&st.schedule.state==='loading'&&st.schedule.requestFrom===range.from&&st.schedule.requestTo===range.to)return;
+    if(scheduleAbortController)scheduleAbortController.abort();
+    const controller=new AbortController();scheduleAbortController=controller;
     const request=++st.schedule.request;
     st.schedule={...st.schedule,state:'loading',error:'',request,requestFrom:range.from,requestTo:range.to};
     reportStatus();drawResults();
+    let timedOut=false;
+    const timeout=setTimeout(()=>{timedOut=true;controller.abort();},REP_SCHEDULE_TIMEOUT_MS);
     try{
       const response=await fetch(SUPABASE_URL+'/functions/v1/impulse-schedule',{
         method:'POST',headers:{'Content-Type':'application/json',apikey:SUPABASE_ANON_KEY,Authorization:'Bearer '+SUPABASE_ANON_KEY},
-        body:JSON.stringify({token:TOKEN,from:range.from,to:range.to,force})
+        body:JSON.stringify({token:TOKEN,from:range.from,to:range.to,force}),signal:controller.signal
       });
       const reply=await response.json().catch(()=>null);
-      if(!response.ok||!reply?.ok||!reply?.verified||reply?.service!==REP_SCHEDULE_SERVICE||!Array.isArray(reply.items)||!Array.isArray(reply.teachers))
-        throw new Error(String(reply?.error||'Ответ Impulse не подтверждён'));
+      if(!response.ok)throw new Error(String(reply?.error||`Ошибка сервера · HTTP ${response.status}`));
+      if(!reply?.ok||!reply?.verified||reply?.service!==REP_SCHEDULE_SERVICE||!Array.isArray(reply.items)||!Array.isArray(reply.teachers))
+        throw new Error(String(reply?.error||'Ответ сервера не подтверждён'));
       if(request!==st.schedule.request||!page.isConnected)return;
       st.schedule={state:'ready',from:reply.from,to:reply.to,updated:reply.updated_at,items:reply.items,teachers:reply.teachers,error:'',request};
     }catch(err){
       if(request!==st.schedule.request||!page.isConnected)return;
-      st.schedule={state:'error',from:'',to:'',updated:'',items:[],teachers:[],error:String(err.message||err).slice(0,80),request};
+      const reason=timedOut?'Превышено время ожидания (38 с)':String(err?.message||'Ошибка соединения').slice(0,120);
+      st.schedule={state:'error',from:'',to:'',updated:'',items:[],teachers:[],error:reason,request};
+    }finally{
+      clearTimeout(timeout);
+      if(scheduleAbortController===controller)scheduleAbortController=null;
     }
     reportStatus();drawResults();drawPull();st.lessons.forEach((_,i)=>markRow(i));
   }
@@ -6674,7 +6707,8 @@ async function renderReplacements(body){
     if(!matched)return null;
     const results=lessons.map(l=>{
       if(!own.has(Number(l.directionId)))return {state:'no',reason:`не ведёт «${dirById(l.directionId)?.name||''}»`};
-      if(l.date>lastDay||!scheduleOk(l))return {state:'unknown',reason:'занятость не проверена (дата вне проверенного диапазона)'};
+      if(l.date>lastDay)return {state:'unknown',reason:'занятость не проверена (дата за пределами 8 недель)'};
+      if(!scheduleOk(l))return {state:'unknown',reason:st.schedule.state==='loading'?'занятость не проверена (расписание ещё загружается)':'занятость не проверена (нет подтверждённого расписания Impulse на дату)'};
       if(!impulseId)return {state:'unknown',reason:'занятость не проверена (тренер не сопоставлен с Impulse)'};
       const ownConflict=lessons.some(other=>repRequestedConflict(l,other,st.buf));
       if(ownConflict)return {state:'no',reason:'время запрошенных занятий пересекается или не хватает времени на дорогу между ними'};
