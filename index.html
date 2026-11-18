@@ -2859,7 +2859,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '18.11.2026-ce'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '18.11.2026-cf'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -10109,7 +10109,7 @@ function bonusRenderHtml(model){const owner=model.owner,branches=model.branches;
     </section>
     <h2 class="bp-section-title">${model.viewAll?'Выполнение плана по филиалам':'Выполнение плана своего филиала'}</h2>
     <div class="bp-branches${model.viewAll?'':' bp-branches-single'}">${branches.map(b=>bonusCard(b,model)).join('')}</div>
-    <div class="bp-note" style="margin:-12px 0 24px">Факт для премирования — продажи администраторов, закреплённых за филиалом в выбранном месяце. В скобках — продажи, оформленные по адресу студии.</div>
+    <div class="bp-note" style="margin:-12px 0 24px">Факт для премирования — продажи администраторов, закреплённых за филиалом в выбранном месяце. В скобках — продажи, оформленные по адресу студии. Учитываются оплаченные групповые, индивидуальные и арендные абонементы — один абонемент равен одной продаже.</div>
     <details id="bp-sales-types" class="bp-types">
       <summary class="bp-types-summary"><span>📊 Структура продаж по абонементам</span><span class="bp-types-chevron">Подробнее ▾</span></summary>
       <div id="bp-types-host" class="bp-types-content"><div class="bp-types-message">Загружаем типы проданных абонементов…</div></div>
