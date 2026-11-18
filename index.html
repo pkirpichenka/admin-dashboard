@@ -2436,6 +2436,81 @@ body,.login,.modal,.fad-main,.fad-main :is(button,input,textarea,select){font-fa
 /* Some controls have empty-state labels; keep layout compact on phones. */
 @media(max-width:520px){.fad-main .page .replacements .fad-rep-head{align-items:flex-start}.fad-main .page .replacements .fad-rep-head .rep-manage{min-height:32px}}
 
+
+/* FAD BR · только вкладка «Замены»; цвета и размеры из действующей дизайн-системы */
+.rep-plan{width:100%;max-width:var(--fad-page-width);margin:0;padding:0!important;color:var(--fad-text);font-family:var(--fad-font);}
+.rep-plan-head{display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap;color:var(--fad-muted);font-size:13px;margin-bottom:16px;}
+.rep-plan-head .btn{height:40px;}
+.rep-plan .card{background:var(--fad-surface);border:1px solid var(--fad-border);border-radius:var(--fad-radius-card);box-shadow:var(--fad-shadow);padding:16px;margin:0 0 16px;}
+.rep-plan-choose{display:grid;gap:14px;}
+.rep-plan-selector{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;}
+.rep-plan-trainer-label{display:flex;flex-direction:column;gap:6px;font-size:11px;letter-spacing:.05em;font-weight:700;color:var(--fad-muted);}
+.rep-plan .rep-trainer{min-width:min(300px,100%);height:40px;font-size:14px;letter-spacing:normal;color:var(--fad-text);}
+.rep-plan-caption{font-size:11px;letter-spacing:.07em;color:var(--fad-muted);font-weight:700;}
+.rep-plan .rep-directions{margin-top:0;display:flex;flex-wrap:wrap;gap:8px;}
+.rep-plan .rep-direction{min-height:36px;border-radius:var(--fad-radius-chip);font-size:13px;}
+.rep-plan .rep-direction[aria-pressed="true"]{background:var(--fad-success-soft);border-color:var(--fad-green);color:var(--fad-green-dark);}
+.rep-plan .rep-direction:disabled{opacity:.45;cursor:not-allowed;}
+.rep-plan-note{font-size:12px;color:var(--fad-warn);margin:0;}
+.rep-plan .rep-plan-editor>h3{font-size:15px;margin:0 0 14px;color:var(--fad-text);}
+.rep-plan-lessons{display:flex;flex-direction:column;gap:8px;}
+.rep-plan-lesson{display:grid;grid-template-columns:26px minmax(142px,1.12fr) minmax(93px,.7fr) minmax(93px,.7fr) minmax(145px,1.3fr) minmax(145px,1.1fr) 36px;align-items:end;gap:8px;padding:10px;border:1px solid var(--fad-border);border-radius:var(--fad-radius-control);background:var(--fad-surface-soft);}
+.rep-plan-number{display:grid;place-items:center;width:26px;height:26px;align-self:center;border-radius:50%;font-size:12px;font-weight:700;background:var(--fad-success-soft);color:var(--fad-green-dark);}
+.rep-plan-lesson>label{display:flex;flex-direction:column;gap:5px;min-width:0;font-size:11px;font-weight:600;color:var(--fad-muted);}
+.rep-plan-lesson input,.rep-plan-lesson select{min-width:0;width:100%;height:40px;border:1px solid var(--fad-border);border-radius:var(--fad-radius-control);background:var(--fad-surface);font:500 13px var(--fad-font);padding:0 9px;color:var(--fad-text);}
+.rep-plan-date-inner{display:flex;align-items:center;gap:5px;}
+.rep-plan-date-inner input{min-width:0;flex:1;}
+.rep-plan-dow{color:var(--fad-muted);width:20px;text-align:center;}
+.rep-plan-dir-text{height:40px;display:flex;align-items:center;font-size:13px;color:var(--fad-text);}
+.rep-plan-remove{border:0;background:transparent;color:var(--fad-muted);height:38px;border-radius:var(--fad-radius-control);font-size:22px;cursor:pointer;}
+.rep-plan-remove:hover{background:var(--fad-danger-soft);color:var(--fad-danger);}
+.rep-plan-remove:disabled{opacity:.3;cursor:default;}
+.rep-plan-error{grid-column:2/-1;color:var(--fad-danger);font-size:11px;}
+.rep-plan-invalid{background:var(--fad-danger-soft);border-color:var(--fad-danger);}
+.rep-plan-error.rep-plan-outside{color:var(--fad-warn);}
+.rep-plan-actions,.rep-plan-pull-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px;}
+.rep-plan-options{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-left:auto;color:var(--fad-muted);font-size:12px;}
+.rep-plan-options label{display:flex;align-items:center;gap:7px;}
+.rep-plan-options select{height:36px;padding:0 8px;min-width:84px;border:1px solid var(--fad-border);border-radius:var(--fad-radius-control);background:var(--fad-surface);}
+.rep-plan-pull{margin-top:14px;padding:12px;border:1px solid var(--fad-border);border-radius:var(--fad-radius-control);background:var(--fad-surface-soft);}
+.rep-plan-pull-head{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+.rep-plan-pull-head input{height:38px;border:1px solid var(--fad-border);border-radius:var(--fad-radius-control);padding:0 10px;}
+.rep-plan-pull-list{display:grid;gap:6px;margin-top:12px;}
+.rep-plan-pull-list label{display:flex;gap:10px;align-items:center;padding:9px;background:var(--fad-surface);border-radius:8px;border:1px solid var(--fad-border);font-size:12px;}
+.rep-plan-status{display:flex;align-items:center;gap:10px;color:var(--fad-muted);font-size:12px;min-height:30px;flex-wrap:wrap;margin:0 0 10px;}
+.rep-plan-status-ok{color:var(--fad-green);}
+.rep-plan-status-error{color:var(--fad-danger);}
+.rep-plan-summary{display:flex;gap:12px;align-items:center;justify-content:space-between;margin:0 0 12px;flex-wrap:wrap;}
+.rep-plan-summary>b{font-size:14px;color:var(--fad-text);}
+.rep-plan-result{overflow:hidden;}
+.rep-plan-result>h3,.rep-plan-result>summary{font-size:12px!important;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--fad-muted);margin:0 0 10px;cursor:default;}
+.rep-plan-result>summary{cursor:pointer;}
+.rep-plan-result>.rep-rows{padding:0;margin:0;list-style:none;}
+.rep-plan-result .rep-row{padding:12px 2px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;border-top:1px solid var(--fad-border);}
+.rep-plan-result .rep-row-info{flex:1;min-width:150px;}
+.rep-plan-details{flex:0 0 100%;font-size:12px;margin:0;}
+.rep-plan-pills{display:flex;gap:6px;flex-wrap:wrap;margin:7px 0;}
+.rep-plan-pill{font-size:11px;border-radius:var(--fad-radius-chip);font-weight:700;padding:3px 9px;background:var(--fad-surface-soft);}
+.rep-plan-pill-ok{background:var(--fad-success-soft);color:var(--fad-ok);}
+.rep-plan-pill-no{background:var(--fad-danger-soft);color:var(--fad-danger);}
+.rep-plan-pill-unknown{background:var(--fad-warning-soft);color:var(--fad-warn);}
+.rep-plan-reason{font-size:12px;color:var(--fad-muted);margin:4px 0;}
+.rep-plan-unknown-caption{color:var(--fad-warn);margin-right:8px;}
+.rep-plan-archived{color:var(--fad-muted);}
+.rep-plan-empty{padding:12px 0;color:var(--fad-muted);font-size:13px;margin:0;}
+.rep-plan button:focus-visible,.rep-plan select:focus-visible,.rep-plan input:focus-visible{outline:2px solid var(--fad-green);outline-offset:2px;}
+.rep-plan [hidden]{display:none!important;}
+@media(max-width:1200px){.rep-plan-lesson{grid-template-columns:26px minmax(140px,1fr) repeat(2,minmax(100px,1fr)) 36px;}
+ .rep-plan-lesson>label:nth-of-type(4){grid-column:2/4;}.rep-plan-lesson>label:nth-of-type(5){grid-column:4/5;}.rep-plan-lesson .rep-plan-remove{grid-column:5;grid-row:1;}}
+@media(max-width:720px){.rep-plan .card{padding:12px;}.rep-plan-lesson{grid-template-columns:26px minmax(0,1fr) minmax(0,1fr) 34px;gap:7px;}
+ .rep-plan-lesson>label:nth-of-type(1){grid-column:2/4;}.rep-plan-lesson>label:nth-of-type(2){grid-column:2;}.rep-plan-lesson>label:nth-of-type(3){grid-column:3;}
+ .rep-plan-lesson>label:nth-of-type(4){grid-column:2/4;}.rep-plan-lesson>label:nth-of-type(5){grid-column:2/4;}
+ .rep-plan-lesson .rep-plan-remove{grid-column:4;grid-row:1;}.rep-plan-error{grid-column:1/-1;}
+ .rep-plan-options{margin-left:0;}.rep-plan-trainer-label{width:100%;}.rep-plan .rep-trainer{width:100%;}.rep-plan .rep-mode{width:100%;}
+}
+
+.rep-plan .rep-mode button[aria-pressed="true"]{background:var(--fad-green);color:#fff;box-shadow:none;}
+
 </style>
 
 <div id="root"></div>
@@ -2456,7 +2531,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '18.11.2026-bq'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '18.11.2026-br'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -6368,310 +6443,390 @@ function mergeTrainerDirection(catalog,direction){
   }
 }
 
-/* ================= Замены ================= */
-function replacementCandidates(trainers,directionsByTrainer,excludedId,requested){
-  const counts=new Map(), full=[], partial=[];
-  const eligible=trainers.filter(t=>t.id!==excludedId&&!t.exclude_from_replacements);
-  for(const trainer of eligible){
-    for(const id of directionsByTrainer.get(trainer.id)||[]){
-      counts.set(id,(counts.get(id)||0)+1);
-    }
+/* ================= Замены · BR: реальные даты и проверка расписания ================= */
+const REP_SCHEDULE_SERVICE='fad-impulse-schedule-18.11.2026-br';
+const REP_DOW=['вс','пн','вт','ср','чт','пт','сб'];
+const REP_BRANCHES=[['','Любой филиал'],['masherova','Машерова'],['tolbuhina','Толбухина'],['kuibysheva','Куйбышева']];
+function repMinskToday(){
+  const p=new Intl.DateTimeFormat('en-US',{timeZone:'Europe/Minsk',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+  const d=Object.fromEntries(p.map(x=>[x.type,x.value]));return `${d.year}-${d.month}-${d.day}`;
+}
+function repShiftDate(iso,days){return new Date(Date.parse(iso+'T00:00:00Z')+days*86400000).toISOString().slice(0,10);}
+function repMinutes(value){if(!/^\d{2}:\d{2}$/.test(value||''))return null;const [h,m]=value.split(':').map(Number);return h<24&&m<60?h*60+m:null;}
+function repTime(min){const m=((min%1440)+1440)%1440;return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');}
+function repDateLabel(iso){const d=new Date(iso+'T00:00:00Z');return REP_DOW[d.getUTCDay()]+', '+iso.slice(8)+'.'+iso.slice(5,7);}
+function repNameKey(name){return String(name||'').toLowerCase().replace(/ё/g,'е').replace(/[.,()«»]/g,' ').trim().split(/\s+/).filter(Boolean).sort().join(' ');}
+function repOneNameKey(name){return String(name||'').toLowerCase().replace(/ё/g,'е').replace(/[^a-zа-я0-9 ]/g,' ').trim().replace(/\s+/g,' ');}
+// Configurable mapping of Impulse session labels to FAD direction categories.
+// Unknown labels remain visible but cannot be silently assigned to the wrong direction.
+const REP_IMPULSE_DIRECTION_ALIASES={
+  'аэро light':'аэро','аэро flow':'аэро','аэро soft':'аэро','аэро intro':'аэро',
+  'аэро start':'аэро','аэро pro':'аэро','аэро relax':'аэро',
+  'пилатес start':'пилатес','пилатес classic':'пилатес','пилатес power':'пилатес',
+  'здоровая спина':'спина'
+};
+function repMatchDirection(catalog,impulseLabel){
+  const key=repOneNameKey(impulseLabel);
+  return catalog.find(d=>repOneNameKey(d.name)===key) ||
+    catalog.find(d=>repOneNameKey(d.name)===REP_IMPULSE_DIRECTION_ALIASES[key]);
+}
+function repUtcMinutes(date,time){const value=repMinutes(String(time||'').slice(0,5));return value===null?NaN:Date.parse(date+'T00:00:00Z')/60000+value;}
+function repBranchLabel(code){const hit=REP_BRANCHES.find(([id])=>id===code);return hit?hit[1]:code||'Филиал не указан';}
+function repValidLesson(lesson,today){
+  if(!lesson.date||!lesson.start||!lesson.end)return 'Укажите дату и время';
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(lesson.date)||isNaN(Date.parse(lesson.date+'T00:00:00Z')))return 'Некорректная дата';
+  if(lesson.date<today)return 'Дата в прошлом';
+  const a=repMinutes(lesson.start),b=repMinutes(lesson.end);
+  if(a===null||b===null)return 'Укажите время';
+  if(b<=a)return 'Конец должен быть позже начала';
+  if(!lesson.directionId)return 'Выберите направление';
+  return '';
+}
+function repEventConflict(event,lesson,buffer){
+  if(event.status==='cancelled')return null;
+  const s=repUtcMinutes(lesson.date,lesson.start),e=repUtcMinutes(lesson.date,lesson.end);
+  const cs=repUtcMinutes(event.date,event.start_time),ce=repUtcMinutes(event.end_date||event.date,event.end_time);
+  if(![s,e,cs,ce].every(Number.isFinite))return {type:'unknown',reason:'Некорректное время занятия Impulse'};
+  const pad=lesson.branch&&event.branch===lesson.branch?0:buffer;
+  if(cs<e+pad&&ce>s-pad){
+    const hard=cs<e&&ce>s;
+    const subject=event.direction||'Занятие';
+    const detail=`${subject} ${String(event.start_time).slice(0,5)}–${String(event.end_time).slice(0,5)}, ${repBranchLabel(event.branch)}, ${event.hall||'зал не указан'}`;
+    return {type:hard?'busy':'travel',reason:hard?'занят: '+detail:`не успевает добраться (запас ${buffer} мин): ${detail}`};
   }
-  const needed=requested.filter(d=>counts.has(d.id));
-  const unavailable=requested.filter(d=>!counts.has(d.id));
-  if(!needed.length) return {counts,needed,unavailable,full,partial};
-
-  for(const trainer of eligible){
-    const directions=directionsByTrainer.get(trainer.id)||new Set();
-    const missing=needed.filter(d=>!directions.has(d.id));
-    if(missing.length<needed.length){
-      (missing.length?partial:full).push({trainer,missing});
-    }
-  }
-  // По ФИО уже отсортировано, поэтому при одинаковом числе пропусков порядок сохраняется.
-  partial.sort((a,b)=>a.missing.length-b.missing.length);
-  return {counts,needed,unavailable,full,partial};
+  return null;
 }
-
-const REPLACEMENT_PHONE_ICON='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16.5v3a2 2 0 0 1-2.2 2 17 17 0 0 1-7.4-2.6 17 17 0 0 1-5.3-5.3A17 17 0 0 1 3.5 6.2 2 2 0 0 1 5.5 4h3a2 2 0 0 1 2 1.7l.4 2.4a2 2 0 0 1-.6 2l-1.2 1.2a13 13 0 0 0 4.6 4.6l1.2-1.2a2 2 0 0 1 2-.6l2.4.4a2 2 0 0 1 1.7 2z"/></svg>';
-const REPLACEMENT_CHEVRON='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
-
-function replacementRow({trainer,missing}){
-  const name=escapeHtml(trainer.full_name);
-  const branches=employeeStudios(trainer);
-  const dial=staffPhoneDial(trainer.phone);
-  const number=trainerInternationalPhone(dial);
-  const username=trainer.telegram_username;
-  const telegram=typeof username==='string'&&TRAINER_TELEGRAM_USERNAME.test(username)?username:number;
-  const contacts=[
-    {title:'Телефон',action:'Позвонить',href:/^\+?\d+$/.test(dial)?`tel:${dial}`:'',icon:REPLACEMENT_PHONE_ICON},
-    {title:'Telegram',action:'Написать в Telegram',href:telegram?`https://t.me/${telegram}`:'',icon:TRAINER_TELEGRAM_ICON,newTab:true},
-    {title:'Viber',action:'Написать в Viber',href:number?`viber://chat?number=${encodeURIComponent(number)}`:'',icon:TRAINER_VIBER_ICON}
-  ].map(({title,action,href,icon,newTab})=>{
-    const label=`${action}: ${name}`;
-    return href
-      ? `<a class="rep-row-contact" href="${escapeHtml(href)}" title="${title}" aria-label="${label}"${newTab?' target="_blank" rel="noopener noreferrer"':''}>${icon}</a>`
-      : `<button type="button" class="rep-row-contact" disabled title="Не указан" aria-label="${label} — не указан">${icon}</button>`;
-  }).join('');
-  const branchLabels=branches.map(s=>`<span class="rep-branch">${sdot(s)}${escapeHtml(studioName(s))}</span>`).join('');
-  const meta=(branchLabels?`<span class="rep-branches">${branchLabels}</span>`:'')
-    +(missing.length?`<span class="rep-missing">Нет: ${escapeHtml(missing.map(d=>d.name).join(', '))}</span>`:'');
-  return `<li class="rep-row">
-    <div class="rep-row-info"><div class="rep-name">${name}</div>${meta?`<div class="rep-row-meta">${meta}</div>`:''}</div>
-    <div class="rep-row-contacts">${contacts}</div>
-  </li>`;
+function repRequestedConflict(lesson,other,buffer){
+  if(lesson===other||lesson.date!==other.date)return false;
+  const pad=lesson.branch&&other.branch&&lesson.branch===other.branch?0:buffer;
+  return repUtcMinutes(other.date,other.start)<repUtcMinutes(lesson.date,lesson.end)+pad&&
+    repUtcMinutes(other.date,other.end)>repUtcMinutes(lesson.date,lesson.start)-pad;
 }
-
-function replacementResultGroup(id,heading=''){
-  const fullHeading=heading?'h3':'h2';
-  const partialHeading=heading?'h4':'h3';
-  return `<section id="${id}" aria-labelledby="${id}-title" hidden>
-    ${heading?`<h2 class="rep-result-heading rep-archive-heading" id="${id}-title">${heading}</h2>`:''}
-    <${fullHeading} class="rep-result-heading" ${heading?'':`id="${id}-title"`} data-rep-full-title></${fullHeading}>
-    <p class="rep-empty" data-rep-full-empty hidden></p>
-    <ol class="rep-rows" role="list" data-rep-full-rows></ol>
-    <button type="button" class="rep-partial-toggle" aria-controls="${id}-partial" aria-expanded="false" hidden>
-      <span></span>${REPLACEMENT_CHEVRON}
-    </button>
-    <div id="${id}-partial" data-rep-partial-content hidden>
-      <div data-rep-partial-one hidden>
-        <${partialHeading} class="rep-subheading">Не хватает одного направления</${partialHeading}>
-        <ol class="rep-rows" role="list"></ol>
-      </div>
-      <div data-rep-partial-many hidden>
-        <${partialHeading} class="rep-subheading">Не хватает двух и более</${partialHeading}>
-        <ol class="rep-rows" role="list"></ol>
-      </div>
-    </div>
-  </section>`;
-}
-
 async function renderReplacements(body){
-  const page=document.createElement('section');
-  page.className='replacements fade-in';
-  page.setAttribute('aria-labelledby','rep-title');
-  page.innerHTML='<h1 id="rep-title" class="rep-title">Подбор замены</h1><div class="rep-loading" role="status">Загружаем тренеров и направления…</div>';
+  const page=document.createElement('section');page.className='replacements rep-plan fade-in';
+  page.innerHTML='<div class="rep-loading" role="status">Загружаем тренеров и направления…</div>';
   body.replaceChildren(page);
-
   let data;
-  try{ data=await apiListReplacements(); }
-  catch(err){
-    if(!page.isConnected) return;
-    page.querySelector('.rep-loading').innerHTML='Не удалось загрузить тренеров и направления.<button type="button" class="btn">Повторить</button>';
-    page.querySelector('.rep-loading button').onclick=()=>{ void renderReplacements(body); };
-    if(isForbiddenErr(err)) handleErr(err);
-    return;
+  try{data=await apiListReplacements();}catch(err){
+    if(!page.isConnected)return;
+    page.innerHTML='<p class="rep-empty">Не удалось загрузить тренеров и направления. <button type="button" class="btn" id="rep-retry">Повторить</button></p>';
+    page.querySelector('#rep-retry').onclick=()=>void renderReplacements(body);
+    if(isForbiddenErr(err))handleErr(err);return;
   }
-  if(!page.isConnected) return;
-
+  if(!page.isConnected)return;
   let catalog=data.directions;
-  const trainers=data.trainers.sort((a,b)=>a.full_name.trim().localeCompare(b.full_name.trim(),'ru'));
-  const workingTrainers=trainers.filter(t=>t.is_active);
-  const directionsByTrainer=new Map(trainers.map(t=>[t.id,new Set()]));
+  const trainers=data.trainers.sort((a,b)=>a.full_name.localeCompare(b.full_name,'ru'));
+  const active=trainers.filter(t=>t.is_active);
+  const byTrainer=new Map(trainers.map(t=>[String(t.id),new Set()]));
   const assignmentCounts=new Map();
-  for(const {trainer_id,direction_id} of data.trainer_directions){
-    directionsByTrainer.get(trainer_id)?.add(direction_id);
-    assignmentCounts.set(direction_id,(assignmentCounts.get(direction_id)||0)+1);
+  for(const a of data.trainer_directions){
+    byTrainer.get(String(a.trainer_id))?.add(Number(a.direction_id));
+    assignmentCounts.set(Number(a.direction_id),(assignmentCounts.get(Number(a.direction_id))||0)+1);
   }
-
-  const state={mode:'trainer',trainerId:'',selected:new Set(),onlyFull:false};
-  page.querySelector('.rep-loading').remove();
-  page.insertAdjacentHTML('beforeend',`<div class="rep-query">
-    <div class="rep-query-top">
-      <div class="rep-mode" role="group" aria-label="Способ подбора">
-        <button type="button" data-rep-mode="trainer" aria-pressed="true">По тренеру</button>
-        <button type="button" data-rep-mode="direction" aria-pressed="false">По направлению</button>
-      </div>
-      <div class="rep-trainer-field" id="rep-trainer-field">
-        <select class="rep-trainer" id="rep-trainer" aria-label="Кого заменяем">
-          <option value="">Кого заменяем…</option>
-          ${workingTrainers.map(t=>`<option value="${escapeHtml(t.id)}">${escapeHtml(t.full_name)}</option>`).join('')}
+  const today=repMinskToday(),lastDay=repShiftDate(today,56);
+  const emptyLesson=()=>({date:today,start:'18:00',end:'19:00',directionId:0,branch:''});
+  const st={mode:'trainer',trainerId:'',directionId:0,lessons:[emptyLesson()],buf:15,onlyFull:false,
+    schedule:{state:'idle',from:'',to:'',updated:'',items:[],teachers:[],error:'',request:0},
+    pull:{open:false,date:today,selected:new Set()},timer:null};
+  const canManage=canDirectionAction('directions.create')||canDirectionAction('directions.delete');
+  page.innerHTML=`<div class="rep-plan-head">
+    <span>Выберите тренера или направление и укажите, какие занятия нужно заменить.</span>
+    ${canManage?'<button type="button" class="btn btn-ghost" id="rep-manage">Управление направлениями</button>':''}
+  </div>
+  <section class="card rep-plan-choose" aria-label="Способ подбора">
+    <div class="rep-plan-selector">
+      <div class="rep-mode" role="group" aria-label="Способ подбора"><button type="button" data-rep-mode="trainer" aria-pressed="true">По тренеру</button><button type="button" data-rep-mode="direction" aria-pressed="false">По направлению</button></div>
+      <label class="rep-plan-trainer-label" id="rep-trainer-field">КОГО ЗАМЕНЯЕМ
+        <select class="rep-trainer" id="rep-trainer" aria-label="Кого заменяем"><option value="">Выберите тренера…</option>
+          ${active.map(t=>`<option value="${escapeHtml(t.id)}">${escapeHtml(t.full_name)}</option>`).join('')}
         </select>
+      </label>
+    </div>
+    <div class="rep-plan-caption">НАПРАВЛЕНИЯ ЗАНЯТИЙ</div><div class="rep-directions" id="rep-directions" role="group" aria-label="Направления занятий"></div>
+    <p id="rep-unavailable" class="rep-plan-note" hidden></p>
+  </section>
+  <section class="card rep-plan-editor" aria-labelledby="rep-lessons-title">
+    <h3 id="rep-lessons-title">Что заменить</h3>
+    <div class="rep-plan-lessons" id="rep-lessons"></div>
+    <div class="rep-plan-actions">
+      <button type="button" class="btn btn-secondary" id="rep-add-lesson">+ Добавить занятие</button>
+      <button type="button" class="btn btn-secondary" id="rep-pull-toggle">Взять из расписания тренера</button>
+      <div class="rep-plan-options">
+        <label>Запас на дорогу <select id="rep-buffer"><option value="0">0 мин</option><option value="15" selected>15 мин</option><option value="30">30 мин</option><option value="60">60 мин</option></select></label>
+        <label><input type="checkbox" id="rep-only-full"> Только полное совпадение</label>
       </div>
     </div>
-    <div>
-      <div class="rep-label" id="rep-dir-label">Направления занятия</div>
-      <div class="rep-directions" id="rep-directions" role="group" aria-labelledby="rep-dir-label"></div>
-    </div>
-    <div class="rep-query-footer">
-      <div class="rep-need">
-        <p class="rep-needed" id="rep-needed" aria-live="polite" hidden></p>
-        <button type="button" class="rep-link" id="rep-restore" hidden>Вернуть направления тренера</button>
-      </div>
-      <button type="button" class="rep-switch" id="rep-only-full" aria-pressed="false">Только полное совпадение</button>
-    </div>
-    <p class="rep-unavailable" id="rep-unavailable" role="status" hidden></p>
-  </div>
-  <div class="rep-results">
-    <p id="rep-empty" class="rep-empty" role="status" hidden></p>
-    ${replacementResultGroup('rep-working')}
-    ${replacementResultGroup('rep-archived','Тренеры из архива')}
-  </div>
-  ${(canDirectionAction('directions.create')||canDirectionAction('directions.delete'))?`<button type="button" class="rep-link rep-manage" id="rep-manage" aria-haspopup="dialog">Управление направлениями</button>
-    <dialog class="modal direction-dialog" id="rep-direction-manager" aria-labelledby="rep-manager-title">
-      <h3 id="rep-manager-title">Управление направлениями</h3>
-      <div class="rep-manage-actions">
-        ${canDirectionAction('directions.create')?'<button type="button" class="btn" id="rep-add-direction">Добавить направление</button>':''}
-        ${canDirectionAction('directions.delete')?'<button type="button" class="btn" id="rep-delete-direction">Удалить направление</button>':''}
-      </div>
-      <div class="actions"><button type="button" class="btn" id="rep-manager-close">Закрыть</button></div>
-    </dialog>`:''}`);
-
+    <div id="rep-pull-box"></div>
+  </section>
+  <div id="rep-status" class="rep-plan-status" role="status"></div>
+  <div class="rep-plan-summary"><b id="rep-summary"></b><button type="button" class="btn btn-secondary" id="rep-copy">Скопировать текст запроса</button></div>
+  <div id="rep-results" class="rep-plan-results"></div>
+  ${canManage?`<dialog class="modal direction-dialog" id="rep-direction-manager" aria-labelledby="rep-manager-title">
+    <h3 id="rep-manager-title">Управление направлениями</h3><div class="rep-manage-actions">
+    ${canDirectionAction('directions.create')?'<button type="button" class="btn" id="rep-add-direction">Добавить направление</button>':''}
+    ${canDirectionAction('directions.delete')?'<button type="button" class="btn" id="rep-delete-direction">Удалить направление</button>':''}
+    </div><div class="actions"><button type="button" class="btn" id="rep-manager-close">Закрыть</button></div></dialog>`:''}`;
   const get=id=>page.querySelector('#'+id);
-  const modeButtons=page.querySelectorAll('[data-rep-mode]');
-  const directionList=get('rep-directions');
-  const select=get('rep-trainer'), onlyFull=get('rep-only-full'), restore=get('rep-restore');
-  const addDirection=get('rep-add-direction'), deleteDirection=get('rep-delete-direction');
-  const groups=['rep-working','rep-archived'].map(id=>{
-    const element=get(id);
-    const toggle=element.querySelector('.rep-partial-toggle');
-    const group={
-      element,toggle,expanded:null,
-      fullTitle:element.querySelector('[data-rep-full-title]'),
-      fullEmpty:element.querySelector('[data-rep-full-empty]'),
-      fullRows:element.querySelector('[data-rep-full-rows]'),
-      partialContent:element.querySelector('[data-rep-partial-content]'),
-      oneMissing:element.querySelector('[data-rep-partial-one]'),
-      moreMissing:element.querySelector('[data-rep-partial-many]')
-    };
-    toggle.onclick=()=>{
-      group.expanded=toggle.getAttribute('aria-expanded')!=='true';
-      setPartialExpanded(group,group.expanded);
-    };
-    return group;
-  });
-
-  function setPartialExpanded(group,expanded){
-    group.toggle.setAttribute('aria-expanded',String(expanded));
-    group.partialContent.hidden=!expanded;
+  const chosen=()=>active.find(x=>String(x.id)===st.trainerId);
+  const dirById=id=>catalog.find(x=>Number(x.id)===Number(id));
+  const allowed=()=>byTrainer.get(st.trainerId)||new Set();
+  const usableLessons=()=>st.lessons.filter(l=>!repValidLesson(l,today));
+  const scheduleOk=l=>st.schedule.state==='ready'&&l.date>=st.schedule.from&&l.date<=st.schedule.to;
+  function rowMarkup(l,i){
+    const dirs=st.mode==='trainer'?catalog.filter(d=>allowed().has(Number(d.id))):catalog.filter(d=>Number(d.id)===st.directionId);
+    const options=dirs.map(d=>`<option value="${d.id}" ${Number(d.id)===Number(l.directionId)?'selected':''}>${escapeHtml(d.name)}</option>`).join('');
+    return `<div class="rep-plan-lesson" data-lesson="${i}">
+      <span class="rep-plan-number">${i+1}</span>
+      <label class="rep-plan-date">Дата <span class="rep-plan-date-inner"><input type="date" min="${today}" data-field="date" value="${escapeHtml(l.date)}"><small class="rep-plan-dow">${REP_DOW[new Date(l.date+'T00:00:00Z').getUTCDay()]||''}</small></span></label>
+      <label>Начало <input type="time" step="300" data-field="start" value="${escapeHtml(l.start)}"></label>
+      <label>Конец <input type="time" step="300" data-field="end" value="${escapeHtml(l.end)}"></label>
+      <label>Направление ${st.mode==='direction'?`<span class="rep-plan-dir-text">${escapeHtml(dirById(l.directionId)?.name||'—')}</span>`:
+        `<select data-field="directionId"><option value="">Выберите…</option>${options}</select>`}</label>
+      <label>Филиал <select data-field="branch">${REP_BRANCHES.map(([code,name])=>`<option value="${code}" ${l.branch===code?'selected':''}>${name}</option>`).join('')}</select></label>
+      <button type="button" class="rep-plan-remove" data-delete-lesson aria-label="Удалить занятие ${i+1}" title="Убрать занятие" ${st.lessons.length===1?'disabled':''}>×</button>
+      <div class="rep-plan-error" data-lesson-error hidden></div>
+    </div>`;
   }
-
-  function renderDirectionButtons(){
-    if(deleteDirection) deleteDirection.disabled=!catalog.length;
-    directionList.innerHTML=catalog.map(d=>`<button type="button" class="rep-direction" data-rep-direction="${d.id}" aria-pressed="false">
-      <span>${escapeHtml(d.name)}</span><span class="rep-direction-count" data-rep-count></span>
-    </button>`).join('');
+  function markRow(i){
+    const row=page.querySelector(`[data-lesson="${i}"]`);if(!row)return;
+    const lesson=st.lessons[i],error=repValidLesson(lesson,today);
+    const outside=!error&&lesson.date>lastDay;
+    row.classList.toggle('rep-plan-invalid',!!error);
+    const note=row.querySelector('[data-lesson-error]');
+    note.hidden=!(error||outside);note.textContent=error||(outside?'Дата за пределами 8 недель — занятость не проверена':'');
+    note.classList.toggle('rep-plan-outside',outside);
   }
-
-  function drawGroup(group,full,partial){
-    group.element.hidden=!(full.length||partial.length);
-    group.fullTitle.textContent=`Подходят полностью · ${full.length}`;
-    group.fullEmpty.hidden=full.length>0;
-    group.fullEmpty.textContent=state.onlyFull
-      ? 'Полностью подходящих нет. Выключите «Только полное совпадение», чтобы увидеть частичные.'
-      : 'Полностью подходящих нет — смотрите частичные совпадения ниже.';
-    group.fullRows.innerHTML=full.map(replacementRow).join('');
-
-    group.toggle.hidden=state.onlyFull||!partial.length;
-    group.toggle.querySelector('span').textContent=`Частичные совпадения · ${partial.length}`;
-    const oneMissing=partial.filter(c=>c.missing.length===1);
-    const moreMissing=partial.slice(oneMissing.length);
-    group.oneMissing.hidden=!oneMissing.length;
-    group.moreMissing.hidden=!moreMissing.length;
-    group.oneMissing.querySelector('ol').innerHTML=oneMissing.map(replacementRow).join('');
-    group.moreMissing.querySelector('ol').innerHTML=moreMissing.map(replacementRow).join('');
-    setPartialExpanded(group,!group.toggle.hidden&&(group.expanded??!full.length));
+  function drawLessons(){get('rep-lessons').innerHTML=st.lessons.map(rowMarkup).join('');st.lessons.forEach((_,i)=>markRow(i));
+    get('rep-add-lesson').disabled=st.lessons.length>=15;
+    get('rep-add-lesson').title=st.lessons.length>=15?'Не больше 15 занятий':'';
   }
-
-  function draw(){
-    const byTrainer=state.mode==='trainer';
-    const selectedTrainer=byTrainer?workingTrainers.find(t=>t.id===state.trainerId):null;
-    const defaults=selectedTrainer?directionsByTrainer.get(selectedTrainer.id):null;
-    const requested=catalog.filter(d=>state.selected.has(d.id));
-    const {counts,needed,unavailable,full,partial}=replacementCandidates(trainers,directionsByTrainer,state.trainerId,requested);
-
-    modeButtons.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.repMode===state.mode)));
-    get('rep-trainer-field').hidden=!byTrainer;
-    select.value=state.trainerId;
-    onlyFull.setAttribute('aria-pressed',String(state.onlyFull));
-    restore.hidden=!defaults||(defaults.size===state.selected.size&&[...defaults].every(id=>state.selected.has(id)));
-    directionList.querySelectorAll('[data-rep-direction]').forEach(button=>{
-      const id=Number(button.dataset.repDirection);
-      const count=counts.get(id)||0;
-      button.disabled=!count||(byTrainer&&!selectedTrainer);
-      button.classList.toggle('rep-direction-empty',!count);
-      button.title=count?'':'Других тренеров с этим направлением нет';
-      button.setAttribute('aria-pressed',String(state.selected.has(id)));
-      button.querySelector('[data-rep-count]').textContent=count;
+  function drawDirections(){
+    const counts=new Map();for(const t of trainers.filter(t=>!t.exclude_from_replacements)){
+      for(const id of byTrainer.get(String(t.id))||[])counts.set(id,(counts.get(id)||0)+1);
+    }
+    const applicable=st.mode==='trainer'?(chosen()?allowed():new Set()):new Set(catalog.map(d=>Number(d.id)));
+    const marked=new Set(st.lessons.map(l=>Number(l.directionId)));
+    get('rep-directions').innerHTML=catalog.map(d=>{
+      const id=Number(d.id),disabled=!counts.get(id)||(st.mode==='trainer'&&!applicable.has(id));
+      return `<button type="button" class="rep-direction" data-rep-direction="${id}" aria-pressed="${st.mode==='direction'?st.directionId===id:marked.has(id)}" ${disabled?'disabled':''}>
+      <span>${escapeHtml(d.name)}</span><span class="rep-direction-count">${counts.get(id)||0}</span></button>`;
+    }).join('');
+    get('rep-unavailable').hidden=!(st.mode==='trainer'&&chosen()&&!applicable.size);
+    get('rep-unavailable').textContent='У выбранного тренера нет направлений. Добавьте их через «Управление направлениями».';
+  }
+  function scheduleMatch(trainer){
+    const ids=new Set(st.schedule.teachers.map(x=>String(x.impulse_trainer_id)));
+    const explicit=String(trainer.impulse_teacher_id||trainer.impulse_trainer_id||'');
+    if(explicit&&ids.has(explicit))return explicit;
+    const byExact=st.schedule.teachers.filter(x=>repNameKey(x.trainer_name)===repNameKey(trainer.full_name));
+    return byExact.length===1?String(byExact[0].impulse_trainer_id):null;
+  }
+  function reportStatus(){
+    const s=st.schedule;
+    let msg='';
+    if(s.state==='loading')msg='◌ Impulse · загружаем расписание…';
+    else if(s.state==='ready'){
+      const t=new Intl.DateTimeFormat('ru-RU',{timeZone:'Europe/Minsk',hour:'2-digit',minute:'2-digit'}).format(new Date(s.updated));
+      msg=`● Impulse · расписание ${s.from} — ${s.to} · обновлено ${t}`;
+    }else if(s.state==='error')msg='● Impulse недоступен — занятость не проверена ('+s.error+')';
+    else msg='● Укажите тренера или направление — проверим занятость по Impulse';
+    const count=s.state==='ready'?trainers.filter(t=>t.is_active&&!t.exclude_from_replacements&&!scheduleMatch(t)).length:0;
+    if(count)msg+=` · не сопоставлены с Impulse: ${count}`;
+    get('rep-status').innerHTML=`<span class="${s.state==='error'?'rep-plan-status-error':s.state==='ready'?'rep-plan-status-ok':''}">${escapeHtml(msg)}</span>
+      <button type="button" id="rep-refresh-schedule" class="btn btn-ghost" ${s.state==='loading'?'disabled':''}>обновить</button>`;
+    get('rep-refresh-schedule').onclick=()=>void loadSchedule(true);
+  }
+  function validDateWindow(){
+    const dates=usableLessons().map(l=>l.date).filter(date=>date<=lastDay);
+    if(st.pull.open&&st.mode==='trainer'&&st.pull.date>=today&&st.pull.date<=lastDay)dates.push(st.pull.date);
+    if(!dates.length)return null;
+    dates.sort();return {from:dates[0],to:dates[dates.length-1]};
+  }
+  async function loadSchedule(force=false){
+    const range=validDateWindow();
+    if(!range){st.schedule.state='idle';reportStatus();drawResults();drawPull();return;}
+    if(!force&&st.schedule.state==='ready'&&st.schedule.from<=range.from&&st.schedule.to>=range.to&&
+      Date.now()-Date.parse(st.schedule.updated)<10*60000)return;
+    if(!force&&st.schedule.state==='loading'&&st.schedule.requestFrom===range.from&&st.schedule.requestTo===range.to)return;
+    const request=++st.schedule.request;
+    st.schedule={...st.schedule,state:'loading',error:'',request,requestFrom:range.from,requestTo:range.to};
+    reportStatus();drawResults();
+    try{
+      const response=await fetch(SUPABASE_URL+'/functions/v1/impulse-schedule',{
+        method:'POST',headers:{'Content-Type':'application/json',apikey:SUPABASE_ANON_KEY,Authorization:'Bearer '+SUPABASE_ANON_KEY},
+        body:JSON.stringify({token:TOKEN,from:range.from,to:range.to,force})
+      });
+      const reply=await response.json().catch(()=>null);
+      if(!response.ok||!reply?.ok||!reply?.verified||reply?.service!==REP_SCHEDULE_SERVICE||!Array.isArray(reply.items)||!Array.isArray(reply.teachers))
+        throw new Error(String(reply?.error||'Ответ Impulse не подтверждён'));
+      if(request!==st.schedule.request||!page.isConnected)return;
+      st.schedule={state:'ready',from:reply.from,to:reply.to,updated:reply.updated_at,items:reply.items,teachers:reply.teachers,error:'',request};
+    }catch(err){
+      if(request!==st.schedule.request||!page.isConnected)return;
+      st.schedule={state:'error',from:'',to:'',updated:'',items:[],teachers:[],error:String(err.message||err).slice(0,80),request};
+    }
+    reportStatus();drawResults();drawPull();st.lessons.forEach((_,i)=>markRow(i));
+  }
+  function queueLoad(){if(st.timer)clearTimeout(st.timer);st.timer=setTimeout(()=>void loadSchedule(),220);}
+  function candidateEval(trainer,lessons){
+    const own=byTrainer.get(String(trainer.id))||new Set(),impulseId=scheduleMatch(trainer);
+    const matched=lessons.some(l=>own.has(Number(l.directionId)));
+    if(!matched)return null;
+    const results=lessons.map(l=>{
+      if(!own.has(Number(l.directionId)))return {state:'no',reason:`не ведёт «${dirById(l.directionId)?.name||''}»`};
+      if(l.date>lastDay||!scheduleOk(l))return {state:'unknown',reason:'занятость не проверена (дата вне проверенного диапазона)'};
+      if(!impulseId)return {state:'unknown',reason:'занятость не проверена (тренер не сопоставлен с Impulse)'};
+      const ownConflict=lessons.some(other=>repRequestedConflict(l,other,st.buf));
+      if(ownConflict)return {state:'no',reason:'время запрошенных занятий пересекается или не хватает времени на дорогу между ними'};
+      const events=st.schedule.items.filter(e=>String(e.impulse_trainer_id)===impulseId);
+      for(const event of events){const conflict=repEventConflict(event,l,st.buf);if(conflict){
+        if(conflict.type==='unknown')return {state:'unknown',reason:conflict.reason};
+        return {state:'no',reason:conflict.reason};
+      }}
+      return {state:'ok',reason:''};
     });
-
-    const need=get('rep-needed');
-    need.hidden=!needed.length;
-    need.textContent=needed.length?`Нужно: ${needed.map(d=>d.name).join(', ')}`:'';
-    const warning=get('rep-unavailable');
-    warning.hidden=!unavailable.length;
-    const omitted=unavailable.map(d=>d.name).join(', ');
-    warning.textContent=unavailable.length===1
-      ? `${omitted} — других тренеров с этим направлением нет, в подборе не учитывается.`
-      : `${omitted} — других тренеров с этими направлениями нет, в подборе не учитываются.`;
-
-    let emptyText='';
-    if(!catalog.length) emptyText='Направлений пока нет.';
-    else if(byTrainer&&!selectedTrainer) emptyText='Выберите тренера — покажем, кто может его заменить.';
-    else if(!requested.length) emptyText='Отметьте направления — покажем, кто их ведёт.';
-    else if(!full.length&&!partial.length) emptyText='По выбранным направлениям нет доступных тренеров.';
-    const empty=get('rep-empty');
-    empty.hidden=!emptyText;
-    empty.textContent=emptyText;
-
-    drawGroup(groups[0], full.filter(c=>c.trainer.is_active), partial.filter(c=>c.trainer.is_active));
-    drawGroup(groups[1], full.filter(c=>!c.trainer.is_active), partial.filter(c=>!c.trainer.is_active));
+    return {trainer,results,ok:results.filter(x=>x.state==='ok').length,unknown:results.filter(x=>x.state==='unknown').length};
   }
-
-  function updateSearch(){
-    groups.forEach(group=>{group.expanded=null;});
-    draw();
+  function resultRow(item,lessons){
+    const html=replacementRow({trainer:item.trainer,missing:[]});
+    const extra=`<div class="rep-plan-details">
+      ${!item.trainer.is_active?'<span class="badge">Из архива</span>':''}
+      ${item.unknown?`<span class="rep-plan-unknown-caption">Занятость не проверена: ${item.unknown} из ${lessons.length}</span>`:''}
+      <div class="rep-plan-pills">${item.results.map((r,i)=>`<span class="rep-plan-pill rep-plan-pill-${r.state}">${escapeHtml(repDateLabel(lessons[i].date))} ${escapeHtml(lessons[i].start)} ${r.state==='ok'?'✓':r.state==='no'?'✗':'?'}</span>`).join('')}</div>
+      ${item.results.map((r,i)=>r.reason?`<p class="rep-plan-reason">${escapeHtml(repDateLabel(lessons[i].date)+' '+lessons[i].start)} — ${escapeHtml(r.reason)}</p>`:'').join('')}
+    </div>`;
+    return html.replace('</li>',extra+'</li>');
   }
-
-  modeButtons.forEach(b=>b.onclick=()=>{
-    if(state.mode===b.dataset.repMode) return;
-    state.mode=b.dataset.repMode;
-    state.trainerId='';
-    state.selected.clear();
-    updateSearch();
+  function drawResults(){
+    const valid=usableLessons();
+    get('rep-summary').textContent=`Нужно заменить: ${valid.length} ${valid.length===1?'занятие':valid.length<5?'занятия':'занятий'} · ${new Set(valid.map(l=>l.date)).size} дн.`;
+    get('rep-copy').disabled=!valid.length;
+    const target=st.mode==='trainer'?st.trainerId:st.directionId;
+    if(!target||!valid.length){get('rep-results').innerHTML='<div class="rep-plan-empty">Выберите тренера или направление и заполните занятия.</div>';return;}
+    const all=[];
+    for(const t of trainers){if(t.exclude_from_replacements||st.mode==='trainer'&&String(t.id)===st.trainerId)continue;
+      const item=candidateEval(t,valid);if(item)all.push(item);
+    }
+    const full=all.filter(x=>x.ok===valid.length),partial=all.filter(x=>x.ok>0&&x.ok<valid.length),
+      unknown=all.filter(x=>x.ok===0&&x.unknown>0),busy=all.filter(x=>x.ok===0&&x.unknown===0);
+    partial.sort((a,b)=>b.ok-a.ok);
+    const ordered=arr=>arr.sort((a,b)=>Number(b.trainer.is_active)-Number(a.trainer.is_active));
+    const section=(title,items,empty)=>`<section class="rep-plan-result card"><h3>${escapeHtml(title)} · ${items.length}</h3>
+      ${items.length?`<ol class="rep-rows">${ordered(items).map(x=>resultRow(x,valid)).join('')}</ol>`:`<p class="rep-plan-empty">${escapeHtml(empty)}</p>`}</section>`;
+    let out=section('Подходят на все занятия',full,'Нет тренеров, свободных на все выбранные занятия.');
+    if(!st.onlyFull){
+      out+=section('Подходят частично',partial,'Нет частичных совпадений.');
+      if(unknown.length)out+=section('Занятость не подтверждена',unknown,'');
+    }
+    out+=`<details class="rep-plan-result card"><summary>Заняты на все занятия · ${busy.length}</summary>
+      ${busy.length?`<ol class="rep-rows">${ordered(busy).map(x=>resultRow(x,valid)).join('')}</ol>`:'<p class="rep-plan-empty">Занятых кандидатов нет.</p>'}</details>`;
+    get('rep-results').innerHTML=out;
+  }
+  function drawPull(){
+    const box=get('rep-pull-box');
+    if(!st.pull.open||st.mode!=='trainer'){box.innerHTML='';return;}
+    const trainer=chosen(),id=trainer&&scheduleMatch(trainer),loaded=scheduleOk({date:st.pull.date});
+    const items=id&&loaded?st.schedule.items.filter(x=>String(x.impulse_trainer_id)===id&&x.date===st.pull.date&&x.status!=='cancelled'):[];
+    box.innerHTML=`<div class="rep-plan-pull"><div class="rep-plan-pull-head"><b>Занятия тренера из Impulse</b>
+       <input type="date" id="rep-pull-date" min="${today}" value="${st.pull.date}"></div>
+      ${!loaded?'<p>Расписание на эту дату не подтверждено. Проверьте статус Impulse.</p>':
+        !id?'<p>Тренер не сопоставлен с Impulse. Занятия нельзя импортировать автоматически.</p>':
+        items.length?`<div class="rep-plan-pull-list">${items.map((x,i)=>{
+          const matched=repMatchDirection(catalog,x.direction);
+          const canAdd=!!matched&&allowed().has(Number(matched.id));
+          return `<label><input type="checkbox" data-pull-index="${i}" ${st.pull.selected.has(i)?'checked':''} ${canAdd?'':'disabled'}>
+            <span><b>${escapeHtml(x.start_time.slice(0,5))}–${escapeHtml(x.end_time.slice(0,5))}</b> · ${escapeHtml(x.direction||'Неизвестно')} · ${escapeHtml(repBranchLabel(x.branch))}, ${escapeHtml(x.hall||'зал не указан')}
+            ${canAdd?'':' · направление не сопоставлено с карточкой тренера'}</span></label>`;}).join('')}</div>`:'<p>На выбранный день у тренера нет занятий в подтверждённой выгрузке.</p>'}
+      <div class="rep-plan-pull-actions"><button type="button" class="btn btn-primary" id="rep-pull-add" ${!id||!loaded?'disabled':''}>Добавить выбранные</button>
+        <button type="button" class="btn btn-secondary" id="rep-pull-all">Выбрать все</button></div></div>`;
+    const date=get('rep-pull-date');date.onchange=()=>{st.pull.date=date.value;st.pull.selected.clear();drawPull();queueLoad();};
+    box.querySelectorAll('[data-pull-index]').forEach(x=>x.onchange=()=>{
+      const i=Number(x.dataset.pullIndex);if(x.checked)st.pull.selected.add(i);else st.pull.selected.delete(i);
+    });
+    get('rep-pull-all').onclick=()=>{box.querySelectorAll('[data-pull-index]:not(:disabled)').forEach(x=>{x.checked=true;st.pull.selected.add(Number(x.dataset.pullIndex));});};
+    get('rep-pull-add').onclick=()=>{
+      const chosenItems=[...st.pull.selected].sort((a,b)=>a-b).map(i=>items[i]).filter(Boolean);
+      const additions=chosenItems.map(x=>{
+        const dir=repMatchDirection(catalog,x.direction);
+        return dir&&allowed().has(Number(dir.id))?{date:st.pull.date,start:x.start_time.slice(0,5),end:x.end_time.slice(0,5),directionId:Number(dir.id),branch:REP_BRANCHES.some(b=>b[0]===x.branch)?x.branch:''}:null;
+      }).filter(Boolean);
+      if(!additions.length){toast('Выберите занятия с распознанными направлениями',true);return;}
+      if(st.lessons.length===1&&!st.lessons[0].directionId)st.lessons=[];
+      const count=Math.min(15-st.lessons.length,additions.length);
+      st.lessons.push(...additions.slice(0,count));st.pull.open=false;st.pull.selected.clear();
+      drawLessons();drawPull();drawDirections();drawResults();queueLoad();toast(`Добавлено занятий: ${count}`);
+    };
+  }
+  function updateMode(){
+    page.querySelectorAll('[data-rep-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.repMode===st.mode)));
+    get('rep-trainer-field').hidden=st.mode!=='trainer';
+    get('rep-pull-toggle').hidden=st.mode!=='trainer';
+    drawDirections();drawLessons();drawPull();drawResults();queueLoad();
+  }
+  page.querySelectorAll('[data-rep-mode]').forEach(b=>b.onclick=()=>{
+    const mode=b.dataset.repMode;if(mode===st.mode)return;
+    st.mode=mode;st.trainerId='';st.directionId=0;st.lessons=[emptyLesson()];
+    st.pull.open=false;updateMode();
   });
-  select.onchange=()=>{
-    state.trainerId=select.value;
-    state.selected=new Set(directionsByTrainer.get(select.value));
-    updateSearch();
+  get('rep-trainer').onchange=e=>{
+    st.trainerId=e.target.value;
+    const dirs=catalog.filter(d=>allowed().has(Number(d.id)));
+    st.lessons.forEach(l=>{if(!allowed().has(Number(l.directionId)))l.directionId=Number(dirs[0]?.id||0);});
+    st.pull.open=false;updateMode();
   };
-  directionList.onclick=event=>{
-    const button=event.target.closest('[data-rep-direction]');
-    if(!button||button.disabled) return;
-    const id=Number(button.dataset.repDirection);
-    if(state.selected.has(id)) state.selected.delete(id); else state.selected.add(id);
-    updateSearch();
+  get('rep-directions').onclick=e=>{
+    const btn=e.target.closest('[data-rep-direction]');if(!btn||btn.disabled)return;
+    const id=Number(btn.dataset.repDirection);
+    if(st.mode==='direction'){st.directionId=id;st.lessons.forEach(l=>l.directionId=id);}
+    else st.lessons[0].directionId=id;
+    drawLessons();drawDirections();drawResults();queueLoad();
   };
-  restore.onclick=()=>{
-    state.selected=new Set(directionsByTrainer.get(state.trainerId));
-    select.focus({preventScroll:true});
-    updateSearch();
+  get('rep-lessons').addEventListener('input',e=>{
+    const row=e.target.closest('[data-lesson]');if(!row)return;
+    const index=Number(row.dataset.lesson),field=e.target.dataset.field;if(!field)return;
+    const lesson=st.lessons[index];lesson[field]=field==='directionId'?Number(e.target.value):e.target.value;
+    if(field==='start'&&repMinutes(lesson.start)!==null&&repMinutes(lesson.end)<=repMinutes(lesson.start)){
+      lesson.end=repTime(repMinutes(lesson.start)+60);
+      row.querySelector('[data-field="end"]').value=lesson.end;
+    }
+    if(field==='date')row.querySelector('.rep-plan-dow').textContent=lesson.date?REP_DOW[new Date(lesson.date+'T00:00:00Z').getUTCDay()]||'':'';
+    markRow(index);drawDirections();drawResults();if(field==='date')queueLoad();
+  });
+  get('rep-lessons').addEventListener('click',e=>{
+    const btn=e.target.closest('[data-delete-lesson]');if(!btn||st.lessons.length===1)return;
+    const row=btn.closest('[data-lesson]');st.lessons.splice(Number(row.dataset.lesson),1);
+    drawLessons();drawDirections();drawResults();queueLoad();
+  });
+  get('rep-add-lesson').onclick=()=>{
+    if(st.lessons.length>=15)return;
+    st.lessons.push({...st.lessons[st.lessons.length-1]});drawLessons();drawDirections();drawResults();queueLoad();
   };
-  onlyFull.onclick=()=>{ state.onlyFull=!state.onlyFull; draw(); };
-
-  if(addDirection||deleteDirection){
-    const manager=get('rep-direction-manager');
-    get('rep-manage').onclick=()=>manager.showModal();
+  get('rep-pull-toggle').onclick=()=>{st.pull.open=!st.pull.open;st.pull.selected.clear();drawPull();queueLoad();};
+  get('rep-buffer').onchange=e=>{st.buf=Number(e.target.value);drawResults();};
+  get('rep-only-full').onchange=e=>{st.onlyFull=e.target.checked;drawResults();};
+  get('rep-copy').onclick=async()=>{
+    const l=usableLessons();if(!l.length)return;
+    const txt='Нужна замена:\n'+l.map(x=>`• ${repDateLabel(x.date)}, ${x.start}–${x.end} · ${dirById(x.directionId)?.name||''}${x.branch?' · '+repBranchLabel(x.branch):''}`).join('\n')+'\nМожете взять? Напишите, пожалуйста.';
+    try{await navigator.clipboard.writeText(txt);toast('Текст запроса скопирован');}catch{toast('Не удалось скопировать текст',true);}
+  };
+  if(canManage){
+    const manager=get('rep-direction-manager');get('rep-manage').onclick=()=>manager.showModal();
     get('rep-manager-close').onclick=()=>manager.close();
-    if(addDirection)addDirection.onclick=()=>directionModal(addDirection,direction=>{
-      if(!page.isConnected) return;
-      mergeTrainerDirection(catalog,direction);
-      renderDirectionButtons();
-      draw();
+    const add=get('rep-add-direction'),del=get('rep-delete-direction');
+    if(add)add.onclick=()=>directionModal(add,d=>{
+      if(!page.isConnected)return;
+      mergeTrainerDirection(catalog,d);drawDirections();drawLessons();drawResults();
     });
-    if(deleteDirection)deleteDirection.onclick=()=>deleteDirectionModal(deleteDirection,catalog,assignmentCounts,id=>{
-      if(!page.isConnected) return;
-      catalog=catalog.filter(d=>d.id!==id);
-      assignmentCounts.delete(id);
-      directionsByTrainer.forEach(ids=>ids.delete(id));
-      state.selected.delete(id);
-      renderDirectionButtons();
-      updateSearch();
-      if(deleteDirection.disabled) (addDirection||get('rep-manage'))?.focus();
+    if(del)del.onclick=()=>deleteDirectionModal(del,catalog,assignmentCounts,id=>{
+      if(!page.isConnected)return;
+      catalog=catalog.filter(d=>Number(d.id)!==Number(id));assignmentCounts.delete(id);
+      byTrainer.forEach(ds=>ds.delete(Number(id)));
+      st.lessons.forEach(l=>{if(Number(l.directionId)===Number(id))l.directionId=0;});
+      if(st.directionId===Number(id))st.directionId=0;
+      drawDirections();drawLessons();drawResults();
     });
   }
-  renderDirectionButtons();
-  draw();
+  updateMode();
 }
 
 /* ================= Employees ================= */
