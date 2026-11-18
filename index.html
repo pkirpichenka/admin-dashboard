@@ -2018,6 +2018,79 @@ textarea.roles-input{min-height:65px;resize:vertical}.roles-field{display:flex;f
 .roles-screen button:focus-visible,.roles-screen input:focus-visible,.roles-screen select:focus-visible,.roles-screen textarea:focus-visible{outline:3px solid #7fb89c;outline-offset:2px}
 @media(max-width:700px){.roles-shell{grid-template-columns:1fr}.roles-grid{grid-template-columns:1fr}.roles-soon-list{columns:1}}
 
+
+/* ===== FAD · вертикальная навигация BH; содержимое вкладок не меняется ===== */
+:root{--fad-side:#1f4a37;--fad-side-accent:#f0c75e;--fad-page:#eef2ee;--fad-text:#1f2d26;--fad-muted:#5b6b62;--fad-border:#d5dfd7;--fad-card-border:#dfe8e1}
+.fad-app-shell{display:flex;min-height:100vh;height:100vh;height:100dvh;width:100%;overflow:hidden;background:var(--fad-page)}
+.fad-sidebar{order:0;box-sizing:border-box;position:sticky;top:0;z-index:52;flex:0 0 248px;width:248px;height:100vh;height:100dvh;display:flex;flex-direction:column;gap:8px;padding:16px 12px 12px;background:var(--fad-side);color:#fff;overflow-x:hidden;overflow-y:auto;scrollbar-width:thin;font-family:'Manrope',system-ui,sans-serif;transition:width .18s ease,flex-basis .18s ease}
+.fad-sidebar-brand{order:0;display:flex;align-items:center;gap:10px;min-height:48px;padding:0 4px;flex:none;overflow:hidden}
+.fad-sidebar-logo{width:40px;height:40px;flex:none;background:white;border-radius:11px;display:grid;place-items:center;color:#2d6a4f}
+.fad-sidebar-logo svg{width:22px;height:22px}
+.fad-sidebar-brand-text{font-size:18px;font-weight:800;letter-spacing:.03em;white-space:nowrap}
+.fad-sidebar-nav{order:1;display:flex;flex-direction:column;gap:2px;flex:0 0 auto;min-height:0;padding-top:6px}
+.fad-sidebar-group{display:flex;flex-direction:column;gap:2px}
+.fad-sidebar-group-title{display:flex;align-items:center;margin:8px 0 4px;padding:0 12px;height:24px;flex:none;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#a9bdb1}
+.fad-sidebar-nav .fad-sidebar-tab{display:flex;align-items:center;justify-content:flex-start;width:100%;height:42px;min-height:42px;max-height:42px;padding:0 12px;border:0;border-radius:10px;background:transparent;color:#dbe7df;text-align:left;font-family:inherit;font-size:14px;font-weight:600;gap:12px;flex:none;box-shadow:none;transition:background .15s,color .15s}
+.fad-sidebar-nav .fad-sidebar-tab:hover{background:rgba(255,255,255,.09);color:#fff}
+.fad-sidebar-nav .fad-sidebar-tab.on{background:rgba(255,255,255,.16);color:#fff;box-shadow:inset 3px 0 0 var(--fad-side-accent)}
+.fad-sidebar-icon{flex:none;width:20px;height:20px}
+.fad-sidebar-tab-text{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
+.fad-app-shell :is(.fad-sidebar-tab,.fad-sidebar-collapse,.fad-sidebar-hamburger,.fad-sidebar-actions button):focus-visible{outline:3px solid var(--fad-side-accent);outline-offset:2px}
+.fad-sidebar-user{order:2;margin-top:auto;padding:12px 2px 0;border-top:1px solid rgba(255,255,255,.17);display:flex;flex-direction:column;gap:10px;flex:none;min-width:0}
+.fad-sidebar-identity{display:flex;align-items:center;gap:10px;min-width:0;padding:0 2px}
+.fad-sidebar-avatar{display:grid;place-items:center;flex:none;width:36px;height:36px;border-radius:50%;background:var(--fad-side-accent);color:#22372b;font-size:13px;font-weight:800}
+.fad-sidebar-user-info{min-width:0;display:flex;flex-direction:column;gap:2px;line-height:1.3}
+.fad-sidebar-user-info strong{font-size:13px;color:#fff;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fad-sidebar-user-info>span{font-size:11px;color:#c0d0c5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fad-sidebar-user-info .role-pill{background:transparent;color:var(--fad-side-accent);font-size:11px;padding:0 2px}
+.fad-sidebar-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;min-width:0}
+.fad-sidebar-actions .btn{background:transparent;border:1px solid rgba(255,255,255,.24);border-radius:9px;color:#fff;min-width:0;padding:8px 3px;font-size:12px;white-space:nowrap}
+.fad-sidebar-actions .btn:hover{background:rgba(255,255,255,.12);color:#fff}
+.fad-sidebar-collapse{order:3;display:flex;align-items:center;justify-content:center;gap:9px;width:100%;height:42px;min-height:42px;flex:none;background:rgba(255,255,255,.08);border:0;border-radius:10px;color:#ecf3ee;font-weight:650;font-size:12px}
+.fad-sidebar-collapse:hover{background:rgba(255,255,255,.13)}
+.fad-sidebar-collapse-label{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.fad-sidebar-scrim{display:none}
+.fad-main{order:1;flex:1;min-width:0;height:100vh;height:100dvh;overflow-x:hidden;overflow-y:auto;scrollbar-gutter:stable;background:var(--fad-page)}
+.fad-main-topline{min-height:64px;display:flex;align-items:center;gap:14px;padding:10px 24px 10px 26px;background:#fff;border-bottom:1px solid var(--fad-card-border);position:sticky;top:0;z-index:38;font-family:'Manrope',system-ui,sans-serif}
+.fad-main-heading{min-width:0;flex:1}
+.fad-main-eyebrow{color:#718278;font-size:10px;font-weight:800;letter-spacing:.08em;line-height:1.2}
+.fad-main-heading h1{font-family:'Manrope',system-ui,sans-serif;font-size:20px;line-height:1.2;font-weight:800;margin:2px 0 0;color:var(--fad-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fad-main-version{font-size:10px;color:#7d8e83;white-space:nowrap}
+.fad-main .wrap{box-sizing:border-box;width:100%;max-width:1600px;margin:0 auto;padding:22px 26px 75px;min-width:0}
+.fad-main #tabbody{min-width:0}
+.fad-main #tabbody :is(.table-wrap,.table-responsive,.payroll-table-wrap,.adpay-table-wrap){max-width:100%;overflow-x:auto}
+.fad-main #tabbody :is(.sch-scroll,.adpay-scroll,.payroll-table-scroll,.payroll-grid-scroll,.roles-table-wrap,.bp-table-scroll){max-width:100%;min-width:0;overflow-x:auto}
+.fad-main .wrap:has(> #tabbody > .bonus-page){max-width:1600px}
+.fad-sidebar-hamburger{display:none;border:1px solid var(--fad-border);background:#fff;border-radius:10px;width:42px;height:42px;flex:none;align-items:center;justify-content:center;color:var(--fad-text)}
+/* Свернутая версия на десктопе: все иконки остаются интерактивными. */
+.fad-sidebar-is-collapsed .fad-sidebar{width:76px;flex-basis:76px}
+.fad-sidebar-is-collapsed .fad-sidebar-brand{padding:0;justify-content:center}
+.fad-sidebar-is-collapsed .fad-sidebar-brand-text,.fad-sidebar-is-collapsed .fad-sidebar-tab-text,.fad-sidebar-is-collapsed .fad-sidebar-user-info,.fad-sidebar-is-collapsed .fad-sidebar-actions,.fad-sidebar-is-collapsed .fad-sidebar-collapse-label{display:none}
+.fad-sidebar-is-collapsed .fad-sidebar-group-title{padding:0;margin:10px 11px 8px;height:1px;background:rgba(255,255,255,.22);font-size:0}
+.fad-sidebar-is-collapsed .fad-sidebar-nav .fad-sidebar-tab{justify-content:center;gap:0;padding:0}
+.fad-sidebar-is-collapsed .fad-sidebar-identity{justify-content:center;padding:0}
+.fad-sidebar-is-collapsed .fad-sidebar-collapse svg{transform:rotate(180deg)}
+@media(max-width:899px){
+  .fad-app-shell{display:block;height:100vh;height:100dvh;overflow:hidden}
+  .fad-sidebar,.fad-sidebar-is-collapsed .fad-sidebar{position:fixed;top:0;left:0;bottom:0;width:248px;max-width:85vw;height:100vh;height:100dvh;flex-basis:248px;z-index:93;transform:translateX(-105%);transition:transform .2s ease;box-shadow:10px 0 30px rgba(12,37,24,.16)}
+  .fad-sidebar-drawer-open .fad-sidebar{transform:translateX(0)}
+  .fad-sidebar-is-collapsed .fad-sidebar-brand-text,.fad-sidebar-is-collapsed .fad-sidebar-tab-text,.fad-sidebar-is-collapsed .fad-sidebar-user-info,.fad-sidebar-is-collapsed .fad-sidebar-actions,.fad-sidebar-is-collapsed .fad-sidebar-collapse-label{display:initial}
+  .fad-sidebar-is-collapsed .fad-sidebar-user-info{display:flex}.fad-sidebar-is-collapsed .fad-sidebar-actions{display:grid}
+  .fad-sidebar-is-collapsed .fad-sidebar-group-title{display:flex;height:24px;margin:8px 0 4px;padding:0 12px;background:none;font-size:11px}
+  .fad-sidebar-is-collapsed .fad-sidebar-nav .fad-sidebar-tab{justify-content:flex-start;gap:12px;padding:0 12px}
+  .fad-sidebar-is-collapsed .fad-sidebar-brand{padding:0 4px;justify-content:flex-start}
+  .fad-sidebar-is-collapsed .fad-sidebar-identity{justify-content:flex-start;padding:0 2px}
+  .fad-sidebar-collapse{display:none}
+  .fad-sidebar-drawer-open .fad-sidebar-scrim{display:block;position:fixed;inset:0;z-index:92;background:rgba(8,28,17,.45);border:0;width:100%;height:100%;cursor:pointer}
+  .fad-main{width:100%;height:100vh;height:100dvh;max-width:100%;min-width:0;overflow-x:hidden}
+  .fad-main-topline{padding:8px 14px;gap:10px;min-height:64px}
+  .fad-sidebar-hamburger{display:flex}
+  .fad-main .wrap{max-width:100%;padding:16px 12px 54px}
+  .fad-main-eyebrow{font-size:9px}
+  .fad-main-heading h1{font-size:17px}
+  .fad-main-version{display:none}
+}
+
 </style>
 
 <div id="root"></div>
@@ -2038,7 +2111,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '16.11.2026-bg'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '18.11.2026-bh'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -2857,18 +2930,38 @@ function roleLabel(){
   const isSenior=PERMISSION_KEYS.filter(k=>p[k]).length===SENIOR_PERMISSION_KEYS.length && SENIOR_PERMISSION_KEYS.every(k=>p[k]);
   return isSenior?'Старший администратор':'Администратор';
 }
+/* Основная навигация: все названия, иконки, группы и порядок только здесь.
+   id — это существующий стабильный ключ вкладки из getNavigationTabs().
+   Содержимое вкладки создаётся в единственном #tabbody, а не в отдельных DOM-панелях. */
+const NAV_GROUPS = { work:'Работа', people:'Люди и деньги', comms:'Коммуникации' };
+const NAV_ITEMS = [
+  {id:'shift',label:'Смена',icon:'M8 3h8v3H8z M6 5H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1 M8 12h8 M8 16h5',group:'work'},
+  {id:'reports',label:'Отчёты',icon:'M4 20V10 M10 20V4 M16 20v-7 M22 20H2',group:'work'},
+  {id:'plan',label:'План',icon:'M12 2a10 10 0 1 0 0 20a10 10 0 1 0 0-20 M12 6a6 6 0 1 0 0 12a6 6 0 1 0 0-12 M12 10a2 2 0 1 0 0 4a2 2 0 1 0 0-4',group:'work'},
+  {id:'schedule',label:'Расписание',icon:'M8 2v4 M16 2v4 M3 9h18 M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z M8 13h3 M8 17h3 M15 13h2',group:'work'},
+  {id:'salaries',label:'Зарплаты',seniorLabel:'Зарплата',icon:'M3 6h18v13H3z M3 10h18 M16 15h2 M6 3h12',group:'people'},
+  {id:'replacements',label:'Замены',icon:'M7 7h14 M17 3l4 4-4 4 M17 17H3 M7 13l-4 4 4 4',group:'people'},
+  {id:'employees',label:'Сотрудники',icon:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8a4 4 0 0 0 0 8 M22 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75',group:'people'},
+  {id:'roles',label:'Роли',icon:'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z M9 12l2 2 4-4',group:'people'},
+  {id:'marketing',label:'Маркетинг',icon:'M3 11v3l12 4V7L3 11z M15 9l4-2 M15 16l4 2 M4 15l2 6h3l-2-5',group:'comms'},
+  {id:'calendar',label:'Календарь',icon:'M8 2v4 M16 2v4 M3 9h18 M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z',group:'comms'},
+  {id:'messages',label:'Сообщения',icon:'M21 11.5a8.5 8.5 0 0 1-8.5 8.5H5l-3 2v-8a8.5 8.5 0 1 1 19-2.5z',group:'comms'}
+];
 function header(){
+  // Старые id refreshBtn и logout и их обработчики сохраняются; элементы перемещены в sidebar.
   const full=session.role==='owner'||(PERMISSION_KEYS.every(k=>can(k))&&reportDaysLimit()===0);
   const extended=!full&&hasAnyPermission();
   const pill=full?'<span class="role-pill role-boss">полный доступ</span>':(extended?'<span class="role-pill role-boss">расширенный доступ</span>':'<span class="role-pill role-admin">смена</span>');
-  return `<div class="top fade-in">
-    <div class="mark">${LEAF}</div>
-    <div class="brand"><div class="name" title="версия ${APP_VERSION}">FAD</div></div>
-    <div class="spacer"></div>
-    <div class="who"><div class="fio">${escapeHtml(shortName(session.name))}</div><div class="role">${roleLabel()} ${pill}</div></div>
-    <button class="btn btn-ghost btn-sm" id="refreshBtn">Обновить</button>
-    <button class="btn btn-ghost btn-sm" id="logout">Выйти</button>
-  </div>`;
+  const name=String(session?.name||session?.login||'');
+  const initials=name.replace(/[.]/g,' ').trim().split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0].toLocaleUpperCase('ru')).join('')||'F';
+  return `<div class="fad-sidebar-brand" title="Версия ${APP_VERSION}">
+    <div class="fad-sidebar-logo">${LEAF}</div><span class="fad-sidebar-brand-text">FAD</span></div>
+    <div class="fad-sidebar-user">
+      <div class="fad-sidebar-identity" title="${escapeHtml(name)}"><span class="fad-sidebar-avatar">${escapeHtml(initials)}</span>
+      <div class="fad-sidebar-user-info"><strong>${escapeHtml(shortName(name))}</strong><span>${escapeHtml(roleLabel())} ${pill}</span></div></div>
+      <div class="fad-sidebar-actions"><button class="btn btn-ghost btn-sm" id="refreshBtn" type="button">Обновить</button>
+      <button class="btn btn-ghost btn-sm" id="logout" type="button">Выйти</button></div>
+    </div>`;
 }
 // Order of visible tabs is deliberately separate from the permission checks.
 // Горовая has an individually configured admin account, not a separate database role.
@@ -2883,18 +2976,19 @@ function getNavigationTabs(){
   const isGorovaya=!isOwner && isGorovayaNavigation();
   // Stable keys are for routing only. Original renderers and access checks are reused.
   const definitions={
-    shift:{label:'Смена',render:renderShift},
-    plan:{label:'План',render:renderBonusDashboard},
-    reports:{label:'Отчёты',render:renderAllReports},
-    schedule:{label:'Расписание',render:renderSchedule},
+    shift:{key:'shift',label:'Смена',render:renderShift},
+    plan:{key:'plan',label:'План',render:renderBonusDashboard},
+    reports:{key:'reports',label:'Отчёты',render:renderAllReports},
+    schedule:{key:'schedule',label:'Расписание',render:renderSchedule},
     salaries:{label:isGorovaya?'Зарплата':'Зарплаты',key:'salaries',render:renderSalaries},
     replacements:{label:'Замены',key:'replacements',render:renderReplacements},
     employees:{label:'Сотрудники',key:'employees',render:renderEmployees},
     roles:{label:'Роли',key:'roles',render:renderRoles},
-    marketing:{label:'Маркетинг',render:renderMarketing},
-    calendar:{label:'Календарь',render:renderCalendar},
-    messages:{label:'Сообщения',render:renderMessages}
+    marketing:{key:'marketing',label:'Маркетинг',render:renderMarketing},
+    calendar:{key:'calendar',label:'Календарь',render:renderCalendar},
+    messages:{key:'messages',label:'Сообщения',render:renderMessages}
   };
+  getNavigationTabs.registry=definitions; // только для проверки валидности NAV_ITEMS
   const ownerOrder=['reports','plan','schedule','salaries','replacements','employees','roles','marketing','calendar','messages'];
   const gorovayaOrder=['shift','plan','reports','schedule','salaries','replacements','employees','marketing','calendar','messages'];
   const adminOrder=['shift','plan','schedule','replacements','marketing'];
@@ -2931,9 +3025,106 @@ function getNavigationTabs(){
 function renderApp(){
   renderRoleUI(getNavigationTabs());
 }
+/* Один DOM-контейнер tabbody — обычный механизм переключения FAD.
+   getNavigationTabs() по-прежнему проверяет реальные права. renderNav() только отображает разрешённые ключи. */
+let fadSidebarCleanup=null;
+function renderNav(tabs, host, selectTab){
+  host.replaceChildren();
+  const lookup=new Map(tabs.map((tab,i)=>[tab.key,{tab,i}]));
+  const renderedGroups=new Map();
+  const groupOrder=[];
+  const registry=getNavigationTabs.registry||{};
+  const seenIds=new Set();
+  for(const item of NAV_ITEMS){
+    if(!item || !item.id)continue;
+    if(seenIds.has(item.id)){console.warn('FAD navigation: повторный ключ в NAV_ITEMS',item.id);continue;}
+    seenIds.add(item.id);
+    if(!registry[item.id] || typeof registry[item.id].render!=='function'){
+      console.warn('FAD navigation: не найден обработчик вкладки',item.id);
+      continue;
+    }
+    if(!lookup.has(item.id))continue; // Вкладка скрыта существующей проверкой прав.
+    const g=item.group&&NAV_GROUPS[item.group]?item.group:'other';
+    if(!renderedGroups.has(g)){
+      const section=document.createElement('div');section.className='fad-sidebar-group';section.dataset.group=g;
+      const title=document.createElement('div');title.className='fad-sidebar-group-title';
+      title.textContent=g==='other'?'Прочее':NAV_GROUPS[g];
+      section.append(title);renderedGroups.set(g,section);groupOrder.push(g);
+    }
+    const {i}=lookup.get(item.id);
+    const button=document.createElement('button');
+    button.type='button';button.className='tab fad-sidebar-tab';
+    button.dataset.i=String(i);button.dataset.tab=item.id;
+    const label=item.seniorLabel&&isGorovayaNavigation()?item.seniorLabel:item.label;
+    button.title=label;button.setAttribute('aria-label',label);
+    const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('width','20');svg.setAttribute('height','20');svg.setAttribute('viewBox','0 0 24 24');
+    svg.setAttribute('fill','none');svg.setAttribute('stroke','currentColor');svg.setAttribute('stroke-width','1.8');
+    svg.setAttribute('stroke-linecap','round');svg.setAttribute('stroke-linejoin','round');
+    svg.setAttribute('aria-hidden','true');svg.classList.add('fad-sidebar-icon');
+    if(item.icon){const path=document.createElementNS('http://www.w3.org/2000/svg','path');path.setAttribute('d',item.icon);svg.append(path);}
+    else {const box=document.createElementNS('http://www.w3.org/2000/svg','rect');box.setAttribute('x','9');box.setAttribute('y','9');box.setAttribute('width','6');box.setAttribute('height','6');box.setAttribute('rx','1');svg.append(box);}
+    const text=document.createElement('span');text.className='fad-sidebar-tab-text';text.textContent=label;
+    button.append(svg,text);button.addEventListener('click',()=>selectTab(i));
+    renderedGroups.get(g).append(button);
+  }
+  for(const g of groupOrder){const section=renderedGroups.get(g);if(section.querySelector('.fad-sidebar-tab'))host.append(section);}
+  // Здесь нет отдельных статических панелей: проверяем существующий renderer.
+}
 function renderRoleUI(tabs){
+  if(fadSidebarCleanup){fadSidebarCleanup();fadSidebarCleanup=null;}
   const root=document.getElementById('root');
-  root.innerHTML=`<div class="topbar">${header()}${tabs.length>1?`<div class="tabsrow"><div class="tabs">${tabs.map((t,i)=>`<button class="tab${i===0?' on':''}" data-i="${i}"${t.key?` data-tab="${t.key}"`:''}>${t.label}</button>`).join('')}</div></div>`:''}</div><div class="wrap"><div id="tabbody"></div></div>`;
+  root.innerHTML=`<div class="fad-app-shell" id="fadAppShell">
+    <aside class="fad-sidebar" id="fadSidebar" aria-label="Боковая панель">
+      ${header()}
+      <nav class="fad-sidebar-nav" aria-label="Разделы" id="fadSidebarNav"></nav>
+      <button class="fad-sidebar-collapse" type="button" id="fadSidebarCollapse" aria-label="Свернуть меню" aria-expanded="true" title="Свернуть меню">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><span class="fad-sidebar-collapse-label">Свернуть меню</span>
+      </button>
+    </aside>
+    <button class="fad-sidebar-scrim" id="fadSidebarScrim" type="button" aria-label="Закрыть меню"></button>
+    <main class="fad-main" id="fadMain">
+      <div class="fad-main-topline">
+        <button class="fad-sidebar-hamburger" type="button" id="fadSidebarHamburger" aria-label="Открыть меню" aria-expanded="false" aria-controls="fadSidebar">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16 M4 12h16 M4 18h16"/></svg>
+        </button>
+        <div class="fad-main-heading"><div class="fad-main-eyebrow">FLEXICO · АДМИНИСТРАТОРЫ</div><h1 id="fadCurrentTitle"></h1></div>
+        <span class="fad-main-version" title="Версия FAD">${APP_VERSION}</span>
+      </div>
+      <div class="wrap"><div id="tabbody" role="region" aria-label="Содержимое выбранной вкладки"></div></div>
+    </main>
+  </div>`;
+  const shell=root.querySelector('#fadAppShell');
+  const sidebar=root.querySelector('#fadSidebar');
+  const hamburger=root.querySelector('#fadSidebarHamburger');
+  const collapse=root.querySelector('#fadSidebarCollapse');
+  const scrim=root.querySelector('#fadSidebarScrim');
+  const nav=root.querySelector('#fadSidebarNav');
+  let collapsed=false;
+  try{collapsed=localStorage.getItem('fad.sidebar.collapsed')==='true';}catch(_){collapsed=false;}
+  function updateCollapsed(){
+    shell.classList.toggle('fad-sidebar-is-collapsed',collapsed);
+    collapse.setAttribute('aria-expanded',String(!collapsed));
+    collapse.setAttribute('aria-label',collapsed?'Развернуть меню':'Свернуть меню');
+    collapse.title=collapsed?'Развернуть меню':'Свернуть меню';
+    collapse.querySelector('.fad-sidebar-collapse-label').textContent=collapsed?'Развернуть меню':'Свернуть меню';
+  }
+  updateCollapsed();
+  collapse.addEventListener('click',()=>{
+    collapsed=!collapsed;try{localStorage.setItem('fad.sidebar.collapsed',String(collapsed));}catch(_){}
+    updateCollapsed();
+  });
+  function setDrawer(open){
+    shell.classList.toggle('fad-sidebar-drawer-open',open);
+    hamburger.setAttribute('aria-expanded',String(open));
+    hamburger.setAttribute('aria-label',open?'Закрыть меню':'Открыть меню');
+    if(open){nav.querySelector('.fad-sidebar-tab')?.focus();}else if(document.activeElement?.closest('#fadSidebar')){hamburger.focus();}
+  }
+  hamburger.addEventListener('click',()=>setDrawer(!shell.classList.contains('fad-sidebar-drawer-open')));
+  scrim.addEventListener('click',()=>setDrawer(false));
+  const onKeydown=e=>{if(e.key==='Escape'&&shell.classList.contains('fad-sidebar-drawer-open')){e.preventDefault();setDrawer(false);}};
+  document.addEventListener('keydown',onKeydown);
+  fadSidebarCleanup=()=>document.removeEventListener('keydown',onKeydown);
   root.querySelector('#logout').onclick=()=>doLogout();
   const _rb=root.querySelector('#refreshBtn'); if(_rb) _rb.onclick=async()=>{
     if(appHasUnsavedWork()){ toast('Есть несохранённые изменения — сначала сохраните их',true); return; }
@@ -2943,24 +3134,35 @@ function renderRoleUI(tabs){
   let body=root.querySelector('#tabbody');
   let currentTab=-1;
   function show(i){
+    if(!tabs[i] || typeof tabs[i].render!=='function')return false;
     if(currentTab!==-1 && currentTab!==i && appHasUnsavedWork()){
       toast('Есть несохранённые данные — сначала сохраните изменения',true);
-      return;
+      return false;
     }
     body.removeAttribute('data-bonus-token');
     if(['replacements','employees','salaries','roles'].includes(tabs[i].key)||['replacements','employees','salaries','roles'].includes(tabs[currentTab]?.key)){
-      // A pending renderer from the previous tab can still update its own detached panel.
-      const nextBody=document.createElement('div');
-      nextBody.id='tabbody';
-      body.replaceWith(nextBody);
-      body=nextBody;
+      const nextBody=document.createElement('div');nextBody.id='tabbody';
+      nextBody.setAttribute('role','region');nextBody.setAttribute('aria-label','Содержимое выбранной вкладки');
+      body.replaceWith(nextBody);body=nextBody;
     }
     currentTab=i;
-    root.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',+b.dataset.i===i));
+    const key=tabs[i].key;
+    body.dataset.activeTab=key;
+    const item=NAV_ITEMS.find(item=>item.id===key);
+    const label=item?(item.seniorLabel&&isGorovayaNavigation()?item.seniorLabel:item.label):tabs[i].label;
+    root.querySelector('#fadCurrentTitle').textContent=label||'Раздел';
+    root.querySelectorAll('.fad-sidebar-tab').forEach(b=>{
+      const isActive=+b.dataset.i===i;b.classList.toggle('on',isActive);
+      if(isActive)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');
+    });
+    if(shell.classList.contains('fad-sidebar-drawer-open'))setDrawer(false);
     tabs[i].render(body);
+    return true;
   }
-  root.querySelectorAll('.tab').forEach(b=>b.onclick=()=>show(+b.dataset.i));
-  show(0);
+  renderNav(tabs,nav,show);
+  const initial= NAV_ITEMS.map(item=>tabs.findIndex(t=>t.key===item.id)).find(i=>i>=0);
+  if(initial!==undefined)show(initial);
+  else {root.querySelector('#fadCurrentTitle').textContent='Нет доступных разделов';body.innerHTML='<div class="empty">Для пользователя нет доступных разделов.</div>';}
 }
 
 // Refresh visible figures automatically for every role, without touching ImpulseCRM.
