@@ -1984,6 +1984,40 @@ label.trainer-replacement-setting{display:flex;align-items:center;gap:8px;min-he
 .adpay-readonly-value{display:inline-block;padding:7px 5px;font-size:12px;font-weight:750;color:#44544b;white-space:nowrap}
 .adpay-time-trigger:disabled{opacity:.75;cursor:default;background:#f5f7f5}
 .adpay-check input:disabled{cursor:default}
+
+/* ===== Централизованные роли FAD BG ===== */
+.roles-shell{display:grid;grid-template-columns:minmax(220px,270px) minmax(0,1fr);gap:16px;align-items:start}
+.roles-panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;min-width:0}
+.roles-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.roles-layout-name{font-weight:800;font-size:18px}
+.roles-list{display:flex;flex-direction:column;gap:8px}
+.roles-item{border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 12px;text-align:left;width:100%;display:flex;flex-direction:column;gap:3px}
+.roles-item.active{background:#eff7f2;border-color:#2e7d5b;box-shadow:inset 3px 0 #2e7d5b}
+.roles-item strong{font-size:13px}.roles-item small{font-size:11px;color:var(--ink-soft)}
+.roles-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.roles-main-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.roles-subtitle{font-weight:700;margin:16px 0 9px;font-size:13px}
+.roles-input{display:block;width:100%;min-height:40px;border:1px solid var(--line-strong);border-radius:9px;padding:7px 11px;background:#fff;font:inherit;font-size:13px}
+textarea.roles-input{min-height:65px;resize:vertical}.roles-field{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:700}
+.roles-check{display:flex;align-items:flex-start;gap:8px;font-size:12px;padding:9px;border:1px solid var(--line);border-radius:10px;cursor:pointer;background:#fff}
+.roles-check input{margin:3px 0 0;accent-color:#1e6b50;flex-shrink:0;width:16px;height:16px}
+.roles-check b{display:block;font-size:12px}.roles-check small{display:block;color:#5c6e64;line-height:1.45;font-weight:400;font-size:11px;margin-top:3px}
+.roles-category{margin-top:12px}.roles-category h3{font-size:12px;font-weight:800;text-transform:uppercase;margin:0 0 8px;color:#435b4e}
+.roles-buttons{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end;margin:12px 0 0}
+.roles-hint{font-size:12px;color:#5c6e64;line-height:1.6;margin:10px 0}
+.roles-badge{display:inline-block;padding:3px 8px;background:#e9f3ed;color:#245640;border-radius:100px;font-weight:700;font-size:11px}
+.roles-badge.warn{background:#fff5df;color:#765000}
+.roles-table-wrap{overflow-x:auto}.roles-table{width:100%;border-collapse:collapse;min-width:630px;font-size:12px}
+.roles-table th,.roles-table td{border-bottom:1px solid var(--line);padding:9px;text-align:left;vertical-align:middle}
+.roles-table select{border:1px solid var(--line-strong);border-radius:8px;min-height:35px;max-width:215px;width:100%;background:#fff;padding:4px;font:inherit;font-size:12px}
+.roles-soon{margin-top:15px;padding:12px;background:#f7f8f6;border:1px dashed #b9c6bd;border-radius:11px}
+.roles-soon summary{cursor:pointer;font-size:12px;font-weight:800}
+.roles-soon-list{columns:2;column-gap:20px;margin:8px 0 0;padding-left:18px;color:#55635b;font-size:12px}
+.roles-soon-list li{break-inside:avoid;margin:4px 0}
+.roles-save-status{font-size:12px;color:var(--ink-soft)}
+.roles-screen button:focus-visible,.roles-screen input:focus-visible,.roles-screen select:focus-visible,.roles-screen textarea:focus-visible{outline:3px solid #7fb89c;outline-offset:2px}
+@media(max-width:700px){.roles-shell{grid-template-columns:1fr}.roles-grid{grid-template-columns:1fr}.roles-soon-list{columns:1}}
+
 </style>
 
 <div id="root"></div>
@@ -2004,7 +2038,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '16.11.2026-bf'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '16.11.2026-bg'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -2303,7 +2337,7 @@ function permissionPresetName(p){
 }
 function persistSession(){
   if(!session||!TOKEN) return;
-  try{ sessionStorage.setItem('sess', JSON.stringify({token:TOKEN,login:session.login,name:session.name,role:session.role,senior:!!session.senior,canEdit:!!session.canEdit,home:session.home||null,permissions:normalizePermissions(session.permissions||{})})); }catch(e){}
+  try{ sessionStorage.setItem('sess', JSON.stringify({token:TOKEN,login:session.login,name:session.name,role:session.role,senior:!!session.senior,canEdit:!!session.canEdit,home:session.home||null,permissions:normalizePermissions(session.permissions||{}),fadRoleCode:session.fadRoleCode||'',fadRoleName:session.fadRoleName||'',fadRolePermissions:session.fadRolePermissions||null})); }catch(e){}
 }
 async function refreshPermissions(){
   if(!session) return;
@@ -2327,6 +2361,12 @@ async function refreshPermissions(){
   }catch(e){ session.payrollAccess=false; }
   try{ session.adminPayrollAccess=(await rpc('app_admin_payroll_delegate_access',{p_token:TOKEN}))===true; }
   catch(e){ session.adminPayrollAccess=false; }
+  try{
+    const role=await rpc('app_roles_my',{p_token:TOKEN});
+    session.fadRoleCode=role&&role.code!=='owner'?String(role.code):'';
+    session.fadRoleName=role&&role.code!=='owner'?String(role.name||''):'';
+    session.fadRolePermissions=role&&role.code!=='owner'&&role.permissions&&typeof role.permissions==='object'?role.permissions:null;
+  }catch(_){session.fadRoleCode='';session.fadRoleName='';session.fadRolePermissions=null;}
   persistSession();
 }
 
@@ -2531,7 +2571,7 @@ function handleErr(e){
 }
 function saveSession(s){
   TOKEN = s.token;
-  session = {login:s.login, name:s.name, role:s.role, senior:!!s.senior, canEdit:!!s.canEdit, home:s.home||null, permissions:normalizePermissions(s.permissions||{}), permissionsLoaded:false};
+  session = {login:s.login, name:s.name, role:s.role, senior:!!s.senior, canEdit:!!s.canEdit, home:s.home||null, permissions:normalizePermissions(s.permissions||{}), permissionsLoaded:false,fadRoleCode:s.fadRoleCode||'',fadRoleName:s.fadRoleName||'',fadRolePermissions:s.fadRolePermissions||null};
   persistSession();
 }
 async function doLogout(){
@@ -2740,7 +2780,7 @@ async function boot(){
   // попытка восстановить сессию после обновления страницы
   let saved=null; try{ saved=JSON.parse(sessionStorage.getItem('sess')); }catch(e){}
   if(saved && saved.token){
-    TOKEN=saved.token; session={login:saved.login,name:saved.name,role:saved.role,senior:!!saved.senior,canEdit:!!saved.canEdit,home:saved.home||null,permissions:normalizePermissions(saved.permissions||{}),permissionsLoaded:false};
+    TOKEN=saved.token; session={login:saved.login,name:saved.name,role:saved.role,senior:!!saved.senior,canEdit:!!saved.canEdit,home:saved.home||null,permissions:normalizePermissions(saved.permissions||{}),permissionsLoaded:false,fadRoleCode:saved.fadRoleCode||'',fadRoleName:saved.fadRoleName||'',fadRolePermissions:saved.fadRolePermissions||null};
     try{ await refreshPermissions(); await loadReports(true); renderApp(); return; }
     catch(e){ TOKEN=null; session=null; try{sessionStorage.removeItem('sess');}catch(_){} }
   }
@@ -2812,6 +2852,7 @@ function renderLogin(){
 /* ================= App shell / routing ================= */
 function roleLabel(){
   if(session.role==='owner') return 'Руководитель';
+  if(session.fadRoleName) return session.fadRoleName;
   const p=normalizePermissions(session.permissions||{});
   const isSenior=PERMISSION_KEYS.filter(k=>p[k]).length===SENIOR_PERMISSION_KEYS.length && SENIOR_PERMISSION_KEYS.every(k=>p[k]);
   return isSenior?'Старший администратор':'Администратор';
@@ -2849,11 +2890,12 @@ function getNavigationTabs(){
     salaries:{label:isGorovaya?'Зарплата':'Зарплаты',key:'salaries',render:renderSalaries},
     replacements:{label:'Замены',key:'replacements',render:renderReplacements},
     employees:{label:'Сотрудники',key:'employees',render:renderEmployees},
+    roles:{label:'Роли',key:'roles',render:renderRoles},
     marketing:{label:'Маркетинг',render:renderMarketing},
     calendar:{label:'Календарь',render:renderCalendar},
     messages:{label:'Сообщения',render:renderMessages}
   };
-  const ownerOrder=['reports','plan','schedule','salaries','replacements','employees','marketing','calendar','messages'];
+  const ownerOrder=['reports','plan','schedule','salaries','replacements','employees','roles','marketing','calendar','messages'];
   const gorovayaOrder=['shift','plan','reports','schedule','salaries','replacements','employees','marketing','calendar','messages'];
   const adminOrder=['shift','plan','schedule','replacements','marketing'];
   const order=isOwner?ownerOrder:(isGorovaya?gorovayaOrder:adminOrder);
@@ -2865,10 +2907,25 @@ function getNavigationTabs(){
     salaries:isOwner||(isGorovaya&&session.adminPayrollAccess===true),
     replacements:isOwner||session.role==='admin',
     employees:isOwner||(isGorovaya&&['employees.view','employees.manage','admins.view','admins.manage','admins.permissions','admins.audit','telegram.manage'].some(k=>can(k))),
+    roles:isOwner,
     marketing:isOwner||session.role==='admin',
     calendar:isOwner||(isGorovaya&&(can('calendar.view')||can('calendar.manage'))),
     messages:isOwner||(isGorovaya&&can('messages.manage'))
   };
+  if(!isOwner&&session.fadRolePermissions){
+    // Для назначенных ролей сервер проверяет права действий; nav.* управляет только видимостью вкладок.
+    const p=session.fadRolePermissions;
+    const roleOrder=['shift','plan','reports','schedule','salaries','replacements','employees','marketing','calendar','messages'];
+    return roleOrder.filter(key=>{
+      if(p['nav.'+key]!==true)return false;
+      if(key==='reports')return can('reports.view_all');
+      if(key==='salaries')return session.adminPayrollAccess===true||session.payrollAccess===true;
+      if(key==='employees')return ['employees.view','employees.manage','admins.view','admins.manage','admins.permissions','admins.audit','telegram.manage'].some(k=>can(k));
+      if(key==='calendar')return can('calendar.view')||can('calendar.manage');
+      if(key==='messages')return can('messages.manage');
+      return true;
+    }).map(key=>definitions[key]);
+  }
   return order.filter(key=>canSee[key]).map(key=>definitions[key]);
 }
 function renderApp(){
@@ -2891,7 +2948,7 @@ function renderRoleUI(tabs){
       return;
     }
     body.removeAttribute('data-bonus-token');
-    if(['replacements','employees','salaries'].includes(tabs[i].key)||['replacements','employees','salaries'].includes(tabs[currentTab]?.key)){
+    if(['replacements','employees','salaries','roles'].includes(tabs[i].key)||['replacements','employees','salaries','roles'].includes(tabs[currentTab]?.key)){
       // A pending renderer from the previous tab can still update its own detached panel.
       const nextBody=document.createElement('div');
       nextBody.id='tabbody';
@@ -6888,6 +6945,152 @@ async function renderMessages(body){
   }
   draw();
 }
+/* ================= FAD · Управление ролями (BG) =================
+   Владелец может создавать/копировать роли и назначать их учётным записям.
+   Сервер — единственный источник выданных прав; изменения проходят через RPC.
+*/
+const ROLE_NAV_DEFS=[
+  ['nav.shift','Смена','Отображать раздел смены; операции дополнительно регулируются существующим сервером'],
+  ['nav.plan','План','Отображать план продаж; права изменения планов проверяются отдельными RPC'],
+  ['nav.reports','Отчёты','Отображать отчёты только при наличии права просмотра'],
+  ['nav.schedule','Расписание','Отображать расписание; изменения требуют соответствующих прав'],
+  ['nav.salaries','Зарплаты','Отображать вкладку при фактическом серверном доступе к зарплате'],
+  ['nav.replacements','Замены','Отображать подбор замен; существующие серверные ограничения сохраняются'],
+  ['nav.employees','Сотрудники','Отображать справочник при наличии прав просмотра'],
+  ['nav.marketing','Маркетинг','Отображать раздел маркетинга'],
+  ['nav.calendar','Календарь','Отображать календарь при наличии прав просмотра'],
+  ['nav.messages','Сообщения','Отображать настройки сообщений при наличии разрешения']
+].map(([key,label,desc])=>({key,label,desc,group:'Разделы меню · видимость'}));
+const ROLE_PAYROLL_DEFS=[
+  {key:'payroll.admin.view',group:'Зарплата администраторов',label:'Просмотр всех администраторов',desc:'Серверный доступ к расчётам, авансам и детализации смен; не даёт права изменения'},
+  {key:'payroll.admin.edit',group:'Зарплата администраторов',label:'Редактировать расчёты',desc:'Редактировать время, бонусы, штрафы, качество, отметку выдачи; серверный контроль. Общий сброс, ставку и импорт не разрешает'}
+];
+const ROLE_ACTIVE_DEFS=[...ROLE_NAV_DEFS,...PERMISSION_DEFS,...ROLE_PAYROLL_DEFS];
+const ROLE_FUTURE_DEFS={
+  'Смена':['Открывать смену','Закрывать смену','Изменять только свою смену','Изменять смены других','Корректировать кассовые операции','Редактировать закрытую смену','Подтверждать закрытие смены','Удалять кассовые операции'],
+  'План и продажи':['Видеть планы всех филиалов','Изменять план филиала','Видеть продажи всех сотрудников','Корректировать источник продаж','Утверждать месячный бонус','Изменять пороги бонусов'],
+  'Расписание':['Просматривать только свой филиал','Менять черновик расписания','Переносить сотрудников между филиалами','Публиковать расписание','Снимать опубликованное расписание'],
+  'Зарплата тренеров':['Видеть все зарплаты тренеров','Редактировать ставки тренеров','Редактировать замены и пропуски','Проводить авансы','Подтверждать зарплату','Сбрасывать ручные изменения','Синхронизировать с Impulse'],
+  'Зарплата администраторов':['Утверждать окончательный расчёт','Менять ставку и шкалу премий','Сбрасывать все правки','Синхронизировать с Impulse','Экспортировать зарплатную ведомость','Ограничивать просмотр по филиалам'],
+  'Замены':['Создавать запрос замены','Подтверждать замену','Редактировать/отменять замену','Изменять настройки направления','Управлять кандидатами на замены'],
+  'Сотрудники':['Редактировать только контактные данные','Назначать филиал','Архивировать сотрудника','Восстанавливать сотрудника','Удалять сотрудника навсегда','Редактировать мотивацию тренера'],
+  'Маркетинг':['Просматривать маркетинговую аналитику','Создавать кампании','Редактировать рекламный бюджет','Управлять блогерами и публикациями'],
+  'Календарь / Telegram':['Создавать персональные напоминания','Настраивать рассылки','Отправлять сообщения сотрудникам','Управлять Telegram-чатами','Редактировать системные уведомления'],
+  'Безопасность / аудит':['Экспортировать журнал аудита','Видеть действия только своего филиала','Блокировать учётные записи','Управлять ролями и назначениям','Просматривать историю изменения прав']
+};
+function roleActiveGroups(){
+  const groups=[];
+  ROLE_ACTIVE_DEFS.forEach(d=>{if(!groups.includes(d.group))groups.push(d.group)});
+  return groups;
+}
+function roleAccessCount(p){return ROLE_ACTIVE_DEFS.filter(d=>p&&p[d.key]===true).length;}
+function roleClone(role){return {code:role?.code||'',name:role?.name||'',description:role?.description||'',permissions:{...(role?.permissions||{})},is_owner:!!role?.is_owner,is_system:!!role?.is_system,users:role?.users||0};}
+async function renderRoles(body){
+  if(session?.role!=='owner'){body.innerHTML='<div class="empty">Раздел «Роли» доступен только руководителю.</div>';return;}
+  body.classList.add('roles-screen');
+  body.innerHTML='<div class="empty">Загрузка ролей и прав доступа…</div>';
+  let data,chosen='owner',draft=null,dirty=false,inFlight=false;
+  try{data=await rpc('app_roles_list',{p_token:TOKEN});}
+  catch(err){body.innerHTML='<div class="empty">Не удалось загрузить роли. Выполните миграцию BG в Supabase.</div>';handleErr(err);return;}
+  if(!body.isConnected)return;
+  const roleMap=()=>new Map((data.roles||[]).map(r=>[r.code,r]));
+  const busy=next=>{inFlight=next;body.querySelectorAll('button[data-role-save],button[data-role-delete],button[data-role-assign]').forEach(b=>b.disabled=next);};
+  async function refresh(code){
+    data=await rpc('app_roles_list',{p_token:TOKEN});
+    chosen=code??chosen;
+    if(chosen!=='__new'&&!roleMap().has(chosen))chosen=data.roles?.[0]?.code||'owner';
+    draft=chosen==='__new'?roleClone({name:'Новая роль'}):roleClone(roleMap().get(chosen));
+    dirty=false;clearAppDirty('roles');draw();
+  }
+  const confirmDiscard=()=>!dirty||confirm('Несохранённые изменения роли будут потеряны. Продолжить?');
+  function collect(){
+    if(!draft||draft.is_owner)return;
+    draft.name=body.querySelector('[data-role-name]')?.value.trim()||'';
+    draft.description=body.querySelector('[data-role-description]')?.value.trim()||'';
+    draft.permissions={};
+    body.querySelectorAll('[data-role-permission]').forEach(el=>{draft.permissions[el.dataset.rolePermission]=!!el.checked;});
+    const days=Number(body.querySelector('[data-role-days]')?.value||0);
+    draft.permissions['reports.days']=Number.isFinite(days)?Math.min(3650,Math.max(0,Math.trunc(days))):0;
+  }
+  function mark(){if(draft?.is_owner)return;collect();dirty=true;markAppDirty('roles');body.querySelector('[data-roles-saved]')?.replaceChildren(document.createTextNode('Не сохранено'));}
+  function roleRow(r){
+    return `<button class="roles-item${chosen===r.code?' active':''}" type="button" data-role-select="${escapeHtml(r.code)}" aria-pressed="${chosen===r.code}"><strong>${escapeHtml(r.name)}</strong><small>${r.is_owner?'Неизменяемая · полный доступ':`${Number(r.users||0)} сотрудников · ${roleAccessCount(r.permissions)} прав`}</small></button>`;
+  }
+  function form(){
+    const r=draft||roleClone(roleMap().get(chosen));
+    const locked=!!r.is_owner;
+    const disabled=locked?'disabled':'';
+    const check=(d)=>`<label class="roles-check"><input type="checkbox" data-role-permission="${escapeHtml(d.key)}" ${locked||r.permissions?.[d.key]===true?'checked':''} ${disabled}/><span><b>${escapeHtml(d.label)}</b><small>${escapeHtml(d.desc)}</small></span></label>`;
+    return `<div class="roles-main-head"><div><div class="roles-layout-name">${locked?'Руководитель':chosen==='__new'?'Новая роль':escapeHtml(r.name)}</div><div class="roles-hint">${locked?'Полный доступ закреплён за владельцем. Изменение и назначение запрещены.':'Настраивай и сохраняй роль: новые права применяются ко всем назначенным пользователям.'}</div></div>
+      <div><span class="roles-badge${locked?' warn':''}">${locked?'Защищена':`${Number(r.users||0)} назначений`}</span></div></div>
+      <div class="roles-grid" style="margin-top:12px"><label class="roles-field">Название роли<input class="roles-input" data-role-name maxlength="80" ${disabled} value="${escapeHtml(r.name||'')}"></label><label class="roles-field">Ограничение отчётов, последних дней<input class="roles-input" data-role-days type="number" min="0" max="3650" ${disabled} value="${r.permissions?.['reports.days']||0}" title="0 — без ограничения"></label></div>
+      <label class="roles-field" style="margin-top:10px">Описание<textarea class="roles-input" data-role-description maxlength="1000" ${disabled}>${escapeHtml(r.description||'')}</textarea></label>
+      <div class="roles-hint"><b>Рабочие разрешения.</b> Отмеченные права применяются серверными RPC или проверками действующего FAD. Права в разделе «Разделы меню» управляют только видимостью навигации, но не заменяют серверных запретов.</div>
+      ${roleActiveGroups().map(g=>`<section class="roles-category"><h3>${escapeHtml(g)}</h3><div class="roles-grid">${ROLE_ACTIVE_DEFS.filter(d=>d.group===g).map(check).join('')}</div></section>`).join('')}
+      <details class="roles-soon"><summary>Предложения по дальнейшей детализации — ${Object.values(ROLE_FUTURE_DEFS).reduce((n,a)=>n+a.length,0)} прав</summary>
+        <div class="roles-hint">Это проект каталога. Эти разрешения пока нельзя включить: сначала необходимы серверные проверки для соответствующих действий. Они не создают ложного ощущения защиты.</div>
+        ${Object.entries(ROLE_FUTURE_DEFS).map(([g,arr])=>`<h3 style="font-size:12px;margin:12px 0 4px">${escapeHtml(g)}</h3><ul class="roles-soon-list">${arr.map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul>`).join('')}
+      </details>
+      <div class="roles-buttons"><span class="roles-save-status" data-roles-saved>${dirty?'Не сохранено':'Изменений нет'}</span>
+       ${locked?'':`<button class="btn" type="button" data-role-clone>Копировать роль</button>${r.code&&!r.is_system?'<button class="btn" data-role-delete type="button">Удалить роль</button>':''}<button class="btn btn-primary" type="button" data-role-save>Сохранить роль</button>`}</div>`;
+  }
+  function assignmentTable(){
+    return `<div class="roles-panel" style="margin-top:16px"><div class="roles-main-head"><div class="roles-layout-name">Назначение ролей</div><span class="roles-badge">${(data.users||[]).filter(x=>x.role_code).length} назначено</span></div>
+      <p class="roles-hint">Сотрудники без назначенной роли продолжают работать с прежними индивидуальными настройками. Назначение роли заменяет старые права базовой модели; при снятии роли они восстанавливаются.</p>
+      <div class="roles-table-wrap"><table class="roles-table"><thead><tr><th>Сотрудник</th><th>Учётная запись</th><th>Роль</th><th>Действие</th></tr></thead><tbody>
+      ${(data.users||[]).map(u=>`<tr><td><b>${escapeHtml(u.name)}</b>${!u.active?' <span class="roles-badge warn">Архив</span>':''}</td><td>${escapeHtml(u.login)}</td><td>${u.is_owner?'<b>Руководитель</b>':`<select data-role-user="${escapeHtml(u.login)}" aria-label="Назначить роль ${escapeHtml(u.name)}"><option value="">Индивидуальные права</option>${(data.roles||[]).filter(r=>!r.is_owner).map(r=>`<option value="${escapeHtml(r.code)}"${u.role_code===r.code?' selected':''}>${escapeHtml(r.name)}</option>`).join('')}</select>`}</td><td>${u.is_owner?'<span class="roles-badge">Защищено</span>':`<button type="button" class="btn btn-sm" data-role-assign="${escapeHtml(u.login)}">Применить</button>`}</td></tr>`).join('')}</tbody></table></div></div>`;
+  }
+  function draw(){
+    if(!body.isConnected)return;
+    const roles=data.roles||[];
+    if(!draft)draft=chosen==='__new'?roleClone({name:'Новая роль'}):roleClone(roleMap().get(chosen)||roles[0]);
+    body.innerHTML=`<div class="roles-toolbar"><div><h1 class="section-title" style="margin:0">Роли и права доступа</h1><p class="roles-hint">Создавай роли и назначай их сотрудникам. Управление доступно только руководителю.</p></div><button type="button" class="btn btn-primary" data-role-new>+ Создать роль</button></div>
+      <div class="roles-shell"><aside class="roles-panel"><div class="roles-subtitle" style="margin-top:0">Список ролей</div><div class="roles-list">${roles.map(roleRow).join('')}${chosen==='__new'?'<button class="roles-item active" type="button"><strong>Новая роль</strong><small>Несохранённая</small></button>':''}</div></aside>
+      <section class="roles-panel">${form()}</section></div>${assignmentTable()}
+      <details class="roles-panel" style="margin-top:16px"><summary style="font-weight:700;cursor:pointer">История изменения ролей</summary><div class="roles-table-wrap"><table class="roles-table"><thead><tr><th>Когда</th><th>Кто</th><th>Действие</th><th>Роль / аккаунт</th></tr></thead><tbody>${(data.audit||[]).map(x=>`<tr><td>${escapeHtml(auditFmtDateTime(x.changed_at))}</td><td>${escapeHtml(x.actor_login||'')}</td><td>${escapeHtml(({create:'Создана',update:'Изменена',delete:'Удалена',assign:'Назначена',unassign:'Снята'})[x.operation]||x.operation)}</td><td>${escapeHtml(x.role_code||'')}${x.user_login?' · '+escapeHtml(x.user_login):''}</td></tr>`).join('')}</tbody></table></div></details>`;
+    body.querySelectorAll('[data-role-name],[data-role-description],[data-role-days],[data-role-permission]').forEach(el=>el.addEventListener('change',mark));
+    body.querySelectorAll('[data-role-name],[data-role-description]').forEach(el=>el.addEventListener('input',mark));
+    body.querySelectorAll('[data-role-select]').forEach(btn=>btn.onclick=()=>{if(!confirmDiscard())return;clearAppDirty('roles');chosen=btn.dataset.roleSelect;draft=roleClone(roleMap().get(chosen));dirty=false;draw();});
+    body.querySelector('[data-role-new]').onclick=()=>{if(!confirmDiscard())return;clearAppDirty('roles');chosen='__new';draft=roleClone({name:'Новая роль',permissions:{},description:''});dirty=false;draw();};
+    body.querySelector('[data-role-clone]')?.addEventListener('click',()=>{if(!confirmDiscard())return;clearAppDirty('roles');const copy=roleClone(draft);copy.code='';copy.name='Копия: '+copy.name;copy.is_system=false;copy.is_owner=false;copy.users=0;chosen='__new';draft=copy;dirty=true;markAppDirty('roles');draw();});
+    body.querySelector('[data-role-save]')?.addEventListener('click',async()=>{
+      if(inFlight)return;collect();
+      if(draft.name.length<2){toast('Название должно содержать не менее двух символов',true);return;}
+      busy(true);
+      try{
+        const res=await rpc('app_roles_upsert',{p_token:TOKEN,p_code:draft.code||null,p_name:draft.name,p_description:draft.description||'',p_permissions:draft.permissions});
+        clearAppDirty('roles');toast('Роль сохранена');await refresh(res.code);
+      }catch(err){handleErr(err);}finally{busy(false);}
+    });
+    body.querySelector('[data-role-delete]')?.addEventListener('click',async()=>{
+      if(inFlight)return;
+      const role=roleMap().get(chosen);
+      if(!role||role.is_system)return;
+      if(Number(role.users)>0){toast('Сначала переназначьте сотрудников на другую роль',true);return;}
+      if(!confirm('Удалить роль «'+role.name+'»? Это действие нельзя отменить.'))return;
+      busy(true);try{await rpc('app_roles_delete',{p_token:TOKEN,p_code:role.code});toast('Роль удалена');clearAppDirty('roles');await refresh('owner');}catch(err){handleErr(err);}finally{busy(false);}
+    });
+    body.querySelectorAll('[data-role-assign]').forEach(btn=>btn.onclick=async()=>{
+      if(inFlight)return;
+      const login=btn.dataset.roleAssign;
+      const select=[...body.querySelectorAll('[data-role-user]')].find(s=>s.dataset.roleUser===login);
+      const assigned=(data.users||[]).find(x=>x.login===login);
+      if(!select||!assigned)return;
+      const code=select.value;
+      if((assigned.role_code||'')===code){toast('Эта роль уже назначена');return;}
+      const label=code?roleMap().get(code)?.name||code:'Индивидуальные права';
+      if(!confirm('Назначить «'+label+'» сотруднику '+assigned.name+'? Его действующие разрешения изменятся.'))return;
+      busy(true);
+      try{
+        if(code)await rpc('app_roles_assign',{p_token:TOKEN,p_login:login,p_role_code:code});
+        else await rpc('app_roles_unassign',{p_token:TOKEN,p_login:login});
+        toast('Назначение сохранено');await refresh(chosen==='__new'?'owner':chosen);
+      }catch(err){handleErr(err);}finally{busy(false);}
+    });
+  }
+  draft=roleClone(roleMap().get(chosen));draw();
+}
+
 async function renderUsers(body,options={}){
   // Настройки аккаунтов, Telegram, лог и архив встроены в «Сотрудники».
   const viewAdmins=session.role==='owner'||can('admins.view')||can('admins.manage')||can('admins.permissions');
@@ -7108,6 +7311,15 @@ function userRow(u,phone,opts){
     </div></div>`;
 }
 async function permissionsModal(u,onDone){
+  try{
+    const data=await rpc('app_roles_list',{p_token:TOKEN});
+    const bound=(data?.users||[]).find(x=>x.login===u.login&&x.role_code);
+    if(bound){
+      const el=modal(`<h3>Права назначены ролью</h3><p>${escapeHtml(u.name)} использует роль «${escapeHtml(bound.role_name||bound.role_code)}». Чтобы настройки не противоречили друг другу, права изменяются в разделе «Роли».</p><div class="actions"><button class="btn" data-x>Закрыть</button><button class="btn btn-primary" id="permGoRoles">Открыть роли</button></div>`);
+      el.querySelector('#permGoRoles').onclick=()=>{closeModal(el);document.querySelector('.tab[data-tab="roles"]')?.click();};
+      return;
+    }
+  }catch(_){/* До установки BG продолжает работать старый редактор прав. */}
   let state=userPermissions(u);
   try{
     const x=await apiGetStaffCalendarPermissions(u.login);
