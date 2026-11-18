@@ -17,14 +17,56 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Golos+Text:wght@400;500;600;700&display=swap');
 
+/* ===== FAD · Design system BN · single source of design tokens ===== */
+:root {
+  --fad-green: #2E7D5B;
+  --fad-green-dark: #1F4A37;
+  --fad-bg: #EEF2EE;
+  --fad-surface: #FFFFFF;
+  --fad-surface-soft: #F3F6F2;
+  --fad-border: #D5DED6;
+  --fad-border-strong: #BCC8BD;
+  --fad-text: #17261F;
+  --fad-muted: #5C6E64;
+  --fad-faint: #819087;
+  --fad-danger: #B94133;
+  --fad-warn: #B7791F;
+  --fad-ok: #1E6B3F;
+  --fad-masherova: #2F6FB5;
+  --fad-kuibysheva: #E6A700;
+  --fad-tolbukhina: #E2711D;
+  --fad-success-soft: #E7F3EA;
+  --fad-warning-soft: #FFF3D9;
+  --fad-danger-soft: #FBE6E1;
+  --fad-shadow: 0 1px 2px rgba(23,38,31,.045), 0 5px 17px rgba(23,38,31,.035);
+  --fad-radius-card: 14px;
+  --fad-radius-control: 10px;
+  --fad-radius-chip: 999px;
+  --fad-space-1: 4px;
+  --fad-space-2: 8px;
+  --fad-space-3: 12px;
+  --fad-space-4: 16px;
+  --fad-space-6: 24px;
+  --fad-space-8: 32px;
+  --fad-page-width: 1280px;
+  --fad-font: 'Manrope', system-ui, -apple-system, sans-serif;
+  --fad-text-page: 20px;
+  --fad-text-section: 16px;
+  --fad-text-card: 15px;
+  --fad-text-body: 14px;
+  --fad-text-caption: 11px;
+  --fad-text-kpi: 26px;
+}
+
+
 :root{
-  --bg:#E7ECE6; --surface:#FFFFFF; --surface-2:#F3F6F2;
-  --ink:#17261F; --ink-soft:#5C6E64; --ink-faint:#8A998F;
-  --accent:#2E7D5B; --accent-deep:#1E5C41;
-  --gold:#C58A2E; --gold-soft:#F6EAD2;
-  --clay:#C05038; --clay-soft:#F7E1DA;
-  --line:#D5DED6; --line-strong:#BCC8BD;
-  --radius:14px; --shadow:0 1px 2px rgba(23,38,31,.06), 0 8px 24px rgba(23,38,31,.06);
+  --bg:var(--fad-bg); --surface:var(--fad-surface); --surface-2:var(--fad-surface-soft);
+  --ink:var(--fad-text); --ink-soft:var(--fad-muted); --ink-faint:var(--fad-faint);
+  --accent:var(--fad-green); --accent-deep:var(--fad-green-dark);
+  --gold:var(--fad-warn); --gold-soft:var(--fad-warning-soft);
+  --clay:var(--fad-danger); --clay-soft:var(--fad-danger-soft);
+  --line:var(--fad-border); --line-strong:var(--fad-border-strong);
+  --radius:var(--fad-radius-card); --shadow:var(--fad-shadow);
   --fx:250ms cubic-bezier(.2,.7,.2,1);
 }
 *{box-sizing:border-box} html,body{margin:0}
@@ -2020,7 +2062,7 @@ textarea.roles-input{min-height:65px;resize:vertical}.roles-field{display:flex;f
 
 
 /* ===== FAD · вертикальная навигация BH; содержимое вкладок не меняется ===== */
-:root{--fad-side:#1f4a37;--fad-side-accent:#f0c75e;--fad-page:#eef2ee;--fad-text:#1f2d26;--fad-muted:#5b6b62;--fad-border:#d5dfd7;--fad-card-border:#dfe8e1}
+:root{--fad-side:var(--fad-green-dark);--fad-side-accent:#f0c75e;--fad-page:var(--fad-bg);--fad-card-border:var(--fad-border)}
 .fad-app-shell{display:flex;min-height:100vh;height:100vh;height:100dvh;width:100%;overflow:hidden;background:var(--fad-page)}
 .fad-sidebar{order:0;box-sizing:border-box;position:sticky;top:0;z-index:52;flex:0 0 248px;width:248px;height:100vh;height:100dvh;display:flex;flex-direction:column;gap:8px;padding:16px 12px 12px;background:var(--fad-side);color:#fff;overflow-x:hidden;overflow-y:auto;scrollbar-width:thin;font-family:'Manrope',system-ui,sans-serif;transition:width .18s ease,flex-basis .18s ease}
 .fad-sidebar-brand{order:0;display:flex;align-items:center;gap:10px;min-height:48px;padding:0 4px;flex:none;overflow:hidden}
@@ -2091,6 +2133,300 @@ textarea.roles-input{min-height:65px;resize:vertical}.roles-field{display:flex;f
   .fad-main-version{display:none}
 }
 
+
+/* ================================ FAD BN / unified interface ================================
+   Intentional visual compatibility layer for original DOM classes. All RPC and editor code remains intact.
+   Class contracts: .page, .page-head, .card, .card-title, .kpi-row, .kpi,
+   .tabs, .chip, .chip--studio, .btn-primary, .btn-secondary, .btn-ghost,
+   .btn-icon, .input, .select, .date-input, .table, .empty, .badge. */
+body,.login,.modal,.fad-main,.fad-main :is(button,input,textarea,select){font-family:var(--fad-font)}
+.login h1,.modal h3,.modal h2{font-family:var(--fad-font)}
+.fad-main{background:var(--fad-bg);color:var(--fad-text);font-size:var(--fad-text-body);line-height:1.5}
+.fad-main-topline{background:var(--fad-surface);border-bottom:1px solid var(--fad-border);padding-inline:var(--fad-space-8)}
+.fad-main-heading h1{color:var(--fad-text);font-size:var(--fad-text-page);font-weight:800}
+.fad-main-eyebrow{color:var(--fad-muted)}
+.fad-main .wrap,.fad-main .wrap:has(> #tabbody > .bonus-page),.fad-main .wrap:has(.adpay){
+  margin-left:0;margin-right:0;width:100%;max-width:var(--fad-page-width);
+  padding:var(--fad-space-6) var(--fad-space-8) 72px;
+}
+.fad-main #tabbody.page{width:100%;max-width:none;min-width:0;margin:0;display:flow-root}
+.fad-main .page :is(.mk-app,.replacements,.bonus-page,.payroll,.adpay){max-width:none;width:100%;margin-left:0;margin-right:0;font-family:inherit;color:var(--fad-text)}
+/* The top navigation bar is the only screen-title. Keep original headings in the DOM for references and ARIA. */
+.fad-main .page :is(h1,.rep-title,.bonus-page .bp-h1,.roles-toolbar .section-title,.staff-toolbar .section-title){
+  position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;
+  overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important;
+}
+.fad-main .page .mk-eyebrow{display:none}
+.fad-main .page .bonus-page{
+  min-height:0;background:transparent;border:0;border-radius:0;box-shadow:none;padding:0;
+  font-size:var(--fad-text-body);line-height:1.5;
+}
+.fad-main .page .bonus-page :is(.bp-head,.bp-h1,.bp-section-title,.bp-label,.bp-sub,.bp-table,.bp-tier-label),
+.fad-main .page .mk-app :is(h2,h3,.mk-k,.mk-v,.mk-s){font-family:inherit}
+.fad-main .page .bonus-page .bp-head{min-height:40px;gap:var(--fad-space-3);margin:0 0 var(--fad-space-4);padding:0}
+.fad-main .page .bonus-page .bp-eyebrow{display:none}
+.fad-main .page .bonus-page .bp-month-row{margin-left:auto}
+.fad-main .page .mk-app{display:flex;gap:var(--fad-space-4);background:transparent;line-height:1.5}
+.fad-main .page .mk-top{margin:0;min-height:40px;align-items:center;gap:var(--fad-space-3)}
+.fad-main .page .replacements{display:grid;gap:var(--fad-space-4);grid-template-columns:minmax(0,1fr)}
+/* Single header/toolbar pattern and consistent descriptive text */
+.fad-main .page .page-head,
+.fad-main .page :is(.adpay-head,.payroll-head,.roles-toolbar,.staff-toolbar,.cal-toolbar,.mk-top,.bp-head){
+  display:flex;align-items:center;justify-content:space-between;gap:var(--fad-space-3);flex-wrap:wrap;
+  margin:0 0 var(--fad-space-4);padding:0;background:transparent;box-shadow:none;border:0;min-height:40px;
+}
+.fad-main .page :is(.adpay-head,.payroll-head) .adpay-muted{font-size:var(--fad-text-caption);color:var(--fad-muted)}
+.fad-main .page .section-title,.fad-main .page :is(.bp-section-title,.roles-subtitle,.cal-side-title,.msg-card-t,.mk-mainhead h2,.adpay-days h4,.adpay-details h4){
+  font-family:inherit;font-size:var(--fad-text-section);font-weight:800;line-height:1.35;
+  color:var(--fad-text);letter-spacing:0;text-transform:none;
+}
+.fad-main .page .section-title{margin:var(--fad-space-6) 0 var(--fad-space-3)}
+.fad-main .page .card-title{font-size:var(--fad-text-card);font-weight:800;color:var(--fad-text)}
+.fad-main .page :is(.hintline,.adpay-muted,.rep-needed,.roles-hint,.mk-notice,.bp-note,.msg-sub){
+  font-size:12px;line-height:1.5;color:var(--fad-muted);
+}
+.fad-main .page .msg-sub{margin:0 0 var(--fad-space-3);max-width:none}
+.fad-main .page :is(.roles-layout-name,.roles-main-head .roles-layout-name){font-size:var(--fad-text-section);font-weight:800}
+/* Shared cards. Avoid a single large white background around reports and plan. */
+.fad-main .page :is(.card,.fad-card,.cn-item,.dayplan,.adpay-branch,.rep-query,.rep-results,.emp-card,.roles-panel,.mk-tile,.mk-card,.cal-card,.msg-card,.bp-branch,.bp-tier,.bp-total,.payroll-kpi,.adpay-kpi){
+  background:var(--fad-surface);border:1px solid var(--fad-border);border-radius:var(--fad-radius-card);
+  box-shadow:var(--fad-shadow);color:var(--fad-text);min-width:0;
+}
+.fad-main .page .card{margin-bottom:var(--fad-space-4)}
+.fad-main .page :is(.adpay-branch,.rep-query,.emp-card,.roles-panel,.bp-branch,.mk-card,.msg-card){padding:var(--fad-space-4)}
+.fad-main .page .rep-results{padding:0;overflow:hidden}
+.fad-main .page .cashnow{
+  background:transparent;border:0;box-shadow:none;border-radius:0;padding:0;margin:0 0 var(--fad-space-4);
+}
+.fad-main .page .cn-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--fad-space-3)}
+.fad-main .page .cn-item{min-height:112px;padding:var(--fad-space-4)}
+.fad-main .page .cn-item.cn-shift{border-left:3px solid var(--fad-green)}
+.fad-main .page .cn-name{font-size:var(--fad-text-body);font-weight:700}
+.fad-main .page .cn-val{font-family:inherit;font-size:var(--fad-text-kpi);font-weight:800;color:var(--fad-text);letter-spacing:-.02em;overflow:visible}
+.fad-main .page .cn-note{font-size:var(--fad-text-caption);line-height:1.45;color:var(--fad-muted)}
+/* KPI contract: same height, label, figure and hint across departments. */
+.fad-main .page :is(.kpi-row,.adpay-kpis,.payroll-kpis,.bp-totals,.mk-sum){
+  display:grid;gap:var(--fad-space-3);grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+  background:transparent;border:0;border-radius:0;box-shadow:none;overflow:visible;margin:0 0 var(--fad-space-4);
+}
+.fad-main .page :is(.kpi,.adpay-kpi,.payroll-kpi,.bp-total,.mk-tile){
+  display:flex;flex-direction:column;gap:var(--fad-space-1);min-height:112px;
+  padding:var(--fad-space-4);border:1px solid var(--fad-border);border-radius:var(--fad-radius-card);
+  background:var(--fad-surface);box-shadow:var(--fad-shadow);min-width:0;margin:0;
+}
+.fad-main .page :is(.adpay-kpi:first-child,.payroll-kpi:first-child,.bp-total:first-child){background:var(--fad-surface)}
+.fad-main .page :is(.adpay-kpi small,.payroll-kpi small,.bp-label,.bp-sub,.mk-tile .mk-k,.mk-tile .mk-s){
+  font-family:inherit;font-size:var(--fad-text-caption);font-weight:600;line-height:1.45;color:var(--fad-muted);letter-spacing:0;
+}
+.fad-main .page :is(.adpay-kpi small:first-child,.bp-label,.mk-tile .mk-k){
+  text-transform:uppercase;letter-spacing:.065em;font-weight:750;
+}
+.fad-main .page :is(.adpay-kpi b,.payroll-kpi b,.bp-total-value,.mk-tile .mk-v){
+  font-family:inherit;font-size:var(--fad-text-kpi);font-weight:800;line-height:1.2;letter-spacing:-.025em;color:var(--fad-text);
+  margin:0;white-space:normal;overflow-wrap:anywhere;
+}
+.fad-main .page .adpay-kpi:first-child b{color:var(--fad-green)}
+.fad-main .page .adpay-branches,.fad-main .page .bp-branches{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--fad-space-3);margin:0 0 var(--fad-space-4);
+}
+.fad-main .page .adpay-branch,.fad-main .page .bp-branch{min-height:0;gap:var(--fad-space-3)}
+.fad-main .page .adpay-branch-top,.fad-main .page .bp-branch-head{font-weight:800;font-size:var(--fad-text-card)}
+.fad-main .page .adpay-percent,.fad-main .page .bp-branch-pct{font-size:23px;font-weight:800;color:var(--fad-text)}
+.fad-main .page :is(.bp-progress-track,.adpay-progress){background:var(--fad-border);border-radius:var(--fad-radius-chip)}
+.fad-main .page .adpay-progress>span{border-radius:var(--fad-radius-chip)}
+.fad-main .page :is(.adpay-branch-numbers small,.bp-field-label){font-size:var(--fad-text-caption);font-weight:700;color:var(--fad-muted)}
+/* Native tabs and segmented controls, plus existing schedule controls. */
+.fad-main .page :is(.tabs,.subtabs,.rep-mode,.mk-seg,.fad-tabs){
+  display:inline-flex;align-items:center;gap:var(--fad-space-1);background:#E3E9E4;
+  padding:var(--fad-space-1);border:0;border-radius:var(--fad-radius-control);
+  box-shadow:none;width:max-content;max-width:100%;height:auto;flex-wrap:wrap;margin:0 0 var(--fad-space-4);
+}
+.fad-main .page :is(.tab,.subtab,.rep-mode button,.mk-seg button){
+  min-height:36px;display:inline-flex;align-items:center;justify-content:center;gap:var(--fad-space-2);
+  margin:0;padding:0 var(--fad-space-3);border:0;border-radius:8px;background:transparent;
+  box-shadow:none;color:var(--fad-muted);font-size:13px;font-weight:700;white-space:nowrap;
+}
+.fad-main .page :is(.tab.on,.subtab.on,.rep-mode button[aria-pressed="true"],.mk-seg button[aria-pressed="true"]){
+  background:var(--fad-green);color:#fff;box-shadow:none;
+}
+/* Chip and branch filter contract. Branch pins remain their original fixed colors. */
+.fad-main .page :is(.chip,.adpay-chip,.rep-direction,.rep-switch,.mchip,.emp-branch,.bp-branch-tag,.roles-badge,.st-tag){
+  display:inline-flex;align-items:center;justify-content:center;gap:var(--fad-space-2);
+  min-height:32px;border:1px solid var(--fad-border);border-radius:var(--fad-radius-chip);
+  background:var(--fad-surface);color:var(--fad-text);font-size:12px;font-weight:700;
+  padding:5px 12px;white-space:normal;line-height:1.35;box-shadow:none;
+}
+.fad-main .page .rep-directions,.fad-main .page .msg-chips{gap:var(--fad-space-2)}
+.fad-main .page :is(.chip.on,.adpay-chip.on,.rep-direction[aria-pressed="true"],.rep-switch[aria-pressed="true"],.mchip.on){
+  color:var(--fad-green-dark);border-color:var(--fad-green);background:var(--fad-success-soft);
+}
+.fad-main .page .adpay-chip.on{background:var(--fad-success-soft);color:var(--fad-green-dark)}
+.fad-main .page :is(.chip--studio,.adpay-chip,.emp-branch,.bp-branch-tag){gap:var(--fad-space-2)}
+.fad-main .page :is(.adpay-dot,.sdot,.rep-branch .sdot){width:8px;height:8px;flex:none}
+.fad-main .page :is(.roles-badge.warn,.badge-senior,.paytech-chip.warn){background:var(--fad-warning-soft);color:var(--fad-warn);border-color:transparent}
+/* One button height and radius; preserve semantic action classes and data-action attributes. */
+.fad-main .page :is(.btn,.btn-primary,.btn-secondary,.btn-ghost,.mk-btn,.rep-switch,.rep-link,.rep-partial-toggle,.emp-primary){
+  min-height:40px;border-radius:var(--fad-radius-control);font-family:inherit;font-size:13px;font-weight:700;
+  display:inline-flex;align-items:center;justify-content:center;gap:var(--fad-space-2);line-height:1.2;
+}
+.fad-main .page :is(.btn-primary,.mk-primary){background:var(--fad-green);border:1px solid var(--fad-green);color:white}
+.fad-main .page :is(.btn-primary,.mk-primary):hover:not(:disabled){background:var(--fad-green-dark);border-color:var(--fad-green-dark);color:white}
+.fad-main .page :is(.btn-secondary,.btn:not(.btn-primary):not(.btn-ghost),.mk-btn:not(.mk-primary),.emp-primary){
+  background:var(--fad-surface);border:1px solid var(--fad-border);color:var(--fad-text);
+}
+.fad-main .page :is(.btn-ghost,.rep-link){background:transparent;border:0;box-shadow:none;color:var(--fad-green);padding-inline:var(--fad-space-2)}
+.fad-main .page :is(.btn-icon,.emp-icon-btn,.rep-row-contact,.rep-contact-icon,.icon-only,.cl-del){
+  display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;min-width:40px;
+  min-height:40px;padding:0;border:1px solid var(--fad-border);border-radius:var(--fad-radius-control);
+  background:var(--fad-surface);box-shadow:none;
+}
+.fad-main .page :is(.emp-icon-btn,.emp-primary){height:40px;min-height:40px;border-radius:var(--fad-radius-control)}
+.fad-main .page button:focus-visible,.fad-main .page :is(input,select,textarea):focus-visible{outline:2px solid var(--fad-green);outline-offset:2px}
+/* Uniform inputs, field captions and checkbox styles. Specialized time inputs keep functional sizing. */
+.fad-main .page :is(.input,.select,.date-input,input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),select){
+  min-height:40px;border:1px solid var(--fad-border);border-radius:var(--fad-radius-control);
+  background:var(--fad-surface);color:var(--fad-text);font-family:inherit;font-size:var(--fad-text-body);
+}
+.fad-main .page textarea{border:1px solid var(--fad-border);border-radius:var(--fad-radius-control);background:var(--fad-surface);font-family:inherit;font-size:var(--fad-text-body)}
+.fad-main .page :is(.field .lbl,.roles-field,.rep-label,.msg-target-lbl,.adpay-controls label,.payroll-range-label,.datepick .lbl,.bp-field-label,.mk-fld label){
+  font-size:var(--fad-text-caption);font-weight:750;letter-spacing:.055em;text-transform:uppercase;color:var(--fad-muted);
+}
+.fad-main .page input[type="checkbox"]{accent-color:var(--fad-green)}
+/* Tables: consistent readable headings, row separators and right-aligned numeric data. */
+.fad-main .page :is(.table,.adpay-table,.payroll-table,.bp-table,.roles-table,.ds-table){
+  width:100%;border-collapse:collapse;font-family:inherit;font-size:12px;color:var(--fad-text);font-variant-numeric:tabular-nums;
+}
+.fad-main .page :is(.table,.adpay-table,.payroll-table,.bp-table,.roles-table,.ds-table) th{
+  background:var(--fad-surface-soft);padding:12px 10px;line-height:1.4;text-transform:uppercase;
+  font-size:var(--fad-text-caption);font-weight:800;letter-spacing:.04em;color:var(--fad-muted);
+  border:0;border-bottom:1px solid var(--fad-border);white-space:nowrap;
+}
+.fad-main .page :is(.table,.adpay-table,.payroll-table,.bp-table,.roles-table,.ds-table) td{
+  padding:12px 10px;border:0;border-bottom:1px solid var(--fad-border);line-height:1.45;
+}
+.fad-main .page :is(.table,.adpay-table,.payroll-table,.bp-table,.roles-table,.ds-table) tbody tr:hover{background:var(--fad-surface-soft)}
+.fad-main .page :is(.table,.adpay-table,.payroll-table,.bp-table,.roles-table,.ds-table) :is(th,td):not(:first-child){text-align:right}
+.fad-main .page :is(.table,.adpay-table,.payroll-table,.bp-table,.roles-table,.ds-table) :is(th,td):first-child{text-align:left}
+.fad-main .page :is(.adpay-scroll,.payroll-table-scroll,.payroll-table-wrap,.bp-table-scroll,.roles-table-wrap,.sch-scroll){
+  max-width:100%;min-width:0;overflow-x:auto;border:1px solid var(--fad-border);border-radius:var(--fad-radius-card);
+  background:var(--fad-surface);-webkit-overflow-scrolling:touch;
+}
+.fad-main .page :is(.adpay-scroll,.payroll-table-scroll,.bp-table-scroll,.roles-table-wrap){margin:0 0 var(--fad-space-4)}
+/* Compact notices and badges */
+.fad-main .page :is(.adpay-note,.payroll-sync-status,.adpay-sync-status,.mk-notice,.rep-unavailable){
+  border:1px solid var(--fad-border);border-radius:var(--fad-radius-control);
+  background:var(--fad-surface-soft);color:var(--fad-muted);font-size:12px;
+  padding:var(--fad-space-2) var(--fad-space-3);margin:0 0 var(--fad-space-3);
+}
+.fad-main .page :is(.adpay-note.error,.payroll-sync-error,.adpay-sync-status.payroll-sync-error){
+  background:var(--fad-danger-soft);color:var(--fad-danger);border-color:var(--fad-border);
+}
+.fad-main .page :is(.adpay-note.error,.payroll-sync-error){box-shadow:none}
+.fad-main .page :is(.badge,.emp-role,.st-pill,.badge-senior,.role-pill,.paytech-chip,.cal-reminder-state,.cal-work-badge,.stat,.closed-badge,.lockchip){
+  display:inline-flex;align-items:center;gap:var(--fad-space-1);padding:3px 8px;border-radius:6px;
+  font-size:11px;font-weight:750;line-height:1.3;white-space:normal;
+}
+.fad-main .page :is(.emp-role--admin,.st-on,.stat-closed){background:var(--fad-success-soft);color:var(--fad-ok)}
+.fad-main .page :is(.emp-role--trainer,.badge-senior,.stat-open){background:var(--fad-warning-soft);color:var(--fad-warn)}
+.fad-main .page .empty,.fad-main .page :is(.rep-empty,.cal-empty,.mk-empty,.audit-empty){
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--fad-space-2);
+  padding:var(--fad-space-8) var(--fad-space-4);min-height:116px;border:0;border-radius:var(--fad-radius-card);
+  background:var(--fad-surface-soft);color:var(--fad-muted);font-size:var(--fad-text-body);text-align:center;
+}
+.fad-main .page :is(.rep-empty,.cal-empty,.mk-empty){margin:var(--fad-space-3)}
+.fad-main .page .rep-empty[hidden]{display:none}
+/* Section details */
+.fad-main .page .rep-query,.fad-main .page .rep-results{border-radius:var(--fad-radius-card)}
+.fad-main .page .rep-mode{margin:0}
+.fad-main .page .rep-mode button{min-height:36px}
+.fad-main .page .rep-trainer{min-height:40px}
+.fad-main .page .rep-query-footer{gap:var(--fad-space-3)}
+.fad-main .page .rep-switch{margin-left:auto;min-height:36px}
+.fad-main .page .rep-direction{min-height:32px}
+.fad-main .page .rep-results .rep-row{border-color:var(--fad-border)}
+.fad-main .page .emp-grid{grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:var(--fad-space-4)}
+.fad-main .page .emp-card{gap:var(--fad-space-3)}
+.fad-main .page .emp-footer{border-color:var(--fad-border)}
+.fad-main .page .roles-shell{grid-template-columns:minmax(230px,270px) minmax(0,1fr);gap:var(--fad-space-4)}
+.fad-main .page .roles-check{border-color:var(--fad-border);border-radius:var(--fad-radius-control);background:var(--fad-surface)}
+.fad-main .page .roles-check input{min-width:16px;min-height:16px;width:16px;height:16px}
+.fad-main .page .roles-item{border-radius:var(--fad-radius-control)}
+.fad-main .page .roles-item.active{border-color:var(--fad-green);background:var(--fad-success-soft);box-shadow:inset 3px 0 var(--fad-green)}
+.fad-main .page .roles-soon{border-color:var(--fad-border);background:var(--fad-surface-soft)}
+.fad-main .page .mk-seg{margin:0}
+.fad-main .page .mk-filters{gap:var(--fad-space-3)}
+.fad-main .page .mk-tile{padding:var(--fad-space-4)}
+.fad-main .page :is(.cal-layout,.mk-layout){gap:var(--fad-space-4)}
+.fad-main .page .cal-card{padding:0;overflow:hidden}
+.fad-main .page .cal-side-title{padding:var(--fad-space-4)}
+.fad-main .page .msg-grid{gap:var(--fad-space-4)}
+.fad-main .page .msg-card{margin:0;padding:var(--fad-space-4)}
+.fad-main .page .msg-target{margin:0 0 var(--fad-space-4)}
+.fad-main .page .msg-ic{color:var(--fad-green);font-size:18px}
+.fad-main .page .msg-card-h{gap:var(--fad-space-3)}
+.fad-main .page .msg-card-t{font-size:var(--fad-text-card)}
+.fad-main .page .msg-card-d{font-size:12px;color:var(--fad-muted)}
+.fad-main .page .msg-actions{margin:var(--fad-space-4) 0}
+.fad-main .page .fad-inline-icon{display:inline-block;width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;vertical-align:-3px;flex:none;margin-right:3px}
+.fad-main .page .cal-event .fad-inline-icon,.fad-main .page .msg-ic .fad-inline-icon{margin-right:4px}
+/* Branch palette is immutable and used only in studio-specific elements. */
+.fad-main .page .fad-studio-masherova{--fad-studio-color:var(--fad-masherova)}
+.fad-main .page .fad-studio-kuibysheva{--fad-studio-color:var(--fad-kuibysheva)}
+.fad-main .page .fad-studio-tolbukhina{--fad-studio-color:var(--fad-tolbukhina)}
+/* Narrow layouts keep full content width and horizontal table scroll. */
+@media (max-width:1100px){
+  .fad-main .page .cn-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .fad-main .page .bp-branches,.fad-main .page .adpay-branches{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .fad-main .page .adpay-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (max-width:899px){
+  .fad-main .wrap,.fad-main .wrap:has(> #tabbody > .bonus-page),.fad-main .wrap:has(.adpay){
+    max-width:100%;padding:var(--fad-space-4) var(--fad-space-3) 64px;
+  }
+  .fad-main-topline{padding-inline:var(--fad-space-3)}
+  .fad-main .page .roles-shell,.fad-main .page .cal-layout,.fad-main .page .mk-layout{grid-template-columns:1fr}
+  .fad-main .page :is(.kpi-row,.adpay-kpis,.bp-totals,.mk-sum){grid-template-columns:repeat(2,minmax(0,1fr))}
+  .fad-main .page .adpay-branches,.fad-main .page .bp-branches{grid-template-columns:1fr}
+  .fad-main .page .msg-grid{grid-template-columns:1fr}
+  .fad-main .page .rep-trainer-field{max-width:none}
+  .fad-main .page .page-head{align-items:flex-start}
+}
+@media (max-width:520px){
+  .fad-main .page .cn-grid{grid-template-columns:1fr 1fr}
+  .fad-main .page .cn-item{padding:var(--fad-space-3)}
+  .fad-main .page .cn-val{font-size:20px}
+  .fad-main .page :is(.adpay-kpis,.payroll-kpis,.bp-totals,.mk-sum){grid-template-columns:repeat(2,minmax(0,1fr))}
+  .fad-main .page :is(.adpay-kpi,.payroll-kpi,.bp-total,.mk-tile){min-height:100px;padding:var(--fad-space-3)}
+  .fad-main .page :is(.adpay-kpi b,.payroll-kpi b,.bp-total-value,.mk-tile .mk-v){font-size:20px}
+  .fad-main .page .rep-query{padding:var(--fad-space-3)}
+  .fad-main .page .rep-query-top{align-items:stretch}
+  .fad-main .page :is(.tabs,.subtabs){max-width:100%;width:100%;}
+  .fad-main .page .cal-day{min-height:76px;padding:4px}
+  .fad-main .page .roles-shell{grid-template-columns:1fr}
+  .fad-main .page .adpay-controls{width:100%}
+  .fad-main .page .adpay-table{min-width:980px}
+}
+
+
+/* BN final safety/consistency: never unhide controls by overriding display. */
+.fad-main .page [hidden]{display:none!important}
+.fad-main .page .roles-table :is(th,td):not(:last-child){text-align:left!important}
+.fad-main .page .roles-table :is(th,td):last-child{text-align:right!important}
+.fad-main .page .bp-table :is(th,td):nth-child(2){text-align:left!important}
+.fad-main .page .replacements .fad-rep-head{display:flex;align-items:center;justify-content:space-between;gap:var(--fad-space-3);flex-wrap:wrap;min-height:40px;margin:0 0 var(--fad-space-2)}
+.fad-main .page .replacements .fad-rep-head .fad-rep-description{font-size:12px;line-height:1.5;color:var(--fad-muted)}
+.fad-main .page .replacements .rep-manage{margin:0;padding:0;min-height:40px}
+.fad-main .page .rep-results:has(> #rep-empty:not([hidden])){background:transparent;border:0;box-shadow:none;padding:0;overflow:visible}
+.fad-main .page .rep-results:has(> #rep-empty:not([hidden])) .rep-empty{background:var(--fad-surface-soft);min-height:130px;margin:0}
+.fad-main .page :is(.empty,.rep-empty,.cal-empty,.mk-empty,.audit-empty):not([hidden])::before{
+  content:"";display:block;width:22px;height:22px;flex:none;background:var(--fad-muted);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='3'/%3E%3Cpath d='M8 12h8M12 8v8'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='3'/%3E%3Cpath d='M8 12h8M12 8v8'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+.fad-main .page .fad-has-studio{border-left:3px solid var(--fad-studio-color,var(--fad-border))!important}
+/* Some controls have empty-state labels; keep layout compact on phones. */
+@media(max-width:520px){.fad-main .page .replacements .fad-rep-head{align-items:flex-start}.fad-main .page .replacements .fad-rep-head .rep-manage{min-height:32px}}
+
 </style>
 
 <div id="root"></div>
@@ -2111,7 +2447,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '18.11.2026-bl'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '18.11.2026-bn'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -3071,6 +3407,137 @@ function renderNav(tabs, host, selectTab){
   for(const g of groupOrder){const section=renderedGroups.get(g);if(section.querySelector('.fad-sidebar-tab'))host.append(section);}
   // Здесь нет отдельных статических панелей: проверяем существующий renderer.
 }
+
+/* ===== FAD BN presentation adapter. Never reads or writes business data. ===== */
+const FAD_VISUAL_ICON_PATHS=Object.freeze({
+  '☕':'M4 8h12v7a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5V8Zm12 1h2a3 3 0 0 1 0 6h-2M3 22h15',
+  '📣':'M3 11h4l11-5v12L7 13H3v-2Zm4 2 2 6h3',
+  '🎂':'M4 10h16v11H4V10Zm0 5c2 2 4 2 6 0 2 2 4 2 6 0 2 2 4 2 4 0M8 10V7m4 3V7m4 3V7M8 3v2m4-2v2m4-2v2',
+  '🔔':'M18 8a6 6 0 0 0-12 0c0 7-3 8-3 9h18c0-1-3-2-3-9ZM10 21h4',
+  '⚠':'M12 3 2 21h20L12 3Zm0 7v5m0 3v.01',
+  '🗑':'M3 6h18M8 6V4h8v2M6 6l1 15h10l1-15M10 10v7m4-7v7',
+  '🎉':'M4 20 8 8l8 8-12 4ZM15 4l2-2m2 7 3-2m-8-3-2-2m5 11 3 3',
+  '📌':'m9 3 12 12-4 1-3 4-4-4-6 5 5-6-4-4 4-3V3Z',
+  '🏛':'M3 9 12 3l9 6H3Zm2 3v7m5-7v7m4-7v7m5-7v7M2 22h20',
+  '✅':'M20 6 9 17l-5-5M12 2a10 10 0 1 1-10 10A10 10 0 0 1 12 2Z',
+  '🌼':'M12 3c3 0 3 4 0 5 4-2 6 1 3 3 4 0 4 4 0 4 2 4-1 6-3 3 0 4-4 4-4 0-4 2-6-1-3-3-4 0-4-4 0-4-2-4 1-6 3-3ZM12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z',
+  '♻':'M7 3h5l3 4-3 2-2-3H7l-2 4M21 12l-2 5h-5v-3h4l2-4M10 21H5l-3-5 3-2 2 4h4l2-3',
+  '⏳':'M6 2h12M6 22h12M7 3c0 6 10 6 10 9S7 16 7 21m10-18c0 6-10 6-10 9s10 4 10 9',
+  '⚙':'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM12 2v3m0 14v3M4.9 4.9 7 7m10 10 2.1 2.1M2 12h3m14 0h3M4.9 19.1 7 17M17 7l2.1-2.1',
+  '📊':'M4 20V10h4v10M10 20V4h4v16M16 20v-8h4v8M2 22h20',
+  '🔒':'M5 11h14v10H5V11Zm3 0V7a4 4 0 1 1 8 0v4m-4 5v2',
+  '⏱':'M12 7v5l3 2M9 2h6M12 4a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z',
+  '🗓':'M3 6h18v15H3V6Zm4-4v8m10-8v8M3 11h18',
+  '👥':'M16 20v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM22 20v-2a4 4 0 0 0-4-4h-2m0-11a4 4 0 0 1 0 8',
+  '⬇':'M12 2v14m-5-5 5 5 5-5M4 20h16',
+  '📨':'M3 4h18v15H3V4Zm0 2 9 8 9-8',
+  '🧪':'M9 2h6M10 2v7l-6 11h16L14 9V2M7 16h10',
+  '✈':'M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z'
+});
+const FAD_DECORATIVE_ICON_SELECTORS=[
+  '.msg-ic','.rem-icon','.rem-info-ic','.clog-icon','.wc-icon','.coffee-mark',
+  '.cal-reminder-state','.cal-event','.cal-up-name','.cal-log-status','.cal-log-pill',
+  '.clog-event','.workcal-detail .wc-icon','.msg-chips .mchip',
+  '.banner .bt','.section-title','.cl-toggle','.hire-lbl',
+  '.cal-work-badge','.bp-types-summary','.adpay-branch-note',
+  '.msg-prev-lbl','.payroll-status-icon','.zrep','.lockchip',
+  '.coffee-cell','.cl-del','.cal-toolbar button','.modal h3'
+].join(',');
+function fadSvgIconForGlyph(glyph){
+  const path=FAD_VISUAL_ICON_PATHS[glyph];if(!path)return null;
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('aria-hidden','true');
+  svg.setAttribute('focusable','false');svg.classList.add('fad-inline-icon');
+  const p=document.createElementNS('http://www.w3.org/2000/svg','path');p.setAttribute('d',path);svg.append(p);return svg;
+}
+function fadDecorateInterfaceIcons(host){
+  // Only predefined visual elements. Customer text, messages and generated Telegram letters remain untouched.
+  const iconGlyphs=Object.keys(FAD_VISUAL_ICON_PATHS);
+  const re=new RegExp('('+iconGlyphs.map(c=>c.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')+')','gu');
+  host.querySelectorAll(FAD_DECORATIVE_ICON_SELECTORS).forEach(el=>{
+    for(const node of Array.from(el.childNodes)){
+      if(node.nodeType!==3||!iconGlyphs.some(c=>node.textContent.includes(c)))continue;
+      const source=node.textContent,fragment=document.createDocumentFragment();let last=0;
+      for(const match of source.matchAll(re)){
+        if(match.index>last)fragment.append(document.createTextNode(source.slice(last,match.index)));
+        const icon=fadSvgIconForGlyph(match[0]);fragment.append(icon||document.createTextNode(match[0]));last=match.index+match[0].length;
+      }
+      if(last<source.length)fragment.append(document.createTextNode(source.slice(last)));
+      node.replaceWith(fragment);
+    }
+  });
+}
+function fadPolishView(host){
+  if(!host||!host.isConnected)return;
+  const panel=host.querySelector('#tabbody');if(!panel)return;
+  panel.classList.add('page');
+  const map={
+    'page-head':'.adpay-head,.payroll-head,.roles-toolbar,.staff-toolbar,.cal-toolbar,.mk-top,.bonus-page .bp-head',
+    'card':'.adpay-branch,.rep-query,.rep-results,.emp-card,.roles-panel,.mk-card,.cal-card,.msg-card,.bp-branch,.cn-item,.dayplan',
+    'card-title':'.msg-card-t,.cal-side-title,.roles-layout-name,.bp-section-title,.adpay-days h4',
+    'kpi-row':'.adpay-kpis,.payroll-kpis,.bonus-page .bp-totals,.mk-sum,.cn-grid',
+    'kpi':'.adpay-kpi,.payroll-kpi,.bp-total,.mk-tile,.cn-item',
+    'tabs':'.subtabs,.rep-mode,.mk-seg',
+    'chip':'.adpay-chip,.rep-direction,.rep-switch,.mchip,.emp-branch',
+    'chip--studio':'.adpay-chip,.emp-branch,.bp-branch-tag',
+    'btn-secondary':'.emp-primary,.rep-partial-toggle',
+    'btn-icon':'.emp-icon-btn,.rep-row-contact,.rep-contact-icon,.cl-del',
+    'table':'.adpay-table,.payroll-table,.bp-table,.roles-table,.ds-table',
+    'badge':'.emp-role,.roles-badge,.badge-senior,.st-pill,.cal-reminder-state',
+    'empty':'.rep-empty,.cal-empty,.mk-empty,.audit-empty'
+  };
+  for(const [klass,selector] of Object.entries(map)){
+    panel.querySelectorAll(selector).forEach(el=>el.classList.add(klass));
+  }
+  panel.querySelectorAll('input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),select,textarea').forEach(el=>{
+    const klass=el.tagName==='SELECT'?'select':el.tagName==='TEXTAREA'?'input':el.type==='date'?'date-input':'input';
+    el.classList.add(klass);
+  });
+  // Move the existing link (same node + same click handler) into the visually shared page heading.
+  const replacementPage=panel.querySelector('.replacements');
+  const manageLink=replacementPage?.querySelector('#rep-manage');
+  if(replacementPage&&manageLink){
+    let h=replacementPage.querySelector('.fad-rep-head');
+    if(!h){
+      h=document.createElement('div');h.className='fad-rep-head page-head';
+      const description=document.createElement('span');description.className='fad-rep-description';
+      description.textContent='Выберите тренера — покажем, кто может его заменить.';
+      h.append(description);replacementPage.prepend(h);
+    }
+    if(manageLink.parentElement!==h)h.append(manageLink);
+  }
+  // Derive branch accent from the original branch dot, without changing studio source colors.
+  for(const card of panel.querySelectorAll('.adpay-branch,.bp-branch,.cn-item')){
+    if(card.classList.contains('fad-has-studio'))continue;
+    const dot=card.querySelector('.adpay-dot,.bp-dot,.sdot');
+    if(!dot)continue;
+    const cssColor=dot.style.backgroundColor||getComputedStyle(dot).backgroundColor;
+    const canonical=STUDIOS.find(st=>{
+      const el=document.createElement('div');el.style.color=st.color;
+      return el.style.color.toLowerCase()===cssColor.toLowerCase()||
+        (function(){el.style.backgroundColor=st.color;return el.style.backgroundColor.toLowerCase()===cssColor.toLowerCase()})();
+    });
+    if(canonical){card.classList.add('fad-has-studio');card.style.setProperty('--fad-studio-color',canonical.color);}
+  }
+  fadDecorateInterfaceIcons(panel);
+}
+function fadInstallVisualSystem(host){
+  let scheduled=false;
+  const flush=()=>{scheduled=false;fadPolishView(host);};
+  const schedule=()=>{if(!scheduled){scheduled=true;requestAnimationFrame(flush);}};
+  const observer=new MutationObserver(schedule);
+  observer.observe(host,{subtree:true,childList:true});
+  const dialogObserver=new MutationObserver(records=>{
+    for(const record of records)for(const node of record.addedNodes){
+      if(node.nodeType!==1)continue;
+      const overlay=node.matches?.('.overlay')?node:node.querySelector?.('.overlay');
+      if(overlay)fadDecorateInterfaceIcons(overlay);
+    }
+  });
+  dialogObserver.observe(document.body,{childList:true});
+  schedule();return ()=>{observer.disconnect();dialogObserver.disconnect();};
+}
+
 function renderRoleUI(tabs){
   if(fadSidebarCleanup){fadSidebarCleanup();fadSidebarCleanup=null;}
   const root=document.getElementById('root');
@@ -3124,7 +3591,8 @@ function renderRoleUI(tabs){
   scrim.addEventListener('click',()=>setDrawer(false));
   const onKeydown=e=>{if(e.key==='Escape'&&shell.classList.contains('fad-sidebar-drawer-open')){e.preventDefault();setDrawer(false);}};
   document.addEventListener('keydown',onKeydown);
-  fadSidebarCleanup=()=>document.removeEventListener('keydown',onKeydown);
+  const fadVisualStop=fadInstallVisualSystem(root.querySelector('#fadMain'));
+  fadSidebarCleanup=()=>{document.removeEventListener('keydown',onKeydown);fadVisualStop();};
   root.querySelector('#logout').onclick=()=>doLogout();
   const _rb=root.querySelector('#refreshBtn'); if(_rb) _rb.onclick=()=>{
     if(appHasUnsavedWork()){toast('Есть несохранённые изменения — сначала сохраните их',true);return;}
