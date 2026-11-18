@@ -2111,7 +2111,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '18.11.2026-bj'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '18.11.2026-bk'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -3135,6 +3135,12 @@ function renderRoleUI(tabs){
     }
     if(currentTab>=0)show(currentTab); // Тот же рендерер/права, без перезагрузки страницы.
   };
+  // Персональная последняя открытая основная вкладка. Не привязана к DOM-индексу:
+  // при изменении ролей/порядка меню восстанавливаем только доступный стабильный key.
+  // В приватном режиме и при запрете хранилища остаёмся на первой доступной вкладке.
+  const activeTabStorageKey='fad.nav.active.'+encodeURIComponent(String(session?.login||''));
+  let rememberedTab='';
+  try{rememberedTab=localStorage.getItem(activeTabStorageKey)||'';}catch(_){rememberedTab='';}
   let body=root.querySelector('#tabbody');
   let currentTab=-1;
   function show(i){
@@ -3161,10 +3167,14 @@ function renderRoleUI(tabs){
     });
     if(shell.classList.contains('fad-sidebar-drawer-open'))setDrawer(false);
     tabs[i].render(body);
+    // Записываем только реально открытый раздел; право доступа проверено через tabs.
+    try{localStorage.setItem(activeTabStorageKey,key);}catch(_){}
     return true;
   }
   renderNav(tabs,nav,show);
-  const initial= NAV_ITEMS.map(item=>tabs.findIndex(t=>t.key===item.id)).find(i=>i>=0);
+  const visibleKeys=new Set(NAV_ITEMS.map(item=>item.id));
+  const restored=tabs.findIndex(tab=>tab.key===rememberedTab&&visibleKeys.has(tab.key));
+  const initial=restored>=0?restored:NAV_ITEMS.map(item=>tabs.findIndex(t=>t.key===item.id)).find(i=>i>=0);
   if(initial!==undefined)show(initial);
   else {root.querySelector('#fadCurrentTitle').textContent='Нет доступных разделов';body.innerHTML='<div class="empty">Для пользователя нет доступных разделов.</div>';}
 }
@@ -9325,12 +9335,12 @@ function renderAdminPayroll(host){
       }
     }
     if(state.syncStatusError||state.lastError){
-      out.push({severity:'warning',kind:'sync',title:'Не удалось синхронизировать ImpulseCRM',text:state.syncStatus||state.lastError||'Данные не обновлены. Сохранён последний подтверждённый расчёт.',actionLabel:isPayrollOwner?'Обновить из Impulse':'Обновить данные',action:'sync'});
+      out.push({severity:'warning',kind:'sync',title:'Не удалось синхронизировать ImpulseCRM',text:state.syncStatus||state.lastError||'Данные не обновлены. Сохранён последний подтверждённый расчёт.',actionLabel:'Обновить из Impulse',action:'sync'});
     }
     for(const msg of state.syncWarnings||[]){
       if(/авансы/i.test(msg)&&mismatch.length)continue;
       if(/расхождения между начислением/i.test(msg)&&out.some(n=>n.kind==='source-days'))continue;
-      out.push({severity:'warning',kind:'mapping',title:'Необходимо проверить импорт',text:String(msg),actionLabel:isPayrollOwner?'Обновить из Impulse':'Обновить данные',action:'sync'});
+      out.push({severity:'warning',kind:'mapping',title:'Необходимо проверить импорт',text:String(msg),actionLabel:'Обновить из Impulse',action:'sync'});
     }
     if(isPartial()){out.push({severity:'info',kind:'period',title:'Выбран неполный месяц',text:`В карточках выделены даты ${dateRangeText()}. Денежные итоги, премии и авансы относятся ко всему месяцу; их нельзя считать выплатой за выбранные дни.`});}
     return out;
@@ -9344,7 +9354,7 @@ function renderAdminPayroll(host){
     const stats=state.paytechSyncStats;
     const roundedCount=(state.advanceDiagnostics||[]).filter(d=>d.status==='rounded_match').length;
     const updated=state.model.receivedAt?new Date(state.model.receivedAt).toLocaleString('ru-RU',{timeZone:'Europe/Minsk',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}).replace(',',' ·'):state.busy?'загрузка…':'нет данных';
-    holder.innerHTML=paytechRender({id:'admin',open:state.paytechOpen,updated,period:dateRangeText(),source:'ImpulseCRM · зарплата администратора',syncWarning:!!state.syncStatusError||!!state.syncWarnings.length||!state.model.receivedAt||!!state.advanceWarnings.length||staffCount<rows().length||notes.some(n=>n.kind==='advances'||n.kind==='mapping'),notices:notes,how:true,reset:isPayrollOwner,syncButtonLabel:isPayrollOwner?'Обновить из Impulse':'Обновить данные',details:[{label:'Получено дней',value:stats?.days??dayCount},{label:'Сотрудников',value:`${stats?.returned??staffCount} из ${stats?.requested??rows().length}`},...(roundedCount?[{label:'Авансы без округления',value:`${roundedCount} сотрудников · суммы из журнала` }]:[])]});
+    holder.innerHTML=paytechRender({id:'admin',open:state.paytechOpen,updated,period:dateRangeText(),source:'ImpulseCRM · зарплата администратора',syncWarning:!!state.syncStatusError||!!state.syncWarnings.length||!state.model.receivedAt||!!state.advanceWarnings.length||staffCount<rows().length||notes.some(n=>n.kind==='advances'||n.kind==='mapping'),notices:notes,how:true,reset:isPayrollOwner,syncButtonLabel:'Обновить из Impulse',details:[{label:'Получено дней',value:stats?.days??dayCount},{label:'Сотрудников',value:`${stats?.returned??staffCount} из ${stats?.requested??rows().length}`},...(roundedCount?[{label:'Авансы без округления',value:`${roundedCount} сотрудников · суммы из журнала` }]:[])]});
   }
   function showAdminTechAttention(ids=[]){
     state.paytechOpen='attention';
@@ -9371,7 +9381,7 @@ function renderAdminPayroll(host){
 
   function draw(){if(!page.isConnected||!state.model)return;const {kpis,branches,selected,t}=renderCards();
     const warnings=adminTechNotices();const badAdvanceIds=new Set(warnings.filter(n=>n.kind==='advances').flatMap(n=>n.ids||[]));const badRateIds=new Set(warnings.filter(n=>n.kind==='rate').flatMap(n=>n.ids||[]));const receipt=state.model.receivedAt?` · снимок Impulse ${new Date(state.model.receivedAt).toLocaleString('ru-RU',{timeZone:'Europe/Minsk'})}`:'';
-    page.innerHTML=`<div class="adpay-head"><div><h1>Зарплата администраторов</h1><div class="adpay-muted">Часы по дням — Impulse · план и продажи — «План»</div></div><div class="adpay-controls"><label>Ставка, BYN/ч ${isPayrollOwner?`<input id="adpay-rate" type="number" step="0.5" min="0" value="${rate()}">`:`<strong class="adpay-readonly-rate">${fmt(rate())}</strong>`}</label>${calendarMarkup()}<button type="button" class="btn btn-primary" data-action="sync" ${state.busy?'disabled':''}>${state.busy?'Получаем данные…':isPayrollOwner?'Обновить из Impulse':'Обновить данные'}</button>${isPayrollOwner?'<button type="button" class="btn btn-sm" data-action="settings">⚙ Настройки</button>':''}</div></div>
+    page.innerHTML=`<div class="adpay-head"><div><h1>Зарплата администраторов</h1><div class="adpay-muted">Часы по дням — Impulse · план и продажи — «План»</div></div><div class="adpay-controls"><label>Ставка, BYN/ч ${isPayrollOwner?`<input id="adpay-rate" type="number" step="0.5" min="0" value="${rate()}">`:`<strong class="adpay-readonly-rate">${fmt(rate())}</strong>`}</label>${calendarMarkup()}<button type="button" class="btn btn-primary" data-action="sync" ${state.busy?'disabled':''}>${state.busy?'Получаем данные…':'Обновить из Impulse'}</button>${isPayrollOwner?'<button type="button" class="btn btn-sm" data-action="settings">⚙ Настройки</button>':''}</div></div>
     ${canPayrollEdit()?'':'<div class="adpay-note" role="status">Режим просмотра: руководитель отключил редактирование зарплат. Все расчёты и расшифровки доступны.</div>'}
     <div class="paytech-holder" id="paytechAdmin"></div>
     <div class="adpay-kpis">${kpis}</div><div class="adpay-branches">${branches}</div>
@@ -9436,7 +9446,12 @@ function renderAdminPayroll(host){
     const openChat=ov.querySelector('[data-open-chat]');if(openChat&&link)openChat.onclick=()=>window.open(link,'_blank','noopener,noreferrer');
   }
   async function doSync(automatic=false){
-    if(!isPayrollOwner){if(!automatic)await load();return;}
+    // Чтение из Impulse разрешено владельцу и уполномоченному старшему администратору.
+    // Право ручного редактирования (can_edit) на синхронизацию не влияет.
+    if(!isPayrollOwner&&session?.adminPayrollAccess!==true){
+      if(!automatic)toast('Недостаточно прав на синхронизацию зарплат',true);
+      return;
+    }
     if(state.busy||!page.isConnected)return;
     const syncMonth=state.month;
     state.busy=true;state.syncStatusError=false;
