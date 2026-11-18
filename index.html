@@ -2531,7 +2531,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '18.11.2026-bu'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '18.11.2026-bv'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -6443,6 +6443,26 @@ function mergeTrainerDirection(catalog,direction){
   }
 }
 
+/* FAD BV · карточка тренера для подбора замен.
+   В версии BU вызов replacementRow был, но определения не было, из-за чего
+   drawResults() прерывался ДО вызова impulse-schedule и оставлял состояние loading. */
+function replacementRow({trainer,missing=[]}){
+  const name=escapeHtml(trainer.full_name||'Тренер');
+  const raw=staffPhoneDial(trainer.phone||'');
+  const phone=trainerInternationalPhone(raw);
+  const branches=Array.isArray(trainer.studios)?trainer.studios.filter(Boolean):[];
+  if(!branches.length&&trainer.primary_studio)branches.push(trainer.primary_studio);
+  const studioTags=[...new Set(branches)].map(id=>`<span class="rep-branch">${sdot(id)}${escapeHtml(studioName(id))}</span>`).join('');
+  const callIcon='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg>';
+  const call=phone?`<a class="rep-row-contact" href="tel:${phone}" title="Позвонить" aria-label="Позвонить">${callIcon}</a>`:
+    `<button type="button" class="rep-row-contact" disabled title="Телефон не указан" aria-label="Позвонить: номер не указан">${callIcon}</button>`;
+  const contactLinks=trainerMessengerLinks(trainer,raw);
+  const notQualified=missing.length?`<span class="rep-missing">${escapeHtml(missing.join(', '))}</span>`:'';
+  return `<li class="rep-row"><div class="rep-row-info"><h4 class="rep-name">${name}</h4>
+    <div class="rep-row-meta">${studioTags}${notQualified}</div></div>
+    <div class="rep-row-contacts">${call}${contactLinks}</div></li>`;
+}
+
 /* ================= Замены · BR: реальные даты и проверка расписания ================= */
 const REP_SCHEDULE_SERVICE='fad-impulse-schedule-18.11.2026-bu';
 const REP_SCHEDULE_TIMEOUT_MS=60000; // Hard deadline: Promise.race below does not rely solely on AbortController.
@@ -6684,7 +6704,11 @@ async function renderReplacements(body){
     const controller=new AbortController();scheduleAbortController=controller;
     const request=++st.schedule.request;
     st.schedule={...st.schedule,state:'loading',error:'',request,requestFrom:range.from,requestTo:range.to};
-    reportStatus();drawResults();
+    reportStatus();
+    try{drawResults();}catch(renderError){
+      console.error('FAD Замены: ошибка предварительного отображения',renderError);
+      get('rep-results').innerHTML='<p class="rep-plan-empty">Не удалось показать предварительный подбор. Проверяем расписание Impulse…</p>';
+    }
     // A hard Promise.race watchdog settles the UI even if a browser/network stack does not reject an aborted fetch.
     let timeoutId=null;
     try{
@@ -6722,7 +6746,12 @@ async function renderReplacements(body){
       clearTimeout(timeoutId);
       if(scheduleAbortController===controller)scheduleAbortController=null;
     }
-    reportStatus();drawResults();drawPull();st.lessons.forEach((_,i)=>markRow(i));
+    reportStatus();
+    try{drawResults();drawPull();st.lessons.forEach((_,i)=>markRow(i));}
+    catch(renderError){
+      console.error('FAD Замены: ошибка отображения результата',renderError);
+      get('rep-results').innerHTML='<p class="rep-plan-empty">Ошибка отображения результатов. Проверьте Console.</p>';
+    }
   }
   function queueLoad(){if(st.timer)clearTimeout(st.timer);st.timer=setTimeout(()=>void loadSchedule(),220);}
   function candidateEval(trainer,lessons){
