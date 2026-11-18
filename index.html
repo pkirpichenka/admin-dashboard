@@ -2447,7 +2447,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '18.11.2026-bn'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '18.11.2026-bo'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -2707,6 +2707,14 @@ function legacyPermissions(s){
   if(s&&s.senior) SENIOR_PERMISSION_KEYS.forEach(k=>o[k]=true);
   if(s&&s.canEdit) o['reports.edit_morning']=true;
   return o;
+}
+// New directions rights are role-only, and are checked again by Supabase RPC.
+// Legacy employees.manage never silently grants destructive direction operations.
+const FAD_DIRECTION_PERMISSIONS=['trainers.directions.edit','directions.create','directions.delete'];
+function canDirectionAction(key){
+  if(!session || !FAD_DIRECTION_PERMISSIONS.includes(key))return false;
+  if(session.role==='owner')return true;
+  return !!(session.fadRoleCode && session.fadRolePermissions?.[key]===true);
 }
 function can(key){
   if(!session) return false;
@@ -3110,10 +3118,18 @@ async function apiListReplacements(){
   return data;
 }
 async function apiCreateDirection(name){
-  return rpc('app_create_direction',{p_token:TOKEN,p_name:name});
+  if(!canDirectionAction('directions.create'))throw new Error('forbidden');
+  if(session.role==='owner')return rpc('app_create_direction',{p_token:TOKEN,p_name:name});
+  return rpc('app_roles_direction_create',{p_token:TOKEN,p_name:name});
 }
 async function apiDeleteDirection(id){
-  return rpc('app_delete_direction',{p_token:TOKEN,p_id:id});
+  if(!canDirectionAction('directions.delete'))throw new Error('forbidden');
+  if(session.role==='owner')return rpc('app_delete_direction',{p_token:TOKEN,p_id:id});
+  return rpc('app_roles_direction_delete',{p_token:TOKEN,p_id:id});
+}
+async function apiSetTrainerDirections(id,directionIds){
+  if(!canDirectionAction('trainers.directions.edit'))throw new Error('forbidden');
+  return rpc('app_roles_trainer_directions_set',{p_token:TOKEN,p_trainer_id:String(id),p_direction_ids:directionIds});
 }
 async function apiSetEmployeePhone(login,phone){ try{return await rpc('app_set_employee_phone',{p_token:TOKEN,p_login:login,p_phone:phone||''});}catch(e){return null;} }
 async function apiListCalendarBirthdays(){ return await rpc('app_list_calendar_birthdays',{p_token:TOKEN})||[]; }
@@ -6241,9 +6257,9 @@ function directionModal(opener,onSaved){
       direction=await apiCreateDirection(name);
     }catch(err){
       if(err?.message==='invalid_direction_name') showError(invalidName);
-      else if(err?.code==='PGRST202') showError('Выполните supabase-directions.sql в Supabase и попробуйте снова.');
+      else if(err?.code==='PGRST202') showError(session.role==='owner'?'Выполните supabase-directions.sql в Supabase.':'Выполните SQL-миграцию BO для ролей в Supabase.');
       else if(isForbiddenErr(err)){
-        showError('Добавлять направления может руководитель.');
+        showError('Недостаточно прав для добавления направления.');
         handleErr(err);
       }else showError('Не удалось добавить направление. Попробуйте снова.');
       input.readOnly=false;
@@ -6300,8 +6316,8 @@ function deleteDirectionModal(opener,catalog,assignmentCounts,onDeleted){
     try{
       deleted=await apiDeleteDirection(direction.id);
     }catch(err){
-      if(err?.code==='PGRST202') error.textContent='Выполните обновлённый supabase-directions.sql в Supabase и попробуйте снова.';
-      else if(isForbiddenErr(err)) error.textContent='Удалять направления может руководитель.';
+      if(err?.code==='PGRST202') error.textContent=session.role==='owner'?'Выполните supabase-directions.sql в Supabase.':'Выполните SQL-миграцию BO для ролей в Supabase.';
+      else if(isForbiddenErr(err)) error.textContent='Недостаточно прав для удаления направления.';
       else error.textContent='Не удалось удалить направление. Попробуйте снова.';
       error.hidden=false;
       select.disabled=cancel.disabled=submit.disabled=false;
@@ -6462,12 +6478,12 @@ async function renderReplacements(body){
     ${replacementResultGroup('rep-working')}
     ${replacementResultGroup('rep-archived','Тренеры из архива')}
   </div>
-  ${session.role==='owner'?`<button type="button" class="rep-link rep-manage" id="rep-manage" aria-haspopup="dialog">Управление направлениями</button>
+  ${(canDirectionAction('directions.create')||canDirectionAction('directions.delete'))?`<button type="button" class="rep-link rep-manage" id="rep-manage" aria-haspopup="dialog">Управление направлениями</button>
     <dialog class="modal direction-dialog" id="rep-direction-manager" aria-labelledby="rep-manager-title">
       <h3 id="rep-manager-title">Управление направлениями</h3>
       <div class="rep-manage-actions">
-        <button type="button" class="btn" id="rep-add-direction" autofocus>Добавить направление</button>
-        <button type="button" class="btn" id="rep-delete-direction">Удалить направление</button>
+        ${canDirectionAction('directions.create')?'<button type="button" class="btn" id="rep-add-direction">Добавить направление</button>':''}
+        ${canDirectionAction('directions.delete')?'<button type="button" class="btn" id="rep-delete-direction">Удалить направление</button>':''}
       </div>
       <div class="actions"><button type="button" class="btn" id="rep-manager-close">Закрыть</button></div>
     </dialog>`:''}`);
@@ -6604,17 +6620,17 @@ async function renderReplacements(body){
   };
   onlyFull.onclick=()=>{ state.onlyFull=!state.onlyFull; draw(); };
 
-  if(addDirection){
+  if(addDirection||deleteDirection){
     const manager=get('rep-direction-manager');
     get('rep-manage').onclick=()=>manager.showModal();
     get('rep-manager-close').onclick=()=>manager.close();
-    addDirection.onclick=()=>directionModal(addDirection,direction=>{
+    if(addDirection)addDirection.onclick=()=>directionModal(addDirection,direction=>{
       if(!page.isConnected) return;
       mergeTrainerDirection(catalog,direction);
       renderDirectionButtons();
       draw();
     });
-    deleteDirection.onclick=()=>deleteDirectionModal(deleteDirection,catalog,assignmentCounts,id=>{
+    if(deleteDirection)deleteDirection.onclick=()=>deleteDirectionModal(deleteDirection,catalog,assignmentCounts,id=>{
       if(!page.isConnected) return;
       catalog=catalog.filter(d=>d.id!==id);
       assignmentCounts.delete(id);
@@ -6622,7 +6638,7 @@ async function renderReplacements(body){
       state.selected.delete(id);
       renderDirectionButtons();
       updateSearch();
-      if(deleteDirection.disabled) addDirection.focus();
+      if(deleteDirection.disabled) (addDirection||get('rep-manage'))?.focus();
     });
   }
   renderDirectionButtons();
@@ -6671,7 +6687,7 @@ function employeeInitials(name){
   const words=String(name||'').trim().split(/\s+/).filter(Boolean);
   return ((words[0]?.[0]||'')+(words[1]?.[0]||words[0]?.[1]||'')).toLocaleUpperCase('ru-RU');
 }
-function renderEmployeeCard(emp,{archived=false,canEdit=false,canPermissions=false,canHistory=false,canArchive=false,canDelete=false,canAccountSettings=false}={}){
+function renderEmployeeCard(emp,{archived=false,canEdit=false,canDirectionOnly=false,canDirections=false,canPermissions=false,canHistory=false,canArchive=false,canDelete=false,canAccountSettings=false}={}){
   const admin=emp.employee_type==='admin';
   const isVirtual=String(emp.id??'').startsWith('account:');
   const safeKey=escapeHtml(String(emp._cardKey??(isVirtual?'account:'+emp.app_login:'employee:'+emp.id)));
@@ -6695,7 +6711,10 @@ function renderEmployeeCard(emp,{archived=false,canEdit=false,canPermissions=fal
     // Дополнительные функции из прежнего раскрытия не удалены: доступны в отдельном окне.
     if(canAccountSettings)menuItems.push(['account','Настройки аккаунта']);
     if(canArchive)menuItems.push(['archive','Перенести в архив',true]);
-  }else if(canArchive){menuItems.push(['archive','Перенести в архив',true]);}
+  }else{
+    if(canDirections)menuItems.push(['edit-directions','Направления тренера']);
+    if(canArchive)menuItems.push(['archive','Перенести в архив',true]);
+  }
   const studios=employeeStudios(emp);
   const age=employeeAge(emp.birth_date);
   return `<article class="emp-card${archived?' emp-card--archived':''}" data-emp-key="${safeKey}">
@@ -6709,7 +6728,7 @@ function renderEmployeeCard(emp,{archived=false,canEdit=false,canPermissions=fal
     </div>
     <div class="emp-branches">${studios.length?studios.map(s=>`<span class="emp-branch">${sdot(s)}${escapeHtml(studioName(s))}</span>`).join(''):'<span class="emp-branch emp-branch--none">Филиал не указан</span>'}</div>
     <div class="emp-footer">
-      <button type="button" class="emp-primary" data-emp-action="${archived?'restore':'edit'}"${archived?!canArchive?' disabled':'':!canEdit?' disabled':''}>${archived?'Восстановить':'Изменить'}</button>
+      <button type="button" class="emp-primary" data-emp-action="${archived?'restore':canDirectionOnly?'edit-directions':'edit'}"${archived?!canArchive?' disabled':'':!(canEdit||canDirectionOnly)?' disabled':''}>${archived?'Восстановить':canDirectionOnly?'Направления':'Изменить'}</button>
       <span class="emp-footer-spacer"></span>
       ${messenger('telegram',telegramHref,EMP_CARD_ICONS.telegram)}${messenger('viber',viberHref,EMP_CARD_ICONS.viber)}
       <button type="button" class="emp-icon-btn emp-more" aria-label="Ещё действия" title="Ещё действия" aria-haspopup="menu" aria-expanded="false"${!menuItems.length?' disabled':''}>${EMP_CARD_ICONS.more}</button>
@@ -6769,6 +6788,7 @@ async function employeeAccountSettingsModal(u,emp,onDone){
 async function renderEmployees(body){
   const canEmployees=session.role==='owner'||can('employees.view')||can('employees.manage');
   const manageEmployees=session.role==='owner'||can('employees.manage');
+  const manageTrainerDirections=canDirectionAction('trainers.directions.edit');
   const canAdmins=session.role==='owner'||can('admins.view')||can('admins.manage')||can('admins.permissions');
   const canManagePermissions=session.role==='owner'||can('admins.permissions');
   const manageAdmins=session.role==='owner'||can('admins.manage');
@@ -6846,7 +6866,9 @@ async function renderEmployees(body){
   async function act(action,entry){
     const {e,account,archived}=entry;
     const virtual=String(e.id).startsWith('account:');
-    if(action==='edit'){
+    if(action==='edit-directions'&&!virtual&&e.employee_type==='trainer'&&manageTrainerDirections){
+      await trainerDirectionsModal(e,refresh);
+    }else if(action==='edit'){
       if(!virtual&&manageEmployees)employeeModal(e,refresh,allStaff.filter(x=>!String(x.id).startsWith('account:')));
       else if(account&&manageAdmins)void employeeAccountSettingsModal(account,e,refresh);
     }else if(action==='permissions'&&account&&canManagePermissions){permissionsModal(account,refresh);
@@ -6897,6 +6919,8 @@ async function renderEmployees(body){
       shownItems.set(key,{e,account,archived});
       return renderEmployeeCard({...e,_cardKey:key},{archived,
         canEdit:!virtual?manageEmployees:manageAdmins,
+        canDirectionOnly:!virtual&&e.employee_type==='trainer'&&!manageEmployees&&manageTrainerDirections,
+        canDirections:!virtual&&e.employee_type==='trainer'&&manageTrainerDirections,
         canPermissions:!!account&&canManagePermissions,
         canHistory:session.role==='owner'&&!virtual,
         canArchive:!!account?manageAdmins:!virtual&&manageEmployees,
@@ -7028,10 +7052,42 @@ async function bonusBranchHistoryModal(emp,onDone){
   }catch(err){if(ov.isConnected){area.textContent='Не удалось загрузить историю. Проверьте SQL 13.11.2026-b.';handleErr(err);}}
 }
 
+// Changing directions never exposes unrelated trainer details to a role-only editor.
+async function trainerDirectionsModal(trainer,onDone){
+  if(!canDirectionAction('trainers.directions.edit')||trainer?.employee_type!=='trainer')return;
+  const el=modal(`<h3>Направления тренера</h3><p>${escapeHtml(trainer.full_name||'')}</p>
+    <div id="roleTrainerDirections" role="status">Загружаем направления…</div>
+    <div class="actions"><button class="btn" data-x>Закрыть</button><button class="btn btn-primary" id="roleDirectionsSave" disabled>Сохранить</button></div>`);
+  const area=el.querySelector('#roleTrainerDirections'),save=el.querySelector('#roleDirectionsSave');
+  let original=new Set();
+  try{
+    const data=await apiListReplacements();
+    if(!el.isConnected)return;
+    original=new Set(data.trainer_directions.filter(d=>String(d.trainer_id)===String(trainer.id)).map(d=>Number(d.direction_id)));
+    area.removeAttribute('role');
+    area.innerHTML=`<fieldset class="trainer-directions"><legend class="rep-label">Выберите направления</legend>
+      <div class="staff-form-studios">${data.directions.map(d=>`<label class="trainer-direction"><input type="checkbox" value="${Number(d.id)}" ${original.has(Number(d.id))?'checked':''}>
+      <span class="trainer-direction-check" aria-hidden="true"></span><span>${escapeHtml(d.name)}</span></label>`).join('')}</div></fieldset>`;
+    save.disabled=false;
+    save.onclick=async()=>{
+      const ids=[...area.querySelectorAll('input:checked')].map(x=>Number(x.value));
+      if(ids.length===original.size&&ids.every(id=>original.has(id))){closeModal(el);return;}
+      save.disabled=true;markAppDirty('trainerDirectionOnly');
+      try{
+        await apiSetTrainerDirections(trainer.id,ids);
+        void auditAction('Изменены направления тренера','employee',String(trainer.id),{name:trainer.full_name,directions:ids});
+        if(el.isConnected){closeModal(el);if(onDone)await onDone();}
+        toast('Направления тренера сохранены');
+      }catch(err){save.disabled=false;handleErr(err);}
+      finally{clearAppDirty('trainerDirectionOnly');}
+    };
+  }catch(err){if(el.isConnected){area.textContent='Не удалось загрузить направления.';handleErr(err);}}
+}
+
 function employeeModal(e,onDone,employeeRows=[]){
   const isNew=!e, isAdmin=!!(e&&e.employee_type==='admin');
   const editPhone=session.role==='owner';
-  const editDirections=editPhone&&(isNew||e.employee_type==='trainer');
+  const editDirections=session.role==='owner'&&(isNew||e.employee_type==='trainer');
   const editTelegram=editPhone&&(isNew||isAdmin||e.employee_type==='trainer');
   const initialPhone=belarusPhoneNumber(staffPhoneDial(e?.phone))||e?.phone||'';
   const studios=e?employeeStudios(e):[];
@@ -7052,7 +7108,7 @@ function employeeModal(e,onDone,employeeRows=[]){
     ${editDirections?`<div class="field">
       <label class="trainer-replacement-setting"><input id="efExcludeReplacements" type="checkbox" ${isNew?'':'disabled'}/> <b>Не предлагать на замены</b></label>
       <div id="efDirections" class="trainer-directions-status">Загружаем направления…</div>
-      <button type="button" class="btn direction-add" id="efAddDirection" disabled>+ Добавить направление</button>
+      ${canDirectionAction('directions.create')?'<button type="button" class="btn direction-add" id="efAddDirection" disabled>+ Добавить направление</button>':''}
     </div>`:''}
     <div class="field"><div class="lbl">Комментарий</div><textarea id="efNote" rows="3" placeholder="Необязательно">${escapeHtml(e&&e.note||'')}</textarea></div>
     <div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="efSave">Сохранить</button></div>`);
@@ -7098,7 +7154,7 @@ function employeeModal(e,onDone,employeeRows=[]){
         <div class="staff-form-studios">${catalog.map(d=>`<label class="trainer-direction"><input type="checkbox" name="trainer-direction" value="${d.id}" ${selected.has(d.id)?'checked':''}><span class="trainer-direction-check" aria-hidden="true"></span><span>${escapeHtml(d.name)}</span></label>`).join('')}</div>
       </fieldset>`;
     }
-    addDirection.onclick=()=>directionModal(addDirection,direction=>{
+    if(addDirection)addDirection.onclick=()=>directionModal(addDirection,direction=>{
       if(!el.isConnected) return;
       const selected=new Set([...directionArea.querySelectorAll('input:checked')].map(input=>Number(input.value)));
       mergeTrainerDirection(catalog,direction);
@@ -7106,7 +7162,8 @@ function employeeModal(e,onDone,employeeRows=[]){
       renderDirectionChoices(selected);
     });
     loadDirections=async(changes=new Map())=>{
-      save.disabled=addDirection.disabled=true;
+      save.disabled=true;
+      if(addDirection)addDirection.disabled=true;
       directionArea.setAttribute('role','status');
       directionArea.textContent='Загружаем направления…';
       try{
@@ -7124,7 +7181,8 @@ function employeeModal(e,onDone,employeeRows=[]){
         loadedDirectionIds=new Set(isNew?[]:data.trainer_directions.filter(row=>row.trainer_id===String(e.id)).map(row=>row.direction_id));
         const selected=new Set(catalog.filter(d=>changes.get(d.id)??loadedDirectionIds.has(d.id)).map(d=>d.id));
         renderDirectionChoices(selected);
-        save.disabled=addDirection.disabled=false;
+        save.disabled=false;
+        if(addDirection)addDirection.disabled=false;
       }catch(err){
         if(!el.isConnected) return;
         loadedDirectionIds=null;
@@ -7660,14 +7718,19 @@ const ROLE_PAYROLL_DEFS=[
   {key:'payroll.admin.view',group:'Зарплата администраторов',label:'Просмотр всех администраторов',desc:'Серверный доступ к расчётам, авансам и детализации смен; не даёт права изменения'},
   {key:'payroll.admin.edit',group:'Зарплата администраторов',label:'Редактировать расчёты',desc:'Редактировать время, бонусы, штрафы, качество, отметку выдачи; серверный контроль. Общий сброс, ставку и импорт не разрешает'}
 ];
-const ROLE_ACTIVE_DEFS=[...ROLE_NAV_DEFS,...PERMISSION_DEFS,...ROLE_PAYROLL_DEFS];
+const ROLE_DIRECTION_DEFS=[
+  {key:'trainers.directions.edit',group:'Направления тренеров',label:'Изменять направления тренера',desc:'Отдельное редактирование направлений в карточке тренера. Не разрешает менять ФИО, телефон, филиал, ставку или статус.'},
+  {key:'directions.create',group:'Направления тренеров',label:'Добавлять новые направления',desc:'Создание новых направлений в справочнике через «Замены» и карточку тренера.'},
+  {key:'directions.delete',group:'Направления тренеров',label:'Удалять направления',desc:'Удаление направления из общего справочника и связей с тренерами; независимо от создания.'}
+];
+const ROLE_ACTIVE_DEFS=[...ROLE_NAV_DEFS,...PERMISSION_DEFS,...ROLE_PAYROLL_DEFS,...ROLE_DIRECTION_DEFS];
 const ROLE_FUTURE_DEFS={
   'Смена':['Открывать смену','Закрывать смену','Изменять только свою смену','Изменять смены других','Корректировать кассовые операции','Редактировать закрытую смену','Подтверждать закрытие смены','Удалять кассовые операции'],
   'План и продажи':['Видеть планы всех филиалов','Изменять план филиала','Видеть продажи всех сотрудников','Корректировать источник продаж','Утверждать месячный бонус','Изменять пороги бонусов'],
   'Расписание':['Просматривать только свой филиал','Менять черновик расписания','Переносить сотрудников между филиалами','Публиковать расписание','Снимать опубликованное расписание'],
   'Зарплата тренеров':['Видеть все зарплаты тренеров','Редактировать ставки тренеров','Редактировать замены и пропуски','Проводить авансы','Подтверждать зарплату','Сбрасывать ручные изменения','Синхронизировать с Impulse'],
   'Зарплата администраторов':['Утверждать окончательный расчёт','Менять ставку и шкалу премий','Сбрасывать все правки','Синхронизировать с Impulse','Экспортировать зарплатную ведомость','Ограничивать просмотр по филиалам'],
-  'Замены':['Создавать запрос замены','Подтверждать замену','Редактировать/отменять замену','Изменять настройки направления','Управлять кандидатами на замены'],
+  'Замены':['Создавать запрос замены','Подтверждать замену','Редактировать/отменять замену','Управлять кандидатами на замены'],
   'Сотрудники':['Редактировать только контактные данные','Назначать филиал','Архивировать сотрудника','Восстанавливать сотрудника','Удалять сотрудника навсегда','Редактировать мотивацию тренера'],
   'Маркетинг':['Просматривать маркетинговую аналитику','Создавать кампании','Редактировать рекламный бюджет','Управлять блогерами и публикациями'],
   'Календарь / Telegram':['Создавать персональные напоминания','Настраивать рассылки','Отправлять сообщения сотрудникам','Управлять Telegram-чатами','Редактировать системные уведомления'],
