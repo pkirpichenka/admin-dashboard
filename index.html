@@ -2111,7 +2111,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '18.11.2026-bk'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '18.11.2026-bl'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -2939,7 +2939,7 @@ const NAV_ITEMS = [
   {id:'reports',label:'Отчёты',icon:'M4 20V10 M10 20V4 M16 20v-7 M22 20H2',group:'work'},
   {id:'plan',label:'План',icon:'M12 2a10 10 0 1 0 0 20a10 10 0 1 0 0-20 M12 6a6 6 0 1 0 0 12a6 6 0 1 0 0-12 M12 10a2 2 0 1 0 0 4a2 2 0 1 0 0-4',group:'work'},
   {id:'schedule',label:'Расписание',icon:'M8 2v4 M16 2v4 M3 9h18 M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z M8 13h3 M8 17h3 M15 13h2',group:'work'},
-  {id:'salaries',label:'Зарплаты',seniorLabel:'Зарплата',icon:'M3 6h18v13H3z M3 10h18 M16 15h2 M6 3h12',group:'people'},
+  {id:'salaries',label:'Зарплаты',icon:'M3 6h18v13H3z M3 10h18 M16 15h2 M6 3h12',group:'people'},
   {id:'replacements',label:'Замены',icon:'M7 7h14 M17 3l4 4-4 4 M17 17H3 M7 13l-4 4 4 4',group:'people'},
   {id:'employees',label:'Сотрудники',icon:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8a4 4 0 0 0 0 8 M22 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75',group:'people'},
   {id:'roles',label:'Роли',icon:'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z M9 12l2 2 4-4',group:'people'},
@@ -2980,7 +2980,7 @@ function getNavigationTabs(){
     plan:{key:'plan',label:'План',render:renderBonusDashboard},
     reports:{key:'reports',label:'Отчёты',render:renderAllReports},
     schedule:{key:'schedule',label:'Расписание',render:renderSchedule},
-    salaries:{label:isGorovaya?'Зарплата':'Зарплаты',key:'salaries',render:renderSalaries},
+    salaries:{label:'Зарплаты',key:'salaries',render:renderSalaries},
     replacements:{label:'Замены',key:'replacements',render:renderReplacements},
     employees:{label:'Сотрудники',key:'employees',render:renderEmployees},
     roles:{label:'Роли',key:'roles',render:renderRoles},
@@ -9383,6 +9383,7 @@ function renderAdminPayroll(host){
     const warnings=adminTechNotices();const badAdvanceIds=new Set(warnings.filter(n=>n.kind==='advances').flatMap(n=>n.ids||[]));const badRateIds=new Set(warnings.filter(n=>n.kind==='rate').flatMap(n=>n.ids||[]));const receipt=state.model.receivedAt?` · снимок Impulse ${new Date(state.model.receivedAt).toLocaleString('ru-RU',{timeZone:'Europe/Minsk'})}`:'';
     page.innerHTML=`<div class="adpay-head"><div><h1>Зарплата администраторов</h1><div class="adpay-muted">Часы по дням — Impulse · план и продажи — «План»</div></div><div class="adpay-controls"><label>Ставка, BYN/ч ${isPayrollOwner?`<input id="adpay-rate" type="number" step="0.5" min="0" value="${rate()}">`:`<strong class="adpay-readonly-rate">${fmt(rate())}</strong>`}</label>${calendarMarkup()}<button type="button" class="btn btn-primary" data-action="sync" ${state.busy?'disabled':''}>${state.busy?'Получаем данные…':'Обновить из Impulse'}</button>${isPayrollOwner?'<button type="button" class="btn btn-sm" data-action="settings">⚙ Настройки</button>':''}</div></div>
     ${canPayrollEdit()?'':'<div class="adpay-note" role="status">Режим просмотра: руководитель отключил редактирование зарплат. Все расчёты и расшифровки доступны.</div>'}
+    ${state.syncStatusError?`<div class="adpay-note error" role="alert"><b>Ошибка обновления ImpulseCRM</b><div>${esc(state.syncStatus)}</div></div>`:''}
     <div class="paytech-holder" id="paytechAdmin"></div>
     <div class="adpay-kpis">${kpis}</div><div class="adpay-branches">${branches}</div>
     <div class="adpay-toolbar">${[{id:'all',name:'Все'},...BONUS_BRANCHES].map(b=>`<button type="button" class="adpay-chip${state.filter===b.id?' on':''}" data-action="filter" data-id="${b.id}">${b.id==='all'?'':`<i class="adpay-dot" style="background:${b.color}"></i>`}${esc(b.name)}</button>`).join('')}<span class="grow"></span><button type="button" class="btn btn-sm" data-action="summary">Сводка руководителю</button><button type="button" class="btn btn-sm btn-primary" data-action="all">Расчёты для копирования</button></div>
@@ -9478,9 +9479,11 @@ function renderAdminPayroll(host){
       const detail=String(e?.message||e);
       state.syncStatus=`Не удалось синхронизировать ImpulseCRM за ${bonusPeriodTitle(syncMonth)}: ${detail}. Прежние смены и ручные правки сохранены.`;
       state.syncStatusError=true;state.lastError='';
+      state.paytechOpen='attention';
       draw();
-      // При автообновлении ошибка остаётся на экране; не показываем подряд несколько уведомлений.
-      if(!automatic)toast('Не удалось обновить часы Impulse',true);
+      // Показываем безопасный код и этап ошибки, уже возвращаемые сервером,
+      // чтобы не скрывать причину за общим уведомлением.
+      if(!automatic)toast('Ошибка Impulse: '+detail.slice(0,175),true);
     }finally{state.busy=false;if(page.isConnected&&state.month===syncMonth)draw();}
   }
   async function edge(mode,month){
@@ -9496,8 +9499,12 @@ function renderAdminPayroll(host){
     const raw=await res.text();let data={};
     try{data=raw?JSON.parse(raw):{};}catch(_){throw Error('Сервер вернул не JSON (HTTP '+res.status+'). Проверьте Logs для fad-payroll-sync.');}
     if(!res.ok||data?.ok!==true){
-      const detail=data?.error||data?.message||'Сервер не вернул причину';
-      throw Error(`${detail} (HTTP ${res.status}${data?.stage?' · этап '+data.stage:''})`);
+      const detail=String(data?.error||data?.message||'Сервер не вернул причину').slice(0,120);
+      const stage=typeof data?.stage==='string'?data.stage.slice(0,60):'не указан';
+      const server=typeof data?.admin_service==='string'?data.admin_service.slice(0,90):'';
+      const versionHint=!isPayrollOwner&&!server?' · сервер не указал admin_service (проверьте Deploy функции BK)':'';
+      const mismatch=server&&server!=='fad-admin-payroll-18.11.2026-bk'?' · версия '+server:'';
+      throw Error(`${detail} · HTTP ${res.status} · этап ${stage}${versionHint}${mismatch}`);
     }
     return data;
   }
