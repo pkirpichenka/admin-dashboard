@@ -2967,6 +2967,93 @@ input[type="time"]::-webkit-calendar-picker-indicator{position:absolute;right:8p
 }
 /* ===== end CH ===== */
 
+/* FAD · План · прогноз и рекомендации · 19.11.2026-ci */
+.bonus-page .bp-forecast{min-width:0;margin:0 0 30px;color:#17261E}
+.bonus-page .bp-forecast[hidden]{display:none!important}
+.bonus-page .bpf-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:0 0 14px;flex-wrap:wrap}
+.bonus-page .bpf-head h2{font-size:20px;font-weight:800;line-height:1.25;margin:3px 0 7px;color:#17261E}
+.bonus-page .bpf-head p{margin:0;max-width:790px;font-size:12px;color:#56685D;line-height:1.6}
+.bonus-page .bpf-eyebrow{font-size:10px;letter-spacing:.07em;color:#61766A;text-transform:uppercase;font-weight:750}
+.bonus-page .bpf-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.bonus-page .bpf-scenarios{display:flex;gap:3px;padding:4px;background:#E7ECE8;border:1px solid #DCE3DD;border-radius:11px;flex-wrap:wrap}
+.bonus-page .bpf-scenarios button{border:0;background:transparent;color:#44584D;border-radius:8px;font-weight:700;font-size:12px;min-height:36px;padding:5px 13px}
+.bonus-page .bpf-scenarios button.active{background:#fff;color:#17261E;box-shadow:0 1px 4px #17261e22}
+.bonus-page .bpf-reset{border:1px solid #DCE3DD;background:#fff;border-radius:10px;padding:9px 12px;color:#56685D;font-size:12px;font-weight:700;min-height:40px}
+.bonus-page .bpf-timeline{border:1px solid #DCE3DD;background:#fff;border-radius:14px;padding:16px 20px;margin:0 0 16px}
+.bonus-page .bpf-progress-line{display:grid;grid-template-columns:140px minmax(100px,1fr) 175px;gap:12px;align-items:center;font-size:11px;color:#56685D;margin-bottom:9px}
+.bonus-page .bpf-progress-line strong{text-align:right;font-size:11px;color:#17261E;white-space:nowrap;font-weight:750}
+.bonus-page .bpf-progress-track{height:8px;background:#E5EBE6;border-radius:999px;overflow:hidden}
+.bonus-page .bpf-progress-fill{height:100%;border-radius:inherit;transition:width .2s}
+.bonus-page .bpf-deviation{color:#9B681A;font-weight:700;font-size:12px;line-height:1.5;margin:8px 0}
+.bonus-page .bpf-strong-days{font-size:11px;line-height:1.5;color:#56685D}
+.bonus-page .bpf-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:24px}
+.bonus-page .bpf-stat{min-width:0;background:#fff;border:1px solid #DCE3DD;border-radius:14px;padding:17px 18px;display:flex;flex-direction:column;gap:6px}
+.bonus-page .bpf-stat-name{font-size:10px;text-transform:uppercase;letter-spacing:.045em;color:#56685D;font-weight:800}
+.bonus-page .bpf-stat strong{font-size:25px;line-height:1.12;font-weight:800;color:#17261E;letter-spacing:-.4px}
+.bonus-page .bpf-stat small{font-size:11px;color:#56685D;line-height:1.5;overflow-wrap:anywhere}
+.bonus-page .bpf-section-heading{font-size:17px;font-weight:800;line-height:1.3;margin:0 0 12px;color:#17261E}
+.bonus-page .bpf-branches{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:start;margin-bottom:24px}
+.bonus-page .bpf-branch-card{min-width:0;background:#fff;border:1px solid #DCE3DD;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:9px;overflow:visible}
+.bonus-page .bpf-branch-title{display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap;font-size:13px;font-weight:800}
+.bonus-page .bpf-branch-title .bp-dot{width:9px;height:9px}
+.bonus-page .bpf-branch-title .bp-dot+.bp-dot{margin-left:3px}
+.bonus-page .bpf-status{display:inline-flex;font-size:10px;line-height:1.4;border-radius:999px;padding:5px 8px;white-space:normal;font-weight:800}
+.bonus-page .bpf-status--good,.bonus-page .bpf-effort--good{color:#247047;background:#E1F2E8}
+.bonus-page .bpf-status--warn,.bonus-page .bpf-effort--warn{color:#8C5C14;background:#FFF0D0}
+.bonus-page .bpf-status--bad,.bonus-page .bpf-effort--bad{color:#C0392B;background:#FCE7E4}
+.bonus-page .bpf-status--neutral{color:#56685D;background:#EDF1EE}
+.bonus-page .bpf-main-number{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;font-size:31px;font-weight:800;line-height:1.05;letter-spacing:-.6px}
+.bonus-page .bpf-main-number small{font-weight:600;font-size:11px;line-height:1.25;color:#56685D;letter-spacing:0}
+.bonus-page .bpf-main-number>span{font-size:14px;margin-left:auto;letter-spacing:0}
+.bonus-page .bpf-muted{font-size:11px;margin:0;line-height:1.6;color:#56685D;overflow-wrap:anywhere}
+.bonus-page .bpf-meter{height:13px;background:#E5EAE5;border-radius:999px;position:relative;overflow:hidden;margin-top:3px}
+.bonus-page .bpf-meter-proj,.bonus-page .bpf-meter-fact{position:absolute;left:0;top:0;height:100%}
+.bonus-page .bpf-meter-mark{position:absolute;top:0;bottom:0;width:1px;background:#4E6056;opacity:.55;z-index:2}
+.bonus-page .bpf-meter-labels{display:flex;justify-content:space-between;font-size:9px;color:#758379;margin-top:-5px}
+.bonus-page .bpf-bar-legend{display:flex;flex-wrap:wrap;gap:8px;font-size:10px;color:#56685D;margin-bottom:4px}
+.bonus-page .bpf-bar-legend span{display:inline-flex;align-items:center;gap:5px}
+.bonus-page .bpf-bar-legend i{width:9px;height:9px;display:inline-block}
+.bonus-page .bpf-mini-head{font-size:10px;color:#56685D;font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+.bonus-page .bpf-tier-scroll{width:100%;min-width:0;overflow-x:auto}
+.bonus-page .bpf-tier-table{font-size:10px;width:100%;border-collapse:collapse;white-space:nowrap}
+.bonus-page .bpf-tier-table th{padding:7px 3px;text-align:left;color:#758379;font-weight:650;border-bottom:1px solid #EDF1EE}
+.bonus-page .bpf-tier-table td{padding:7px 3px;border-bottom:1px solid #F0F2F0;color:#17261E}
+.bonus-page .bpf-tier-table td:last-child,.bonus-page .bpf-tier-table th:last-child{text-align:right}
+.bonus-page .bpf-tier-table tr.bpf-tier-active{background:#F1F5F1}
+.bonus-page .bpf-tier-table .bpf-chance{font-weight:800}
+.bonus-page .bpf-chance--good{color:#2E7556!important}.bonus-page .bpf-chance--warn{color:#9C6E12!important}.bonus-page .bpf-chance--bad{color:#C0392B!important}
+.bonus-page .bpf-recommend{margin-top:5px;padding:12px;border-radius:11px;background:#F0F4F0;display:flex;flex-direction:column;gap:8px;min-width:0}
+.bonus-page .bpf-rec-caption{font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#56685D;display:flex;justify-content:space-between;align-items:center;gap:6px}
+.bonus-page .bpf-effort{font-size:10px;padding:3px 7px;letter-spacing:0;text-transform:none;border-radius:999px;white-space:nowrap}
+.bonus-page .bpf-recommend b{font-size:12px;color:#17261E}
+.bonus-page .bpf-recommend p{margin:0;font-size:11px;line-height:1.6;overflow-wrap:anywhere}
+.bonus-page .bpf-rec-money{color:#236A48;font-weight:700}
+.bonus-page .bpf-rec-warning--warn{color:#93630E}.bonus-page .bpf-rec-warning--bad{color:#C0392B}
+.bonus-page .bpf-what{border-top:1px solid #EDF1EE;margin-top:6px;padding-top:12px;display:flex;flex-direction:column;gap:9px}
+.bonus-page .bpf-what b{display:block;font-size:11px}.bonus-page .bpf-what small{display:block;font-size:10px;color:#56685D;margin-top:4px}
+.bonus-page .bpf-stepper{display:flex;align-items:center;gap:9px}
+.bonus-page .bpf-stepper button{width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;padding:0;border:1px solid #DCE3DD;background:#fff;color:#17261E;border-radius:10px;font-size:19px;font-weight:650}
+.bonus-page .bpf-stepper button:disabled{opacity:.4;cursor:not-allowed}
+.bonus-page .bpf-stepper strong{text-align:center;min-width:20px;font-size:13px}
+.bonus-page .bpf-empty,.bonus-page .bpf-no-data{background:#F0F4F0;border:1px solid #DCE3DD;border-radius:12px;padding:18px;color:#56685D;font-size:13px;line-height:1.6}
+.bonus-page .bpf-admin-heading{display:flex;align-items:end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.bonus-page .bpf-admin-heading h3{margin:0}.bonus-page .bpf-admin-heading span{font-size:11px;color:#56685D}
+.bonus-page .bpf-admin-scroll{overflow-x:auto;background:#fff;border:1px solid #DCE3DD;border-radius:14px;margin-bottom:16px;max-width:100%}
+.bonus-page .bpf-admin-table{width:100%;min-width:650px;border-collapse:collapse;font-size:11px}
+.bonus-page .bpf-admin-table th{padding:12px;color:#56685D;text-align:left;background:#F1F5F1;white-space:nowrap;font-size:10px;text-transform:uppercase;letter-spacing:.025em}
+.bonus-page .bpf-admin-table td{padding:12px;border-top:1px solid #EDF1EE;vertical-align:middle}
+.bonus-page .bpf-admin-table small{display:block;color:#7B887F;margin-top:4px}
+.bonus-page .bpf-admin-table .bpf-num{text-align:right;white-space:nowrap}
+.bonus-page .bpf-admin-table .bpf-admin-total{background:#F1F5F1;font-weight:800}
+.bonus-page .bpf-method{font-size:11px;color:#56685D;line-height:1.65;margin:4px 0 26px}
+.bonus-page .bpf-method>b{color:#17261E;font-size:12px}.bonus-page .bpf-method p{margin:7px 0}
+.bonus-page .bpf-finished-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0 0 18px}
+.bonus-page .bpf-finished-card{padding:17px;background:#fff;border:1px solid #DCE3DD;border-radius:14px}
+.bonus-page .bpf-finished-card strong{display:block;font-size:13px}.bonus-page .bpf-finished-card div{font-size:22px;font-weight:800;margin:10px 0}.bonus-page .bpf-finished-card small{font-size:12px;color:#56685D}
+@media(max-width:1480px){.bonus-page .bpf-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:1180px){.bonus-page .bpf-branches{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}.bonus-page .bpf-finished-grid{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}}
+@media(max-width:650px){.bonus-page .bpf-head{align-items:flex-start}.bonus-page .bpf-stats{grid-template-columns:1fr}.bonus-page .bpf-branches{grid-template-columns:1fr}.bonus-page .bpf-timeline{padding:14px}.bonus-page .bpf-progress-line{grid-template-columns:1fr;gap:5px}.bonus-page .bpf-progress-line strong{text-align:left}.bonus-page .bpf-scenarios button{font-size:11px;padding:5px 9px}.bonus-page .bpf-main-number{font-size:27px}.bonus-page .bpf-finished-grid{grid-template-columns:1fr}}
+
 </style>
 
 <div id="root"></div>
@@ -2987,7 +3074,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '18.11.2026-ch'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '19.11.2026-ci'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -8970,7 +9057,8 @@ const ROLE_DIRECTION_DEFS=[
   {key:'directions.create',group:'Направления тренеров',label:'Добавлять новые направления',desc:'Создание новых направлений в справочнике через «Замены» и карточку тренера.'},
   {key:'directions.delete',group:'Направления тренеров',label:'Удалять направления',desc:'Удаление направления из общего справочника и связей с тренерами; независимо от создания.'}
 ];
-const ROLE_ACTIVE_DEFS=[...ROLE_NAV_DEFS,...PERMISSION_DEFS,...ROLE_PAYROLL_DEFS,...ROLE_DIRECTION_DEFS];
+const ROLE_FORECAST_DEFS=[{key:'plan.forecast',group:'План и продажи',label:'Прогноз и рекомендации',desc:'Показывать прогноз выполнения плана и сценарии без права изменения бонусов или продаж'}];
+const ROLE_ACTIVE_DEFS=[...ROLE_NAV_DEFS,...PERMISSION_DEFS,...ROLE_PAYROLL_DEFS,...ROLE_DIRECTION_DEFS,...ROLE_FORECAST_DEFS];
 const ROLE_FUTURE_DEFS={
   'Смена':['Открывать смену','Закрывать смену','Изменять только свою смену','Изменять смены других','Корректировать кассовые операции','Редактировать закрытую смену','Подтверждать закрытие смены','Удалять кассовые операции'],
   'План и продажи':['Видеть планы всех филиалов','Изменять план филиала','Видеть продажи всех сотрудников','Корректировать источник продаж','Утверждать месячный бонус','Изменять пороги бонусов'],
@@ -10241,6 +10329,7 @@ function bonusRenderHtml(model){const owner=model.owner,branches=model.branches;
       <div class="bp-total"><div class="bp-label">Выполнение</div><div class="bp-total-value">${bonusPct(model.pct)}</div><div class="bp-sub">${model.viewAll?'общий план и факт трёх филиалов':'план и факт своего филиала'}</div></div>
       <div class="bp-total"><div class="bp-label">${model.viewAll?'К выплате администраторам':'К выплате по филиалу'}</div><div class="bp-total-value">${bonusMoney(model.payout)}</div><div class="bp-sub">Бонус Flexico ${bonusMoney(model.flexicoTotal)} + качество ${bonusMoney(model.qualityTotal)}</div></div>
     </section>
+    ${bonusForecastAccess(model)?'<section id="bp-forecast" class="bp-forecast" aria-label="Прогноз и рекомендации"></section>':''}
     <h2 class="bp-section-title">${model.viewAll?'Выполнение плана по филиалам':'Выполнение плана своего филиала'}</h2>
     <div class="bp-branches${model.viewAll?'':' bp-branches-single'}">${branches.map(b=>bonusCard(b,model)).join('')}</div>
     <div class="bp-note" style="margin:-12px 0 24px">Факт для премирования — продажи администраторов, закреплённых за филиалом в выбранном месяце. В скобках — продажи, оформленные по адресу студии. Учитываются оплаченные групповые, индивидуальные и арендные абонементы — один абонемент равен одной продаже.</div>
@@ -10262,6 +10351,199 @@ function bonusRenderHtml(model){const owner=model.owner,branches=model.branches;
     <div class="bp-note">${ownText}${freshnessNotice}${model.settings.bonus_mode==='split'?' · Режим: делить бонус между администраторами':' · Режим: каждому в полном размере'}</div>
   </div>`;
 }
+/* FAD · План · прогноз и рекомендации · 19.11.2026-ci
+   Presentation-only calculations. No writes or modified payout logic. */
+const BONUS_FORECAST_DEFAULT_WEEKDAYS=[1.10,1.05,1.00,1.00,0.95,0.80,0.60];
+const BONUS_FORECAST_Z={cautious:-1.2816,expected:0,optimistic:1.2816};
+const BONUS_FORECAST_DOW=['пн','вт','ср','чт','пт','сб','вс'];
+let BONUS_FORECAST_UI={period:'',scenario:'expected',extra:{}};
+function bonusForecastAccess(model){
+  if(!session)return false;
+  if(session.role==='owner')return true;
+  const permission=session.fadRolePermissions||{};
+  const roleName=String(session.fadRoleName||'').toLowerCase();
+  const roleCode=String(session.fadRoleCode||'').toLowerCase();
+  return permission['plan.forecast']===true ||
+    /старш/.test(roleName) || roleCode==='senior' ||
+    (!session.fadRoleCode && session.senior===true);
+}
+function bonusForecastMinskToday(){
+  const s=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Minsk',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  return s;
+}
+function bonusForecastCalendar(period){
+  const [year,month]=period.split('-').map(Number),today=bonusForecastMinskToday(),current=today.slice(0,7);
+  const daysInMonth=new Date(Date.UTC(year,month,0)).getUTCDate();
+  const daysDone=period<current?daysInMonth:period===current?Math.max(0,Math.min(daysInMonth,Number(today.slice(8))-1)):0;
+  return {period,daysInMonth,daysDone,daysLeft:daysInMonth-daysDone,finished:period<current,future:period>current,today};
+}
+function bonusForecastDayWeight(year,month,day,weekdayFactors=BONUS_FORECAST_DEFAULT_WEEKDAYS,phaseFactors=[1.25,1.10,0.90,1.00,1.15]){
+  const weekday=(new Date(Date.UTC(year,month-1,day)).getUTCDay()+6)%7;
+  const phase=day<=5?0:day<=10?1:day<=20?2:day<=25?3:4;
+  return Number(weekdayFactors[weekday])*Number(phaseFactors[phase]);
+}
+function bonusForecastNormalCdf(value){
+  const x=value/Math.SQRT2,sign=x<0?-1:1,a=Math.abs(x),t=1/(1+0.3275911*a);
+  const erf=sign*(1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-a*a));
+  return Math.min(1,Math.max(0,(1+erf)/2));
+}
+function bonusForecastChance(need,fact,extra,lambda,sd){
+  const missing=need-fact-extra;
+  if(missing<=0)return 1;
+  if(fact<=0)return 0;
+  if(sd<=0)return 0;
+  return Math.min(1,Math.max(0,1-bonusForecastNormalCdf((missing-0.5-lambda)/sd)));
+}
+function bonusForecastProbabilityLabel(p){return p>=0.995?'>99%':p<0.005?'<1%':Math.round(p*100)+'%';}
+function bonusForecastNeed(plan,pct){return Math.ceil(plan*pct/100-1e-9);}
+function bonusForecastNumber(n,digits=0){return Number(n||0).toLocaleString('ru-RU',{minimumFractionDigits:digits,maximumFractionDigits:digits});}
+function bonusForecastSalesWord(n){const v=Math.abs(n)%100,u=v%10;return (v<11||v>14)&&u===1?'продажи':'продаж';}
+function bonusForecastData(model,scenario='expected',extra={}){
+  const calendar=bonusForecastCalendar(model.period);
+  const [year,month]=model.period.split('-').map(Number);
+  const dailyWeights=Array.from({length:calendar.daysInMonth},(_,i)=>({day:i+1,weight:bonusForecastDayWeight(year,month,i+1)}));
+  const Wdone=dailyWeights.slice(0,calendar.daysDone).reduce((s,d)=>s+d.weight,0);
+  const Wleft=dailyWeights.slice(calendar.daysDone).reduce((s,d)=>s+d.weight,0);
+  const tiers=(model.tiers||[]).filter(t=>Number.isFinite(t.pct)&&Number.isFinite(t.amount)).slice().sort((a,b)=>a.pct-b.pct);
+  const branches=model.branches.map(b=>{
+    const plan=Number(b.target)||0,fact=Number(b.fact)||0,admins=model.staff.filter(a=>a.studio===b.id).length;
+    const added=calendar.finished||calendar.future||fact<=0?0:Math.max(0,Math.min(10,Number(extra[b.id])||0));
+    if(plan<=0)return {...b,plan:0,fact,admins,extra:added,valid:false,tiers:[],projection:null,p10:null,p90:null,expectedBonus:0,scenarioBonus:0,status:'unplanned',statusText:'План не задан'};
+    const unit=Wdone>0?fact/Wdone:0;
+    const lambda=calendar.finished||fact<=0?0:unit*Wleft;
+    const sd=calendar.finished||fact<=0?0:Math.sqrt(1.5*lambda+lambda*lambda/Math.max(fact,1));
+    const projection=calendar.finished?fact:Math.max(fact,Math.round(fact+lambda+(BONUS_FORECAST_Z[scenario]||0)*sd))+added;
+    const p10=calendar.finished?fact:Math.max(fact,Math.round(fact+lambda-1.2816*sd))+added;
+    const p90=calendar.finished?fact:Math.round(fact+lambda+1.2816*sd)+added;
+    const thresholdList=tiers.map(t=>({...t,need:bonusForecastNeed(plan,t.pct)}));
+    let achieved=null;
+    for(const t of thresholdList)if(projection>=t.need)achieved=t;
+    const next=thresholdList.find(t=>projection<t.need)||null;
+    let previousAmount=0,expectedBonus=0;
+    const probabilities=thresholdList.map(t=>{
+      const chance=calendar.finished?(fact>=t.need?1:0):bonusForecastChance(t.need,fact,added,lambda,sd);
+      expectedBonus+=chance*(t.amount-previousAmount);previousAmount=t.amount;
+      return {...t,chance};
+    });
+    let status='good',statusText=achieved?`Порог ${achieved.pct}% в прогнозе`:'Ниже 90% — бонуса нет';
+    if(!achieved)status='bad';
+    else if(achieved.pct!==tiers[tiers.length-1]?.pct && projection-achieved.need<=1){status='warn';statusText=`На границе ${achieved.pct}%`;}
+    const scenarioBonus=achieved?.amount||0;
+    const nextProb=next?probabilities.find(t=>t.pct===next.pct)?.chance||0:0;
+    const potentialBonus=next&&nextProb>=0.35?next.amount:scenarioBonus;
+    return {...b,plan,fact,admins,extra:added,valid:true,lambda,sd,unit,projection,p10,p90,tiers:probabilities,achieved,next,nextProb,
+      expectedBonus,scenarioBonus,potentialBonus,status,statusText,percent:projection/plan*100};
+  });
+  const valid=branches.filter(b=>b.valid),planTotal=valid.reduce((s,b)=>s+b.plan,0),factTotal=valid.reduce((s,b)=>s+b.fact,0);
+  const projection=valid.reduce((s,b)=>s+b.projection,0),mean=valid.reduce((s,b)=>s+b.fact+b.lambda+b.extra,0);
+  const sdNet=Math.sqrt(valid.reduce((s,b)=>s+b.sd*b.sd,0));
+  const p10=Math.max(factTotal,Math.round(mean-1.2816*sdNet)),p90=Math.round(mean+1.2816*sdNet);
+  const expectedPool=valid.reduce((s,b)=>s+b.expectedBonus*b.admins,0);
+  const scenarioPool=valid.reduce((s,b)=>s+b.scenarioBonus*b.admins,0);
+  const potential=valid.reduce((s,b)=>s+b.potentialBonus*b.admins,0)-scenarioPool;
+  const strong=dailyWeights.slice(calendar.daysDone).sort((a,b)=>b.weight-a.weight||a.day-b.day).slice(0,3).sort((a,b)=>a.day-b.day);
+  const strongPercent=Wleft>0?Math.round(100*strong.reduce((s,d)=>s+d.weight,0)/Wleft):0;
+  return {calendar,branches,valid,tiers,Wdone,Wleft,planTotal,factTotal,projection,mean,sdNet,p10,p90,expectedPool,scenarioPool,potential,strong,strongPercent,
+    calendarPct:calendar.daysInMonth?calendar.daysDone/calendar.daysInMonth*100:0,planPct:planTotal?factTotal/planTotal*100:0};
+}
+function bonusForecastProgress(label,value,limit,shade){
+  const ratio=limit>0?Math.max(0,Math.min(100,100*value/limit)):0;
+  return `<div class="bpf-progress-line"><span>${label}</span><div class="bpf-progress-track"><div class="bpf-progress-fill" style="width:${ratio}%;background:${shade}"></div></div><strong>${bonusForecastNumber(value)} из ${bonusForecastNumber(limit)}${label==='План, все филиалы'?' · '+bonusForecastNumber(ratio,1)+'%':''}</strong></div>`;
+}
+function bonusForecastStatus(b){return `<span class="bpf-status bpf-status--${b.status}">${bonusHtml(b.statusText)}</span>`;}
+function bonusForecastBranch(b,data,owner){
+  if(!b.valid)return `<article class="bpf-branch-card"><div class="bpf-branch-title">${bonusLabel(b)}<span class="bpf-status bpf-status--neutral">План не задан</span></div><div class="bpf-empty">План не задан. Установите план филиала в существующем разделе ниже, чтобы появились прогноз и пороги.</div></article>`;
+  const {calendar}=data,daysLeft=calendar.daysLeft;
+  if(b.fact===0)return `<article class="bpf-branch-card"><div class="bpf-branch-title">${bonusLabel(b)}${bonusForecastStatus(b)}</div><div class="bpf-main-number">0 <small>из ${bonusFormat(b.plan)} по плану</small></div><div class="bpf-muted">Продаж пока нет. Вероятности порогов — &lt;1%. Рекомендация по темпу появится после первых продаж.</div></article>`;
+  const legend=`<div class="bpf-bar-legend"><span><i style="background:${b.color}"></i>факт ${bonusFormat(b.fact)}</span><span><i style="background:${b.color};opacity:.45"></i>прогноз +${bonusFormat(Math.max(0,b.projection-b.fact))}</span></div>`;
+  const factWidth=Math.min(100,b.fact/b.plan/1.15*100),fullWidth=Math.min(100,b.projection/b.plan/1.15*100);
+  const meter=`<div class="bpf-meter" aria-label="Факт и прогноз выполнения плана"><div class="bpf-meter-proj" style="width:${fullWidth}%;background:${b.color};opacity:.42"></div><div class="bpf-meter-fact" style="width:${factWidth}%;background:${b.color}"></div>${[90,100,110].map(t=>`<i class="bpf-meter-mark" style="left:${t/115*100}%"></i>`).join('')}</div><div class="bpf-meter-labels"><span>0%</span><span>90</span><span>100</span><span>110</span><span>115%</span></div>`;
+  const thresholdHeader=`<div class="bpf-mini-head">Пороги бонуса Flexico</div>`;
+  const thresholdTable=`<div class="bpf-tier-scroll"><table class="bpf-tier-table"><thead><tr><th>Порог</th><th>Осталось</th><th>В день</th>${owner?'<th>Бонус</th>':''}<th>Шанс</th></tr></thead><tbody>${b.tiers.map(t=>{
+    const reached=b.fact+b.extra>=t.need,needed=Math.max(0,t.need-b.fact-b.extra),chance=bonusForecastProbabilityLabel(t.chance);
+    const className=t.chance>=.6?'good':t.chance>=.25?'warn':'bad';
+    return `<tr${b.achieved?.pct===t.pct?' class="bpf-tier-active"':''}><td><strong>${t.pct}%</strong> · ${bonusFormat(t.need)}</td><td>${reached?'✓':`ещё ${needed}`}</td><td>${reached?'—':bonusForecastNumber(needed/Math.max(daysLeft,1),1)}</td>${owner?`<td>${bonusFormat(t.amount)} BYN</td>`:''}<td class="bpf-chance bpf-chance--${className}">${chance}</td></tr>`;
+  }).join('')}</tbody></table></div>`;
+  let recommendation='';
+  if(b.next){
+    const target=b.next,short=Math.max(0,target.need-b.projection),pace=Math.max(0,target.need-b.fact)/Math.max(daysLeft,1),expectedPace=b.lambda/Math.max(daysLeft,1);
+    const extraPct=expectedPace>0?Math.round((pace/expectedPace-1)*100):0;
+    const load=b.nextProb>=.35?'по силам':b.nextProb>=.12?'нужны усилия':'малореально';
+    const loadClass=b.nextProb>=.35?'good':b.nextProb>=.12?'warn':'bad';
+    let bonusText='';
+    if(owner){
+      const prior=b.scenarioBonus||0,delta=target.amount-prior;
+      bonusText=b.achieved?`Бонус вырастет с ${bonusFormat(prior)} до ${bonusFormat(target.amount)} BYN на человека (+${bonusFormat(delta)}; по филиалу +${bonusFormat(delta*b.admins)} BYN).`:
+        `Бонус за ${target.pct}% — ${bonusFormat(target.amount)} BYN на человека (${bonusFormat(target.amount*b.admins)} BYN по филиалу).`;
+    }
+    let warning='';
+    if(b.status==='warn'&&b.achieved){
+      const holding=b.tiers.find(t=>t.pct===b.achieved.pct)?.chance||0;
+      const cushion=b.projection-b.achieved.need;
+      const index=b.tiers.findIndex(t=>t.pct===b.achieved.pct),lower=index>0?b.tiers[index-1]:null;
+      warning=`Шанс удержать порог ${b.achieved.pct}% — ${bonusForecastProbabilityLabel(holding)}, ${cushion===0?'запаса нет':`запас ${cushion} ${bonusForecastSalesWord(cushion)}`}: ${owner?`при просадке продаж бонус снизится до ${lower?bonusFormat(lower.amount):'0'} BYN.`:`при просадке продаж уровень снизится ${lower?`до ${lower.pct}%`:'ниже 90%'}.`}`;
+    }else if(b.status==='bad'&&b.nextProb<.12){warning=`При ожидаемой динамике порог практически недостижим (шанс ${bonusForecastProbabilityLabel(b.nextProb)}). Стоит заранее решить, как поддержать филиал и какую цель считать реальной.`;}
+    recommendation=`<div class="bpf-recommend"><div class="bpf-rec-caption">Рекомендация <span class="bpf-effort bpf-effort--${loadClass}">${load}</span></div><b>Цель: ${target.pct}% — ${bonusFormat(target.need)} продаж</b><p>Не хватает ${short} ${bonusForecastSalesWord(short)}: прогноз ${bonusFormat(b.projection)}, нужно ${bonusFormat(target.need)}. Шанс взять ${target.pct}% — ${bonusForecastProbabilityLabel(b.nextProb)}. Нужно ${bonusForecastNumber(pace,1)} продаж в день вместо ожидаемых ${bonusForecastNumber(expectedPace,1)}${extraPct>0?` (+${extraPct}%)`:''}.</p>${owner?`<p class="bpf-rec-money">${bonusText}</p>`:''}${warning?`<p class="bpf-rec-warning bpf-rec-warning--${b.status}">${warning}</p>`:''}</div>`;
+  }else{
+    const top=b.tiers[b.tiers.length-1];
+    recommendation=`<div class="bpf-recommend"><div class="bpf-rec-caption">Рекомендация</div><b>Максимальный уровень в прогнозе</b><p>Прогноз ${bonusFormat(b.projection)} выше порога ${top?.pct||110}% (${bonusFormat(top?.need||0)}). Задача — удержать динамику до конца месяца.</p></div>`;
+  }
+  return `<article class="bpf-branch-card"><div class="bpf-branch-title">${bonusLabel(b)}${bonusForecastStatus(b)}</div>
+    <div class="bpf-main-number">${bonusFormat(b.projection)} <small>из ${bonusFormat(b.plan)} по плану</small><span>${bonusForecastNumber(b.percent,1)}%</span></div>
+    <p class="bpf-muted">Факт ${bonusFormat(b.fact)} (${bonusFormat(b.fact/calendar.daysDone,1)}/день) · ожидаем ещё ${bonusFormat(Math.round(b.lambda))} за ${daysLeft} дн.</p>
+    <p class="bpf-muted">Коридор P10–P90: ${bonusFormat(b.p10)}–${bonusFormat(b.p90)} (${bonusForecastNumber(b.p10/b.plan*100,1)}–${bonusForecastNumber(b.p90/b.plan*100,1)}% плана)</p>
+    ${meter}${legend}${thresholdHeader}${thresholdTable}${recommendation}
+    <div class="bpf-what"><div><b>Что если добавить продаж</b><small>сверх прогноза до конца месяца</small></div><div class="bpf-stepper"><button type="button" aria-label="Убрать одну продажу ${bonusHtml(b.name)}" data-bpf-step="-1" data-bpf-studio="${b.id}" ${b.extra<=0?'disabled':''}>−</button><strong>${b.extra}</strong><button type="button" aria-label="Добавить одну продажу ${bonusHtml(b.name)}" data-bpf-step="1" data-bpf-studio="${b.id}" ${b.extra>=10?'disabled':''}>+</button></div></div>
+  </article>`;
+}
+function bonusForecastDraw(model){
+  const root=document.getElementById('bp-forecast');
+  if(!root||!root.isConnected)return;
+  if(BONUS_FORECAST_UI.period!==model.period)BONUS_FORECAST_UI={period:model.period,scenario:'expected',extra:{}};
+  const scenario=BONUS_FORECAST_UI.scenario,results=bonusForecastData(model,scenario,BONUS_FORECAST_UI.extra);
+  const {calendar}=results;
+  if(calendar.future){root.hidden=true;root.innerHTML='';return;}
+  root.hidden=false;
+  const owner=model.owner===true;
+  const progress=bonusForecastProgress('Календарь месяца',calendar.daysDone,calendar.daysInMonth,'#5D6C63')+
+    bonusForecastProgress('План, все филиалы',results.factTotal,results.planTotal,'#2E7556');
+  const deviation=results.planTotal>0?`План выполнен на ${bonusForecastNumber(results.planPct,1)}% при ${bonusForecastNumber(results.calendarPct,0)}% месяца: отставание от календаря ${bonusForecastNumber(results.calendarPct-results.planPct,1)} п.п.`:'Нет заданных планов для расчёта отставания.';
+  const [yy,mm]=model.period.split('-').map(Number);
+  const powerful=results.strong.map(d=>`${BONUS_FORECAST_DOW[(new Date(Date.UTC(yy,mm-1,d.day)).getUTCDay()+6)%7]} ${String(d.day).padStart(2,'0')}.${String(mm).padStart(2,'0')}`).join(', ');
+  const timeline=`<div class="bpf-timeline">${progress}<div class="bpf-deviation">${deviation}</div>${calendar.daysLeft?`<div class="bpf-strong-days">Сильные дни до конца месяца: ${powerful} — на них приходится ${results.strongPercent}% ожидаемых продаж.</div>`:''}</div>`;
+  const roleLabel=owner?'Руководитель · полный доступ':'Старший администратор · без сумм выплат';
+  const reset=Object.values(BONUS_FORECAST_UI.extra).some(v=>v>0);
+  let html=`<header class="bpf-head"><div><div class="bpf-eyebrow">${roleLabel}</div><h2>${calendar.finished?'Итоги месяца':'Прогноз на конец месяца'}</h2><p>${calendar.finished?'Месяц завершён: показываем фактические продажи и достигнутые пороги.':`Прошло ${calendar.daysDone} из ${calendar.daysInMonth} дней, осталось ${calendar.daysLeft}. Прогноз учитывает дни недели и этапы месяца; коридор P10–P90 показывает неопределённость.`}</p></div>${calendar.finished||calendar.daysDone<3?'':`<div class="bpf-controls"><div class="bpf-scenarios" role="group" aria-label="Сценарий прогноза">${[['cautious','Осторожно'],['expected','Ожидаемо'],['optimistic','Оптимистично']].map(([s,name])=>`<button data-bpf-scenario="${s}" type="button" aria-pressed="${scenario===s}" class="${scenario===s?'active':''}">${name}</button>`).join('')}</div>${reset?'<button class="bpf-reset" type="button" data-bpf-reset>Сбросить «что если»</button>':''}</div>`}</header>${timeline}`;
+  if(calendar.finished){
+    html+=`<div class="bpf-finished-grid">${results.branches.map(b=>`<div class="bpf-finished-card"><strong>${bonusLabel(b)}</strong><div>${bonusFormat(b.fact)} ${b.valid?`из ${bonusFormat(b.plan)} · ${bonusForecastNumber(b.fact/b.plan*100,1)}%`:'· план не задан'}</div><small>${!b.valid?'Нет плана':b.achieved?`Достигнут порог ${b.achieved.pct}%`:'Ниже 90% — бонуса нет'}</small></div>`).join('')}</div>`;
+  }else if(calendar.daysDone<3){
+    html+=`<div class="bpf-no-data">Данных пока мало: прогноз появится после 3-го дня месяца.</div>`;
+  }else{
+    const fourth=owner?`<div class="bpf-stat"><div class="bpf-stat-name">Ожидаемые бонусы</div><strong>≈ ${bonusFormat(Math.round(results.expectedPool/10)*10)} BYN</strong><small>Пул по порогам сценария ${bonusFormat(results.scenarioPool)} BYN · потенциал +${bonusFormat(results.potential)} BYN</small></div>`:
+      `<div class="bpf-stat"><div class="bpf-stat-name">Филиалов в зоне риска</div><strong>${results.valid.filter(b=>b.status!=='good').length}</strong><small>${results.valid.filter(b=>b.status!=='good').map(b=>`${bonusHtml(b.name)} — ${bonusHtml(b.statusText)}`).join(' · ')||'Все филиалы в прогнозе выше границы порога'}</small></div>`;
+    html+=`<div class="bpf-stats"><div class="bpf-stat"><div class="bpf-stat-name">План, все филиалы</div><strong>${bonusFormat(results.planTotal)}</strong><small>${results.valid.map(b=>bonusHtml(b.name)+' '+bonusFormat(b.plan)).join(' · ')}</small></div><div class="bpf-stat"><div class="bpf-stat-name">Факт · на ${String(calendar.daysDone).padStart(2,'0')}.${String(mm).padStart(2,'0')}</div><strong>${bonusFormat(results.factTotal)}</strong><small>${bonusForecastNumber(results.planPct,1)}% плана при ${bonusForecastNumber(results.calendarPct,0)}% месяца</small></div><div class="bpf-stat"><div class="bpf-stat-name">Прогноз на конец месяца</div><strong>${bonusFormat(results.projection)}</strong><small>${bonusForecastNumber(results.planTotal?results.projection/results.planTotal*100:0,1)}% плана · P10–P90 по сети: ${bonusFormat(results.p10)}–${bonusFormat(results.p90)}</small></div>${fourth}</div>`;
+    html+=`<h3 class="bpf-section-heading">Прогноз и рекомендации по филиалам</h3><div class="bpf-branches">${results.branches.map(b=>bonusForecastBranch(b,results,owner)).join('')}</div>`;
+    const validSet=new Set(results.valid.map(b=>b.id)),staff=model.staff.filter(s=>validSet.has(s.studio));
+    html+=`<div class="bpf-admin-heading"><h3 class="bpf-section-heading">Администраторы · прогноз</h3><span>Продажи относятся к основному филиалу; в скобках — место оформления.</span></div><div class="bpf-admin-scroll"><table class="bpf-admin-table"><thead><tr><th>Администратор</th><th>Филиал</th><th>Факт</th><th>Темп в день</th><th>Доля филиала</th>${owner?'<th>Ожидаемый бонус</th>':''}</tr></thead><tbody>${staff.map(s=>{const b=results.branches.find(x=>x.id===s.studio);const branch=BONUS_BRANCHES.find(x=>x.id===s.studio)||BONUS_BRANCHES[0];const names=s.physicalSummary.map(f=>`${bonusHtml(BONUS_BRANCHES.find(x=>x.id===f.studio)?.name||'Филиал')} ${bonusFormat(f.count)}`).join(' · ');return `<tr><td><b>${bonusHtml(s.name)}</b><small>${names||'нет продаж'}</small></td><td>${bonusLabel(branch)}</td><td class="bpf-num">${bonusFormat(s.count)}</td><td class="bpf-num">${bonusForecastNumber(s.count/calendar.daysDone,1)}</td><td class="bpf-num">${bonusForecastNumber(s.share,0)}%</td>${owner?`<td class="bpf-num">≈ ${bonusFormat(Math.round(b.expectedBonus))} BYN</td>`:''}</tr>`;}).join('')}<tr class="bpf-admin-total"><td colspan="2">Всего</td><td class="bpf-num">${bonusFormat(results.factTotal)}</td><td class="bpf-num">${bonusForecastNumber(results.factTotal/calendar.daysDone,1)}</td><td></td>${owner?`<td class="bpf-num">≈ ${bonusFormat(Math.round(results.expectedPool/10)*10)} BYN</td>`:''}</tr></tbody></table></div>`;
+  }
+  html+=`<div class="bpf-method"><b>Как считается прогноз</b><p>Каждый день месяца имеет вес: будни обычно сильнее выходных, начало и конец месяца — середины. Факт делится на вес прошедших дней, а оставшиеся продажи оцениваются по весу оставшихся. Сценарии учитывают возможный разброс P10–P90; шансы порогов от выбранного сценария не зависят.</p><p>Истории продаж по дням за три и более месяца в текущих данных FAD нет: применяются стартовые веса, DISP = 1,5. Средняя ошибка прогноза за прошлые месяцы: нет данных для бэктеста.</p><p>Расчёт информационный и не меняет существующий план, факты, премии или выплаты. «Что если» работает только в этой вкладке.</p></div>`;
+  root.innerHTML=html;
+}
+function bonusForecastMount(body,model){
+  const root=body.querySelector('#bp-forecast');if(!root)return;
+  // Delegate only within the forecast; existing Plan events and form inputs remain unchanged.
+  root.addEventListener('click',event=>{
+    const button=event.target.closest('button');if(!button||!root.contains(button))return;
+    if(button.dataset.bpfScenario){BONUS_FORECAST_UI.scenario=button.dataset.bpfScenario;bonusForecastDraw(model);return;}
+    if(button.hasAttribute('data-bpf-reset')){BONUS_FORECAST_UI.extra={};bonusForecastDraw(model);return;}
+    if(button.dataset.bpfStudio && button.dataset.bpfStep){
+      const id=button.dataset.bpfStudio,delta=Number(button.dataset.bpfStep)||0,old=Number(BONUS_FORECAST_UI.extra[id])||0;
+      BONUS_FORECAST_UI.extra[id]=Math.max(0,Math.min(10,old+delta));bonusForecastDraw(model);
+    }
+  });
+  bonusForecastDraw(model);
+}
+
 function bonusSettingsEditor(model,callback){
   if(!model.owner)return;
   const current=model.settings,labels=model.tiers.map(t=>t.pct+'%: '+t.amount+' BYN').join(' · ');
@@ -10714,6 +10996,7 @@ async function renderBonusDashboard(body){
     if(!stillCurrent())return;
     const model=calcBonuses(month,snapshot);
     body.innerHTML=bonusRenderHtml(model);
+    if(bonusForecastAccess(model))bonusForecastMount(body,model);
     void bonusRenderTypes(body,model,stillCurrent);
     const sel=body.querySelector('#bp-month');if(sel)sel.onchange=e=>{BONUS_MONTH=e.target.value;renderBonusDashboard(body)};
     const refreshButton=body.querySelector('#bp-refresh');
