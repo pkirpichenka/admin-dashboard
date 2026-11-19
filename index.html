@@ -2967,7 +2967,7 @@ input[type="time"]::-webkit-calendar-picker-indicator{position:absolute;right:8p
 }
 /* ===== end CH ===== */
 
-/* FAD · План · прогноз и рекомендации · 19.11.2026-ci */
+/* FAD · План · прогноз и рекомендации · 19.11.2026-cj */
 .bonus-page .bp-forecast{min-width:0;margin:0 0 30px;color:#17261E}
 .bonus-page .bp-forecast[hidden]{display:none!important}
 .bonus-page .bpf-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:0 0 14px;flex-wrap:wrap}
@@ -3054,6 +3054,18 @@ input[type="time"]::-webkit-calendar-picker-indicator{position:absolute;right:8p
 @media(max-width:1180px){.bonus-page .bpf-branches{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}.bonus-page .bpf-finished-grid{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}}
 @media(max-width:650px){.bonus-page .bpf-head{align-items:flex-start}.bonus-page .bpf-stats{grid-template-columns:1fr}.bonus-page .bpf-branches{grid-template-columns:1fr}.bonus-page .bpf-timeline{padding:14px}.bonus-page .bpf-progress-line{grid-template-columns:1fr;gap:5px}.bonus-page .bpf-progress-line strong{text-align:left}.bonus-page .bpf-scenarios button{font-size:11px;padding:5px 9px}.bonus-page .bpf-main-number{font-size:27px}.bonus-page .bpf-finished-grid{grid-template-columns:1fr}}
 
+
+/* FAD · План · две внутренние вкладки · 19.11.2026-cj */
+.bonus-page .bp-inner-tabs{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 20px;padding:0 0 14px;border-bottom:1px solid #DCE3DD}
+.bonus-page .bp-inner-tab{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:9px 18px;border-radius:10px;border:1px solid transparent;background:transparent;color:#56685D;font-size:13px;font-weight:750;line-height:1.25;white-space:normal;text-align:center;cursor:pointer;transition:background .15s,border-color .15s}
+.bonus-page .bp-inner-tab:hover:not([disabled]){background:#E5EBE6;color:#17261E}
+.bonus-page .bp-inner-tab[aria-selected="true"]{background:#2E7556;color:#FFFFFF;border-color:#2E7556}
+.bonus-page .bp-inner-tab:focus-visible{outline:3px solid #93B8A5;outline-offset:2px}
+.bonus-page .bp-inner-tab[disabled]{opacity:.5;cursor:not-allowed}
+.bonus-page .bp-inner-pane[hidden],.bonus-page .bp-forecast[hidden]{display:none!important}
+.bonus-page .bp-inner-pane,.bonus-page .bp-forecast{min-width:0}
+.bonus-page .bp-forecast{margin-bottom:0}
+@media(max-width:640px){.bonus-page .bp-inner-tabs{gap:6px;flex-wrap:nowrap}.bonus-page .bp-inner-tab{flex:1;padding:9px 8px;font-size:12px;min-width:0}}
 </style>
 
 <div id="root"></div>
@@ -3074,7 +3086,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '19.11.2026-ci'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '19.11.2026-cj'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -10232,6 +10244,43 @@ const BONUS_BRANCHES=[
 const BONUS_DEFAULT_SETTINGS={tiers:[{pct:90,amount:50},{pct:95,amount:120},{pct:100,amount:300},{pct:105,amount:350},{pct:110,amount:400}],quality_amount:100,bonus_mode:'per_admin',primary_branch_rule:'home'};
 let BONUS_MONTH=new Intl.DateTimeFormat('en-CA',{year:'numeric',month:'2-digit',timeZone:'Europe/Minsk'}).format(new Date());
 let BONUS_OPEN_SEQUENCE=0;
+// Only presentation state: independent of saved plans, facts and Supabase.
+let BONUS_PLAN_SUBTAB='main';
+function bonusPlanCurrentSubtab(model){
+  if(BONUS_PLAN_SUBTAB!=='forecast'||!bonusForecastAccess(model))return 'main';
+  return model.period>bonusForecastMinskToday().slice(0,7)?'main':'forecast';
+}
+function bonusPlanActivateSubtab(body,model,view){
+  if(view!=='main'&&view!=='forecast')return;
+  if(view==='forecast'&&(!bonusForecastAccess(model)||model.period>bonusForecastMinskToday().slice(0,7)))return;
+  BONUS_PLAN_SUBTAB=view;
+  body.querySelectorAll('[data-bp-view]').forEach(button=>{
+    const selected=button.dataset.bpView===view;
+    button.setAttribute('aria-selected',String(selected));
+    button.tabIndex=selected?0:-1;
+  });
+  const main=body.querySelector('#bp-main-panel');
+  const forecast=body.querySelector('#bp-forecast');
+  if(main)main.hidden=view!=='main';
+  if(forecast)forecast.hidden=view!=='forecast';
+}
+function bonusPlanBindSubtabs(body,model){
+  const tabs=[...body.querySelectorAll('[data-bp-view]')];
+  for(const tab of tabs){
+    tab.addEventListener('click',()=>bonusPlanActivateSubtab(body,model,tab.dataset.bpView));
+    tab.addEventListener('keydown',event=>{
+      if(event.key!=='ArrowLeft'&&event.key!=='ArrowRight'&&event.key!=='Home'&&event.key!=='End')return;
+      const enabled=tabs.filter(x=>!x.disabled);
+      if(enabled.length<2)return;
+      event.preventDefault();
+      const current=enabled.indexOf(tab);
+      const next=event.key==='Home'?0:event.key==='End'?enabled.length-1:(current+(event.key==='ArrowRight'?1:-1)+enabled.length)%enabled.length;
+      enabled[next].focus();enabled[next].click();
+    });
+  }
+  bonusPlanActivateSubtab(body,model,bonusPlanCurrentSubtab(model));
+}
+
 // Sales sync now runs in Supabase Cron independently of the current viewer.
 // Browser clients only read scoped data through app_bonus_snapshot.
 const bonusFormat=n=>Number(n||0).toLocaleString('ru-RU',{maximumFractionDigits:2});
@@ -10323,13 +10372,17 @@ function bonusRenderHtml(model){const owner=model.owner,branches=model.branches;
   const freshnessNotice=stale?'<span style="color:#ae4529;font-weight:600"> · ⚠️ Автоматическое обновление задерживается — последние подтверждённые данные сохранены</span>':'';
   return `<div class="bonus-page fade-in">
     <div class="bp-head"><div><div class="bp-eyebrow">FLEXICO · АДМИНИСТРАТОРЫ</div><h1 class="bp-h1">План</h1></div><div class="bp-month-row"><span>Период</span><select class="bp-month" id="bp-month">${bonusMonthOptions(model.period)}</select><button type="button" id="bp-refresh" class="bp-refresh-btn" aria-label="${owner&&model.period===liveMonth?'Запросить свежие продажи из ImpulseCRM':'Обновить данные из Supabase'}" title="${owner&&model.period===liveMonth?'Обновить продажи из ImpulseCRM':'Обновить отображение из Supabase'}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14-5L3 9m0-6v6h6M4 13a8 8 0 0 0 14 5l3-3m0 6v-6h-6"/></svg></button></div></div>
+    <div class="bp-inner-tabs" role="tablist" aria-label="Разделы плана">
+      <button type="button" id="bp-tab-main" class="bp-inner-tab" role="tab" data-bp-view="main" aria-controls="bp-main-panel" aria-selected="true">Основной план</button>
+      ${bonusForecastAccess(model)?`<button type="button" id="bp-tab-forecast" class="bp-inner-tab" role="tab" data-bp-view="forecast" aria-controls="bp-forecast" aria-selected="false" ${model.period>bonusForecastMinskToday().slice(0,7)?'disabled title="Прогноз недоступен для будущего месяца"':''}>Прогноз и рекомендации</button>`:''}
+    </div>
+    <div class="bp-inner-pane" id="bp-main-panel" role="tabpanel" aria-labelledby="bp-tab-main">
     <section class="bp-totals">
       <div class="bp-total"><div class="bp-label">${model.viewAll?'План, все филиалы':'План своего филиала'}</div><div class="bp-total-value">${bonusFormat(model.planTotal)}</div><div class="bp-sub">${model.branches.map(b=>bonusHtml(b.name)+' '+(b.target??'—')).join(' · ')}</div></div>
       <div class="bp-total"><div class="bp-label">Факт</div><div class="bp-total-value">${bonusFormat(model.factTotal)}</div><div class="bp-sub">${model.branches.map(b=>bonusHtml(b.name)+' '+bonusFormat(b.fact)+' (в студии '+bonusFormat(b.physicalFact)+')').join(' · ')}</div></div>
       <div class="bp-total"><div class="bp-label">Выполнение</div><div class="bp-total-value">${bonusPct(model.pct)}</div><div class="bp-sub">${model.viewAll?'общий план и факт трёх филиалов':'план и факт своего филиала'}</div></div>
       <div class="bp-total"><div class="bp-label">${model.viewAll?'К выплате администраторам':'К выплате по филиалу'}</div><div class="bp-total-value">${bonusMoney(model.payout)}</div><div class="bp-sub">Бонус Flexico ${bonusMoney(model.flexicoTotal)} + качество ${bonusMoney(model.qualityTotal)}</div></div>
     </section>
-    ${bonusForecastAccess(model)?'<section id="bp-forecast" class="bp-forecast" aria-label="Прогноз и рекомендации"></section>':''}
     <h2 class="bp-section-title">${model.viewAll?'Выполнение плана по филиалам':'Выполнение плана своего филиала'}</h2>
     <div class="bp-branches${model.viewAll?'':' bp-branches-single'}">${branches.map(b=>bonusCard(b,model)).join('')}</div>
     <div class="bp-note" style="margin:-12px 0 24px">Факт для премирования — продажи администраторов, закреплённых за филиалом в выбранном месяце. В скобках — продажи, оформленные по адресу студии. Учитываются оплаченные групповые, индивидуальные и арендные абонементы — один абонемент равен одной продаже.</div>
@@ -10349,9 +10402,11 @@ function bonusRenderHtml(model){const owner=model.owner,branches=model.branches;
       return `<div class="bp-tier${badges.length?' highlight':''}"><div class="bp-tier-label">от ${t.pct}% плана</div><div class="bp-tier-value">${bonusMoney(t.amount)}</div>${badges.map(b=>`<div class="bp-tier-branch">${bonusLabel(b)}</div>`).join('')}</div>`;
     }).join('')}<div class="bp-tier quality"><div class="bp-tier-label">Качество работы</div><div class="bp-tier-value">${bonusMoney(model.settings.quality_amount)}</div><div class="bp-caption">за CRM, отмечает владелец</div></div></div>
     <div class="bp-note">${ownText}${freshnessNotice}${model.settings.bonus_mode==='split'?' · Режим: делить бонус между администраторами':' · Режим: каждому в полном размере'}</div>
+    </div>
+    ${bonusForecastAccess(model)?'<section id="bp-forecast" class="bp-forecast" role="tabpanel" aria-labelledby="bp-tab-forecast" hidden></section>':''}
   </div>`;
 }
-/* FAD · План · прогноз и рекомендации · 19.11.2026-ci
+/* FAD · План · прогноз и рекомендации · 19.11.2026-cj
    Presentation-only calculations. No writes or modified payout logic. */
 const BONUS_FORECAST_DEFAULT_WEEKDAYS=[1.10,1.05,1.00,1.00,0.95,0.80,0.60];
 const BONUS_FORECAST_Z={cautious:-1.2816,expected:0,optimistic:1.2816};
@@ -10503,7 +10558,7 @@ function bonusForecastDraw(model){
   const scenario=BONUS_FORECAST_UI.scenario,results=bonusForecastData(model,scenario,BONUS_FORECAST_UI.extra);
   const {calendar}=results;
   if(calendar.future){root.hidden=true;root.innerHTML='';return;}
-  root.hidden=false;
+  root.hidden=bonusPlanCurrentSubtab(model)!=='forecast';
   const owner=model.owner===true;
   const progress=bonusForecastProgress('Календарь месяца',calendar.daysDone,calendar.daysInMonth,'#5D6C63')+
     bonusForecastProgress('План, все филиалы',results.factTotal,results.planTotal,'#2E7556');
@@ -10996,6 +11051,7 @@ async function renderBonusDashboard(body){
     if(!stillCurrent())return;
     const model=calcBonuses(month,snapshot);
     body.innerHTML=bonusRenderHtml(model);
+    bonusPlanBindSubtabs(body,model);
     if(bonusForecastAccess(model))bonusForecastMount(body,model);
     void bonusRenderTypes(body,model,stillCurrent);
     const sel=body.querySelector('#bp-month');if(sel)sel.onchange=e=>{BONUS_MONTH=e.target.value;renderBonusDashboard(body)};
