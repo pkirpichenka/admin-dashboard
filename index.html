@@ -3110,7 +3110,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '19.11.2026-co'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '19.11.2026-cp'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -10506,7 +10506,7 @@ function bonusHistoryPhase(day){return day<=5?0:day<=10?1:day<=20?2:day<=25?3:4;
 function bonusHistoryWeekday(year,month,day){return (new Date(Date.UTC(year,month-1,day)).getUTCDay()+6)%7;}
 function bonusHistorySeries(history,studio){
  if(!history||!Array.isArray(history.months)||!Array.isArray(history.days))return [];
- const good=new Set(history.months.filter(m=>['matched','source_only'].includes(m.status)).map(m=>m.period));
+ const good=new Set(history.months.filter(m=>['matched','source_only','physical_only'].includes(m.status)).map(m=>m.period));
  const byMonth=new Map();
  for(const m of good){const [y,mo]=m.split('-').map(Number),last=new Date(Date.UTC(y,mo,0)).getUTCDate();
    byMonth.set(m,{period:m,year:y,month:mo,days:Array(last).fill(0),total:0,status:history.months.find(x=>x.period===m)?.status});}
@@ -10613,12 +10613,12 @@ async function bonusForecastBackfill(model){
  if(!model.owner||BONUS_FORECAST_HISTORY.busy)return;
  BONUS_FORECAST_HISTORY.busy=true;BONUS_FORECAST_HISTORY.error='';
  // Начинаем с новейших месяцев для более быстрой калибровки; ошибки старых периодов не задерживают свежие.
- const months=bonusForecastHistoricMonths().reverse();let saved=0,skipped=0;
+ const months=bonusForecastHistoricMonths().reverse();let saved=0,skipped=0,physicalLoaded=0;
  try{
    for(let i=0;i<months.length;i++){
      const period=months[i];
      const prior=BONUS_FORECAST_HISTORY.data?.months?.find(m=>m.period===period);
-     if(prior && ['matched','source_only'].includes(prior.status)){skipped++;continue;}
+     if(prior && ['matched','source_only','physical_only'].includes(prior.status)){skipped++;continue;}
      BONUS_FORECAST_HISTORY.progress=`Загружаем ${period}: ${i+1} из ${months.length} · сохранено ${saved}`;
      bonusForecastDraw(model);
      const response=await fetch(SUPABASE_URL+'/functions/v1/fad-bonus-sync',{
@@ -10635,9 +10635,9 @@ async function bonusForecastBackfill(model){
          :String(data?.error||data?.message||(responseBody.startsWith('{')?'ответ не подтверждён':'некорректный ответ сервера')).slice(0,160);
        throw Error(`${period} · HTTP ${response.status} · ${reason}`);
      }
-     saved++;
+     saved++;if(data?.history?.status==='physical_only')physicalLoaded++;
    }
-   BONUS_FORECAST_HISTORY.progress=`Загрузка завершена: ${saved} месяцев, уже были сохранены ${skipped}.`;
+   BONUS_FORECAST_HISTORY.progress=`Загрузка завершена: ${saved} месяцев, уже были сохранены ${skipped}.${physicalLoaded?' По адресам студий: '+physicalLoaded+'.':''}`;
  }catch(e){BONUS_FORECAST_HISTORY.error=String(e?.message||e).slice(0,240);
    BONUS_FORECAST_HISTORY.progress=`Остановлено после ${saved} месяцев. Причина показана ниже; повторный запуск начнётся с незагруженного месяца.`;
  }finally{BONUS_FORECAST_HISTORY.busy=false;
@@ -10647,17 +10647,19 @@ async function bonusForecastBackfill(model){
  }
 }
 function bonusForecastHistoryInfo(cal){
- const counted=cal.months.filter(m=>m.status==='matched'||m.status==='source_only').length;
+ const counted=cal.months.filter(m=>['matched','source_only','physical_only'].includes(m.status)).length;
  const matched=cal.months.filter(m=>m.status==='matched').length;
+ const physical=cal.months.filter(m=>m.status==='physical_only').length;
+ const physicalNote=physical?` История ${physical} мес. собрана по фактическим адресам студий (не по закреплению администраторов) и используется только для общесетевых весов дней.`:'';
  const failed=cal.months.filter(m=>m.status==='mismatch').length;
  const n=cal.network;
  if(!cal.loaded){return 'Калибровка по истории пока недоступна: используются стартовые веса дней, DISP = 1,5. '+
    (BONUS_FORECAST_HISTORY.error?'Ошибка чтения: '+bonusHtml(BONUS_FORECAST_HISTORY.error):'Данные загружаются из Supabase.');}
- if(!n.backtest){return `Загружено месяцев: ${counted} (сверено с планом: ${matched}${failed?`, расхождений: ${failed}`:''}). Для калибровки нужно минимум 3 месяца с продажами. Пока используются стартовые веса и DISP = 1,5.`;}
+ if(!n.backtest){return `Загружено месяцев: ${counted} (сверено с планом: ${matched}${failed?`, расхождений: ${failed}`:''}). Для калибровки нужно минимум 3 месяца с продажами. Пока используются стартовые веса и DISP = 1,5.${physicalNote}`;}
  const error=n.linear?n.backtest.linear:n.backtest.weighted;
  return `История ImpulseCRM: ${n.months} мес., сверено с планом: ${matched}${failed?`, исключено из-за расхождений: ${failed}`:''}. Средняя ошибка бэктеста: ${bonusForecastNumber(error,1)}% (${n.backtest.count} мес.). `+
    (n.linear?'Весовая модель оказалась хуже линейной — автоматически выбрана линейная.':'Весовые коэффициенты рассчитаны по реальным дневным продажам.')+
-   ` DISP = ${bonusForecastNumber(n.disp,2)}. Месяцы без сохранённого эталона отмечены как «только ImpulseCRM».`;
+   ` DISP = ${bonusForecastNumber(n.disp,2)}. Месяцы без сохранённого эталона не подтверждены историческим планом.${physicalNote}`;
 }
 
 function bonusForecastData(model,scenario='expected',extra={}){
