@@ -3199,6 +3199,74 @@ input[type="time"]::-webkit-calendar-picker-indicator{position:absolute;right:8p
 @media(max-width:820px){.ct-form{grid-template-columns:1fr}.ct-message{flex-direction:column}.ct-chips{justify-content:flex-start;width:100%;padding-left:36px}.ct-admin-head{grid-template-columns:minmax(0,1fr) 20px}.ct-admin-head>.ct-stat,.ct-admin-head>.ct-progress{grid-column:1/-1}.ct-admin-head>.ct-stat{display:none}.ct-admin-head .ct-last{display:none}.ct-team-task{grid-template-columns:1fr}.ct-toolbar{align-items:stretch}}
 @media(max-width:480px){.ct-root{gap:12px}.ct-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.ct-kpi{padding:12px}.ct-kpi strong{font-size:22px}.ct-card{padding:12px}.ct-chips{padding-left:0}.ct-done-line{padding-left:0}.ct-planbar{padding:12px}.ct-filters>input,.ct-filters>select{flex-basis:100%;width:100%}.ct-message .ct-btn{width:100%}}
 
+
+/* FAD DA · компактная карточка клиента и таблица прогноза без обрезания */
+.fad-main #tabbody.page .ct-card .ct-head{display:grid;grid-template-columns:26px minmax(0,1fr) auto;align-items:center;column-gap:11px;row-gap:7px;flex-wrap:initial}
+.fad-main #tabbody.page .ct-card .ct-who{min-width:0;flex:auto}
+.ct-identity{display:flex;align-items:baseline;flex-wrap:wrap;gap:5px 9px;min-width:0;font-size:14px;line-height:1.5}
+.ct-client-name{font-size:16px;font-weight:800;color:#17261e}
+.ct-contact-segment,.ct-branch-segment{display:inline-flex;align-items:baseline;gap:8px;white-space:nowrap;max-width:100%}
+.ct-sep{color:#9aac9e;font-weight:400}
+.ct-branch-name{color:#56685d;white-space:nowrap}
+.ct-contact-wrap{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;max-width:100%}
+.ct-contact-copy{appearance:none;background:transparent;border:0;padding:0;color:#266e52;cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-size:14px;font-weight:650;white-space:nowrap}
+.ct-contact-copy:hover{text-decoration:underline}
+.ct-contact-copy svg{flex-shrink:0;opacity:.74}
+.ct-contact-copy:focus-visible{outline:2px solid #2e7556;outline-offset:3px;border-radius:3px}
+.ct-contact-feedback{color:#2e7556;font-size:11px;font-weight:750}
+.ct-contact-empty{color:#b33d2c;font-size:12px}
+.fad-main #tabbody.page .ct-card .ct-chips{justify-content:flex-end;max-width:100%}
+.fad-main #tabbody.page .ct-card .ct-verify{display:inline-flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;gap:8px!important;flex:none!important;width:max-content!important;max-width:100%!important;min-height:25px;align-self:flex-start;margin:0;color:#334c3b;font-size:12px;font-weight:700;line-height:1.35;cursor:pointer}
+.fad-main #tabbody.page .ct-card .ct-verify input{appearance:auto!important;width:17px!important;height:17px!important;flex:0 0 17px!important;margin:0!important;accent-color:#2e7556}
+.fad-main #tabbody.page .ct-card .ct-verify span{white-space:nowrap}
+/* Every numeric header and its corresponding cell share the same column and alignment. */
+.fad-main #tabbody.page .bonus-page .bpf-admin-scroll{overflow-x:visible;min-width:0;width:100%;max-width:100%;margin-bottom:16px}
+.fad-main #tabbody.page .bonus-page .bpf-admin-table{table-layout:fixed;width:100%;min-width:0;max-width:100%;border-collapse:collapse;font-size:12px}
+.bonus-page .bpf-admin-table.bpf-with-bonus .bpf-col-name{width:30%}
+.bonus-page .bpf-admin-table.bpf-with-bonus .bpf-col-branch{width:18%}
+.bonus-page .bpf-admin-table.bpf-with-bonus .bpf-col-fact{width:10%}
+.bonus-page .bpf-admin-table.bpf-with-bonus .bpf-col-pace{width:13%}
+.bonus-page .bpf-admin-table.bpf-with-bonus .bpf-col-share{width:13%}
+.bonus-page .bpf-admin-table.bpf-with-bonus .bpf-col-bonus{width:16%}
+.bonus-page .bpf-admin-table.bpf-no-bonus .bpf-col-name{width:34%}
+.bonus-page .bpf-admin-table.bpf-no-bonus .bpf-col-branch{width:22%}
+.bonus-page .bpf-admin-table.bpf-no-bonus .bpf-col-fact{width:13%}
+.bonus-page .bpf-admin-table.bpf-no-bonus .bpf-col-pace{width:16%}
+.bonus-page .bpf-admin-table.bpf-no-bonus .bpf-col-share{width:15%}
+.fad-main #tabbody.page .bonus-page .bpf-admin-table th,
+.fad-main #tabbody.page .bonus-page .bpf-admin-table td{box-sizing:border-box;padding:12px 14px;overflow-wrap:anywhere}
+.fad-main #tabbody.page .bonus-page .bpf-admin-table th.bpf-num,
+.fad-main #tabbody.page .bonus-page .bpf-admin-table td.bpf-num{text-align:right;white-space:nowrap}
+.fad-main #tabbody.page .bonus-page .bpf-admin-table th{vertical-align:middle}
+.bonus-page .bpf-admin-table .bpf-name b{font-size:12px}
+.bonus-page .bpf-admin-table .bpf-name small{font-size:10px;overflow-wrap:anywhere}
+.bonus-page .bpf-admin-table .bpf-branch-inline{display:inline-flex;align-items:center;gap:9px;white-space:nowrap}
+.bonus-page .bpf-admin-table .bpf-branch-inline .bp-dot{margin-right:0!important;vertical-align:middle}
+.bonus-page .bpf-branch-title>.bp-dot,.bonus-page .bpf-finished-card strong>.bp-dot{margin-right:9px;vertical-align:middle}
+@media(max-width:1100px){
+ .fad-main #tabbody.page .bonus-page .bpf-admin-table{display:block;max-width:100%;border-collapse:separate;font-size:12px}
+ .fad-main #tabbody.page .bonus-page .bpf-admin-table colgroup,
+ .fad-main #tabbody.page .bonus-page .bpf-admin-table thead{display:none}
+ .fad-main #tabbody.page .bonus-page .bpf-admin-table tbody{display:flex;flex-direction:column;gap:8px;padding:9px}
+ .fad-main #tabbody.page .bonus-page .bpf-admin-table tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:center;gap:0 12px;border:1px solid #edf1ee;border-radius:10px;overflow:hidden;background:#fff}
+ .fad-main #tabbody.page .bonus-page .bpf-admin-table td,
+ .fad-main #tabbody.page .bonus-page .bpf-admin-table td.bpf-num{display:flex;justify-content:space-between;align-items:center;text-align:right;gap:10px;white-space:normal;border:0;padding:8px 10px;min-width:0}
+ .fad-main #tabbody.page .bonus-page .bpf-admin-table td::before{content:attr(data-label);font-weight:700;color:#56685d;font-size:10px;letter-spacing:.01em;text-align:left;flex:0 0 auto}
+ .fad-main #tabbody.page .bonus-page .bpf-admin-table .bpf-name{grid-column:1/-1;display:block;text-align:left;border-bottom:1px solid #edf1ee;padding:10px 12px}
+ .fad-main #tabbody.page .bonus-page .bpf-admin-table .bpf-name::before{display:none}
+ .fad-main #tabbody.page .bonus-page .bpf-admin-table .bpf-name small{display:block}
+ .fad-main #tabbody.page .bonus-page .bpf-admin-table .bpf-admin-total td:first-child{grid-column:1/-1;text-align:left;justify-content:flex-start;font-weight:800;border-bottom:1px solid #e0e8e1}
+ .fad-main #tabbody.page .bonus-page .bpf-admin-table .bpf-admin-total td:first-child::before{display:none}
+ .fad-main #tabbody.page .bonus-page .bpf-admin-table .bpf-admin-total td[data-label="Доля филиала"]:empty{display:none}
+}
+@media(max-width:720px){
+ .fad-main #tabbody.page .ct-card .ct-head{grid-template-columns:26px minmax(0,1fr)}
+ .fad-main #tabbody.page .ct-card .ct-chips{grid-column:2;justify-content:flex-start}
+ .ct-contact-segment .ct-sep,.ct-branch-segment .ct-sep{display:none}
+ .fad-main #tabbody.page .bonus-page .bpf-admin-table tr{grid-template-columns:1fr}
+ .fad-main #tabbody.page .bonus-page .bpf-admin-table .bpf-name{grid-column:1}
+ .fad-main #tabbody.page .bonus-page .bpf-admin-table .bpf-admin-total td:first-child{grid-column:1}
+}
 </style>
 
 <div id="root"></div>
@@ -3219,7 +3287,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '19.11.2026-cz'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '19.11.2026-da'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -11006,7 +11074,7 @@ function bonusForecastDraw(model){
     html+=`<div class="bpf-stats"><div class="bpf-stat"><div class="bpf-stat-name">План, все филиалы</div><strong>${bonusFormat(results.planTotal)}</strong><small>${results.valid.map(b=>bonusHtml(b.name)+' '+bonusFormat(b.plan)).join(' · ')}</small></div><div class="bpf-stat"><div class="bpf-stat-name">Факт · на ${String(calendar.daysDone).padStart(2,'0')}.${String(mm).padStart(2,'0')}</div><strong>${bonusFormat(results.factTotal)}</strong><small>${bonusForecastNumber(results.planPct,1)}% плана при ${bonusForecastNumber(results.calendarPct,0)}% месяца</small></div><div class="bpf-stat"><div class="bpf-stat-name">Прогноз на конец месяца</div><strong>${bonusFormat(results.projection)}</strong><small>${bonusForecastNumber(results.planTotal?results.projection/results.planTotal*100:0,1)}% плана · P10–P90 по сети: ${bonusFormat(results.p10)}–${bonusFormat(results.p90)}</small></div>${fourth}</div>`;
     html+=`<h3 class="bpf-section-heading">Прогноз и рекомендации по филиалам</h3><div class="bpf-branches">${results.branches.map(b=>bonusForecastBranch(b,results,owner)).join('')}</div>`;
     const validSet=new Set(results.valid.map(b=>b.id)),staff=model.staff.filter(s=>validSet.has(s.studio));
-    html+=`<div class="bpf-admin-heading"><h3 class="bpf-section-heading">Администраторы · прогноз</h3><span>Продажи относятся к основному филиалу; в скобках — место оформления.</span></div><div class="bpf-admin-scroll"><table class="bpf-admin-table"><thead><tr><th>Администратор</th><th>Филиал</th><th>Факт</th><th>Темп в день</th><th>Доля филиала</th>${owner?'<th>Прогнозный бонус</th>':''}</tr></thead><tbody>${staff.map(s=>{const b=results.branches.find(x=>x.id===s.studio);const branch=BONUS_BRANCHES.find(x=>x.id===s.studio)||BONUS_BRANCHES[0];const names=s.physicalSummary.map(f=>`${bonusHtml(BONUS_BRANCHES.find(x=>x.id===f.studio)?.name||'Филиал')} ${bonusFormat(f.count)}`).join(' · ');return `<tr><td><b>${bonusHtml(s.name)}</b><small>${names||'нет продаж'}</small></td><td>${bonusLabel(branch)}</td><td class="bpf-num">${bonusFormat(s.count)}</td><td class="bpf-num">${bonusForecastNumber(s.count/calendar.daysDone,1)}</td><td class="bpf-num">${bonusForecastNumber(s.share,0)}%</td>${owner?`<td class="bpf-num">${bonusFormat(b.scenarioBonus)} BYN</td>`:''}</tr>`;}).join('')}<tr class="bpf-admin-total"><td colspan="2">Всего</td><td class="bpf-num">${bonusFormat(results.factTotal)}</td><td class="bpf-num">${bonusForecastNumber(results.factTotal/calendar.daysDone,1)}</td><td></td>${owner?`<td class="bpf-num">${bonusFormat(results.scenarioPool)} BYN</td>`:''}</tr></tbody></table></div>`;
+    html+=`<div class="bpf-admin-heading"><h3 class="bpf-section-heading">Администраторы · прогноз</h3><span>Продажи относятся к основному филиалу; в скобках — место оформления.</span></div><div class="bpf-admin-scroll"><table class="bpf-admin-table ${owner?'bpf-with-bonus':'bpf-no-bonus'}"><colgroup><col class="bpf-col-name"><col class="bpf-col-branch"><col class="bpf-col-fact"><col class="bpf-col-pace"><col class="bpf-col-share">${owner?'<col class="bpf-col-bonus">':''}</colgroup><thead><tr><th scope="col">Администратор</th><th scope="col">Филиал</th><th scope="col" class="bpf-num">Факт</th><th scope="col" class="bpf-num">Темп в день</th><th scope="col" class="bpf-num">Доля филиала</th>${owner?'<th scope="col" class="bpf-num">Прогнозный бонус</th>':''}</tr></thead><tbody>${staff.map(s=>{const b=results.branches.find(x=>x.id===s.studio);const branch=BONUS_BRANCHES.find(x=>x.id===s.studio)||BONUS_BRANCHES[0];const names=s.physicalSummary.map(f=>`${bonusHtml(BONUS_BRANCHES.find(x=>x.id===f.studio)?.name||'Филиал')} ${bonusFormat(f.count)}`).join(' · ');return `<tr><td data-label="Администратор" class="bpf-name"><b>${bonusHtml(s.name)}</b><small>${names||'нет продаж'}</small></td><td data-label="Филиал" class="bpf-branch-cell"><span class="bpf-branch-inline">${bonusLabel(branch)}</span></td><td data-label="Факт" class="bpf-num">${bonusFormat(s.count)}</td><td data-label="Темп в день" class="bpf-num">${bonusForecastNumber(s.count/calendar.daysDone,1)}</td><td data-label="Доля филиала" class="bpf-num">${bonusForecastNumber(s.share,0)}%</td>${owner?`<td data-label="Прогнозный бонус" class="bpf-num">${bonusFormat(b.scenarioBonus)} BYN</td>`:''}</tr>`;}).join('')}<tr class="bpf-admin-total"><td colspan="2" data-label="Итого">Всего</td><td data-label="Факт" class="bpf-num">${bonusFormat(results.factTotal)}</td><td data-label="Темп в день" class="bpf-num">${bonusForecastNumber(results.factTotal/calendar.daysDone,1)}</td><td data-label="Доля филиала"></td>${owner?`<td data-label="Прогнозный бонус" class="bpf-num">${bonusFormat(results.scenarioPool)} BYN</td>`:''}</tr></tbody></table></div>`;
   }
   root.innerHTML=html;
 }
@@ -12237,16 +12305,31 @@ function ctTaskStats(rows){const a=rows.filter(t=>!t.reserve&&!t.do_not_contact&
 function ctKpi(label,value,sub,progress=null){return `<div class="ct-kpi"><div class="ct-caption">${label}</div><strong>${ctEsc(value)}</strong><span class="ct-hint">${sub}</span>${progress!==null?`<div class="ct-bar"><i style="width:${Math.max(0,Math.min(100,progress))}%"></i></div>`:''}</div>`;}
 function ctWarning(page,msg){const e=page.querySelector('[data-ct-page-error]');if(e){e.textContent=msg||'';e.hidden=!msg;}}
 function ctTaskSort(x,y){if(x.done!==y.done)return x.done?1:-1;const xo=!x.done&&x.due_date<ctToday(),yo=!y.done&&y.due_date<ctToday();if(xo!==yo)return xo?-1:1;return x.due_date.localeCompare(y.due_date)||ctPriority(x).localeCompare(ctPriority(y))||Number(x.id)-Number(y.id);}
+// One copyable contact in the title; if the source has no phone, use an existing Instagram handle.
+function ctTaskContact(t){
+ const phone=String(t.phone||'').trim();
+ if(phone&&phone!=='—'&&phone!=='null')return {value:phone,label:phone,kind:'phone'};
+ const m=t.meta||{},social=m.social||m.socials||{},profile=m.client||{};
+ let ig=[t.instagram,t.instagram_username,m.instagram,m.instagram_username,m.instagram_nick,m.instagram_handle,m.instagram_login,m.ig_username,m.ig_nickname,m.insta,m.instagram_snapshot,social.instagram,profile.instagram].find(x=>typeof x==='string'&&x.trim());
+ ig=String(ig||'').trim();
+ if(ig){
+   ig=ig.replace(/^https?:\/\/(?:www\.)?instagram\.com\//i,'').replace(/^@/,'').split(/[/?#]/)[0].trim();
+   if(ig)return {value:'@'+ig,label:'@'+ig,kind:'instagram'};
+ }
+ return {value:'',label:'Контакт не указан',kind:'none'};
+}
 function ctTaskView(t){const overdue=!t.done&&t.due_date<ctToday(),sel=(key)=>`<option value="${key}"${t.result===key?' selected':''}>${ctEsc(CT_RESULTS[key])}</option>`;
   const color=ctBranchName(t.branch),flag=t.meta?.risk_flags||[],ready=!!t.crm_verified;
   const tags=`<div class="ct-chips"><span class="ct-chip ct-${ctPriority(t)}">${ctPriority(t)}${ctPriority(t)==='A'?' · срочно':''}</span><span class="ct-chip">${ctEsc(ctSegment(t))}</span><span class="ct-chip${overdue?' ct-danger':''}">${overdue?'Просрочено · ':''}${ctDate(t.due_date)}</span></div>`;
-  const head=`<div class="ct-head"><input class="ct-task-check" type="checkbox" data-ct-check="${t.id}" aria-label="Отметить задачу выполненной" ${t.done?'checked':''}><div class="ct-who"><h3>${ctEsc(t.client_name)}</h3><div class="ct-sub">CRM ID ${ctEsc(t.crm_id)} · ${ctEsc(t.phone)} · ${ctEsc(color)}</div></div>${tags}</div>`;
+  const contact=ctTaskContact(t);
+  const contactHtml=contact.value?`<span class="ct-contact-wrap"><button type="button" class="ct-contact-copy" data-ct-contact-copy="${t.id}" title="Скопировать ${contact.kind==='phone'?'телефон':'Instagram'}" aria-label="Скопировать ${contact.kind==='phone'?'телефон':'Instagram'} ${ctEsc(contact.label)}"><span>${ctEsc(contact.label)}</span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button><span class="ct-contact-feedback" role="status" aria-live="polite"></span></span>`:`<span class="ct-contact-empty">${ctEsc(contact.label)}</span>`;
+  const head=`<div class="ct-head"><input class="ct-task-check" type="checkbox" data-ct-check="${t.id}" aria-label="Отметить задачу выполненной" ${t.done?'checked':''}><div class="ct-who"><div class="ct-identity"><strong class="ct-client-name">${ctEsc(t.client_name)}</strong><span class="ct-contact-segment"><span class="ct-sep">—</span>${contactHtml}</span><span class="ct-branch-segment"><span class="ct-sep">—</span><span class="ct-branch-name">${ctEsc(color)}</span></span></div></div>${tags}</div>`;
   if(t.done)return `<article class="ct-card done" data-ct-task="${t.id}">${head}<div class="ct-done-line"><span class="ct-chip ct-${ctResultState(t)}">${ctEsc(CT_RESULTS[t.result]||'Выполнено')}</span>${t.next_contact?`<span>Следующий контакт: ${ctDate(t.next_contact)}</span>`:''}${t.comment?`<span>${ctEsc(t.comment)}</span>`:''}<span>Отмечено ${ctStamp(t.done_at)}</span></div></article>`;
   const allowed=ready&&!!t.message;
   const before=[t.meta?.phone_needs_verification?'Уточнить действующий номер телефона в CRM (в выгрузке несколько или нестандартный формат)':null,t.meta?.check_before_contact,t.meta?.risk_note_snapshot].filter(Boolean).join(' · ')||'Проверить новые покупки, посещение и предыдущую переписку в ImpulseCRM';
   const meta=ctEsc(JSON.stringify({source:t.meta?.source||'ImpulseCRM',segment:t.meta?.segment_code||null,crm_status:t.meta?.crm_status_snapshot||null,risks:flag,last_booking:t.meta?.last_booking_snapshot||null,subscription:t.meta?.last_package_snapshot||null,remaining:t.meta?.remaining_sessions_snapshot||null,phone_original:t.meta?.phone_original||null,phone_alternates:t.meta?.phone_alternates||[],phone_needs_verification:!!t.meta?.phone_needs_verification,created:t.updated_at},null,2));
   return `<article class="ct-card" data-ct-task="${t.id}">${head}
-    <label class="ct-import-check"><input type="checkbox" data-ct-field="crm_verified" data-ct-id="${t.id}" ${ready?'checked':''}><b>Проверено в ImpulseCRM</b><span class="ct-hint">— покупка, явка, остаток, запреты и переписка</span></label>
+    <label class="ct-verify"><input type="checkbox" data-ct-field="crm_verified" data-ct-id="${t.id}" ${ready?'checked':''}><span>Проверено в ImpulseCRM</span></label>
     <div class="ct-todo"><b>Что сделать:</b> ${ctEsc(t.todo||'Проверить актуальный статус клиента в ImpulseCRM')}</div>
     <div class="ct-message"><p>${ctEsc(t.message||'Готовый текст не предоставлен в источнике; сначала проверьте карточку клиента.')}</p><button type="button" class="ct-btn" data-ct-copy="${t.id}" ${allowed?'':'disabled'}>${t.copied_at?'Скопировано ✓':'Скопировать сообщение'}</button></div>
     ${!ready?'<div class="ct-disabled">До проверки карточки клиента копирование сообщения заблокировано. Автоматическая отправка не предусмотрена.</div>':''}
@@ -12479,9 +12562,21 @@ async function renderClients(body){if(!session||!TOKEN){body.innerHTML='<div cla
   }
  }catch(e){if(page.isConnected)page.innerHTML='<div class="ct-empty">Не удалось получить защищённый список клиентов. Проверьте установку SQL и права роли.<div class="ct-error">'+ctEsc(e?.message||e)+'</div></div>';return;}
  page.addEventListener('click',async ev=>{
-  const btn=ev.target.closest('[data-ct-act],[data-ct-open],[data-ct-task-filter],[data-ct-archive],[data-ct-copy]');if(!btn)return;
+  const btn=ev.target.closest('[data-ct-act],[data-ct-open],[data-ct-task-filter],[data-ct-archive],[data-ct-copy],[data-ct-contact-copy]');if(!btn)return;
   const action=btn.dataset.ctAct;
   try{
+   if(btn.dataset.ctContactCopy){
+    const t=ctx.data.tasks.find(x=>String(x.id)===btn.dataset.ctContactCopy);
+    if(!t)return;
+    const contact=ctTaskContact(t);
+    if(!contact.value)return;
+    const ok=await ctCopy(contact.value);
+    const feedback=btn.closest('.ct-contact-wrap')?.querySelector('.ct-contact-feedback');
+    if(feedback){feedback.textContent=ok?'Скопировано':'Не удалось скопировать';
+      setTimeout(()=>{if(feedback.isConnected)feedback.textContent='';},2100);}
+    if(ok)toast(contact.kind==='phone'?'Телефон скопирован':'Instagram скопирован');
+    return;
+   }
    if(btn.dataset.ctCopy){const t=ctx.data.tasks.find(x=>String(x.id)===btn.dataset.ctCopy);if(!t||!t.crm_verified||!t.message)return;
     const message=t.message.replace(/^ПОСЛЕ ПРОВЕРКИ[^:]*:\s*/i,'');const ok=await ctCopy(message);
     if(!ok)throw Error('Не удалось скопировать сообщение');await ctSaveTask(ctx,t,{copied_at:'now'},false);
