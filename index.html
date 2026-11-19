@@ -3090,6 +3090,19 @@ input[type="time"]::-webkit-calendar-picker-indicator{position:absolute;right:8p
 .bonus-page .bpf-history-actions span{font-size:11px;color:#56685D;overflow-wrap:anywhere}
 .bonus-page .bpf-history-error{margin:10px 0 12px;padding:12px 14px;border-radius:10px;border:1px solid #EDC9C3;background:#FFF5F2;color:#A3322B;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
 .bonus-page .bpf-history-error strong{display:block;margin-bottom:3px}
+/* FAD CT: owner-only review of historical paid subscriptions marked refunded. */
+.bonus-page .bpf-refund-review{margin:12px 0 16px;padding:18px;border:1px solid #DCE3DD;border-radius:14px;background:#fff}
+.bonus-page .bpf-refund-review h4{margin:0 0 8px;font-size:15px;font-weight:800;color:#17261E}
+.bonus-page .bpf-refund-review p{font-size:12px;line-height:1.6;color:#56685D;margin:6px 0 12px}
+.bonus-page .bpf-refund-list{display:grid;gap:10px}
+.bonus-page .bpf-refund-case{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding:12px;border:1px solid #EDF1EE;border-radius:10px;background:#F7F9F7}
+.bonus-page .bpf-refund-info{flex:1 1 330px;min-width:0;font-size:12px;line-height:1.65;color:#17261E}
+.bonus-page .bpf-refund-info strong{font-size:13px}
+.bonus-page .bpf-refund-info small{display:block;color:#56685D;font-size:11px}
+.bonus-page .bpf-refund-case select{height:40px;min-width:210px;max-width:100%;padding:0 12px;border:1px solid #DCE3DD;border-radius:10px;background:#fff;color:#17261E;font-size:13px}
+.bonus-page .bpf-refund-save{margin-top:14px;min-height:40px}
+@media(max-width:640px){.bonus-page .bpf-refund-case select{width:100%}.bonus-page .bpf-refund-case{display:block}.bonus-page .bpf-refund-info{margin-bottom:8px}}
+
 </style>
 
 <div id="root"></div>
@@ -3110,7 +3123,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '19.11.2026-cs'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '19.11.2026-ct'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -10499,7 +10512,7 @@ function bonusForecastNumber(n,digits=0){return Number(n||0).toLocaleString('ru-
 function bonusForecastSalesWord(n){const v=Math.abs(n)%100,u=v%10;return (v<11||v>14)&&u===1?'продажи':'продаж';}
 /* FAD CN · Калибровка прогнозов по реальной дневной истории ImpulseCRM.
    Только чтение анонимизированных дневных агрегатов, без изменения bonus_facts. */
-const BONUS_FORECAST_HISTORY={period:'',scope:'',data:null,loading:false,busy:false,progress:'',error:'',importError:'',seq:0};
+const BONUS_FORECAST_HISTORY={period:'',scope:'',data:null,loading:false,busy:false,progress:'',error:'',importError:'',seq:0,reviewCases:[],reviewScope:'',reviewSelections:{},reviewBusy:false};
 function bonusForecastHistoryScope(model){return String(TOKEN||'')+'|'+String(model.viewAll)+'|'+String(model.myStudio||'');}
 const BONUS_FORECAST_DEFAULT_PHASE=[1.25,1.10,0.90,1.00,1.15];
 function bonusHistoryPhase(day){return day<=5?0:day<=10?1:day<=20?2:day<=25?3:4;}
@@ -10612,6 +10625,7 @@ function bonusForecastHistoricMonths(){
 async function bonusForecastBackfill(model){
  if(!model.owner||BONUS_FORECAST_HISTORY.busy)return;
  BONUS_FORECAST_HISTORY.busy=true;BONUS_FORECAST_HISTORY.importError='';
+ BONUS_FORECAST_HISTORY.reviewCases=[];BONUS_FORECAST_HISTORY.reviewSelections={};BONUS_FORECAST_HISTORY.reviewScope=bonusForecastHistoryScope(model);
  // Начинаем с новейших месяцев для более быстрой калибровки; ошибки старых периодов не задерживают свежие.
  const months=bonusForecastHistoricMonths().reverse();let saved=0,skipped=0,physicalLoaded=0;
  const reviews=[],networkIssues=[];
@@ -10639,6 +10653,12 @@ async function bonusForecastBackfill(model){
        if(response.status===422 && /^(refund_(group|individual|rent)|deleted_paid_(group|individual|rent)_account)_requires_review$/.test(reason)){
          const details=data?.refundAudit;
          const paid=details?['group','individual','rent'].reduce((n,k)=>n+(Number(details[k]?.refundedPaid)||0),0):null;
+         if(Array.isArray(data?.refundCases)){
+           for(const c of data.refundCases){
+             if(!c||c.month!==period||!['group','individual','rent'].includes(c.kind)||!/^\d+$/.test(String(c.id||'')))continue;
+             BONUS_FORECAST_HISTORY.reviewCases.push(c);
+           }
+         }
          reviews.push(`${period}: ${reason}${paid===null?'':` (${paid} возвратов с оплатой)`}`);
          BONUS_FORECAST_HISTORY.progress=`Сохранено ${saved} · требует проверки ${reviews.length} · ${period}`;
          bonusForecastDraw(model);
@@ -10668,6 +10688,62 @@ async function bonusForecastBackfill(model){
    await bonusForecastRefreshHistory(model);
    bonusForecastDraw(model);
  }
+}
+// Only the owner can see account identifiers; decisions remain in Supabase,
+// not in browser storage. The selected choice is an explicit human assertion.
+function bonusForecastReviewKey(c){return c.month+':'+c.kind+':'+c.id;}
+function bonusForecastReviewPanel(model){
+ if(!model.owner||BONUS_FORECAST_HISTORY.reviewScope!==bonusForecastHistoryScope(model))return '';
+ const cases=BONUS_FORECAST_HISTORY.reviewCases||[];
+ if(!cases.length)return '';
+ const studioName=id=>BONUS_BRANCHES.find(b=>b.id===id)?.name||'Не указан';
+ const kindName={group:'Групповой',individual:'Индивидуальный',rent:'Аренда'};
+ return `<section class="bpf-refund-review" aria-label="Сверка возвратов">
+  <h4>Проверить возвраты · ${cases.length} абонементов</h4>
+  <p>Откройте абонемент по ID в ImpulseCRM и проверьте, действительна ли продажа после возврата. Суммы «Оплачено» и «Стоимость» показаны как их возвращает API. Поле <code>refund</code> — исходное значение API, его значение нельзя без проверки считать суммой возврата. «Учитывать» — продажа остаётся; «Не учитывать» — продажа полностью отменена. Решение влияет только на историю прогноза, не на фактические премии.</p>
+  <div class="bpf-refund-list">${cases.map(c=>{
+    const key=bonusForecastReviewKey(c),pick=BONUS_FORECAST_HISTORY.reviewSelections[key]||'';
+    return `<div class="bpf-refund-case"><div class="bpf-refund-info"><strong>${bonusHtml(c.month)} · ${bonusHtml(kindName[c.kind]||c.kind)} · ID ${bonusHtml(String(c.id))}</strong>
+      <small>${bonusHtml(c.day||'Дата не определена')} · ${bonusHtml(studioName(c.studio))} · оплачено ${bonusForecastNumber(c.paid,2)} BYN · стоимость ${bonusForecastNumber(c.total,2)} BYN · refund: ${bonusHtml(String(c.refundField))}</small></div>
+      <select aria-label="Решение по абонементу ${bonusHtml(String(c.id))}" data-bpf-review-select="${bonusHtml(key)}" ${BONUS_FORECAST_HISTORY.reviewBusy?'disabled':''}>
+       <option value="" ${!pick?'selected':''}>Выбрать решение</option>
+       <option value="include" ${pick==='include'?'selected':''}>Учитывать как продажу</option>
+       <option value="exclude" ${pick==='exclude'?'selected':''}>Не учитывать как продажу</option>
+      </select></div>`;
+  }).join('')}</div>
+  <button type="button" class="btn btn-primary bpf-refund-save" data-bpf-review-save ${BONUS_FORECAST_HISTORY.reviewBusy||BONUS_FORECAST_HISTORY.busy?'disabled':''}>${BONUS_FORECAST_HISTORY.reviewBusy?'Сохраняем решения…':'Сохранить решения и продолжить загрузку'}</button>
+ </section>`;
+}
+async function bonusForecastSaveReviews(model){
+ if(!model.owner||BONUS_FORECAST_HISTORY.busy||BONUS_FORECAST_HISTORY.reviewBusy||BONUS_FORECAST_HISTORY.reviewScope!==bonusForecastHistoryScope(model))return;
+ const cases=BONUS_FORECAST_HISTORY.reviewCases||[];
+ if(!cases.length)return;
+ if(cases.some(c=>!['include','exclude'].includes(BONUS_FORECAST_HISTORY.reviewSelections[bonusForecastReviewKey(c)]))){
+   toast('Выберите решение для каждого абонемента',true);return;
+ }
+ BONUS_FORECAST_HISTORY.reviewBusy=true;
+ bonusForecastDraw(model);
+ try{
+   for(const c of cases){
+     const choice=BONUS_FORECAST_HISTORY.reviewSelections[bonusForecastReviewKey(c)];
+     const answer=await rpc('app_bonus_history_refund_decide',{
+       p_token:TOKEN,p_period:c.month,p_kind:c.kind,p_account_id:String(c.id),
+       p_signature:c.signature,p_decision:choice
+     });
+     if(answer?.ok!==true)throw Error('refund_decision_not_confirmed: '+c.month);
+   }
+   BONUS_FORECAST_HISTORY.reviewCases=[];
+   BONUS_FORECAST_HISTORY.reviewSelections={};
+   BONUS_FORECAST_HISTORY.importError='';
+   toast('Решения сохранены. Продолжаем загрузку истории.');
+ }catch(e){
+   BONUS_FORECAST_HISTORY.importError='Не удалось сохранить решения: '+String(e?.message||e).slice(0,180);
+   BONUS_FORECAST_HISTORY.reviewBusy=false;
+   bonusForecastDraw(model);
+   return;
+ }
+ BONUS_FORECAST_HISTORY.reviewBusy=false;
+ await bonusForecastBackfill(model);
 }
 function bonusForecastHistoryInfo(cal){
  const counted=cal.months.filter(m=>['matched','source_only','physical_only'].includes(m.status)).length;
@@ -10820,7 +10896,7 @@ function bonusForecastDraw(model){
     html+=`<div class="bpf-admin-heading"><h3 class="bpf-section-heading">Администраторы · прогноз</h3><span>Продажи относятся к основному филиалу; в скобках — место оформления.</span></div><div class="bpf-admin-scroll"><table class="bpf-admin-table"><thead><tr><th>Администратор</th><th>Филиал</th><th>Факт</th><th>Темп в день</th><th>Доля филиала</th>${owner?'<th>Прогнозный бонус</th>':''}</tr></thead><tbody>${staff.map(s=>{const b=results.branches.find(x=>x.id===s.studio);const branch=BONUS_BRANCHES.find(x=>x.id===s.studio)||BONUS_BRANCHES[0];const names=s.physicalSummary.map(f=>`${bonusHtml(BONUS_BRANCHES.find(x=>x.id===f.studio)?.name||'Филиал')} ${bonusFormat(f.count)}`).join(' · ');return `<tr><td><b>${bonusHtml(s.name)}</b><small>${names||'нет продаж'}</small></td><td>${bonusLabel(branch)}</td><td class="bpf-num">${bonusFormat(s.count)}</td><td class="bpf-num">${bonusForecastNumber(s.count/calendar.daysDone,1)}</td><td class="bpf-num">${bonusForecastNumber(s.share,0)}%</td>${owner?`<td class="bpf-num">${bonusFormat(b.scenarioBonus)} BYN</td>`:''}</tr>`;}).join('')}<tr class="bpf-admin-total"><td colspan="2">Всего</td><td class="bpf-num">${bonusFormat(results.factTotal)}</td><td class="bpf-num">${bonusForecastNumber(results.factTotal/calendar.daysDone,1)}</td><td></td>${owner?`<td class="bpf-num">${bonusFormat(results.scenarioPool)} BYN</td>`:''}</tr></tbody></table></div>`;
   }
   const historyStatus=bonusForecastHistoryInfo(results.calibration);
-  html+=`<div class="bpf-method"><b>Как считается прогноз</b><p>Каждый день месяца имеет вес: дни недели и этапы месяца учитываются по реальной истории при достаточном количестве данных. P10–P90 — модельный диапазон, охватывающий примерно 80% расчётных исходов, а не гарантия результата. Шансы порогов от сценария не зависят.</p><p class="bpf-history-note">${historyStatus}</p>${owner?`<div class="bpf-history-actions"><button type="button" class="btn btn-s" data-bpf-history-load ${BONUS_FORECAST_HISTORY.busy?'disabled':''}>${BONUS_FORECAST_HISTORY.busy?'Загружаем историю…':'Загрузить / дополнить 12 месяцев истории'}</button><span>${bonusHtml(BONUS_FORECAST_HISTORY.progress)}</span></div>${(BONUS_FORECAST_HISTORY.importError||BONUS_FORECAST_HISTORY.error)?`<div class="bpf-history-error" role="alert"><strong>${BONUS_FORECAST_HISTORY.importError?.startsWith('Требуется сверка возвратов')?'Нужна сверка возвратов':BONUS_FORECAST_HISTORY.importError?'Ошибка импорта истории':'Ошибка чтения истории'}</strong>${bonusHtml(BONUS_FORECAST_HISTORY.importError||BONUS_FORECAST_HISTORY.error)}<div style="margin-top:6px;color:#795047">${BONUS_FORECAST_HISTORY.importError?.startsWith('Требуется сверка возвратов')?'Остальные месяцы загружаются независимо. Возвращённые абонементы не включаются в историю без подтверждения.':'Проблемные месяцы не были сохранены; уже загруженная история сохранена. Защищённые проверки Supabase не отключены.'}</div></div>`:''}`:''}<p>Прогнозный бонус на администратора — только фиксированная сумма по достигнутому порогу его филиала (0 / 50 / 120 / 300 / 350 / 400 BYN при текущей шкале). Каждый закреплённый администратор получает полный бонус независимо от личной доли продаж; вероятности порогов не усредняют денежную сумму.</p><p>Расчёт информационный и не меняет существующий план, факты, премии или выплаты. «Что если» работает только в этой вкладке.</p></div>`;
+  html+=`<div class="bpf-method"><b>Как считается прогноз</b><p>Каждый день месяца имеет вес: дни недели и этапы месяца учитываются по реальной истории при достаточном количестве данных. P10–P90 — модельный диапазон, охватывающий примерно 80% расчётных исходов, а не гарантия результата. Шансы порогов от сценария не зависят.</p><p class="bpf-history-note">${historyStatus}</p>${owner?`<div class="bpf-history-actions"><button type="button" class="btn btn-s" data-bpf-history-load ${BONUS_FORECAST_HISTORY.busy?'disabled':''}>${BONUS_FORECAST_HISTORY.busy?'Загружаем историю…':'Загрузить / дополнить 12 месяцев истории'}</button><span>${bonusHtml(BONUS_FORECAST_HISTORY.progress)}</span></div>${(BONUS_FORECAST_HISTORY.importError||BONUS_FORECAST_HISTORY.error)?`<div class="bpf-history-error" role="alert"><strong>${BONUS_FORECAST_HISTORY.importError?.startsWith('Требуется сверка возвратов')?'Нужна сверка возвратов':BONUS_FORECAST_HISTORY.importError?'Ошибка импорта истории':'Ошибка чтения истории'}</strong>${bonusHtml(BONUS_FORECAST_HISTORY.importError||BONUS_FORECAST_HISTORY.error)}<div style="margin-top:6px;color:#795047">${BONUS_FORECAST_HISTORY.importError?.startsWith('Требуется сверка возвратов')?'Остальные месяцы загружаются независимо. Возвращённые абонементы не включаются в историю без подтверждения.':'Проблемные месяцы не были сохранены; уже загруженная история сохранена. Защищённые проверки Supabase не отключены.'}</div></div>`:''}`:''}${owner?bonusForecastReviewPanel(model):''}<p>Прогнозный бонус на администратора — только фиксированная сумма по достигнутому порогу его филиала (0 / 50 / 120 / 300 / 350 / 400 BYN при текущей шкале). Каждый закреплённый администратор получает полный бонус независимо от личной доли продаж; вероятности порогов не усредняют денежную сумму.</p><p>Расчёт информационный и не меняет существующий план, факты, премии или выплаты. «Что если» работает только в этой вкладке.</p></div>`;
   root.innerHTML=html;
 }
 function bonusForecastMount(body,model){
@@ -10828,6 +10904,7 @@ function bonusForecastMount(body,model){
   // Delegate only within the forecast; existing Plan events and form inputs remain unchanged.
   root.addEventListener('click',event=>{
     const button=event.target.closest('button');if(!button||!root.contains(button))return;
+    if(button.hasAttribute('data-bpf-review-save')){void bonusForecastSaveReviews(model);return;}
     if(button.hasAttribute('data-bpf-history-load')){void bonusForecastBackfill(model);return;}
     if(button.dataset.bpfScenario){BONUS_FORECAST_UI.scenario=button.dataset.bpfScenario;bonusForecastDraw(model);return;}
     if(button.hasAttribute('data-bpf-reset')){BONUS_FORECAST_UI.extra={};bonusForecastDraw(model);return;}
@@ -10835,6 +10912,11 @@ function bonusForecastMount(body,model){
       const id=button.dataset.bpfStudio,delta=Number(button.dataset.bpfStep)||0,old=Number(BONUS_FORECAST_UI.extra[id])||0;
       BONUS_FORECAST_UI.extra[id]=Math.max(0,Math.min(10,old+delta));bonusForecastDraw(model);
     }
+  });
+  root.addEventListener('change',event=>{
+    const select=event.target.closest('[data-bpf-review-select]');
+    if(!select||!root.contains(select))return;
+    BONUS_FORECAST_HISTORY.reviewSelections[select.dataset.bpfReviewSelect]=select.value;
   });
   bonusForecastDraw(model);
   void bonusForecastRefreshHistory(model);
