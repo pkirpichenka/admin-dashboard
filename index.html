@@ -3102,7 +3102,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '19.11.2026-cl'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '19.11.2026-cm'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -10499,7 +10499,7 @@ function bonusForecastData(model,scenario='expected',extra={}){
   const branches=model.branches.map(b=>{
     const plan=Number(b.target)||0,fact=Number(b.fact)||0,admins=model.staff.filter(a=>a.studio===b.id).length;
     const added=calendar.finished||calendar.future||fact<=0?0:Math.max(0,Math.min(10,Number(extra[b.id])||0));
-    if(plan<=0)return {...b,plan:0,fact,admins,extra:added,valid:false,tiers:[],projection:null,p10:null,p90:null,expectedBonus:0,scenarioBonus:0,status:'unplanned',statusText:'План не задан'};
+    if(plan<=0)return {...b,plan:0,fact,admins,extra:added,valid:false,tiers:[],projection:null,p10:null,p90:null,scenarioBonus:0,status:'unplanned',statusText:'План не задан'};
     const unit=Wdone>0?fact/Wdone:0;
     const lambda=calendar.finished||fact<=0?0:unit*Wleft;
     const sd=calendar.finished||fact<=0?0:Math.sqrt(1.5*lambda+lambda*lambda/Math.max(fact,1));
@@ -10510,10 +10510,8 @@ function bonusForecastData(model,scenario='expected',extra={}){
     let achieved=null;
     for(const t of thresholdList)if(projection>=t.need)achieved=t;
     const next=thresholdList.find(t=>projection<t.need)||null;
-    let previousAmount=0,expectedBonus=0;
     const probabilities=thresholdList.map(t=>{
       const chance=calendar.finished?(fact>=t.need?1:0):bonusForecastChance(t.need,fact,added,lambda,sd);
-      expectedBonus+=chance*(t.amount-previousAmount);previousAmount=t.amount;
       return {...t,chance};
     });
     let status='good',statusText=achieved?`Порог ${achieved.pct}% в прогнозе`:'Ниже 90% — бонуса нет';
@@ -10523,18 +10521,19 @@ function bonusForecastData(model,scenario='expected',extra={}){
     const nextProb=next?probabilities.find(t=>t.pct===next.pct)?.chance||0:0;
     const potentialBonus=next&&nextProb>=0.35?next.amount:scenarioBonus;
     return {...b,plan,fact,admins,extra:added,valid:true,lambda,sd,unit,projection,p10,p90,tiers:probabilities,achieved,next,nextProb,
-      expectedBonus,scenarioBonus,potentialBonus,status,statusText,percent:projection/plan*100};
+      scenarioBonus,potentialBonus,status,statusText,percent:projection/plan*100};
   });
   const valid=branches.filter(b=>b.valid),planTotal=valid.reduce((s,b)=>s+b.plan,0),factTotal=valid.reduce((s,b)=>s+b.fact,0);
   const projection=valid.reduce((s,b)=>s+b.projection,0),mean=valid.reduce((s,b)=>s+b.fact+b.lambda+b.extra,0);
   const sdNet=Math.sqrt(valid.reduce((s,b)=>s+b.sd*b.sd,0));
   const p10=Math.max(factTotal,Math.round(mean-1.2816*sdNet)),p90=Math.round(mean+1.2816*sdNet);
-  const expectedPool=valid.reduce((s,b)=>s+b.expectedBonus*b.admins,0);
+  // Каждому администратору филиала положен полный фиксированный бонус достигнутого прогнозного порога.
+  // Личная доля продаж и вероятности порогов НЕ влияют на прогнозную сумму выплаты.
   const scenarioPool=valid.reduce((s,b)=>s+b.scenarioBonus*b.admins,0);
   const potential=valid.reduce((s,b)=>s+b.potentialBonus*b.admins,0)-scenarioPool;
   const strong=dailyWeights.slice(calendar.daysDone).sort((a,b)=>b.weight-a.weight||a.day-b.day).slice(0,3).sort((a,b)=>a.day-b.day);
   const strongPercent=Wleft>0?Math.round(100*strong.reduce((s,d)=>s+d.weight,0)/Wleft):0;
-  return {calendar,branches,valid,tiers,Wdone,Wleft,planTotal,factTotal,projection,mean,sdNet,p10,p90,expectedPool,scenarioPool,potential,strong,strongPercent,
+  return {calendar,branches,valid,tiers,Wdone,Wleft,planTotal,factTotal,projection,mean,sdNet,p10,p90,scenarioPool,potential,strong,strongPercent,
     calendarPct:calendar.daysInMonth?calendar.daysDone/calendar.daysInMonth*100:0,planPct:planTotal?factTotal/planTotal*100:0};
 }
 function bonusForecastProgress(label,value,limit,shade){
@@ -10610,14 +10609,14 @@ function bonusForecastDraw(model){
   }else if(calendar.daysDone<3){
     html+=`<div class="bpf-no-data">Данных пока мало: прогноз появится после 3-го дня месяца.</div>`;
   }else{
-    const fourth=owner?`<div class="bpf-stat"><div class="bpf-stat-name">Ожидаемые бонусы</div><strong>≈ ${bonusFormat(Math.round(results.expectedPool/10)*10)} BYN</strong><small>Пул по порогам сценария ${bonusFormat(results.scenarioPool)} BYN · потенциал +${bonusFormat(results.potential)} BYN</small></div>`:
+    const fourth=owner?`<div class="bpf-stat"><div class="bpf-stat-name">Бонусы по прогнозу</div><strong>${bonusFormat(results.scenarioPool)} BYN</strong><small>Сумма по достигнутым порогам для всех администраторов · возможный прирост +${bonusFormat(results.potential)} BYN</small></div>`:
       `<div class="bpf-stat"><div class="bpf-stat-name">Филиалов в зоне риска</div><strong>${results.valid.filter(b=>b.status!=='good').length}</strong><small>${results.valid.filter(b=>b.status!=='good').map(b=>`${bonusHtml(b.name)} — ${bonusHtml(b.statusText)}`).join(' · ')||'Все филиалы в прогнозе выше границы порога'}</small></div>`;
     html+=`<div class="bpf-stats"><div class="bpf-stat"><div class="bpf-stat-name">План, все филиалы</div><strong>${bonusFormat(results.planTotal)}</strong><small>${results.valid.map(b=>bonusHtml(b.name)+' '+bonusFormat(b.plan)).join(' · ')}</small></div><div class="bpf-stat"><div class="bpf-stat-name">Факт · на ${String(calendar.daysDone).padStart(2,'0')}.${String(mm).padStart(2,'0')}</div><strong>${bonusFormat(results.factTotal)}</strong><small>${bonusForecastNumber(results.planPct,1)}% плана при ${bonusForecastNumber(results.calendarPct,0)}% месяца</small></div><div class="bpf-stat"><div class="bpf-stat-name">Прогноз на конец месяца</div><strong>${bonusFormat(results.projection)}</strong><small>${bonusForecastNumber(results.planTotal?results.projection/results.planTotal*100:0,1)}% плана · P10–P90 по сети: ${bonusFormat(results.p10)}–${bonusFormat(results.p90)}</small></div>${fourth}</div>`;
     html+=`<h3 class="bpf-section-heading">Прогноз и рекомендации по филиалам</h3><div class="bpf-branches">${results.branches.map(b=>bonusForecastBranch(b,results,owner)).join('')}</div>`;
     const validSet=new Set(results.valid.map(b=>b.id)),staff=model.staff.filter(s=>validSet.has(s.studio));
-    html+=`<div class="bpf-admin-heading"><h3 class="bpf-section-heading">Администраторы · прогноз</h3><span>Продажи относятся к основному филиалу; в скобках — место оформления.</span></div><div class="bpf-admin-scroll"><table class="bpf-admin-table"><thead><tr><th>Администратор</th><th>Филиал</th><th>Факт</th><th>Темп в день</th><th>Доля филиала</th>${owner?'<th>Ожидаемый бонус</th>':''}</tr></thead><tbody>${staff.map(s=>{const b=results.branches.find(x=>x.id===s.studio);const branch=BONUS_BRANCHES.find(x=>x.id===s.studio)||BONUS_BRANCHES[0];const names=s.physicalSummary.map(f=>`${bonusHtml(BONUS_BRANCHES.find(x=>x.id===f.studio)?.name||'Филиал')} ${bonusFormat(f.count)}`).join(' · ');return `<tr><td><b>${bonusHtml(s.name)}</b><small>${names||'нет продаж'}</small></td><td>${bonusLabel(branch)}</td><td class="bpf-num">${bonusFormat(s.count)}</td><td class="bpf-num">${bonusForecastNumber(s.count/calendar.daysDone,1)}</td><td class="bpf-num">${bonusForecastNumber(s.share,0)}%</td>${owner?`<td class="bpf-num">≈ ${bonusFormat(Math.round(b.expectedBonus))} BYN</td>`:''}</tr>`;}).join('')}<tr class="bpf-admin-total"><td colspan="2">Всего</td><td class="bpf-num">${bonusFormat(results.factTotal)}</td><td class="bpf-num">${bonusForecastNumber(results.factTotal/calendar.daysDone,1)}</td><td></td>${owner?`<td class="bpf-num">≈ ${bonusFormat(Math.round(results.expectedPool/10)*10)} BYN</td>`:''}</tr></tbody></table></div>`;
+    html+=`<div class="bpf-admin-heading"><h3 class="bpf-section-heading">Администраторы · прогноз</h3><span>Продажи относятся к основному филиалу; в скобках — место оформления.</span></div><div class="bpf-admin-scroll"><table class="bpf-admin-table"><thead><tr><th>Администратор</th><th>Филиал</th><th>Факт</th><th>Темп в день</th><th>Доля филиала</th>${owner?'<th>Прогнозный бонус</th>':''}</tr></thead><tbody>${staff.map(s=>{const b=results.branches.find(x=>x.id===s.studio);const branch=BONUS_BRANCHES.find(x=>x.id===s.studio)||BONUS_BRANCHES[0];const names=s.physicalSummary.map(f=>`${bonusHtml(BONUS_BRANCHES.find(x=>x.id===f.studio)?.name||'Филиал')} ${bonusFormat(f.count)}`).join(' · ');return `<tr><td><b>${bonusHtml(s.name)}</b><small>${names||'нет продаж'}</small></td><td>${bonusLabel(branch)}</td><td class="bpf-num">${bonusFormat(s.count)}</td><td class="bpf-num">${bonusForecastNumber(s.count/calendar.daysDone,1)}</td><td class="bpf-num">${bonusForecastNumber(s.share,0)}%</td>${owner?`<td class="bpf-num">${bonusFormat(b.scenarioBonus)} BYN</td>`:''}</tr>`;}).join('')}<tr class="bpf-admin-total"><td colspan="2">Всего</td><td class="bpf-num">${bonusFormat(results.factTotal)}</td><td class="bpf-num">${bonusForecastNumber(results.factTotal/calendar.daysDone,1)}</td><td></td>${owner?`<td class="bpf-num">${bonusFormat(results.scenarioPool)} BYN</td>`:''}</tr></tbody></table></div>`;
   }
-  html+=`<div class="bpf-method"><b>Как считается прогноз</b><p>Каждый день месяца имеет вес: будни обычно сильнее выходных, начало и конец месяца — середины. Факт делится на вес прошедших дней, а оставшиеся продажи оцениваются по весу оставшихся. Сценарии учитывают возможный разброс P10–P90; шансы порогов от выбранного сценария не зависят.</p><p>Истории продаж по дням за три и более месяца в текущих данных FAD нет: применяются стартовые веса, DISP = 1,5. Средняя ошибка прогноза за прошлые месяцы: нет данных для бэктеста.</p><p>Расчёт информационный и не меняет существующий план, факты, премии или выплаты. «Что если» работает только в этой вкладке.</p></div>`;
+  html+=`<div class="bpf-method"><b>Как считается прогноз</b><p>Каждый день месяца имеет вес: будни обычно сильнее выходных, начало и конец месяца — середины. Факт делится на вес прошедших дней, а оставшиеся продажи оцениваются по весу оставшихся. Сценарии учитывают возможный разброс P10–P90; шансы порогов от выбранного сценария не зависят.</p><p>Истории продаж по дням за три и более месяца в текущих данных FAD нет: применяются стартовые веса, DISP = 1,5. Средняя ошибка прогноза за прошлые месяцы: нет данных для бэктеста.</p><p>Прогнозный бонус на администратора — только фиксированная сумма по достигнутому порогу его филиала (0 / 50 / 120 / 300 / 350 / 400 BYN при текущей шкале). Каждый закреплённый администратор получает полный бонус независимо от личной доли продаж; вероятности порогов не усредняют денежную сумму.</p><p>Расчёт информационный и не меняет существующий план, факты, премии или выплаты. «Что если» работает только в этой вкладке.</p></div>`;
   root.innerHTML=html;
 }
 function bonusForecastMount(body,model){
