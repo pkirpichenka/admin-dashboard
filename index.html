@@ -3066,7 +3066,7 @@ input[type="time"]::-webkit-calendar-picker-indicator{position:absolute;right:8p
 .bonus-page .bp-inner-pane,.bonus-page .bp-forecast{min-width:0}
 .bonus-page .bp-forecast{margin-bottom:0}
 @media(max-width:640px){.bonus-page .bp-inner-tabs{gap:6px;flex-wrap:nowrap}.bonus-page .bp-inner-tab{flex:1;padding:9px 8px;font-size:12px;min-width:0}}
-/* FAD · План · единая строка вкладок и периода · 19.11.2026-ck */
+/* FAD · План · единая строка вкладок и периода · 19.11.2026-cl */
 .fad-main #tabbody.page .bonus-page .bp-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin:0 0 16px;min-height:40px}
 .bonus-page .bp-head-navigation{display:flex;align-items:center;flex:1 1 auto;min-width:0}
 .bonus-page .bp-head-title{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
@@ -3102,7 +3102,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '19.11.2026-ck'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '19.11.2026-cl'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -3437,7 +3437,13 @@ async function refreshPermissions(){
     const role=await rpc('app_roles_my',{p_token:TOKEN});
     session.fadRoleCode=role&&role.code!=='owner'?String(role.code):'';
     session.fadRoleName=role&&role.code!=='owner'?String(role.name||''):'';
-    session.fadRolePermissions=role&&role.code!=='owner'&&role.permissions&&typeof role.permissions==='object'?role.permissions:null;
+    session.fadRolePermissions=role&&role.code!=='owner'&&role.permissions&&typeof role.permissions==='object'?{...role.permissions}:null;
+    // Независимая серверная проверка нового права. При недоступной RPC — запрет.
+    if(session.fadRoleCode){
+      let forecastAllowed=false;
+      try{forecastAllowed=(await rpc('app_role_forecast_my',{p_token:TOKEN}))===true;}catch(_){/* fail closed */}
+      session.fadRolePermissions={...(session.fadRolePermissions||{}),'plan.forecast':forecastAllowed};
+    }
   }catch(_){session.fadRoleCode='';session.fadRoleName='';session.fadRolePermissions=null;}
   persistSession();
 }
@@ -9111,13 +9117,23 @@ async function renderRoles(body){
   body.classList.add('roles-screen');
   body.innerHTML='<div class="empty">Загрузка ролей и прав доступа…</div>';
   let data,chosen='owner',draft=null,dirty=false,inFlight=false;
-  try{data=await rpc('app_roles_list',{p_token:TOKEN});}
-  catch(err){body.innerHTML='<div class="empty">Не удалось загрузить роли. Выполните миграцию BG в Supabase.</div>';handleErr(err);return;}
+  async function loadRoleData(){
+    const [roles,forecastRights]=await Promise.all([
+      rpc('app_roles_list',{p_token:TOKEN}),
+      rpc('app_role_forecast_access_list',{p_token:TOKEN})
+    ]);
+    if(!roles||!Array.isArray(roles.roles)||!forecastRights||typeof forecastRights!=='object')
+      throw Error('Не получены подтверждённые права ролей. Установите SQL-миграцию CL.');
+    roles.roles=roles.roles.map(r=>({...r,permissions:{...(r.permissions||{}),'plan.forecast':forecastRights[r.code]===true}}));
+    return roles;
+  }
+  try{data=await loadRoleData();}
+  catch(err){body.innerHTML='<div class="empty">Не удалось загрузить права ролей. Сначала выполните SQL-миграцию CL в Supabase; другие права не изменены.</div>';handleErr(err);return;}
   if(!body.isConnected)return;
   const roleMap=()=>new Map((data.roles||[]).map(r=>[r.code,r]));
   const busy=next=>{inFlight=next;body.querySelectorAll('button[data-role-save],button[data-role-delete],button[data-role-assign]').forEach(b=>b.disabled=next);};
   async function refresh(code){
-    data=await rpc('app_roles_list',{p_token:TOKEN});
+    data=await loadRoleData();
     chosen=code??chosen;
     if(chosen!=='__new'&&!roleMap().has(chosen))chosen=data.roles?.[0]?.code||'owner';
     draft=chosen==='__new'?roleClone({name:'Новая роль'}):roleClone(roleMap().get(chosen));
@@ -9179,7 +9195,9 @@ async function renderRoles(body){
       if(draft.name.length<2){toast('Название должно содержать не менее двух символов',true);return;}
       busy(true);
       try{
-        const res=await rpc('app_roles_upsert',{p_token:TOKEN,p_code:draft.code||null,p_name:draft.name,p_description:draft.description||'',p_permissions:draft.permissions});
+        // Транзакционная RPC: старые права валидирует существующий app_roles_upsert,
+        // plan.forecast сохраняется отдельно. На частичном сбое роль не изменяется.
+        const res=await rpc('app_roles_upsert_with_forecast',{p_token:TOKEN,p_code:draft.code||null,p_name:draft.name,p_description:draft.description||'',p_permissions:draft.permissions});
         clearAppDirty('roles');toast('Роль сохранена');await refresh(res.code);
       }catch(err){handleErr(err);}finally{busy(false);}
     });
@@ -9189,7 +9207,7 @@ async function renderRoles(body){
       if(!role||role.is_system)return;
       if(Number(role.users)>0){toast('Сначала переназначьте сотрудников на другую роль',true);return;}
       if(!confirm('Удалить роль «'+role.name+'»? Это действие нельзя отменить.'))return;
-      busy(true);try{await rpc('app_roles_delete',{p_token:TOKEN,p_code:role.code});toast('Роль удалена');clearAppDirty('roles');await refresh('owner');}catch(err){handleErr(err);}finally{busy(false);}
+      busy(true);try{await rpc('app_roles_delete_with_forecast',{p_token:TOKEN,p_code:role.code});toast('Роль удалена');clearAppDirty('roles');await refresh('owner');}catch(err){handleErr(err);}finally{busy(false);}
     });
     body.querySelectorAll('[data-role-assign]').forEach(btn=>btn.onclick=async()=>{
       if(inFlight)return;
@@ -10436,12 +10454,9 @@ let BONUS_FORECAST_UI={period:'',scenario:'expected',extra:{}};
 function bonusForecastAccess(model){
   if(!session)return false;
   if(session.role==='owner')return true;
-  const permission=session.fadRolePermissions||{};
-  const roleName=String(session.fadRoleName||'').toLowerCase();
-  const roleCode=String(session.fadRoleCode||'').toLowerCase();
-  return permission['plan.forecast']===true ||
-    /старш/.test(roleName) || roleCode==='senior' ||
-    (!session.fadRoleCode && session.senior===true);
+  // Только явно сохранённое серверное разрешение. Название роли и статус
+  // «старший» никогда не дают доступ автоматически.
+  return !!(session.fadRoleCode && session.fadRolePermissions?.['plan.forecast']===true);
 }
 function bonusForecastMinskToday(){
   const s=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Minsk',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
@@ -11070,6 +11085,16 @@ async function renderBonusDashboard(body){
     // No role triggers an ImpulseCRM write from the browser. All viewers read the
     // same server-maintained facts, filtered by their own access scope in Supabase.
     if(!stillCurrent())return;
+    if(session?.role!=='owner'){
+      // Всегда перечитываем разрешение перед отображением прогноза:
+      // снятая руководителем галочка не должна оставлять старый доступ.
+      let forecastAllowed=false;
+      try{forecastAllowed=(await rpc('app_role_forecast_my',{p_token:TOKEN}))===true;}catch(_){/* fail closed */}
+      if(!stillCurrent())return;
+      if(session.fadRoleCode){
+        session.fadRolePermissions={...(session.fadRolePermissions||{}),'plan.forecast':forecastAllowed};
+      }
+    }
     const model=calcBonuses(month,snapshot);
     body.innerHTML=bonusRenderHtml(model);
     bonusPlanBindSubtabs(body,model);
