@@ -3200,12 +3200,23 @@ input[type="time"]::-webkit-calendar-picker-indicator{position:absolute;right:8p
 @media(max-width:480px){.ct-root{gap:12px}.ct-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.ct-kpi{padding:12px}.ct-kpi strong{font-size:22px}.ct-card{padding:12px}.ct-chips{padding-left:0}.ct-done-line{padding-left:0}.ct-planbar{padding:12px}.ct-filters>input,.ct-filters>select{flex-basis:100%;width:100%}.ct-message .ct-btn{width:100%}}
 
 
+
+/* FAD DB: readable ImpulseCRM snapshot, kept separate from the task's change history. */
+.fad-main #tabbody.page .ct-card .ct-client-snapshot{min-width:0}
+.fad-main #tabbody.page .ct-card .ct-client-snapshot>summary{font-size:12px;font-weight:700;color:#526b5c;line-height:1.5}
+.ct-snapshot-grid{margin-top:10px;display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:10px 12px;padding:12px 14px;background:#f5f8f5;border-radius:10px;border:1px solid #e8eee9}
+.ct-snapshot-field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.ct-snapshot-field>span{font-size:10px;letter-spacing:.035em;text-transform:uppercase;color:#667a6d;font-weight:750}
+.ct-snapshot-field>strong{font-size:13px;color:#17261e;font-weight:650;overflow-wrap:anywhere;line-height:1.4}
+.ct-snapshot-note{margin-top:8px;background:#fff7e8;border:1px solid #eee2c8;color:#795d30;padding:9px 11px;border-radius:9px;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.ct-snapshot-hint{margin:8px 0 2px!important;font-size:12px!important;color:#607368!important;line-height:1.5!important}
+@media(max-width:480px){.ct-snapshot-grid{grid-template-columns:minmax(0,1fr);padding:10px}}
+
 /* FAD DA · компактная карточка клиента и таблица прогноза без обрезания */
 .fad-main #tabbody.page .ct-card .ct-head{display:grid;grid-template-columns:26px minmax(0,1fr) auto;align-items:center;column-gap:11px;row-gap:7px;flex-wrap:initial}
 .fad-main #tabbody.page .ct-card .ct-who{min-width:0;flex:auto}
 .ct-identity{display:flex;align-items:baseline;flex-wrap:wrap;gap:5px 9px;min-width:0;font-size:14px;line-height:1.5}
 .ct-client-name{font-size:16px;font-weight:800;color:#17261e}
-.ct-contact-segment,.ct-branch-segment{display:inline-flex;align-items:baseline;gap:8px;white-space:nowrap;max-width:100%}
 .ct-sep{color:#9aac9e;font-weight:400}
 .ct-branch-name{color:#56685d;white-space:nowrap}
 .ct-contact-wrap{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;max-width:100%}
@@ -3262,7 +3273,6 @@ input[type="time"]::-webkit-calendar-picker-indicator{position:absolute;right:8p
 @media(max-width:720px){
  .fad-main #tabbody.page .ct-card .ct-head{grid-template-columns:26px minmax(0,1fr)}
  .fad-main #tabbody.page .ct-card .ct-chips{grid-column:2;justify-content:flex-start}
- .ct-contact-segment .ct-sep,.ct-branch-segment .ct-sep{display:none}
  .fad-main #tabbody.page .bonus-page .bpf-admin-table tr{grid-template-columns:1fr}
  .fad-main #tabbody.page .bonus-page .bpf-admin-table .bpf-name{grid-column:1}
  .fad-main #tabbody.page .bonus-page .bpf-admin-table .bpf-admin-total td:first-child{grid-column:1}
@@ -3287,7 +3297,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '19.11.2026-da'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '19.11.2026-db'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -11061,7 +11071,7 @@ function bonusForecastDraw(model){
   const [yy,mm]=model.period.split('-').map(Number);
   const powerful=results.strong.map(d=>`${BONUS_FORECAST_DOW[(new Date(Date.UTC(yy,mm-1,d.day)).getUTCDay()+6)%7]} ${String(d.day).padStart(2,'0')}.${String(mm).padStart(2,'0')}`).join(', ');
   const timeline=`<div class="bpf-timeline">${progress}<div class="bpf-deviation">${deviation}</div>${calendar.daysLeft?`<div class="bpf-strong-days">${results.calibration.network.linear?'Исторический бэктест выбрал линейную модель — оставшиеся дни имеют одинаковый вес.':`Сильные дни до конца месяца: ${powerful} — на них приходится ${results.strongPercent}% ожидаемых продаж.`}</div>`:''}</div>`;
-  const roleLabel=owner?'Руководитель · полный доступ':'Старший администратор · без сумм выплат';
+  const roleLabel=owner?'Руководитель · полный доступ':'Старший администратор · просмотр прогноза и бонусов';
   const reset=Object.values(BONUS_FORECAST_UI.extra).some(v=>v>0);
   let html=`<header class="bpf-head"><div><div class="bpf-eyebrow">${roleLabel}</div><h2>${calendar.finished?'Итоги месяца':'Прогноз на конец месяца'}</h2><p>${calendar.finished?'Месяц завершён: показываем фактические продажи и достигнутые пороги.':`Прошло ${calendar.daysDone} из ${calendar.daysInMonth} дней, осталось ${calendar.daysLeft}. Прогноз учитывает дни недели и этапы месяца; коридор P10–P90 показывает неопределённость.`}</p></div>${calendar.finished||calendar.daysDone<3?'':`<div class="bpf-controls"><div class="bpf-scenarios" role="group" aria-label="Сценарий прогноза">${[['cautious','Осторожно'],['expected','Ожидаемо'],['optimistic','Оптимистично']].map(([s,name])=>`<button data-bpf-scenario="${s}" type="button" aria-pressed="${scenario===s}" class="${scenario===s?'active':''}">${name}</button>`).join('')}</div>${reset?'<button class="bpf-reset" type="button" data-bpf-reset>Сбросить «что если»</button>':''}</div>`}</header>${timeline}`;
   if(calendar.finished){
@@ -11074,7 +11084,7 @@ function bonusForecastDraw(model){
     html+=`<div class="bpf-stats"><div class="bpf-stat"><div class="bpf-stat-name">План, все филиалы</div><strong>${bonusFormat(results.planTotal)}</strong><small>${results.valid.map(b=>bonusHtml(b.name)+' '+bonusFormat(b.plan)).join(' · ')}</small></div><div class="bpf-stat"><div class="bpf-stat-name">Факт · на ${String(calendar.daysDone).padStart(2,'0')}.${String(mm).padStart(2,'0')}</div><strong>${bonusFormat(results.factTotal)}</strong><small>${bonusForecastNumber(results.planPct,1)}% плана при ${bonusForecastNumber(results.calendarPct,0)}% месяца</small></div><div class="bpf-stat"><div class="bpf-stat-name">Прогноз на конец месяца</div><strong>${bonusFormat(results.projection)}</strong><small>${bonusForecastNumber(results.planTotal?results.projection/results.planTotal*100:0,1)}% плана · P10–P90 по сети: ${bonusFormat(results.p10)}–${bonusFormat(results.p90)}</small></div>${fourth}</div>`;
     html+=`<h3 class="bpf-section-heading">Прогноз и рекомендации по филиалам</h3><div class="bpf-branches">${results.branches.map(b=>bonusForecastBranch(b,results,owner)).join('')}</div>`;
     const validSet=new Set(results.valid.map(b=>b.id)),staff=model.staff.filter(s=>validSet.has(s.studio));
-    html+=`<div class="bpf-admin-heading"><h3 class="bpf-section-heading">Администраторы · прогноз</h3><span>Продажи относятся к основному филиалу; в скобках — место оформления.</span></div><div class="bpf-admin-scroll"><table class="bpf-admin-table ${owner?'bpf-with-bonus':'bpf-no-bonus'}"><colgroup><col class="bpf-col-name"><col class="bpf-col-branch"><col class="bpf-col-fact"><col class="bpf-col-pace"><col class="bpf-col-share">${owner?'<col class="bpf-col-bonus">':''}</colgroup><thead><tr><th scope="col">Администратор</th><th scope="col">Филиал</th><th scope="col" class="bpf-num">Факт</th><th scope="col" class="bpf-num">Темп в день</th><th scope="col" class="bpf-num">Доля филиала</th>${owner?'<th scope="col" class="bpf-num">Прогнозный бонус</th>':''}</tr></thead><tbody>${staff.map(s=>{const b=results.branches.find(x=>x.id===s.studio);const branch=BONUS_BRANCHES.find(x=>x.id===s.studio)||BONUS_BRANCHES[0];const names=s.physicalSummary.map(f=>`${bonusHtml(BONUS_BRANCHES.find(x=>x.id===f.studio)?.name||'Филиал')} ${bonusFormat(f.count)}`).join(' · ');return `<tr><td data-label="Администратор" class="bpf-name"><b>${bonusHtml(s.name)}</b><small>${names||'нет продаж'}</small></td><td data-label="Филиал" class="bpf-branch-cell"><span class="bpf-branch-inline">${bonusLabel(branch)}</span></td><td data-label="Факт" class="bpf-num">${bonusFormat(s.count)}</td><td data-label="Темп в день" class="bpf-num">${bonusForecastNumber(s.count/calendar.daysDone,1)}</td><td data-label="Доля филиала" class="bpf-num">${bonusForecastNumber(s.share,0)}%</td>${owner?`<td data-label="Прогнозный бонус" class="bpf-num">${bonusFormat(b.scenarioBonus)} BYN</td>`:''}</tr>`;}).join('')}<tr class="bpf-admin-total"><td colspan="2" data-label="Итого">Всего</td><td data-label="Факт" class="bpf-num">${bonusFormat(results.factTotal)}</td><td data-label="Темп в день" class="bpf-num">${bonusForecastNumber(results.factTotal/calendar.daysDone,1)}</td><td data-label="Доля филиала"></td>${owner?`<td data-label="Прогнозный бонус" class="bpf-num">${bonusFormat(results.scenarioPool)} BYN</td>`:''}</tr></tbody></table></div>`;
+    html+=`<div class="bpf-admin-heading"><h3 class="bpf-section-heading">Администраторы · прогноз</h3><span>Продажи относятся к основному филиалу; в скобках — место оформления.</span></div><div class="bpf-admin-scroll"><table class="bpf-admin-table bpf-with-bonus"><colgroup><col class="bpf-col-name"><col class="bpf-col-branch"><col class="bpf-col-fact"><col class="bpf-col-pace"><col class="bpf-col-share"><col class="bpf-col-bonus"></colgroup><thead><tr><th scope="col">Администратор</th><th scope="col">Филиал</th><th scope="col" class="bpf-num">Факт</th><th scope="col" class="bpf-num">Темп в день</th><th scope="col" class="bpf-num">Доля филиала</th><th scope="col" class="bpf-num">Прогнозный бонус</th></tr></thead><tbody>${staff.map(s=>{const b=results.branches.find(x=>x.id===s.studio);const branch=BONUS_BRANCHES.find(x=>x.id===s.studio)||BONUS_BRANCHES[0];const names=s.physicalSummary.map(f=>`${bonusHtml(BONUS_BRANCHES.find(x=>x.id===f.studio)?.name||'Филиал')} ${bonusFormat(f.count)}`).join(' · ');return `<tr><td data-label="Администратор" class="bpf-name"><b>${bonusHtml(s.name)}</b><small>${names||'нет продаж'}</small></td><td data-label="Филиал" class="bpf-branch-cell"><span class="bpf-branch-inline">${bonusLabel(branch)}</span></td><td data-label="Факт" class="bpf-num">${bonusFormat(s.count)}</td><td data-label="Темп в день" class="bpf-num">${bonusForecastNumber(s.count/calendar.daysDone,1)}</td><td data-label="Доля филиала" class="bpf-num">${bonusForecastNumber(s.share,0)}%</td><td data-label="Прогнозный бонус" class="bpf-num">${bonusFormat(b.scenarioBonus)} BYN</td></tr>`;}).join('')}<tr class="bpf-admin-total"><td colspan="2" data-label="Итого">Всего</td><td data-label="Факт" class="bpf-num">${bonusFormat(results.factTotal)}</td><td data-label="Темп в день" class="bpf-num">${bonusForecastNumber(results.factTotal/calendar.daysDone,1)}</td><td data-label="Доля филиала"></td><td data-label="Прогнозный бонус" class="bpf-num">${bonusFormat(results.scenarioPool)} BYN</td></tr></tbody></table></div>`;
   }
   root.innerHTML=html;
 }
@@ -12318,16 +12328,44 @@ function ctTaskContact(t){
  }
  return {value:'',label:'Контакт не указан',kind:'none'};
 }
+function ctClientSnapshot(t){
+ const m=t.meta&&typeof t.meta==='object'?t.meta:{};
+ const clean=v=>v===null||v===undefined||String(v).trim()===''?'—':ctEsc(String(v));
+ const last=m.last_booking_snapshot;
+ const lastDate=last&&/^20\d\d-\d\d-\d\d/.test(String(last))?ctDate(String(last)):clean(last);
+ const remaining=m.remaining_sessions_snapshot;
+ const rest=remaining===null||remaining===undefined||String(remaining).trim()===''?'—':clean(remaining);
+ const entries=[
+  ['Статус в CRM',clean(m.crm_status_snapshot)],
+  ['Направление работы',ctEsc(ctSegment(t))],
+  ['Абонемент',clean(m.last_package_snapshot)],
+  ['Осталось занятий',rest],
+  ['Последняя запись',lastDate]
+ ];
+ const fields=entries.map(([label,value])=>`<div class="ct-snapshot-field"><span>${label}</span><strong>${value}</strong></div>`).join('');
+ const notes=[];
+ if(m.phone_needs_verification)notes.push('Номер телефона требует проверки в ImpulseCRM.');
+ const extra=Array.isArray(m.phone_alternates)?m.phone_alternates.filter(x=>typeof x==='string'&&x.trim()):[];
+ if(extra.length)notes.push('Дополнительные телефоны: '+extra.join(', '));
+ if(typeof m.risk_note_snapshot==='string'&&m.risk_note_snapshot.trim())notes.push(m.risk_note_snapshot.trim());
+ const flagged=Array.isArray(m.risk_flags)?m.risk_flags.filter(x=>typeof x==='string'&&x.trim()):[];
+ if(flagged.length)notes.push('Отметки выгрузки: '+flagged.join(', '));
+ return `<details class="ct-details ct-client-snapshot"><summary>Информация о клиенте</summary>
+  <div class="ct-snapshot-grid">${fields}</div>
+  ${notes.length?`<div class="ct-snapshot-note">${notes.map(ctEsc).join('<span class="ct-snapshot-note-sep"> · </span>')}</div>`:''}
+  <p class="ct-snapshot-hint">Данные на момент выгрузки. Перед обращением проверьте актуальные покупки, остаток и переписку в ImpulseCRM.</p>
+ </details>`;
+}
 function ctTaskView(t){const overdue=!t.done&&t.due_date<ctToday(),sel=(key)=>`<option value="${key}"${t.result===key?' selected':''}>${ctEsc(CT_RESULTS[key])}</option>`;
   const color=ctBranchName(t.branch),flag=t.meta?.risk_flags||[],ready=!!t.crm_verified;
   const tags=`<div class="ct-chips"><span class="ct-chip ct-${ctPriority(t)}">${ctPriority(t)}${ctPriority(t)==='A'?' · срочно':''}</span><span class="ct-chip">${ctEsc(ctSegment(t))}</span><span class="ct-chip${overdue?' ct-danger':''}">${overdue?'Просрочено · ':''}${ctDate(t.due_date)}</span></div>`;
   const contact=ctTaskContact(t);
   const contactHtml=contact.value?`<span class="ct-contact-wrap"><button type="button" class="ct-contact-copy" data-ct-contact-copy="${t.id}" title="Скопировать ${contact.kind==='phone'?'телефон':'Instagram'}" aria-label="Скопировать ${contact.kind==='phone'?'телефон':'Instagram'} ${ctEsc(contact.label)}"><span>${ctEsc(contact.label)}</span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button><span class="ct-contact-feedback" role="status" aria-live="polite"></span></span>`:`<span class="ct-contact-empty">${ctEsc(contact.label)}</span>`;
-  const head=`<div class="ct-head"><input class="ct-task-check" type="checkbox" data-ct-check="${t.id}" aria-label="Отметить задачу выполненной" ${t.done?'checked':''}><div class="ct-who"><div class="ct-identity"><strong class="ct-client-name">${ctEsc(t.client_name)}</strong><span class="ct-contact-segment"><span class="ct-sep">—</span>${contactHtml}</span><span class="ct-branch-segment"><span class="ct-sep">—</span><span class="ct-branch-name">${ctEsc(color)}</span></span></div></div>${tags}</div>`;
+  const head=`<div class="ct-head"><input class="ct-task-check" type="checkbox" data-ct-check="${t.id}" aria-label="Отметить задачу выполненной" ${t.done?'checked':''}><div class="ct-who"><div class="ct-identity"><strong class="ct-client-name">${ctEsc(t.client_name)}</strong><span class="ct-sep">—</span>${contactHtml}<span class="ct-sep">—</span><span class="ct-branch-name">${ctEsc(color)}</span></div></div>${tags}</div>`;
   if(t.done)return `<article class="ct-card done" data-ct-task="${t.id}">${head}<div class="ct-done-line"><span class="ct-chip ct-${ctResultState(t)}">${ctEsc(CT_RESULTS[t.result]||'Выполнено')}</span>${t.next_contact?`<span>Следующий контакт: ${ctDate(t.next_contact)}</span>`:''}${t.comment?`<span>${ctEsc(t.comment)}</span>`:''}<span>Отмечено ${ctStamp(t.done_at)}</span></div></article>`;
   const allowed=ready&&!!t.message;
   const before=[t.meta?.phone_needs_verification?'Уточнить действующий номер телефона в CRM (в выгрузке несколько или нестандартный формат)':null,t.meta?.check_before_contact,t.meta?.risk_note_snapshot].filter(Boolean).join(' · ')||'Проверить новые покупки, посещение и предыдущую переписку в ImpulseCRM';
-  const meta=ctEsc(JSON.stringify({source:t.meta?.source||'ImpulseCRM',segment:t.meta?.segment_code||null,crm_status:t.meta?.crm_status_snapshot||null,risks:flag,last_booking:t.meta?.last_booking_snapshot||null,subscription:t.meta?.last_package_snapshot||null,remaining:t.meta?.remaining_sessions_snapshot||null,phone_original:t.meta?.phone_original||null,phone_alternates:t.meta?.phone_alternates||[],phone_needs_verification:!!t.meta?.phone_needs_verification,created:t.updated_at},null,2));
+  const snapshot=ctClientSnapshot(t);
   return `<article class="ct-card" data-ct-task="${t.id}">${head}
     <label class="ct-verify"><input type="checkbox" data-ct-field="crm_verified" data-ct-id="${t.id}" ${ready?'checked':''}><span>Проверено в ImpulseCRM</span></label>
     <div class="ct-todo"><b>Что сделать:</b> ${ctEsc(t.todo||'Проверить актуальный статус клиента в ImpulseCRM')}</div>
@@ -12335,7 +12373,7 @@ function ctTaskView(t){const overdue=!t.done&&t.due_date<ctToday(),sel=(key)=>`<
     ${!ready?'<div class="ct-disabled">До проверки карточки клиента копирование сообщения заблокировано. Автоматическая отправка не предусмотрена.</div>':''}
     <div class="ct-line"><b>Перед отправкой:</b> ${ctEsc(before)}</div>
     <div class="ct-line"><b>Что предложить:</b> ${ctEsc(t.offer||'Уточнить подходящий вариант и действующие цены в ImpulseCRM')}</div>
-    <details class="ct-details"><summary>Данные выгрузки и история</summary><pre>${meta}</pre></details>
+    ${snapshot}
     <div class="ct-form"><label class="ct-control"><span>Результат</span><select class="ct-select" data-ct-field="result" data-ct-id="${t.id}"><option value="">Не начато</option>${Object.keys(CT_RESULTS).map(sel).join('')}</select></label>
     <label class="ct-control"><span>Следующий контакт</span><input class="ct-field" type="date" data-ct-field="next_contact" data-ct-id="${t.id}" value="${ctEsc(t.next_contact||'')}"></label>
     <label class="ct-control"><span>Комментарий</span><textarea class="ct-textarea" rows="2" maxlength="1500" data-ct-field="comment" data-ct-id="${t.id}" placeholder="Краткий результат; подробности и переписка — в CRM">${ctEsc(t.comment||'')}</textarea></label></div>
