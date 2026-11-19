@@ -3219,7 +3219,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '19.11.2026-cx'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '19.11.2026-cy'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -12243,8 +12243,8 @@ function ctTaskView(t){const overdue=!t.done&&t.due_date<ctToday(),sel=(key)=>`<
   const head=`<div class="ct-head"><input class="ct-task-check" type="checkbox" data-ct-check="${t.id}" aria-label="Отметить задачу выполненной" ${t.done?'checked':''}><div class="ct-who"><h3>${ctEsc(t.client_name)}</h3><div class="ct-sub">CRM ID ${ctEsc(t.crm_id)} · ${ctEsc(t.phone)} · ${ctEsc(color)}</div></div>${tags}</div>`;
   if(t.done)return `<article class="ct-card done" data-ct-task="${t.id}">${head}<div class="ct-done-line"><span class="ct-chip ct-${ctResultState(t)}">${ctEsc(CT_RESULTS[t.result]||'Выполнено')}</span>${t.next_contact?`<span>Следующий контакт: ${ctDate(t.next_contact)}</span>`:''}${t.comment?`<span>${ctEsc(t.comment)}</span>`:''}<span>Отмечено ${ctStamp(t.done_at)}</span></div></article>`;
   const allowed=ready&&!!t.message;
-  const before=[t.meta?.check_before_contact,t.meta?.risk_note_snapshot].filter(Boolean).join(' · ')||'Проверить новые покупки, посещение и предыдущую переписку в ImpulseCRM';
-  const meta=ctEsc(JSON.stringify({source:t.meta?.source||'ImpulseCRM',segment:t.meta?.segment_code||null,crm_status:t.meta?.crm_status_snapshot||null,risks:flag,last_booking:t.meta?.last_booking_snapshot||null,subscription:t.meta?.last_package_snapshot||null,remaining:t.meta?.remaining_sessions_snapshot||null,created:t.updated_at},null,2));
+  const before=[t.meta?.phone_needs_verification?'Уточнить действующий номер телефона в CRM (в выгрузке несколько или нестандартный формат)':null,t.meta?.check_before_contact,t.meta?.risk_note_snapshot].filter(Boolean).join(' · ')||'Проверить новые покупки, посещение и предыдущую переписку в ImpulseCRM';
+  const meta=ctEsc(JSON.stringify({source:t.meta?.source||'ImpulseCRM',segment:t.meta?.segment_code||null,crm_status:t.meta?.crm_status_snapshot||null,risks:flag,last_booking:t.meta?.last_booking_snapshot||null,subscription:t.meta?.last_package_snapshot||null,remaining:t.meta?.remaining_sessions_snapshot||null,phone_original:t.meta?.phone_original||null,phone_alternates:t.meta?.phone_alternates||[],phone_needs_verification:!!t.meta?.phone_needs_verification,created:t.updated_at},null,2));
   return `<article class="ct-card" data-ct-task="${t.id}">${head}
     <label class="ct-import-check"><input type="checkbox" data-ct-field="crm_verified" data-ct-id="${t.id}" ${ready?'checked':''}><b>Проверено в ImpulseCRM</b><span class="ct-hint">— покупка, явка, остаток, запреты и переписка</span></label>
     <div class="ct-todo"><b>Что сделать:</b> ${ctEsc(t.todo||'Проверить актуальный статус клиента в ImpulseCRM')}</div>
@@ -12321,9 +12321,27 @@ function ctRenderManager(ctx){const p=ctx.data.plan,st=ctx.data.staff||[];
  <div class="ct-error" data-ct-page-error hidden></div>`;
  if(ctx.showImport)ctRenderImport(ctx);
 }
-function ctCleanPhone(v){const s=String(v||'').trim().replace(/^'/,'').replace(/[^\d+]/g,'');return s.startsWith('375')?'+'+s:s;}
+function ctPhoneInfo(v){
+ const original=String(v??'').trim().replace(/^'/,'');
+ const phones=[];
+ function add(part){
+  let p=String(part||'').trim().replace(/[^\d+]/g,'');
+  if(/^375\d{9}$/.test(p))p='+'+p;
+  else if(/^\d{9}$/.test(p))p='+375'+p;
+  if(/^\+[0-9]{9,15}$/.test(p)&&!phones.includes(p))phones.push(p);
+ }
+ for(const part of original.split(/[,;|\/\r\n]+/)){
+  // Old exports can contain concatenated +375 numbers without separators.
+  const combined=part.match(/\+375\d{9}/g);
+  if(combined&&combined.length>1){combined.forEach(add);continue;}
+  add(part);
+ }
+ return {primary:phones[0]||'',alternates:phones.slice(1),original,
+  needsVerification:phones.length>1||(!phones.length&&!!original)||original!==phones[0]||!!(phones[0]&&!phones[0].startsWith('+375'))};
+}
+function ctCleanPhone(v){return ctPhoneInfo(v).primary;}
 function ctBranchKey(v){const s=String(v||'').toLowerCase();return s.includes('машер')||s==='masherova'?'masherova':s.includes('толбух')||s==='tolbuhina'?'tolbuhina':s.includes('куйбы')||s==='kuibysheva'?'kuibysheva':'';}
-function ctSourceToRow(r){const crm=String(r.crm_client_id??r.crm_id??r['ID клиента']??r['CRM ID']??'').trim(),phone=ctCleanPhone(r.phone??r['Телефон']??''),branch=ctBranchKey(r.branch??r['Филиал']);
+function ctSourceToRow(r){const crm=String(r.crm_client_id??r.crm_id??r['ID клиента']??r['CRM ID']??'').trim(),phoneInfo=ctPhoneInfo(r.phone??r['Телефон']??''),phone=phoneInfo.primary,branch=ctBranchKey(r.branch??r['Филиал']);
  const seg=String(r.segment??r['Категория']??'Возврат');const risk=Array.isArray(r.risk_flags)?r.risk_flags:String(r.risk_flags||'').split('|').filter(Boolean);
  const q=r.queue|| (seg.toLowerCase().includes('allsports')||seg.toLowerCase().includes('gymfit')?'reserve':'active');
  const todo=String(r.task_text??r.todo??r['Задача']??'');const message=String(r.message_template??r.message??'');
@@ -12335,17 +12353,19 @@ function ctSourceToRow(r){const crm=String(r.crm_client_id??r.crm_id??r['ID кл
    crm_status_snapshot:r.crm_status_snapshot??r['Статус CRM']??'',risk_note_snapshot:r.risk_note_snapshot??r['Риск / проверка']??'',
    check_before_contact:r.check_before_contact??r['Проверка в CRM']??'',last_booking_snapshot:r.last_booking_snapshot??r['Последняя запись']??'',
    last_package_snapshot:r.last_package_snapshot??r['Абонемент']??null,remaining_sessions_snapshot:r.remaining_sessions_snapshot??r['Остаток']??null,
-   source_snapshot_date:r.source_snapshot_date||null}}
+   source_snapshot_date:r.source_snapshot_date||null,
+   ...(phoneInfo.needsVerification?{phone_original:phoneInfo.original,phone_alternates:phoneInfo.alternates,phone_needs_verification:true}:{})}}
 }
 function ctPreflight(rows){const unique=new Map(),phones=new Map();let noPhone=0,dupePhone=0,dupeId=0,invalid=0;const reserveList=[];for(const r of rows){
  if(!r.crm_id||!r.client_name||!ctBranchKey(r.branch)){invalid++;continue;}
  if(!r.phone){noPhone++;continue;}
+ if(!/^\+[0-9]{9,15}$/.test(r.phone)){invalid++;continue;}
  if(unique.has(r.crm_id)){dupeId++;continue;}
  const existing=phones.get(r.phone);
  if(existing&&existing!==r.crm_id){dupePhone++;continue;}
  phones.set(r.phone,r.crm_id);unique.set(r.crm_id,{...r,branch:ctBranchKey(r.branch)});
  }
- const out=[...unique.values()];return {rows:out,raw:rows.length,noPhone,dupePhone,dupeId,invalid,reserve:out.filter(t=>t.reserve).length,blocked:out.filter(t=>t.queue==='do_not_contact').length,active:out.filter(t=>!t.reserve&&t.queue!=='do_not_contact').length};
+ const out=[...unique.values()];return {rows:out,raw:rows.length,noPhone,dupePhone,dupeId,invalid,phoneReview:out.filter(t=>t.meta?.phone_needs_verification).length,reserve:out.filter(t=>t.reserve).length,blocked:out.filter(t=>t.queue==='do_not_contact').length,active:out.filter(t=>!t.reserve&&t.queue!=='do_not_contact').length};
 }
 async function ctEnsureXlsx(){
  if(window.XLSX)return;
@@ -12386,7 +12406,7 @@ function ctImportPanel(ctx){const imp=ctx.imp,pre=imp.loaded?.pre;
  <label class="ct-control"><span>Ключ кампании</span><input class="ct-field" data-ct-import="key" value="${ctEsc(imp.key)}"></label></div>
  <div style="display:flex;flex-direction:column;gap:7px;margin-top:12px"><label class="ct-import-check"><input type="checkbox" data-ct-import="carry" ${imp.carry?'checked':''}> Перенести невыполненные из текущего плана</label>
  <label class="ct-import-check"><input type="checkbox" data-ct-import="reserve" ${imp.reserve?'checked':''}> Allsports/GymFit в резерв, без массовой рассылки</label></div></div>
- ${pre?`<div><b>3. Проверка перед созданием</b><div class="ct-import-note" style="margin-top:8px">Строк: ${pre.raw} · без телефона: ${pre.noPhone} · дубликаты телефонов: ${pre.dupePhone} · повторные CRM ID: ${pre.dupeId} · ошибочные: ${pre.invalid} · резерв: ${pre.reserve} · запрещены: ${pre.blocked} · карточек для работы: ${pre.active}.<br>Результаты уже существующих задач, назначения и запреты обращений сохраняются при повторном импорте.</div>
+ ${pre?`<div><b>3. Проверка перед созданием</b><div class="ct-import-note" style="margin-top:8px">Строк: ${pre.raw} · без телефона: ${pre.noPhone} · дубликаты телефонов: ${pre.dupePhone} · повторные CRM ID: ${pre.dupeId} · ошибочные: ${pre.invalid} · телефоны проверить: ${pre.phoneReview} · резерв: ${pre.reserve} · запрещены: ${pre.blocked} · карточек для работы: ${pre.active}.<br>Результаты уже существующих задач, назначения и запреты обращений сохраняются при повторном импорте.</div>
  <div class="ct-import-preview"><table><thead><tr><th>Администратор</th><th>Филиал</th><th>Новых (рекомендация)</th><th>Перенос</th><th>Всего</th></tr></thead><tbody>${statsByAdmin.map(s=>`<tr><td>${ctEsc(s.a.name)}</td><td>${ctBranchName(s.a.branch)}</td><td>${s.new}</td><td>${s.carry}</td><td><b>${s.new+s.carry}</b></td></tr>`).join('')}</tbody></table></div></div>
  <div class="ct-strip">${ctx.data.plan?.campaign_key===imp.key?'Это обновление среза существующей кампании: задачи и история НЕ обнуляются.':'После подтверждения текущий план будет архивирован вместе с результатами и событиями.'}</div>
  <div class="ct-planbar-actions">${ctBtn(imp.confirm?'Подтвердить создание плана':'Создать план','create','ct-btn-primary')}${ctBtn('Отмена','newplan')}</div>`:'<div class="ct-hint">После выбора файла появится проверка строк и распределения задач.</div>'}
