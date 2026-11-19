@@ -3082,6 +3082,12 @@ input[type="time"]::-webkit-calendar-picker-indicator{position:absolute;right:8p
  .fad-main #tabbody.page .bonus-page .bp-head .bp-month-row{width:100%;justify-content:flex-end}
 }
 
+
+/* FAD CN: daily history and backtest controls in forecast, responsive and scoped. */
+.bonus-page .bpf-history-note{padding:10px 12px;border:1px solid #DCE3DD;background:#F6F9F6;border-radius:10px;color:#334E40}
+.bonus-page .bpf-history-actions{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin:10px 0}
+.bonus-page .bpf-history-actions button{min-height:40px;border-radius:10px;font-size:12px;font-weight:750}
+.bonus-page .bpf-history-actions span{font-size:11px;color:#56685D;overflow-wrap:anywhere}
 </style>
 
 <div id="root"></div>
@@ -3102,7 +3108,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '19.11.2026-cm'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '19.11.2026-cn'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -10489,10 +10495,170 @@ function bonusForecastProbabilityLabel(p){return p>=0.995?'>99%':p<0.005?'<1%':M
 function bonusForecastNeed(plan,pct){return Math.ceil(plan*pct/100-1e-9);}
 function bonusForecastNumber(n,digits=0){return Number(n||0).toLocaleString('ru-RU',{minimumFractionDigits:digits,maximumFractionDigits:digits});}
 function bonusForecastSalesWord(n){const v=Math.abs(n)%100,u=v%10;return (v<11||v>14)&&u===1?'продажи':'продаж';}
+/* FAD CN · Калибровка прогнозов по реальной дневной истории ImpulseCRM.
+   Только чтение анонимизированных дневных агрегатов, без изменения bonus_facts. */
+const BONUS_FORECAST_HISTORY={period:'',scope:'',data:null,loading:false,busy:false,progress:'',error:'',seq:0};
+function bonusForecastHistoryScope(model){return String(TOKEN||'')+'|'+String(model.viewAll)+'|'+String(model.myStudio||'');}
+const BONUS_FORECAST_DEFAULT_PHASE=[1.25,1.10,0.90,1.00,1.15];
+function bonusHistoryPhase(day){return day<=5?0:day<=10?1:day<=20?2:day<=25?3:4;}
+function bonusHistoryWeekday(year,month,day){return (new Date(Date.UTC(year,month-1,day)).getUTCDay()+6)%7;}
+function bonusHistorySeries(history,studio){
+ if(!history||!Array.isArray(history.months)||!Array.isArray(history.days))return [];
+ const good=new Set(history.months.filter(m=>['matched','source_only'].includes(m.status)).map(m=>m.period));
+ const byMonth=new Map();
+ for(const m of good){const [y,mo]=m.split('-').map(Number),last=new Date(Date.UTC(y,mo,0)).getUTCDate();
+   byMonth.set(m,{period:m,year:y,month:mo,days:Array(last).fill(0),total:0,status:history.months.find(x=>x.period===m)?.status});}
+ for(const r of history.days){const x=byMonth.get(r.period),d=Number(String(r.day||'').slice(-2));
+   if(!x||!Number.isInteger(d)||d<1||d>x.days.length||!Number.isInteger(Number(r.count))||Number(r.count)<0)continue;
+   if(studio && r.studio!==studio)continue;
+   x.days[d-1]+=Number(r.count);x.total+=Number(r.count);
+ }
+ return [...byMonth.values()].filter(x=>x.total>0).sort((a,b)=>a.period.localeCompare(b.period));
+}
+function bonusHistoryLearn(series){
+ if(series.length<2)return null;
+ const rows=[];
+ for(const m of series)for(let i=0;i<m.days.length;i++)rows.push({qty:m.days[i],wd:bonusHistoryWeekday(m.year,m.month,i+1),phase:bonusHistoryPhase(i+1)});
+ const overall=rows.reduce((s,d)=>s+d.qty,0)/Math.max(rows.length,1);
+ if(overall<=0)return null;
+ const wd=Array(7).fill(0),wc=Array(7).fill(0);
+ for(const r of rows){wd[r.wd]+=r.qty;wc[r.wd]++;}
+ const weekday=wd.map((v,i)=>wc[i]>0?v/wc[i]/overall:0);
+ if(weekday.some(v=>!Number.isFinite(v)||v<=0))return null;
+ const phase=Array(5).fill(0),pc=Array(5).fill(0);
+ for(const r of rows){phase[r.phase]+=r.qty/weekday[r.wd];pc[r.phase]++;}
+ const meanAdjusted=phase.reduce((s,v)=>s+v,0)/rows.length;
+ if(meanAdjusted<=0)return null;
+ const phaseFactors=phase.map((v,i)=>pc[i]>0?(v/pc[i])/meanAdjusted:0);
+ if(phaseFactors.some(v=>!Number.isFinite(v)||v<=0))return null;
+ let dsum=0;
+ for(const m of series){const mean=m.total/m.days.length;
+   const variance=m.days.reduce((s,x)=>s+(x-mean)**2,0)/m.days.length;
+   dsum+=mean>0?variance/mean:1;
+ }
+ return {weekday,phase:phaseFactors,disp:Math.max(1,dsum/series.length)};
+}
+function bonusHistoryDayWeights(year,month,weekday,phase){
+ const n=new Date(Date.UTC(year,month,0)).getUTCDate();
+ const weights=Array.from({length:n},(_,i)=>weekday[bonusHistoryWeekday(year,month,i+1)]*phase[bonusHistoryPhase(i+1)]);
+ const mean=weights.reduce((s,x)=>s+x,0)/n;
+ return mean>0?weights.map(x=>x/mean):Array(n).fill(1);
+}
+function bonusHistoryBacktest(series,daysDone){
+ let errWeighted=0,errLinear=0,n=0;
+ for(const hold of series){
+   if(hold.total<1)continue;
+   const training=series.filter(m=>m.period<hold.period);
+   if(training.length<2)continue; // Forward backtest: no future-month leakage.
+   const learned=bonusHistoryLearn(training);
+   const weekday=learned?.weekday||BONUS_FORECAST_DEFAULT_WEEKDAYS;
+   const phase=learned?.phase||BONUS_FORECAST_DEFAULT_PHASE;
+   const weights=bonusHistoryDayWeights(hold.year,hold.month,weekday,phase);
+   const cut=Math.min(hold.days.length-1,Math.max(3,daysDone));
+   if(cut>=hold.days.length)continue;
+   const prev=hold.days.slice(0,cut).reduce((s,x)=>s+x,0),prevWeight=weights.slice(0,cut).reduce((s,x)=>s+x,0);
+   const projected=prevWeight>0?prev*weights.reduce((s,x)=>s+x,0)/prevWeight:0;
+   const linear=prev*hold.days.length/cut;
+   errWeighted+=Math.abs(projected-hold.total)/hold.total;
+   errLinear+=Math.abs(linear-hold.total)/hold.total;
+   n++;
+ }
+ return n?{weighted:errWeighted/n*100,linear:errLinear/n*100,count:n}:null;
+}
+function bonusHistoryCalibration(model){
+ const h=BONUS_FORECAST_HISTORY.period===model.period&&BONUS_FORECAST_HISTORY.scope===bonusForecastHistoryScope(model)?BONUS_FORECAST_HISTORY.data:null;
+ const calendar=bonusForecastCalendar(model.period);
+ const network=bonusHistorySeries(h,null),networkLearn=network.length>=3?bonusHistoryLearn(network):null;
+ const networkBacktest=networkLearn?bonusHistoryBacktest(network,calendar.daysDone):null;
+ function result(series,source){
+   const learned=bonusHistoryLearn(series),backtest=bonusHistoryBacktest(series,calendar.daysDone);
+   if(!learned||!backtest)return null;
+   const linear=backtest.weighted>backtest.linear+0.001;
+   return {source,months:series.length,matched:series.filter(x=>x.status==='matched').length,
+     weekday:linear?Array(7).fill(1):learned.weekday,
+     phase:linear?Array(5).fill(1):learned.phase,
+     disp:learned.disp,linear,backtest};
+ }
+ const networkConfig=networkLearn&&networkBacktest?result(network,'network'):null;
+ const byStudio={};
+ for(const b of model.branches){
+   const months=bonusHistorySeries(h,b.id);
+   byStudio[b.id]=(months.length>=3?result(months,'branch'):null)||networkConfig||
+       {source:'default',months:0,matched:0,weekday:BONUS_FORECAST_DEFAULT_WEEKDAYS,phase:BONUS_FORECAST_DEFAULT_PHASE,disp:1.5,linear:false,backtest:null};
+ }
+ return {byStudio,network:networkConfig||{source:'default',months:0,matched:0,
+    weekday:BONUS_FORECAST_DEFAULT_WEEKDAYS,phase:BONUS_FORECAST_DEFAULT_PHASE,disp:1.5,linear:false,backtest:null},
+    months:h?.months||[],loaded:!!h};
+}
+async function bonusForecastRefreshHistory(model){
+ if(!bonusForecastAccess(model)||BONUS_FORECAST_HISTORY.busy)return;
+ const month=model.period,requestSeq=++BONUS_FORECAST_HISTORY.seq;
+ BONUS_FORECAST_HISTORY.loading=true;BONUS_FORECAST_HISTORY.error='';
+ try{
+   const data=await rpc('app_bonus_history_snapshot',{p_token:TOKEN,p_period:month});
+   if(!data||!Array.isArray(data.days)||!Array.isArray(data.months))throw Error('history_snapshot_invalid');
+   if(requestSeq===BONUS_FORECAST_HISTORY.seq&&BONUS_MONTH===month){BONUS_FORECAST_HISTORY.period=month;BONUS_FORECAST_HISTORY.scope=bonusForecastHistoryScope(model);BONUS_FORECAST_HISTORY.data=data;}
+ }catch(e){if(requestSeq===BONUS_FORECAST_HISTORY.seq)BONUS_FORECAST_HISTORY.error=String(e?.message||e).slice(0,180);}
+ finally{if(requestSeq===BONUS_FORECAST_HISTORY.seq)BONUS_FORECAST_HISTORY.loading=false;
+   if(requestSeq===BONUS_FORECAST_HISTORY.seq&&document.querySelector('#bp-forecast')&&BONUS_MONTH===month)bonusForecastDraw(model);}
+}
+function bonusForecastHistoricMonths(){
+ const now=bonusForecastMinskToday().slice(0,7),[year,month]=now.split('-').map(Number);
+ return Array.from({length:12},(_,i)=>{const d=new Date(Date.UTC(year,month-2-i,1));
+  return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0');}).reverse();
+}
+async function bonusForecastBackfill(model){
+ if(!model.owner||BONUS_FORECAST_HISTORY.busy)return;
+ BONUS_FORECAST_HISTORY.busy=true;BONUS_FORECAST_HISTORY.error='';
+ const months=bonusForecastHistoricMonths();let saved=0,skipped=0;
+ try{
+   for(let i=0;i<months.length;i++){
+     const period=months[i];
+     const prior=BONUS_FORECAST_HISTORY.data?.months?.find(m=>m.period===period);
+     if(prior && ['matched','source_only'].includes(prior.status)){skipped++;continue;}
+     BONUS_FORECAST_HISTORY.progress=`Загружаем ${period}: ${i+1} из ${months.length} · сохранено ${saved}`;
+     bonusForecastDraw(model);
+     const response=await fetch(SUPABASE_URL+'/functions/v1/fad-bonus-sync',{
+       method:'POST',headers:{'Content-Type':'application/json',apikey:SUPABASE_ANON_KEY,
+         Authorization:'Bearer '+SUPABASE_ANON_KEY},
+       body:JSON.stringify({mode:'history_month',token:TOKEN,month:period}),
+       signal:AbortSignal.timeout(120000)
+     });
+     const data=await response.json().catch(()=>({}));
+     if(!response.ok||data?.ok!==true||data?.history?.status==='mismatch')
+       throw Error(`${period}: ${data?.history?.status==='mismatch'?'история не совпадает с Планом':String(data?.error||'ответ не подтверждён')}`);
+     saved++;
+   }
+   BONUS_FORECAST_HISTORY.progress=`Загрузка завершена: ${saved} месяцев, уже были сохранены ${skipped}.`;
+ }catch(e){BONUS_FORECAST_HISTORY.error=String(e?.message||e).slice(0,210);
+   BONUS_FORECAST_HISTORY.progress=`Остановлено после ${saved} месяцев. Повторный запуск продолжит загрузку.`;
+ }finally{BONUS_FORECAST_HISTORY.busy=false;
+   // Перечитываем подтверждённые записи, включая частичный результат.
+   await bonusForecastRefreshHistory(model);
+   bonusForecastDraw(model);
+ }
+}
+function bonusForecastHistoryInfo(cal){
+ const counted=cal.months.filter(m=>m.status==='matched'||m.status==='source_only').length;
+ const matched=cal.months.filter(m=>m.status==='matched').length;
+ const failed=cal.months.filter(m=>m.status==='mismatch').length;
+ const n=cal.network;
+ if(!cal.loaded){return 'Калибровка по истории пока недоступна: используются стартовые веса дней, DISP = 1,5. '+
+   (BONUS_FORECAST_HISTORY.error?'Ошибка чтения: '+bonusHtml(BONUS_FORECAST_HISTORY.error):'Данные загружаются из Supabase.');}
+ if(!n.backtest){return `Загружено месяцев: ${counted} (сверено с планом: ${matched}${failed?`, расхождений: ${failed}`:''}). Для калибровки нужно минимум 3 месяца с продажами. Пока используются стартовые веса и DISP = 1,5.`;}
+ const error=n.linear?n.backtest.linear:n.backtest.weighted;
+ return `История ImpulseCRM: ${n.months} мес., сверено с планом: ${matched}${failed?`, исключено из-за расхождений: ${failed}`:''}. Средняя ошибка бэктеста: ${bonusForecastNumber(error,1)}% (${n.backtest.count} мес.). `+
+   (n.linear?'Весовая модель оказалась хуже линейной — автоматически выбрана линейная.':'Весовые коэффициенты рассчитаны по реальным дневным продажам.')+
+   ` DISP = ${bonusForecastNumber(n.disp,2)}. Месяцы без сохранённого эталона отмечены как «только ImpulseCRM».`;
+}
+
 function bonusForecastData(model,scenario='expected',extra={}){
   const calendar=bonusForecastCalendar(model.period);
   const [year,month]=model.period.split('-').map(Number);
-  const dailyWeights=Array.from({length:calendar.daysInMonth},(_,i)=>({day:i+1,weight:bonusForecastDayWeight(year,month,i+1)}));
+  const calibration=bonusHistoryCalibration(model);
+  const main=calibration.network;
+  const monthlyWeights=bonusHistoryDayWeights(year,month,main.weekday,main.phase);
+  const dailyWeights=monthlyWeights.map((weight,i)=>({day:i+1,weight}));
   const Wdone=dailyWeights.slice(0,calendar.daysDone).reduce((s,d)=>s+d.weight,0);
   const Wleft=dailyWeights.slice(calendar.daysDone).reduce((s,d)=>s+d.weight,0);
   const tiers=(model.tiers||[]).filter(t=>Number.isFinite(t.pct)&&Number.isFinite(t.amount)).slice().sort((a,b)=>a.pct-b.pct);
@@ -10500,9 +10666,13 @@ function bonusForecastData(model,scenario='expected',extra={}){
     const plan=Number(b.target)||0,fact=Number(b.fact)||0,admins=model.staff.filter(a=>a.studio===b.id).length;
     const added=calendar.finished||calendar.future||fact<=0?0:Math.max(0,Math.min(10,Number(extra[b.id])||0));
     if(plan<=0)return {...b,plan:0,fact,admins,extra:added,valid:false,tiers:[],projection:null,p10:null,p90:null,scenarioBonus:0,status:'unplanned',statusText:'План не задан'};
-    const unit=Wdone>0?fact/Wdone:0;
-    const lambda=calendar.finished||fact<=0?0:unit*Wleft;
-    const sd=calendar.finished||fact<=0?0:Math.sqrt(1.5*lambda+lambda*lambda/Math.max(fact,1));
+    const params=calibration.byStudio[b.id]||calibration.network;
+    const weights=bonusHistoryDayWeights(year,month,params.weekday,params.phase);
+    const doneWeight=weights.slice(0,calendar.daysDone).reduce((s,v)=>s+v,0);
+    const leftWeight=weights.slice(calendar.daysDone).reduce((s,v)=>s+v,0);
+    const unit=doneWeight>0?fact/doneWeight:0;
+    const lambda=calendar.finished||fact<=0?0:unit*leftWeight;
+    const sd=calendar.finished||fact<=0?0:Math.sqrt(params.disp*lambda+lambda*lambda/Math.max(fact,1));
     const projection=calendar.finished?fact:Math.max(fact,Math.round(fact+lambda+(BONUS_FORECAST_Z[scenario]||0)*sd))+added;
     const p10=calendar.finished?fact:Math.max(fact,Math.round(fact+lambda-1.2816*sd))+added;
     const p90=calendar.finished?fact:Math.round(fact+lambda+1.2816*sd)+added;
@@ -10533,7 +10703,7 @@ function bonusForecastData(model,scenario='expected',extra={}){
   const potential=valid.reduce((s,b)=>s+b.potentialBonus*b.admins,0)-scenarioPool;
   const strong=dailyWeights.slice(calendar.daysDone).sort((a,b)=>b.weight-a.weight||a.day-b.day).slice(0,3).sort((a,b)=>a.day-b.day);
   const strongPercent=Wleft>0?Math.round(100*strong.reduce((s,d)=>s+d.weight,0)/Wleft):0;
-  return {calendar,branches,valid,tiers,Wdone,Wleft,planTotal,factTotal,projection,mean,sdNet,p10,p90,scenarioPool,potential,strong,strongPercent,
+  return {calendar,calibration,branches,valid,tiers,Wdone,Wleft,planTotal,factTotal,projection,mean,sdNet,p10,p90,scenarioPool,potential,strong,strongPercent,
     calendarPct:calendar.daysInMonth?calendar.daysDone/calendar.daysInMonth*100:0,planPct:planTotal?factTotal/planTotal*100:0};
 }
 function bonusForecastProgress(label,value,limit,shade){
@@ -10588,7 +10758,7 @@ function bonusForecastBranch(b,data,owner){
 }
 function bonusForecastDraw(model){
   const root=document.getElementById('bp-forecast');
-  if(!root||!root.isConnected)return;
+  if(!root||!root.isConnected||BONUS_MONTH!==model.period)return;
   if(BONUS_FORECAST_UI.period!==model.period)BONUS_FORECAST_UI={period:model.period,scenario:'expected',extra:{}};
   const scenario=BONUS_FORECAST_UI.scenario,results=bonusForecastData(model,scenario,BONUS_FORECAST_UI.extra);
   const {calendar}=results;
@@ -10600,7 +10770,7 @@ function bonusForecastDraw(model){
   const deviation=results.planTotal>0?`План выполнен на ${bonusForecastNumber(results.planPct,1)}% при ${bonusForecastNumber(results.calendarPct,0)}% месяца: отставание от календаря ${bonusForecastNumber(results.calendarPct-results.planPct,1)} п.п.`:'Нет заданных планов для расчёта отставания.';
   const [yy,mm]=model.period.split('-').map(Number);
   const powerful=results.strong.map(d=>`${BONUS_FORECAST_DOW[(new Date(Date.UTC(yy,mm-1,d.day)).getUTCDay()+6)%7]} ${String(d.day).padStart(2,'0')}.${String(mm).padStart(2,'0')}`).join(', ');
-  const timeline=`<div class="bpf-timeline">${progress}<div class="bpf-deviation">${deviation}</div>${calendar.daysLeft?`<div class="bpf-strong-days">Сильные дни до конца месяца: ${powerful} — на них приходится ${results.strongPercent}% ожидаемых продаж.</div>`:''}</div>`;
+  const timeline=`<div class="bpf-timeline">${progress}<div class="bpf-deviation">${deviation}</div>${calendar.daysLeft?`<div class="bpf-strong-days">${results.calibration.network.linear?'Исторический бэктест выбрал линейную модель — оставшиеся дни имеют одинаковый вес.':`Сильные дни до конца месяца: ${powerful} — на них приходится ${results.strongPercent}% ожидаемых продаж.`}</div>`:''}</div>`;
   const roleLabel=owner?'Руководитель · полный доступ':'Старший администратор · без сумм выплат';
   const reset=Object.values(BONUS_FORECAST_UI.extra).some(v=>v>0);
   let html=`<header class="bpf-head"><div><div class="bpf-eyebrow">${roleLabel}</div><h2>${calendar.finished?'Итоги месяца':'Прогноз на конец месяца'}</h2><p>${calendar.finished?'Месяц завершён: показываем фактические продажи и достигнутые пороги.':`Прошло ${calendar.daysDone} из ${calendar.daysInMonth} дней, осталось ${calendar.daysLeft}. Прогноз учитывает дни недели и этапы месяца; коридор P10–P90 показывает неопределённость.`}</p></div>${calendar.finished||calendar.daysDone<3?'':`<div class="bpf-controls"><div class="bpf-scenarios" role="group" aria-label="Сценарий прогноза">${[['cautious','Осторожно'],['expected','Ожидаемо'],['optimistic','Оптимистично']].map(([s,name])=>`<button data-bpf-scenario="${s}" type="button" aria-pressed="${scenario===s}" class="${scenario===s?'active':''}">${name}</button>`).join('')}</div>${reset?'<button class="bpf-reset" type="button" data-bpf-reset>Сбросить «что если»</button>':''}</div>`}</header>${timeline}`;
@@ -10616,7 +10786,8 @@ function bonusForecastDraw(model){
     const validSet=new Set(results.valid.map(b=>b.id)),staff=model.staff.filter(s=>validSet.has(s.studio));
     html+=`<div class="bpf-admin-heading"><h3 class="bpf-section-heading">Администраторы · прогноз</h3><span>Продажи относятся к основному филиалу; в скобках — место оформления.</span></div><div class="bpf-admin-scroll"><table class="bpf-admin-table"><thead><tr><th>Администратор</th><th>Филиал</th><th>Факт</th><th>Темп в день</th><th>Доля филиала</th>${owner?'<th>Прогнозный бонус</th>':''}</tr></thead><tbody>${staff.map(s=>{const b=results.branches.find(x=>x.id===s.studio);const branch=BONUS_BRANCHES.find(x=>x.id===s.studio)||BONUS_BRANCHES[0];const names=s.physicalSummary.map(f=>`${bonusHtml(BONUS_BRANCHES.find(x=>x.id===f.studio)?.name||'Филиал')} ${bonusFormat(f.count)}`).join(' · ');return `<tr><td><b>${bonusHtml(s.name)}</b><small>${names||'нет продаж'}</small></td><td>${bonusLabel(branch)}</td><td class="bpf-num">${bonusFormat(s.count)}</td><td class="bpf-num">${bonusForecastNumber(s.count/calendar.daysDone,1)}</td><td class="bpf-num">${bonusForecastNumber(s.share,0)}%</td>${owner?`<td class="bpf-num">${bonusFormat(b.scenarioBonus)} BYN</td>`:''}</tr>`;}).join('')}<tr class="bpf-admin-total"><td colspan="2">Всего</td><td class="bpf-num">${bonusFormat(results.factTotal)}</td><td class="bpf-num">${bonusForecastNumber(results.factTotal/calendar.daysDone,1)}</td><td></td>${owner?`<td class="bpf-num">${bonusFormat(results.scenarioPool)} BYN</td>`:''}</tr></tbody></table></div>`;
   }
-  html+=`<div class="bpf-method"><b>Как считается прогноз</b><p>Каждый день месяца имеет вес: будни обычно сильнее выходных, начало и конец месяца — середины. Факт делится на вес прошедших дней, а оставшиеся продажи оцениваются по весу оставшихся. Сценарии учитывают возможный разброс P10–P90; шансы порогов от выбранного сценария не зависят.</p><p>Истории продаж по дням за три и более месяца в текущих данных FAD нет: применяются стартовые веса, DISP = 1,5. Средняя ошибка прогноза за прошлые месяцы: нет данных для бэктеста.</p><p>Прогнозный бонус на администратора — только фиксированная сумма по достигнутому порогу его филиала (0 / 50 / 120 / 300 / 350 / 400 BYN при текущей шкале). Каждый закреплённый администратор получает полный бонус независимо от личной доли продаж; вероятности порогов не усредняют денежную сумму.</p><p>Расчёт информационный и не меняет существующий план, факты, премии или выплаты. «Что если» работает только в этой вкладке.</p></div>`;
+  const historyStatus=bonusForecastHistoryInfo(results.calibration);
+  html+=`<div class="bpf-method"><b>Как считается прогноз</b><p>Каждый день месяца имеет вес: дни недели и этапы месяца учитываются по реальной истории при достаточном количестве данных. P10–P90 — модельный диапазон, охватывающий примерно 80% расчётных исходов, а не гарантия результата. Шансы порогов от сценария не зависят.</p><p class="bpf-history-note">${historyStatus}</p>${owner?`<div class="bpf-history-actions"><button type="button" class="btn btn-s" data-bpf-history-load ${BONUS_FORECAST_HISTORY.busy?'disabled':''}>${BONUS_FORECAST_HISTORY.busy?'Загружаем историю…':'Загрузить / дополнить 12 месяцев истории'}</button><span>${bonusHtml(BONUS_FORECAST_HISTORY.progress)}</span></div>`:''}<p>Прогнозный бонус на администратора — только фиксированная сумма по достигнутому порогу его филиала (0 / 50 / 120 / 300 / 350 / 400 BYN при текущей шкале). Каждый закреплённый администратор получает полный бонус независимо от личной доли продаж; вероятности порогов не усредняют денежную сумму.</p><p>Расчёт информационный и не меняет существующий план, факты, премии или выплаты. «Что если» работает только в этой вкладке.</p></div>`;
   root.innerHTML=html;
 }
 function bonusForecastMount(body,model){
@@ -10624,6 +10795,7 @@ function bonusForecastMount(body,model){
   // Delegate only within the forecast; existing Plan events and form inputs remain unchanged.
   root.addEventListener('click',event=>{
     const button=event.target.closest('button');if(!button||!root.contains(button))return;
+    if(button.hasAttribute('data-bpf-history-load')){void bonusForecastBackfill(model);return;}
     if(button.dataset.bpfScenario){BONUS_FORECAST_UI.scenario=button.dataset.bpfScenario;bonusForecastDraw(model);return;}
     if(button.hasAttribute('data-bpf-reset')){BONUS_FORECAST_UI.extra={};bonusForecastDraw(model);return;}
     if(button.dataset.bpfStudio && button.dataset.bpfStep){
@@ -10632,6 +10804,7 @@ function bonusForecastMount(body,model){
     }
   });
   bonusForecastDraw(model);
+  void bonusForecastRefreshHistory(model);
 }
 
 function bonusSettingsEditor(model,callback){
