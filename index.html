@@ -3110,7 +3110,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '19.11.2026-cp'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '19.11.2026-cq'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -10499,7 +10499,7 @@ function bonusForecastNumber(n,digits=0){return Number(n||0).toLocaleString('ru-
 function bonusForecastSalesWord(n){const v=Math.abs(n)%100,u=v%10;return (v<11||v>14)&&u===1?'продажи':'продаж';}
 /* FAD CN · Калибровка прогнозов по реальной дневной истории ImpulseCRM.
    Только чтение анонимизированных дневных агрегатов, без изменения bonus_facts. */
-const BONUS_FORECAST_HISTORY={period:'',scope:'',data:null,loading:false,busy:false,progress:'',error:'',seq:0};
+const BONUS_FORECAST_HISTORY={period:'',scope:'',data:null,loading:false,busy:false,progress:'',error:'',importError:'',seq:0};
 function bonusForecastHistoryScope(model){return String(TOKEN||'')+'|'+String(model.viewAll)+'|'+String(model.myStudio||'');}
 const BONUS_FORECAST_DEFAULT_PHASE=[1.25,1.10,0.90,1.00,1.15];
 function bonusHistoryPhase(day){return day<=5?0:day<=10?1:day<=20?2:day<=25?3:4;}
@@ -10611,7 +10611,7 @@ function bonusForecastHistoricMonths(){
 }
 async function bonusForecastBackfill(model){
  if(!model.owner||BONUS_FORECAST_HISTORY.busy)return;
- BONUS_FORECAST_HISTORY.busy=true;BONUS_FORECAST_HISTORY.error='';
+ BONUS_FORECAST_HISTORY.busy=true;BONUS_FORECAST_HISTORY.importError='';
  // Начинаем с новейших месяцев для более быстрой калибровки; ошибки старых периодов не задерживают свежие.
  const months=bonusForecastHistoricMonths().reverse();let saved=0,skipped=0,physicalLoaded=0;
  try{
@@ -10638,7 +10638,7 @@ async function bonusForecastBackfill(model){
      saved++;if(data?.history?.status==='physical_only')physicalLoaded++;
    }
    BONUS_FORECAST_HISTORY.progress=`Загрузка завершена: ${saved} месяцев, уже были сохранены ${skipped}.${physicalLoaded?' По адресам студий: '+physicalLoaded+'.':''}`;
- }catch(e){BONUS_FORECAST_HISTORY.error=String(e?.message||e).slice(0,240);
+ }catch(e){BONUS_FORECAST_HISTORY.importError=String(e?.message||e).slice(0,240);
    BONUS_FORECAST_HISTORY.progress=`Остановлено после ${saved} месяцев. Причина показана ниже; повторный запуск начнётся с незагруженного месяца.`;
  }finally{BONUS_FORECAST_HISTORY.busy=false;
    // Перечитываем подтверждённые записи, включая частичный результат.
@@ -10797,7 +10797,7 @@ function bonusForecastDraw(model){
     html+=`<div class="bpf-admin-heading"><h3 class="bpf-section-heading">Администраторы · прогноз</h3><span>Продажи относятся к основному филиалу; в скобках — место оформления.</span></div><div class="bpf-admin-scroll"><table class="bpf-admin-table"><thead><tr><th>Администратор</th><th>Филиал</th><th>Факт</th><th>Темп в день</th><th>Доля филиала</th>${owner?'<th>Прогнозный бонус</th>':''}</tr></thead><tbody>${staff.map(s=>{const b=results.branches.find(x=>x.id===s.studio);const branch=BONUS_BRANCHES.find(x=>x.id===s.studio)||BONUS_BRANCHES[0];const names=s.physicalSummary.map(f=>`${bonusHtml(BONUS_BRANCHES.find(x=>x.id===f.studio)?.name||'Филиал')} ${bonusFormat(f.count)}`).join(' · ');return `<tr><td><b>${bonusHtml(s.name)}</b><small>${names||'нет продаж'}</small></td><td>${bonusLabel(branch)}</td><td class="bpf-num">${bonusFormat(s.count)}</td><td class="bpf-num">${bonusForecastNumber(s.count/calendar.daysDone,1)}</td><td class="bpf-num">${bonusForecastNumber(s.share,0)}%</td>${owner?`<td class="bpf-num">${bonusFormat(b.scenarioBonus)} BYN</td>`:''}</tr>`;}).join('')}<tr class="bpf-admin-total"><td colspan="2">Всего</td><td class="bpf-num">${bonusFormat(results.factTotal)}</td><td class="bpf-num">${bonusForecastNumber(results.factTotal/calendar.daysDone,1)}</td><td></td>${owner?`<td class="bpf-num">${bonusFormat(results.scenarioPool)} BYN</td>`:''}</tr></tbody></table></div>`;
   }
   const historyStatus=bonusForecastHistoryInfo(results.calibration);
-  html+=`<div class="bpf-method"><b>Как считается прогноз</b><p>Каждый день месяца имеет вес: дни недели и этапы месяца учитываются по реальной истории при достаточном количестве данных. P10–P90 — модельный диапазон, охватывающий примерно 80% расчётных исходов, а не гарантия результата. Шансы порогов от сценария не зависят.</p><p class="bpf-history-note">${historyStatus}</p>${owner?`<div class="bpf-history-actions"><button type="button" class="btn btn-s" data-bpf-history-load ${BONUS_FORECAST_HISTORY.busy?'disabled':''}>${BONUS_FORECAST_HISTORY.busy?'Загружаем историю…':'Загрузить / дополнить 12 месяцев истории'}</button><span>${bonusHtml(BONUS_FORECAST_HISTORY.progress)}</span></div>${BONUS_FORECAST_HISTORY.error?`<div class="bpf-history-error" role="alert"><strong>Ошибка загрузки истории</strong>${bonusHtml(BONUS_FORECAST_HISTORY.error)}<div style="margin-top:6px;color:#795047">Загрузка не сохранила этот месяц. Проверьте код ошибки перед повторной попыткой — защищённые проверки Supabase не отключены.</div></div>`:''}`:''}<p>Прогнозный бонус на администратора — только фиксированная сумма по достигнутому порогу его филиала (0 / 50 / 120 / 300 / 350 / 400 BYN при текущей шкале). Каждый закреплённый администратор получает полный бонус независимо от личной доли продаж; вероятности порогов не усредняют денежную сумму.</p><p>Расчёт информационный и не меняет существующий план, факты, премии или выплаты. «Что если» работает только в этой вкладке.</p></div>`;
+  html+=`<div class="bpf-method"><b>Как считается прогноз</b><p>Каждый день месяца имеет вес: дни недели и этапы месяца учитываются по реальной истории при достаточном количестве данных. P10–P90 — модельный диапазон, охватывающий примерно 80% расчётных исходов, а не гарантия результата. Шансы порогов от сценария не зависят.</p><p class="bpf-history-note">${historyStatus}</p>${owner?`<div class="bpf-history-actions"><button type="button" class="btn btn-s" data-bpf-history-load ${BONUS_FORECAST_HISTORY.busy?'disabled':''}>${BONUS_FORECAST_HISTORY.busy?'Загружаем историю…':'Загрузить / дополнить 12 месяцев истории'}</button><span>${bonusHtml(BONUS_FORECAST_HISTORY.progress)}</span></div>${(BONUS_FORECAST_HISTORY.importError||BONUS_FORECAST_HISTORY.error)?`<div class="bpf-history-error" role="alert"><strong>${BONUS_FORECAST_HISTORY.importError?'Ошибка импорта истории':'Ошибка чтения истории'}</strong>${bonusHtml(BONUS_FORECAST_HISTORY.importError||BONUS_FORECAST_HISTORY.error)}<div style="margin-top:6px;color:#795047">Загрузка не сохранила этот месяц. Проверьте код ошибки перед повторной попыткой — защищённые проверки Supabase не отключены.</div></div>`:''}`:''}<p>Прогнозный бонус на администратора — только фиксированная сумма по достигнутому порогу его филиала (0 / 50 / 120 / 300 / 350 / 400 BYN при текущей шкале). Каждый закреплённый администратор получает полный бонус независимо от личной доли продаж; вероятности порогов не усредняют денежную сумму.</p><p>Расчёт информационный и не меняет существующий план, факты, премии или выплаты. «Что если» работает только в этой вкладке.</p></div>`;
   root.innerHTML=html;
 }
 function bonusForecastMount(body,model){
