@@ -3219,7 +3219,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '19.11.2026-cy'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '19.11.2026-cz'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -12313,7 +12313,7 @@ function ctRenderManager(ctx){const p=ctx.data.plan,st=ctx.data.staff||[];
  const name=p?.name||'Активный план ещё не создан',archive=ctx.data.archive||[];
  const filteredStaff=st.filter(a=>ctx.managerBranch==='all'||a.branch===ctx.managerBranch);
  ctx.page.innerHTML=`<div class="ct-planbar"><div><h3>${ctEsc(name)}</h3><div class="ct-meta">${p?`${ctDate(p.date_from)} – ${ctDate(p.date_to)} · цель ${p.target_sales} продаж · ${ctEsc(p.source)} · загружено ${ctDate(p.uploaded_at)}`:'Загрузите файл подготовленных задач ImpulseCRM, затем активируйте план'}</div></div>
- <div class="ct-planbar-actions">${p&&p.status==='archived'?ctBtn('Вернуться к текущему плану','active','ct-btn-sm'):''}${ctx.access.owner?ctBtn(ctx.access.enabled?'Выключить модуль':'Включить модуль','feature','ct-btn-sm'):''}${ctx.access.manage?ctBtn(ctx.showImport?'Закрыть загрузку':'Загрузить новую базу / новый план','newplan','ct-btn-primary'):''}</div></div>
+ <div class="ct-planbar-actions">${p&&p.status==='archived'?ctBtn('Вернуться к текущему плану','active','ct-btn-sm'):''}${ctx.access.manage?ctBtn(ctx.showImport?'Закрыть загрузку':'Загрузить новую базу / новый план','newplan','ct-btn-primary'):''}</div></div>
  ${ctx.showImport?'<div data-ct-import></div>':''}
  ${p?`<div class="ct-kpis">${ctManagerStats(ctx)}</div><div class="ct-filters"><select class="ct-select" data-ct-branch><option value="all">Все филиалы</option>${Object.entries(CT_BRANCHES).map(([k,v])=>`<option value="${k}" ${ctx.managerBranch===k?'selected':''}>${v.name}</option>`).join('')}</select><span class="ct-count">Список администраторов · просмотр задач только для чтения</span></div>
  <div class="ct-count">Резерв Allsports/GymFit: ${ctx.data.tasks.filter(t=>t.reserve&&!t.do_not_contact).length}${ctx.access.owner?` · Запрещены обращения: ${ctx.data.tasks.filter(t=>t.do_not_contact).length}`:''}. Не включаются в личную очередь и отправку сообщений.</div><div class="ct-list" data-ct-manager-list>${filteredStaff.map(a=>ctManagerAdminCard(ctx,a)).join('')||'<div class="ct-empty">Нет назначенных администраторов.</div>'}</div>`:''}
@@ -12472,7 +12472,7 @@ async function renderClients(body){if(!session||!TOKEN){body.innerHTML='<div cla
   ctx.access=await rpc('app_client_access',{p_token:TOKEN});if(!page.isConnected)return;
   if(ctx.access.owner){ctx.directory=await rpc('app_client_directory',{p_token:TOKEN});}
   else if(ctx.access.manage){ctx.directory=await rpc('app_client_directory',{p_token:TOKEN});}
-  if(!ctx.access.enabled){page.innerHTML=`<div class="ct-empty">Модуль «Клиенты · Задачи» сейчас выключен.${ctx.access.owner?ctBtn('Включить модуль','feature','ct-btn-primary'):''}</div>`;}
+  if(!ctx.access.enabled){page.innerHTML=`<div class="ct-empty">Раздел временно недоступен. Проверьте настройку доступа через «Роли» и состояние модуля в Supabase.</div>`;}
   else if(!ctx.access.own&&!ctx.access.team&&!ctx.access.owner){page.innerHTML='<div class="ct-empty">Ваша роль не имеет доступа к клиентским задачам.</div>';}
   else{await ctLoadData(ctx);if(!page.isConnected)return;
    ctx.view=ctx.access.team||ctx.access.owner?'manager':'admin';ctx.view==='manager'?ctRenderManager(ctx):ctRenderAdmin(ctx);
@@ -12492,7 +12492,7 @@ async function renderClients(body){if(!session||!TOKEN){body.innerHTML='<div cla
    if(btn.dataset.ctArchive){await ctLoadData(ctx,Number(btn.dataset.ctArchive));ctRenderManager(ctx);return;}
    if(action==='active'){await ctLoadData(ctx,null);ctRenderManager(ctx);return;}
    if(action==='newplan'){ctx.showImport=!ctx.showImport;ctx.imp.confirm=false;ctRenderManager(ctx);return;}
-   if(action==='feature'){await rpc('app_client_set_enabled',{p_token:TOKEN,p_enabled:!ctx.access.enabled});renderClients(body);return;}
+   
    if(action==='create'){
     if(!ctx.imp.loaded)throw Error('Сначала выберите файл');
     if(!ctx.imp.confirm){ctx.imp.confirm=true;ctRenderImport(ctx);return;}
