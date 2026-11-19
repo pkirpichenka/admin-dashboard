@@ -3066,6 +3066,22 @@ input[type="time"]::-webkit-calendar-picker-indicator{position:absolute;right:8p
 .bonus-page .bp-inner-pane,.bonus-page .bp-forecast{min-width:0}
 .bonus-page .bp-forecast{margin-bottom:0}
 @media(max-width:640px){.bonus-page .bp-inner-tabs{gap:6px;flex-wrap:nowrap}.bonus-page .bp-inner-tab{flex:1;padding:9px 8px;font-size:12px;min-width:0}}
+/* FAD · План · единая строка вкладок и периода · 19.11.2026-ck */
+.fad-main #tabbody.page .bonus-page .bp-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin:0 0 16px;min-height:40px}
+.bonus-page .bp-head-navigation{display:flex;align-items:center;flex:1 1 auto;min-width:0}
+.bonus-page .bp-head-title{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.bonus-page .bp-head .bp-inner-tabs{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0;padding:0;border:0;min-height:40px}
+.fad-main #tabbody.page .bonus-page .bp-head .bp-month-row{display:flex;align-items:center;gap:10px;margin-left:auto;flex:0 0 auto;min-width:0}
+@media(max-width:840px){
+ .bonus-page .bp-head-navigation{flex:1 1 100%}
+ .fad-main #tabbody.page .bonus-page .bp-head .bp-month-row{margin-left:auto;width:auto}
+}
+@media(max-width:640px){
+ .bonus-page .bp-head .bp-inner-tabs{width:100%;flex-wrap:nowrap}
+ .bonus-page .bp-head .bp-inner-tab{flex:1 1 0;min-width:0}
+ .fad-main #tabbody.page .bonus-page .bp-head .bp-month-row{width:100%;justify-content:flex-end}
+}
+
 </style>
 
 <div id="root"></div>
@@ -3086,7 +3102,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '19.11.2026-cj'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '19.11.2026-ck'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -10371,10 +10387,15 @@ function bonusRenderHtml(model){const owner=model.owner,branches=model.branches;
   const stale=model.period===liveMonth && minskHour>=8 && minskHour<=23 && (!model.updatedAt || Date.now()-new Date(model.updatedAt).getTime()>90*60*1000);
   const freshnessNotice=stale?'<span style="color:#ae4529;font-weight:600"> · ⚠️ Автоматическое обновление задерживается — последние подтверждённые данные сохранены</span>':'';
   return `<div class="bonus-page fade-in">
-    <div class="bp-head"><div><div class="bp-eyebrow">FLEXICO · АДМИНИСТРАТОРЫ</div><h1 class="bp-h1">План</h1></div><div class="bp-month-row"><span>Период</span><select class="bp-month" id="bp-month">${bonusMonthOptions(model.period)}</select><button type="button" id="bp-refresh" class="bp-refresh-btn" aria-label="${owner&&model.period===liveMonth?'Запросить свежие продажи из ImpulseCRM':'Обновить данные из Supabase'}" title="${owner&&model.period===liveMonth?'Обновить продажи из ImpulseCRM':'Обновить отображение из Supabase'}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14-5L3 9m0-6v6h6M4 13a8 8 0 0 0 14 5l3-3m0 6v-6h-6"/></svg></button></div></div>
-    <div class="bp-inner-tabs" role="tablist" aria-label="Разделы плана">
-      <button type="button" id="bp-tab-main" class="bp-inner-tab" role="tab" data-bp-view="main" aria-controls="bp-main-panel" aria-selected="true">Основной план</button>
-      ${bonusForecastAccess(model)?`<button type="button" id="bp-tab-forecast" class="bp-inner-tab" role="tab" data-bp-view="forecast" aria-controls="bp-forecast" aria-selected="false" ${model.period>bonusForecastMinskToday().slice(0,7)?'disabled title="Прогноз недоступен для будущего месяца"':''}>Прогноз и рекомендации</button>`:''}
+    <div class="bp-head">
+      <div class="bp-head-navigation">
+        <div class="bp-head-title"><div class="bp-eyebrow">FLEXICO · АДМИНИСТРАТОРЫ</div><h1 class="bp-h1">План</h1></div>
+        <div class="bp-inner-tabs" role="tablist" aria-label="Разделы плана">
+          <button type="button" id="bp-tab-main" class="bp-inner-tab" role="tab" data-bp-view="main" aria-controls="bp-main-panel" aria-selected="true">Основной план</button>
+          ${bonusForecastAccess(model)?`<button type="button" id="bp-tab-forecast" class="bp-inner-tab" role="tab" data-bp-view="forecast" aria-controls="bp-forecast" aria-selected="false" ${model.period>bonusForecastMinskToday().slice(0,7)?'disabled title="Прогноз недоступен для будущего месяца"':''}>Прогноз и рекомендации</button>`:''}
+        </div>
+      </div>
+      <div class="bp-month-row"><span>Период</span><select class="bp-month" id="bp-month">${bonusMonthOptions(model.period)}</select><button type="button" id="bp-refresh" class="bp-refresh-btn" aria-label="${owner&&model.period===liveMonth?'Запросить свежие продажи из ImpulseCRM':'Обновить данные из Supabase'}" title="${owner&&model.period===liveMonth?'Обновить продажи из ImpulseCRM':'Обновить отображение из Supabase'}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14-5L3 9m0-6v6h6M4 13a8 8 0 0 0 14 5l3-3m0 6v-6h-6"/></svg></button></div>
     </div>
     <div class="bp-inner-pane" id="bp-main-panel" role="tabpanel" aria-labelledby="bp-tab-main">
     <section class="bp-totals">
