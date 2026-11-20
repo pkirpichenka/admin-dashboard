@@ -3277,6 +3277,133 @@ input[type="time"]::-webkit-calendar-picker-indicator{position:absolute;right:8p
  .fad-main #tabbody.page .bonus-page .bpf-admin-table .bpf-name{grid-column:1}
  .fad-main #tabbody.page .bonus-page .bpf-admin-table .bpf-admin-total td:first-child{grid-column:1}
 }
+
+/* FAD DC — compact Clients · Tasks. Scoped styles preserve the rest of the application. */
+.ct-root.ct-compact{--ct-surface:var(--fad-surface,#fff);--ct-soft:var(--fad-surface-soft,#f3f6f2);--ct-text:var(--fad-text,#17261f);--ct-muted:var(--fad-muted,#56685d);--ct-border:var(--fad-border,#d5ded6);--ct-ok:var(--fad-green,#2e7556);--ct-bad:var(--fad-danger,#c0392b);color:var(--ct-text);gap:8px;padding-top:0;font-size:13px;min-width:0}
+.ct-root.ct-compact .ct-planbar{padding:9px 13px;gap:6px 12px;background:var(--ct-surface);border-color:var(--ct-border)}
+.ct-root.ct-compact .ct-planbar h3{font-size:14px;margin:0}
+.ct-root.ct-compact .ct-planbar .ct-meta{font-size:11px;line-height:1.4;margin-top:2px}
+.ct-root.ct-compact .ct-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;background:var(--ct-surface);border:1px solid var(--ct-border);border-radius:12px;overflow:hidden}
+.ct-root.ct-compact .ct-kpi{border:0;border-right:1px solid var(--ct-border);border-radius:0;min-width:0;min-height:49px;padding:6px 12px;display:flex;flex-direction:column;justify-content:center;box-shadow:none;background:none;gap:1px}
+.ct-root.ct-compact .ct-kpi:last-child{border-right:0}
+.ct-root.ct-compact .ct-kpi .ct-caption{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;letter-spacing:.015em}
+.ct-root.ct-compact .ct-kpi strong{font-size:19px;line-height:1.2;margin:0;font-weight:800}
+.ct-root.ct-compact .ct-kpi.ct-overdue strong{color:var(--ct-bad)}
+.ct-root.ct-compact .ct-kpi .ct-bar{margin-top:2px;height:3px;width:100%;background:var(--ct-soft)}
+.ct-root.ct-compact .ct-order{border-left:3px solid var(--ct-ok);background:color-mix(in srgb,var(--ct-ok) 9%,var(--ct-surface));border-radius:7px;padding:5px 10px;color:var(--ct-text);font-size:12px}
+.ct-root.ct-compact .ct-order summary{cursor:pointer;font-weight:700;font-size:12px}
+.ct-root.ct-compact .ct-order>div{margin-top:6px;line-height:1.5}
+.ct-root.ct-compact .ct-filter-sticky{position:sticky;top:69px;z-index:20;background:var(--fad-bg,#edf1ee);padding:3px 0}
+.ct-root.ct-compact .ct-compact-filters{background:var(--ct-surface);border:1px solid var(--ct-border);border-radius:10px;padding:5px 8px;display:flex;align-items:center;gap:5px 7px;flex-wrap:wrap;min-width:0}
+.ct-root.ct-compact .ct-quick-tabs{display:flex;gap:2px;flex-wrap:wrap;align-items:center;min-width:0}
+.ct-root.ct-compact .ct-quick-chip{border:0;border-radius:7px;padding:5px 7px;white-space:nowrap;background:transparent;color:var(--ct-muted);cursor:pointer;font:inherit;font-size:11px;font-weight:600}
+.ct-root.ct-compact .ct-quick-chip b{font-weight:800;margin-left:3px}
+.ct-root.ct-compact .ct-quick-chip.on{background:color-mix(in srgb,var(--ct-ok) 12%,var(--ct-surface));color:var(--ct-text)}
+.ct-root.ct-compact .ct-quick-chip.ct-red b{color:var(--ct-bad)}
+.ct-root.ct-compact .ct-compact-filters .ct-search{flex:1 1 130px;max-width:270px;min-width:130px}
+.ct-root.ct-compact .ct-field,.ct-root.ct-compact .ct-select,.ct-root.ct-compact .ct-textarea{height:32px;border-radius:8px;padding:4px 9px;font-size:12px;color:var(--ct-text);background:var(--ct-surface);border-color:var(--ct-border);min-width:0}
+.ct-root.ct-compact .ct-textarea{height:auto;min-height:32px;resize:vertical}
+.ct-root.ct-compact .ct-compact-filters .ct-select{flex:0 1 120px;max-width:140px}
+.ct-root.ct-compact .ct-compact-filters .ct-count{margin-left:auto;font-size:11px;white-space:nowrap;color:var(--ct-muted)}
+.ct-root.ct-compact .ct-task-list,.ct-root.ct-compact .ct-manager-list{display:flex;flex-direction:column;gap:0;background:var(--ct-surface);border:1px solid var(--ct-border);border-radius:12px;overflow:hidden;min-width:0}
+.ct-root.ct-compact .ct-card.ct-task-line{display:block;border:0;border-bottom:1px solid var(--ct-border);border-radius:0;padding:0;margin:0;box-shadow:none;background:var(--ct-surface);min-width:0}
+.ct-root.ct-compact .ct-card.ct-task-line:last-child{border-bottom:0}
+.ct-root.ct-compact .ct-card.ct-task-line.ct-open{background:var(--ct-soft)}
+.ct-root.ct-compact .ct-task-line .ct-row{display:grid;grid-template-columns:21px minmax(140px,1.1fr) auto minmax(100px,1.2fr) auto auto minmax(123px,163px) 24px;align-items:center;gap:7px;padding:5px 11px;min-height:45px;max-width:100%}
+.ct-root.ct-compact .ct-task-line .ct-row-done{grid-template-columns:21px minmax(155px,1.1fr) auto minmax(0,2fr) 24px}
+.ct-root.ct-compact .ct-task-line .ct-task-check{height:19px;width:19px;flex:none;margin:0;accent-color:var(--ct-ok);cursor:pointer}
+.ct-root.ct-compact .ct-row-person{display:flex;flex-direction:column;gap:0;line-height:1.25;min-width:0}
+.ct-root.ct-compact .ct-row-person>strong{font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ct-text)}
+.ct-root.ct-compact .ct-row-person>small{font-size:10px;color:var(--ct-muted);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ct-root.ct-compact .ct-row-person .ct-contact-copy{font-size:10px;font-weight:600;display:inline;color:var(--ct-ok);white-space:nowrap;max-width:100%}
+.ct-root.ct-compact .ct-row-person .ct-contact-empty{font-size:10px}
+.ct-root.ct-compact .ct-row-person .ct-contact-feedback{font-size:10px;margin-left:3px}
+.ct-root.ct-compact .ct-task-line .ct-chips{display:flex;justify-content:flex-start;align-items:center;flex-wrap:nowrap;gap:3px;padding:0;max-width:100%;min-width:0;overflow:hidden}
+.ct-root.ct-compact .ct-task-line .ct-chip{font-size:10px;font-weight:700;padding:2px 6px;line-height:1.5;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.ct-root.ct-compact .ct-task-short{color:var(--ct-muted);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.ct-root.ct-compact .ct-crm-line{display:inline-flex;gap:3px;align-items:center;font-size:11px;font-weight:700;color:var(--ct-muted);cursor:pointer;white-space:nowrap}
+.ct-root.ct-compact .ct-crm-line input{height:15px;width:15px;margin:0;accent-color:var(--ct-ok)}
+.ct-root.ct-compact .ct-row .ct-copy-btn{height:30px;min-width:0;padding:0 8px;line-height:1;font-size:11px;border-radius:7px;white-space:nowrap}
+.ct-root.ct-compact .ct-result-select{height:30px!important;width:100%;padding:0 8px!important;font-size:11px!important;text-overflow:ellipsis}
+.ct-root.ct-compact .ct-expand-btn{width:24px;height:26px;border:0;background:transparent;border-radius:6px;color:var(--ct-muted);cursor:pointer;display:grid;place-items:center;padding:0}
+.ct-root.ct-compact .ct-expand-btn:hover{background:color-mix(in srgb,var(--ct-text) 7%,transparent)}
+.ct-root.ct-compact .ct-expand-btn svg{width:14px;height:14px;transition:transform .15s}
+.ct-root.ct-compact .ct-expand-btn[aria-expanded=true] svg{transform:rotate(180deg)}
+.ct-root.ct-compact .ct-row-done-info{min-width:0;font-size:11px;color:var(--ct-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ct-root.ct-compact .ct-expanded{border-top:1px solid var(--ct-border);padding:8px 12px 10px 39px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.ct-root.ct-compact .ct-compact-form{display:grid;grid-template-columns:minmax(145px,180px) minmax(140px,1fr) auto;gap:8px;align-items:end;min-width:0}
+.ct-root.ct-compact .ct-control{gap:2px}
+.ct-root.ct-compact .ct-control>span{font-size:10px;letter-spacing:0;line-height:1.3}
+.ct-root.ct-compact .ct-control em{color:var(--ct-bad);font-style:normal}
+.ct-root.ct-compact .ct-foot{display:flex;flex-direction:column;justify-content:end;align-items:flex-end;gap:3px;min-width:130px;font-size:10px}
+.ct-root.ct-compact .ct-expanded-info{display:flex;flex-direction:column;gap:5px;font-size:12px;min-width:0}
+.ct-root.ct-compact .ct-expanded-info .ct-message{display:block;background:var(--ct-surface);padding:7px 9px;border-color:var(--ct-border);border-radius:8px}
+.ct-root.ct-compact .ct-expanded-info .ct-message p{font-size:12px;line-height:1.5}
+.ct-root.ct-compact .ct-expanded-info .ct-line{font-size:12px;line-height:1.5}
+.ct-root.ct-compact .ct-expanded-info .ct-snapshot-grid{padding:8px 10px;margin-top:6px;gap:7px 10px;background:var(--ct-surface);border-color:var(--ct-border)}
+.ct-root.ct-compact .ct-team-grid{display:flex;flex-direction:column;min-width:0}
+.ct-root.ct-compact .ct-team-grid-head,.ct-root.ct-compact .ct-team-task{display:grid;grid-template-columns:minmax(145px,1.45fr) minmax(75px,.75fr) 64px minmax(92px,.85fr) 80px minmax(100px,1.25fr) minmax(100px,1.25fr);gap:7px;align-items:center;padding:6px 10px;font-size:11px;border:0;border-bottom:1px solid var(--ct-border);border-radius:0;min-width:0}
+.ct-root.ct-compact .ct-team-grid-head{background:var(--ct-soft);color:var(--ct-muted);font-weight:800;font-size:10px}
+.ct-root.ct-compact .ct-team-task{background:var(--ct-surface)}
+.ct-root.ct-compact .ct-team-task:last-child{border-bottom:0}
+.ct-root.ct-compact .ct-team-person,.ct-root.ct-compact .ct-team-comment,.ct-root.ct-compact .ct-team-mark{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ct-root.ct-compact .ct-team-person b{display:block;overflow:hidden;text-overflow:ellipsis}
+.ct-root.ct-compact .ct-team-person small{display:block;color:var(--ct-muted);font-size:10px}
+.ct-root.ct-compact .ct-manager-list .ct-admin{background:var(--ct-surface);border:0;border-bottom:1px solid var(--ct-border);border-radius:0;overflow:hidden}
+.ct-root.ct-compact .ct-manager-list .ct-admin:last-child{border-bottom:0}
+.ct-root.ct-compact .ct-admin-head{grid-template-columns:minmax(150px,1.3fr) minmax(110px,1.4fr) repeat(3,minmax(62px,.5fr)) minmax(90px,.8fr) 16px;padding:7px 11px;gap:8px;min-height:50px}
+.ct-root.ct-compact .ct-avatar{width:30px;height:30px;flex-basis:30px;font-size:11px}
+.ct-root.ct-compact .ct-admin-name{gap:7px}
+.ct-root.ct-compact .ct-admin-name b{font-size:12px;line-height:1.2}
+.ct-root.ct-compact .ct-stat b{font-size:14px}
+.ct-root.ct-compact .ct-stat small{margin-top:1px;font-size:10px}
+.ct-root.ct-compact .ct-admin-body{padding:8px 10px;gap:7px;background:var(--ct-soft)}
+.ct-root.ct-compact .ct-admin-body .ct-pill{font-size:11px;padding:4px 9px}
+.ct-root.ct-compact .ct-manager-filter{display:flex;gap:6px 12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.ct-root.ct-compact .ct-branch-tabs{display:flex;flex-wrap:wrap;gap:4px}
+.ct-root.ct-compact .ct-branch-chip{border:1px solid var(--ct-border);border-radius:999px;background:var(--ct-surface);padding:5px 10px;font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;color:var(--ct-text)}
+.ct-root.ct-compact .ct-branch-chip.on{background:var(--ct-ok);border-color:var(--ct-ok);color:#fff}
+.ct-root.ct-compact .ct-branch-chip i{width:8px;height:8px;border-radius:50%;flex:0 0 8px}
+.ct-root.ct-compact .ct-archive-details{min-width:0;font-size:12px}
+.ct-root.ct-compact .ct-archive-details>summary{padding:6px 9px;background:var(--ct-surface);border:1px solid var(--ct-border);border-radius:9px;cursor:pointer;font-weight:700}
+.ct-root.ct-compact .ct-archive{margin-top:7px;gap:5px}
+.ct-root.ct-compact .ct-archive-item{padding:7px 10px;border-color:var(--ct-border)}
+.ct-root.ct-compact :is(button,input,select,textarea,summary):focus-visible{outline:2px solid var(--ct-ok);outline-offset:2px}
+.ct-root.ct-compact :is(.ct-select,.ct-field,.ct-textarea).ct-invalid{border-color:var(--ct-bad)!important;outline-color:var(--ct-bad)!important}
+@media(max-width:1230px){.ct-root.ct-compact .ct-task-line .ct-row{grid-template-columns:21px minmax(125px,1.1fr) minmax(0,auto) minmax(70px,.8fr) auto auto minmax(112px,130px) 24px;gap:5px;padding:5px 8px}.ct-root.ct-compact .ct-task-line .ct-chip{font-size:9px;padding:2px 4px}.ct-root.ct-compact .ct-quick-chip{padding:5px 6px;font-size:10px}.ct-root.ct-compact .ct-team-grid-head,.ct-root.ct-compact .ct-team-task{grid-template-columns:minmax(125px,1.35fr) 70px 55px 85px 75px minmax(75px,1fr) minmax(100px,1fr)}}
+@media(max-width:950px){.ct-root.ct-compact .ct-task-line .ct-row,.ct-root.ct-compact .ct-task-line .ct-row-done{display:grid;grid-template-columns:21px minmax(0,1fr) 26px;gap:4px 9px;min-height:0;padding:7px 10px}.ct-root.ct-compact .ct-row .ct-task-check{grid-column:1;grid-row:1}.ct-root.ct-compact .ct-row-person{grid-column:2;grid-row:1}.ct-root.ct-compact .ct-row .ct-expand-btn{grid-column:3;grid-row:1}.ct-root.ct-compact .ct-row .ct-chips{grid-column:2 / 4;grid-row:2}.ct-root.ct-compact .ct-row .ct-task-short{grid-column:2 / 4;grid-row:3}.ct-root.ct-compact .ct-row .ct-crm-line{grid-column:2;grid-row:4;justify-self:start}.ct-root.ct-compact .ct-row .ct-copy-btn{grid-column:2;grid-row:5;justify-self:start}.ct-root.ct-compact .ct-row .ct-result-select{grid-column:3;grid-row:5;justify-self:end;width:min(180px,100%)}.ct-root.ct-compact .ct-task-line .ct-row:not(.ct-row-done){grid-template-columns:21px minmax(85px,1fr) minmax(125px,1fr)}.ct-root.ct-compact .ct-row:not(.ct-row-done) .ct-crm-line{grid-row:4;grid-column:2}.ct-root.ct-compact .ct-row:not(.ct-row-done) .ct-copy-btn{grid-row:4;grid-column:3;justify-self:start}.ct-root.ct-compact .ct-row:not(.ct-row-done) .ct-result-select{grid-row:5;grid-column:2/4;width:100%}.ct-root.ct-compact .ct-row-done .ct-row-done-info{grid-column:2 / 4;grid-row:3}.ct-root.ct-compact .ct-row-done>.ct-chip{grid-column:2 / 4;grid-row:2;justify-self:start}.ct-root.ct-compact .ct-expanded{padding-left:11px}.ct-root.ct-compact .ct-compact-form{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.ct-root.ct-compact .ct-compact-form .ct-foot{grid-column:1/-1;align-items:flex-start}.ct-root.ct-compact .ct-admin-head{grid-template-columns:minmax(0,1fr) 20px;gap:5px}.ct-root.ct-compact .ct-admin-head .ct-progress{grid-column:1/-1;grid-row:2}.ct-root.ct-compact .ct-admin-head .ct-stat,.ct-root.ct-compact .ct-admin-head .ct-last{display:none}.ct-root.ct-compact .ct-team-grid-head{display:none}.ct-root.ct-compact .ct-team-task{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;padding:8px 10px}.ct-root.ct-compact .ct-team-task>span:before{content:attr(data-label) ': ';color:var(--ct-muted);font-weight:600}.ct-root.ct-compact .ct-team-task>span{white-space:normal;overflow-wrap:anywhere}.ct-root.ct-compact .ct-team-task>.ct-team-comment,.ct-root.ct-compact .ct-team-task>.ct-team-mark{grid-column:1/-1;white-space:normal}.ct-root.ct-compact .ct-compact-filters{flex-wrap:wrap}.ct-root.ct-compact .ct-compact-filters .ct-search{max-width:none}}
+@media(max-width:560px){.ct-root.ct-compact .ct-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.ct-root.ct-compact .ct-kpi{border-right:0;border-bottom:1px solid var(--ct-border);padding:6px 10px;min-height:46px}.ct-root.ct-compact .ct-kpi:nth-child(odd){border-right:1px solid var(--ct-border)}.ct-root.ct-compact .ct-kpi:last-child{border-bottom:0}.ct-root.ct-compact .ct-filter-sticky{top:58px}.ct-root.ct-compact .ct-compact-filters .ct-search{flex-basis:100%;min-width:0}.ct-root.ct-compact .ct-compact-filters .ct-select{flex:1 1 110px;max-width:none}.ct-root.ct-compact .ct-compact-filters .ct-count{flex:1 1 100%;margin-left:0}.ct-root.ct-compact .ct-compact-form{grid-template-columns:1fr}.ct-root.ct-compact .ct-compact-form .ct-foot{grid-column:auto}.ct-root.ct-compact .ct-row .ct-task-short{white-space:nowrap}.ct-root.ct-compact .ct-branch-tabs{width:100%}.ct-root.ct-compact .ct-planbar{padding:8px 10px}}
+@media(prefers-color-scheme:dark){.ct-root.ct-compact{--ct-surface:#17271e;--ct-soft:#20352a;--ct-text:#e8f1eb;--ct-muted:#a0b1a5;--ct-border:#375246;--ct-ok:#64ad87;--ct-bad:#f08a78}.ct-root.ct-compact .ct-filter-sticky{background:#122119}.ct-root.ct-compact .ct-chip{background:#284134;color:#d7e8db}.ct-root.ct-compact .ct-field,.ct-root.ct-compact .ct-select,.ct-root.ct-compact .ct-textarea{color-scheme:dark}}
+
+
+/* Three-line mobile task rows and a single compact action group. */
+.ct-root.ct-compact .ct-task-line .ct-row:not(.ct-row-done){grid-template-columns:21px minmax(140px,1fr) auto minmax(95px,.8fr) minmax(260px,1.45fr) 24px}
+.ct-root.ct-compact .ct-row-actions{display:grid;grid-template-columns:auto auto minmax(115px,1fr);gap:5px;align-items:center;min-width:0}
+.ct-root.ct-compact .ct-row-actions .ct-copy-btn{min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.ct-root.ct-compact .ct-row-actions .ct-crm-line{min-width:0}
+.ct-root.ct-compact .ct-row-actions .ct-result-select{min-width:0;max-width:100%}
+@media(max-width:1230px){.ct-root.ct-compact .ct-task-line .ct-row:not(.ct-row-done){grid-template-columns:21px minmax(120px,1fr) auto minmax(68px,.8fr) minmax(255px,1.5fr) 24px;gap:5px}}
+@media(max-width:950px){
+ .ct-root.ct-compact .ct-task-line .ct-row:not(.ct-row-done){grid-template-columns:21px minmax(0,1fr) minmax(0,1fr) 24px;gap:4px 7px;padding:7px 9px}
+ .ct-root.ct-compact .ct-task-line .ct-row:not(.ct-row-done) .ct-task-check{grid-column:1;grid-row:1}
+ .ct-root.ct-compact .ct-task-line .ct-row:not(.ct-row-done) .ct-row-person{grid-column:2 / 4;grid-row:1}
+ .ct-root.ct-compact .ct-task-line .ct-row:not(.ct-row-done) .ct-expand-btn{grid-column:4;grid-row:1}
+ .ct-root.ct-compact .ct-task-line .ct-row:not(.ct-row-done) .ct-chips{grid-column:2;grid-row:2}
+ .ct-root.ct-compact .ct-task-line .ct-row:not(.ct-row-done) .ct-task-short{grid-column:3 / 5;grid-row:2}
+ .ct-root.ct-compact .ct-task-line .ct-row:not(.ct-row-done) .ct-row-actions{grid-column:2 / 5;grid-row:3;display:grid;grid-template-columns:auto auto minmax(90px,1fr);gap:5px}
+ .ct-root.ct-compact .ct-task-line .ct-row .ct-row-actions .ct-crm-line,
+ .ct-root.ct-compact .ct-task-line .ct-row .ct-row-actions .ct-copy-btn,
+ .ct-root.ct-compact .ct-task-line .ct-row .ct-row-actions .ct-result-select{grid-column:auto!important;grid-row:auto!important;justify-self:stretch!important;width:100%;order:initial}
+ .ct-root.ct-compact .ct-task-line .ct-row .ct-row-actions .ct-crm-line{width:auto;justify-self:start!important}
+ .ct-root.ct-compact .ct-task-line .ct-row .ct-row-actions .ct-copy-btn{padding:0 7px}
+}
+@media(max-width:560px){
+ .ct-root.ct-compact .ct-task-line .ct-row:not(.ct-row-done){grid-template-columns:21px minmax(0,1fr) minmax(0,1fr) 24px}
+ .ct-root.ct-compact .ct-task-line .ct-row:not(.ct-row-done) .ct-chips{overflow:hidden}
+ .ct-root.ct-compact .ct-task-line .ct-row:not(.ct-row-done) .ct-row-actions{gap:4px;grid-template-columns:42px minmax(84px,auto) minmax(120px,1fr)}
+ .ct-root.ct-compact .ct-task-line .ct-row:not(.ct-row-done) .ct-row-actions .ct-result-select{font-size:11px!important}
+}
+
 </style>
 
 <div id="root"></div>
@@ -3297,7 +3424,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '19.11.2026-db'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '20.11.2026-dc'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -12309,10 +12436,10 @@ function ctBranchName(v){return CT_BRANCHES[v]?.name||String(v||'—');}
 function ctSegment(t){const s=String(t.segment||'');if(s.includes('Продлен')||s.includes('Продление'))return 'Продление';if(s.includes('Пробное'))return 'Пробное';if(s.includes('Возвращен')||s.includes('Возврат')||s.includes('Активный,'))return 'Возврат';return CT_SEGMENT_MAP[t.meta?.segment_code]||'Возврат';}
 function ctPriority(t){return ['A','B','C'].includes(t.priority)?t.priority:'B';}
 function ctFmtCount(v){return Number(v||0).toLocaleString('ru-RU');}
-function ctBtn(label,act,cls=''){return `<button type="button" class="ct-btn ${cls}" data-ct-act="${act}">${label}</button>`;}
+function ctBtn(label,act,cls=''){return `<button type="button" class="ct-btn ${cls}" data-ct-act="${act}" aria-label="${ctEsc(label)}">${label}</button>`;}
 function ctResultState(t){return t.done?(t.result==='paid'?'success':t.result==='refused'?'danger':''):'';}
 function ctTaskStats(rows){const a=rows.filter(t=>!t.reserve&&!t.do_not_contact&&!t.meta?.superseded_snapshot),done=a.filter(t=>t.done);return {total:a.length,done:done.length,paid:done.filter(t=>t.result==='paid').length,promised:done.filter(t=>t.result==='promised').length,today:a.filter(t=>!t.done&&t.due_date===ctToday()).length,overdue:a.filter(t=>!t.done&&t.due_date<ctToday()).length,last:a.reduce((m,t)=>t.row_version>1&&t.updated_at&&t.updated_at>m?t.updated_at:m,'')};}
-function ctKpi(label,value,sub,progress=null){return `<div class="ct-kpi"><div class="ct-caption">${label}</div><strong>${ctEsc(value)}</strong><span class="ct-hint">${sub}</span>${progress!==null?`<div class="ct-bar"><i style="width:${Math.max(0,Math.min(100,progress))}%"></i></div>`:''}</div>`;}
+function ctKpi(label,value,sub,progress=null){return `<div class="ct-kpi" title="${ctEsc(sub)}"><span class="ct-caption">${ctEsc(label)}</span><strong>${ctEsc(value)}</strong>${progress!==null?`<span class="ct-bar" aria-label="Прогресс ${Math.round(progress)}%"><i style="width:${Math.max(0,Math.min(100,progress))}%"></i></span>`:''}</div>`;}
 function ctWarning(page,msg){const e=page.querySelector('[data-ct-page-error]');if(e){e.textContent=msg||'';e.hidden=!msg;}}
 function ctTaskSort(x,y){if(x.done!==y.done)return x.done?1:-1;const xo=!x.done&&x.due_date<ctToday(),yo=!y.done&&y.due_date<ctToday();if(xo!==yo)return xo?-1:1;return x.due_date.localeCompare(y.due_date)||ctPriority(x).localeCompare(ctPriority(y))||Number(x.id)-Number(y.id);}
 // One copyable contact in the title; if the source has no phone, use an existing Instagram handle.
@@ -12356,35 +12483,67 @@ function ctClientSnapshot(t){
   <p class="ct-snapshot-hint">Данные на момент выгрузки. Перед обращением проверьте актуальные покупки, остаток и переписку в ImpulseCRM.</p>
  </details>`;
 }
-function ctTaskView(t){const overdue=!t.done&&t.due_date<ctToday(),sel=(key)=>`<option value="${key}"${t.result===key?' selected':''}>${ctEsc(CT_RESULTS[key])}</option>`;
-  const color=ctBranchName(t.branch),flag=t.meta?.risk_flags||[],ready=!!t.crm_verified;
-  const tags=`<div class="ct-chips"><span class="ct-chip ct-${ctPriority(t)}">${ctPriority(t)}${ctPriority(t)==='A'?' · срочно':''}</span><span class="ct-chip">${ctEsc(ctSegment(t))}</span><span class="ct-chip${overdue?' ct-danger':''}">${overdue?'Просрочено · ':''}${ctDate(t.due_date)}</span></div>`;
-  const contact=ctTaskContact(t);
-  const contactHtml=contact.value?`<span class="ct-contact-wrap"><button type="button" class="ct-contact-copy" data-ct-contact-copy="${t.id}" title="Скопировать ${contact.kind==='phone'?'телефон':'Instagram'}" aria-label="Скопировать ${contact.kind==='phone'?'телефон':'Instagram'} ${ctEsc(contact.label)}"><span>${ctEsc(contact.label)}</span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button><span class="ct-contact-feedback" role="status" aria-live="polite"></span></span>`:`<span class="ct-contact-empty">${ctEsc(contact.label)}</span>`;
-  const head=`<div class="ct-head"><input class="ct-task-check" type="checkbox" data-ct-check="${t.id}" aria-label="Отметить задачу выполненной" ${t.done?'checked':''}><div class="ct-who"><div class="ct-identity"><strong class="ct-client-name">${ctEsc(t.client_name)}</strong><span class="ct-sep">—</span>${contactHtml}<span class="ct-sep">—</span><span class="ct-branch-name">${ctEsc(color)}</span></div></div>${tags}</div>`;
-  if(t.done)return `<article class="ct-card done" data-ct-task="${t.id}">${head}<div class="ct-done-line"><span class="ct-chip ct-${ctResultState(t)}">${ctEsc(CT_RESULTS[t.result]||'Выполнено')}</span>${t.next_contact?`<span>Следующий контакт: ${ctDate(t.next_contact)}</span>`:''}${t.comment?`<span>${ctEsc(t.comment)}</span>`:''}<span>Отмечено ${ctStamp(t.done_at)}</span></div></article>`;
-  const allowed=ready&&!!t.message;
-  const before=[t.meta?.phone_needs_verification?'Уточнить действующий номер телефона в CRM (в выгрузке несколько или нестандартный формат)':null,t.meta?.check_before_contact,t.meta?.risk_note_snapshot].filter(Boolean).join(' · ')||'Проверить новые покупки, посещение и предыдущую переписку в ImpulseCRM';
-  const snapshot=ctClientSnapshot(t);
-  return `<article class="ct-card" data-ct-task="${t.id}">${head}
-    <label class="ct-verify"><input type="checkbox" data-ct-field="crm_verified" data-ct-id="${t.id}" ${ready?'checked':''}><span>Проверено в ImpulseCRM</span></label>
-    <div class="ct-todo"><b>Что сделать:</b> ${ctEsc(t.todo||'Проверить актуальный статус клиента в ImpulseCRM')}</div>
-    <div class="ct-message"><p>${ctEsc(t.message||'Готовый текст не предоставлен в источнике; сначала проверьте карточку клиента.')}</p><button type="button" class="ct-btn" data-ct-copy="${t.id}" ${allowed?'':'disabled'}>${t.copied_at?'Скопировано ✓':'Скопировать сообщение'}</button></div>
-    ${!ready?'<div class="ct-disabled">До проверки карточки клиента копирование сообщения заблокировано. Автоматическая отправка не предусмотрена.</div>':''}
-    <div class="ct-line"><b>Перед отправкой:</b> ${ctEsc(before)}</div>
-    <div class="ct-line"><b>Что предложить:</b> ${ctEsc(t.offer||'Уточнить подходящий вариант и действующие цены в ImpulseCRM')}</div>
-    ${snapshot}
-    <div class="ct-form"><label class="ct-control"><span>Результат</span><select class="ct-select" data-ct-field="result" data-ct-id="${t.id}"><option value="">Не начато</option>${Object.keys(CT_RESULTS).map(sel).join('')}</select></label>
-    <label class="ct-control"><span>Следующий контакт</span><input class="ct-field" type="date" data-ct-field="next_contact" data-ct-id="${t.id}" value="${ctEsc(t.next_contact||'')}"></label>
-    <label class="ct-control"><span>Комментарий</span><textarea class="ct-textarea" rows="2" maxlength="1500" data-ct-field="comment" data-ct-id="${t.id}" placeholder="Краткий результат; подробности и переписка — в CRM">${ctEsc(t.comment||'')}</textarea></label></div>
-    <div class="ct-foot"><span class="ct-error" data-ct-error="${t.id}"></span><span class="ct-save-status" data-ct-save="${t.id}">${t.updated_by?'Сохранено '+ctStamp(t.updated_at):'Изменения сохраняются автоматически'}</span></div>
-  </article>`;
+function ctTaskShort(t){
+ const m=t.meta||{},pkg=String(m.last_package_snapshot||'').trim(),left=m.remaining_sessions_snapshot;
+ if(ctSegment(t)==='Продление'&&pkg){return `Абонемент ${pkg}${left!==null&&left!==undefined&&String(left)!==''?' · остаток '+left:''}`;}
+ return String(t.todo||'Проверить клиента в ImpulseCRM').replace(/\s+/g,' ').trim();
+}
+function ctNeedsExtra(result){return ['promised','postponed','noanswer','refused','other'].includes(result);}
+function ctTaskIsOpen(ctx,t){const explicit=ctx?.expandedTasks?.[String(t.id)];return explicit===undefined?(!t.done&&ctNeedsExtra(t.result)):!!explicit;}
+function ctTaskDetails(ctx,t){
+ const needDate=['promised','postponed','noanswer'].includes(t.result),needComment=['postponed','refused','other'].includes(t.result);
+ const before=[t.meta?.phone_needs_verification?'Уточнить действующий номер телефона в CRM (в выгрузке несколько или нестандартный формат)':null,t.meta?.check_before_contact,t.meta?.risk_note_snapshot].filter(Boolean).join(' · ')||'Проверить новые покупки, посещение и предыдущую переписку в ImpulseCRM';
+ const readonly=t.done;
+ return `<div class="ct-expanded" data-ct-expanded="${t.id}">
+ ${!readonly?`<div class="ct-compact-form">
+ <label class="ct-control"><span>Следующий контакт${needDate?' <em aria-hidden="true">*</em>':''}</span><input class="ct-field" type="date" data-ct-field="next_contact" data-ct-id="${t.id}" value="${ctEsc(t.next_contact||'')}"></label>
+ <label class="ct-control"><span>Комментарий${needComment?' <em aria-hidden="true">*</em>':''}</span><textarea class="ct-textarea" rows="1" maxlength="1500" data-ct-field="comment" data-ct-id="${t.id}" placeholder="Краткий результат; подробности и переписка — в CRM">${ctEsc(t.comment||'')}</textarea></label>
+ <div class="ct-foot"><span class="ct-error" data-ct-error="${t.id}" role="alert"></span><span class="ct-save-status" data-ct-save="${t.id}">${t.updated_by?'Сохранено '+ctStamp(t.updated_at):'Изменения сохраняются автоматически'}</span></div></div>`:''}
+ <div class="ct-expanded-info">
+ <div class="ct-message"><p>${ctEsc(t.message||'Готовый текст не предоставлен в источнике; сначала проверьте карточку клиента.')}</p></div>
+ <div class="ct-line"><b>Что сделать:</b> ${ctEsc(t.todo||'Проверить актуальный статус клиента в ImpulseCRM')}</div>
+ <div class="ct-line"><b>Перед отправкой:</b> ${ctEsc(before)}</div>
+ <div class="ct-line"><b>Что предложить:</b> ${ctEsc(t.offer||'Уточнить подходящий вариант и действующие цены в ImpulseCRM')}</div>
+ ${ctClientSnapshot(t)}
+ ${t.copied_at?`<div class="ct-hint">Сообщение скопировано ${ctStamp(t.copied_at)}</div>`:''}
+ </div></div>`;
+}
+function ctTaskView(t,ctx){
+ const overdue=!t.done&&t.due_date<ctToday(),opened=ctTaskIsOpen(ctx,t),ready=!!t.crm_verified;
+ const contact=ctTaskContact(t),contactHtml=contact.value?
+ `<button type="button" class="ct-contact-copy" data-ct-contact-copy="${t.id}" title="Скопировать ${contact.kind==='phone'?'телефон':'Instagram'}: ${ctEsc(contact.value)}" aria-label="Скопировать контакт ${ctEsc(contact.label)}">${ctEsc(contact.label)}</button>`:
+ `<span class="ct-contact-empty">${ctEsc(contact.label)}</span>`;
+ const who=`<span class="ct-row-person"><strong class="ct-client-name" title="${ctEsc(t.client_name)}">${ctEsc(t.client_name)}</strong><small>${contactHtml}<span class="ct-contact-id"> · CRM ${ctEsc(t.crm_id)}</span><span class="ct-contact-feedback" role="status" aria-live="polite"></span></small></span>`;
+ const checkbox=`<input class="ct-task-check" type="checkbox" data-ct-check="${t.id}" aria-label="Выполнено: ${ctEsc(t.client_name)}" ${t.done?'checked':''}>`;
+ const exp=`<button type="button" class="ct-expand-btn" data-ct-expand="${t.id}" aria-expanded="${opened}" aria-label="${opened?'Свернуть':'Раскрыть'} задачу ${ctEsc(t.client_name)}" title="${opened?'Свернуть':'Подробнее'}"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></button>`;
+ if(t.done){const info=[t.next_contact?'Следующий контакт '+ctDate(t.next_contact):null,t.comment?'«'+t.comment+'»':null,'Отмечено '+ctStamp(t.done_at)].filter(Boolean).join(' · ');
+  return `<article class="ct-card ct-task-line done${opened?' ct-open':''}" data-ct-task="${t.id}"><div class="ct-row ct-row-done">${checkbox}${who}<span class="ct-chip ct-${ctResultState(t)}">${ctEsc(CT_RESULTS[t.result]||'Выполнено')}</span><span class="ct-row-done-info" title="${ctEsc(info)}">${ctEsc(info)}</span>${exp}</div>${opened?ctTaskDetails(ctx,t):''}</article>`;}
+ const tags=`<div class="ct-chips"><span class="ct-chip ct-${ctPriority(t)}" title="Приоритет ${ctPriority(t)}">${ctPriority(t)}</span><span class="ct-chip">${ctEsc(ctSegment(t))}</span><span class="ct-chip${overdue?' ct-danger':''}" title="Дата ${ctDate(t.due_date)}">${ctDate(t.due_date)}</span>${t.do_not_contact?'<span class="ct-chip ct-danger">запрет</span>':''}</div>`;
+ const crm=`<label class="ct-crm-line" title="Проверено в ImpulseCRM: покупки, остаток, запреты, переписка"><input type="checkbox" data-ct-field="crm_verified" data-ct-id="${t.id}" aria-label="Проверено в ImpulseCRM: ${ctEsc(t.client_name)}" ${ready?'checked':''}><span>CRM</span></label>`;
+ const copy=`<button type="button" class="ct-btn ct-btn-sm ct-copy-btn" data-ct-copy="${t.id}" aria-label="Скопировать сообщение ${ctEsc(t.client_name)}" ${ready&&t.message&&!t.do_not_contact?'':'disabled'} title="${t.do_not_contact?'Обращения запрещены':!ready?'Сначала проверьте клиента в ImpulseCRM':'Скопировать готовое сообщение'}">${t.copied_at?'Скопировано ✓':'Скопировать'}</button>`;
+ const opts=`<option value="">Результат…</option>`+Object.keys(CT_RESULTS).map(key=>`<option value="${key}"${t.result===key?' selected':''}>${ctEsc(CT_RESULTS[key])}</option>`).join('');
+ return `<article class="ct-card ct-task-line${opened?' ct-open':''}" data-ct-task="${t.id}"><div class="ct-row">${checkbox}${who}${tags}<span class="ct-task-short" title="${ctEsc(t.todo||'')}">${ctEsc(ctTaskShort(t))}</span><div class="ct-row-actions">${crm}${copy}<select class="ct-select ct-result-select" data-ct-field="result" data-ct-id="${t.id}" aria-label="Результат контакта: ${ctEsc(t.client_name)}">${opts}</select></div>${exp}</div>${opened?ctTaskDetails(ctx,t):''}</article>`;
+}
+function ctSyncExpanded(ctx,t,preview=null){
+ const card=ctx.page.querySelector(`[data-ct-task="${t.id}"]`);if(!card)return;
+ const shown=preview?{...t,...preview}:t,opened=ctTaskIsOpen(ctx,shown),existing=card.querySelector('[data-ct-expanded]');
+ if(opened&&!existing)card.insertAdjacentHTML('beforeend',ctTaskDetails(ctx,shown));
+ else if(!opened&&existing)existing.remove();
+ else if(opened&&existing){
+  const date=existing.querySelector('[data-ct-field="next_contact"]'),comment=existing.querySelector('[data-ct-field="comment"]');
+  const dateLabel=date?.closest('label')?.querySelector('span'),commentLabel=comment?.closest('label')?.querySelector('span');
+  if(dateLabel)dateLabel.innerHTML='Следующий контакт'+(['promised','postponed','noanswer'].includes(shown.result)?' <em aria-hidden="true">*</em>':'');
+  if(commentLabel)commentLabel.innerHTML='Комментарий'+(['postponed','refused','other'].includes(shown.result)?' <em aria-hidden="true">*</em>':'');
+ }
+ card.classList.toggle('ct-open',opened);
+ const btn=card.querySelector('[data-ct-expand]');if(btn){btn.setAttribute('aria-expanded',String(opened));btn.setAttribute('aria-label',(opened?'Свернуть':'Раскрыть')+' задачу '+t.client_name);btn.title=opened?'Свернуть':'Подробнее';}
 }
 function ctAdminKpis(ctx){const rows=ctx.data.tasks.filter(t=>!t.reserve&&!t.do_not_contact),st=ctTaskStats(rows),own=ctx.data.staff.find(s=>s.id===ctx.access.admin_id),target=Number(own?.target||0);
- return ctKpi('Выполнено',`${st.done} из ${st.total}`,`${ctPct(st.done,st.total)}% задач`,ctPct(st.done,st.total))
-  +ctKpi('Оплатили',`${st.paid} из ${target}`,`Личная доля цели · отмечено администратором`,ctPct(st.paid,target))
+ return ctKpi('Выполнено',`${st.done}/${st.total}`,`${ctPct(st.done,st.total)}% задач`,ctPct(st.done,st.total))
+  +ctKpi('Оплатили',`${st.paid}/${target}`,'Личная доля цели · отмечено администратором',ctPct(st.paid,target))
   +ctKpi('Обещали оплатить',st.promised,'Ожидают следующего контакта')
-  +ctKpi('Сегодня к выполнению',st.today,st.overdue?`<span class="ct-danger-text">${st.overdue} просрочено</span>`:'Просроченных нет');
+  +ctKpi('Сегодня',st.today,'Сегодня к выполнению')
+  +`<div class="ct-kpi${st.overdue?' ct-overdue':''}"><span class="ct-caption">Просрочено</span><strong>${st.overdue}</strong></div>`;
 }
 function ctFilterTasks(ctx){const f=ctx.filters,q=f.q.trim().toLowerCase();return ctx.data.tasks.filter(t=>!t.reserve&&!t.do_not_contact&&!t.meta?.superseded_snapshot).filter(t=>{
  if(q&&!`${t.client_name} ${t.phone} ${t.crm_id}`.toLowerCase().includes(q))return false;
@@ -12395,50 +12554,73 @@ function ctFilterTasks(ctx){const f=ctx.filters,q=f.q.trim().toLowerCase();retur
  if(f.status==='open'&&t.done)return false;if(f.status==='done'&&!t.done)return false;
  return true;}).sort(ctTaskSort);
 }
-function ctRenderAdminList(ctx){const root=ctx.page;const rows=ctFilterTasks(ctx);const list=root.querySelector('[data-ct-list]');if(!list)return;
- list.innerHTML=rows.length?rows.map(ctTaskView).join(''):'<div class="ct-empty">По выбранным фильтрам задач нет.</div>';
- const cnt=root.querySelector('[data-ct-count]');if(cnt)cnt.textContent=`Показано ${rows.length} из ${ctx.data.tasks.filter(t=>!t.reserve&&!t.do_not_contact).length} карточек`;
- const box=root.querySelector('[data-ct-kpis]');if(box)box.innerHTML=ctAdminKpis(ctx);
+function ctQuickViews(ctx){
+ const rows=ctx.data.tasks.filter(t=>!t.reserve&&!t.do_not_contact&&!t.meta?.superseded_snapshot),stat=ctTaskStats(rows);
+ const opts=[['today','Сегодня',stat.today],['overdue','Просрочено',stat.overdue],['open','Все невыполненные',stat.total-stat.done],['done','Выполнено',stat.done],['all','Все',stat.total]];
+ return opts.map(([k,label,c])=>`<button type="button" class="ct-quick-chip${ctx.quickView===k?' on':''}${k==='overdue'&&c?' ct-red':''}" data-ct-quick="${k}" aria-label="${label}: ${c}" aria-pressed="${ctx.quickView===k}">${label} <b>${c}</b></button>`).join('');
 }
-function ctRenderAdmin(ctx){ctx.page.innerHTML=`<div class="ct-strip"><strong>Порядок работы:</strong> открыть задачу → проверить клиента в ImpulseCRM → при отсутствии запрета скопировать готовое сообщение → указать результат, дату и комментарий → отметить выполнение. Allsports/GymFit в резерве, без массовой рассылки.</div>
- <div class="ct-kpis" data-ct-kpis></div><div class="ct-filters">
- <input class="ct-field ct-search" type="search" placeholder="Поиск: ФИО, телефон, CRM ID" data-ct-filter="q" aria-label="Поиск">
- <select class="ct-select" data-ct-filter="date"><option value="all">Все даты</option><option value="today">Сегодня</option><option value="overdue">Просрочено</option><option value="specific">Конкретная дата</option></select>
- <input class="ct-field" type="date" data-ct-specific-date style="display:none" aria-label="Дата задачи">
- <select class="ct-select" data-ct-filter="segment"><option value="all">Все сегменты</option><option>Продление</option><option>Пробное</option><option>Возврат</option></select>
- <select class="ct-select" data-ct-filter="status"><option value="open">Не завершено</option><option value="done">Выполнено</option><option value="all">Все</option></select></div>
- <div class="ct-count" data-ct-count></div><div class="ct-list" data-ct-list></div><div class="ct-error" data-ct-page-error hidden></div>`;
+function ctUpdateSummary(ctx){const root=ctx.page,k=root.querySelector('[data-ct-kpis]'),views=root.querySelector('[data-ct-quick]'),count=root.querySelector('[data-ct-count]');
+ if(k)k.innerHTML=ctAdminKpis(ctx);
+ if(views){if(!views.children.length)views.innerHTML=ctQuickViews(ctx);
+  else{const st=ctTaskStats(ctx.data.tasks.filter(t=>!t.reserve&&!t.do_not_contact&&!t.meta?.superseded_snapshot));
+   const counts={today:st.today,overdue:st.overdue,open:st.total-st.done,done:st.done,all:st.total};
+   views.querySelectorAll('[data-ct-quick]').forEach(button=>{const key=button.dataset.ctQuick;
+    button.setAttribute('aria-pressed',String(ctx.quickView===key));button.classList.toggle('on',ctx.quickView===key);
+    button.classList.toggle('ct-red',key==='overdue'&&counts[key]>0);
+    const badge=button.querySelector('b');if(badge)badge.textContent=counts[key];
+   });}}
+ if(count)count.textContent=`Показано ${ctFilterTasks(ctx).length} из ${ctx.data.tasks.filter(t=>!t.reserve&&!t.do_not_contact&&!t.meta?.superseded_snapshot).length}`;
+}
+function ctRenderAdminList(ctx){const root=ctx.page,rows=ctFilterTasks(ctx),list=root.querySelector('[data-ct-list]');if(!list)return;
+ // Reconcile keyed rows without replacing unaffected DOM controls or losing input focus.
+ const ids=new Set(rows.map(t=>String(t.id)));
+ list.querySelectorAll('[data-ct-task]').forEach(el=>{if(!ids.has(el.getAttribute('data-ct-task')))el.remove();});
+ const empty=list.querySelector('.ct-empty');if(empty)empty.remove();
+ if(!rows.length){list.innerHTML='<div class="ct-empty">По выбранным фильтрам задач нет.</div>';}
+ else{let cursor=list.firstElementChild;
+  for(const task of rows){const id=String(task.id);let el=list.querySelector(`[data-ct-task="${id}"]`);
+   if(!el){const tmp=document.createElement('div');tmp.innerHTML=ctTaskView(task,ctx);el=tmp.firstElementChild;}
+   if(el!==cursor)list.insertBefore(el,cursor);cursor=el.nextElementSibling;
+  }
+ }
+ ctUpdateSummary(ctx);
+}
+function ctRenderAdmin(ctx){ctx.page.innerHTML=`<div class="ct-kpis" data-ct-kpis></div>
+ <details class="ct-order"><summary>Порядок работы</summary><div>Открыть задачу → проверить клиента в ImpulseCRM → при отсутствии запрета скопировать готовое сообщение → указать результат, дату и комментарий → отметить выполнение. Allsports/GymFit в резерве, без массовой рассылки.</div></details>
+ <div class="ct-filter-sticky"><div class="ct-filters ct-compact-filters"><div class="ct-quick-tabs" data-ct-quick></div><input class="ct-field ct-search" type="search" placeholder="Поиск: ФИО, телефон, CRM ID" data-ct-filter="q" aria-label="Поиск"><select class="ct-select" data-ct-filter="date" aria-label="Дата задачи"><option value="all">Все даты</option><option value="today">Сегодня</option><option value="overdue">Просрочено</option><option value="specific">Конкретная дата</option></select><input class="ct-field" type="date" data-ct-specific-date style="display:none" aria-label="Дата задачи"><select class="ct-select" data-ct-filter="segment" aria-label="Сегмент"><option value="all">Все сегменты</option><option>Продление</option><option>Пробное</option><option>Возврат</option></select><span class="ct-count" data-ct-count></span></div></div>
+ <div class="ct-list ct-task-list" data-ct-list></div><div class="ct-error" data-ct-page-error hidden></div>`;
  ctRenderAdminList(ctx);
 }
 function ctManagerStats(ctx){const all=ctx.data.tasks.filter(t=>!t.reserve&&!t.do_not_contact&&!t.meta?.superseded_snapshot),st=ctTaskStats(all),target=Number(ctx.data.plan?.target_sales||0);
- return ctKpi('Выполнено',`${ctPct(st.done,st.total)}%`,`${st.done} из ${st.total} задач`,ctPct(st.done,st.total))
- +ctKpi('Оплатили',`${st.paid} из ${target}`,'Отмеченные оплаты · сверить в ImpulseCRM',ctPct(st.paid,target))
+ return ctKpi('Выполнено',`${st.done}/${st.total}`,`${ctPct(st.done,st.total)}%`,ctPct(st.done,st.total))
+ +ctKpi('Оплатили',`${st.paid}/${target}`,'Отмеченные оплаты · сверить в ImpulseCRM',ctPct(st.paid,target))
  +ctKpi('Обещали оплатить',st.promised,'Следующий контакт назначен')
- +ctKpi('Просроченные задачи',st.overdue,'Требуют внимания сегодня');
+ +ctKpi('Сегодня',st.today,'Сегодня к выполнению')
+ +`<div class="ct-kpi${st.overdue?' ct-overdue':''}"><span class="ct-caption">Просрочено</span><strong>${st.overdue}</strong></div>`;
 }
 function ctManagerRows(ctx,admin){const rows=ctx.data.tasks.filter(t=>t.admin_id===admin.id&&!t.reserve&&!t.do_not_contact&&!t.meta?.superseded_snapshot),mode=ctx.taskFilters[admin.id]||'all';
  const filtered=rows.filter(t=>mode==='all'||(mode==='open'&&!t.done)||(mode==='done'&&t.done)||(mode==='overdue'&&!t.done&&t.due_date<ctToday())).sort(ctTaskSort);
  const st=ctTaskStats(rows),filters=[['all',`Все · ${rows.length}`],['open',`Не выполнено · ${rows.length-st.done}`],['done',`Выполнено · ${st.done}`],['overdue',`Просрочено · ${st.overdue}`]];
- return `<div class="ct-admin-body"><div class="ct-pills">${filters.map(([key,label])=>`<button class="ct-pill${mode===key?' on':''}" type="button" data-ct-task-filter="${key}" data-ct-admin="${admin.id}">${label}</button>`).join('')}</div>
- ${filtered.length?filtered.map(t=>`<div class="ct-team-task"><div><b>${ctEsc(t.client_name)}</b><div class="ct-sub">CRM ID ${ctEsc(t.crm_id)} · ${ctEsc(ctSegment(t))}</div></div><div>${ctDate(t.due_date)}</div><div><span class="ct-chip${t.done?' ct-success':t.due_date<ctToday()?' ct-danger':''}">${t.done?ctEsc(CT_RESULTS[t.result]||'Выполнено'):t.due_date<ctToday()?'Просрочено':'В работе'}</span></div><div class="ct-sub">${t.next_contact?'Следующий контакт '+ctDate(t.next_contact)+' · ':''}${t.comment?ctEsc(t.comment)+' · ':''}${t.copied_at?'Скопировано '+ctStamp(t.copied_at)+' · ':''}${t.done_at?'Отмечено '+ctStamp(t.done_at):''}</div></div>`).join(''):'<div class="ct-empty">Нет задач по выбранному фильтру.</div>'}</div>`;
+ return `<div class="ct-admin-body"><div class="ct-pills">${filters.map(([key,label])=>`<button class="ct-pill${mode===key?' on':''}" type="button" data-ct-task-filter="${key}" data-ct-admin="${admin.id}" aria-label="${ctEsc(label)}" aria-pressed="${mode===key}">${label}</button>`).join('')}</div>
+ <div class="ct-team-grid"><div class="ct-team-grid-head"><span>Клиент</span><span>Сегмент</span><span>Дата</span><span>Статус</span><span>След. контакт</span><span>Комментарий</span><span>Отметка</span></div>
+ ${filtered.length?filtered.map(t=>{const mark=[t.done_at?'Выполнено '+ctStamp(t.done_at):null,t.copied_at?'Скопировано '+ctStamp(t.copied_at):null,t.crm_verified?'CRM проверено':null].filter(Boolean).join(' · ')||'—';
+ return `<div class="ct-team-task"><span data-label="Клиент" class="ct-team-person"><b title="${ctEsc(t.client_name)}">${ctEsc(t.client_name)}</b><small>CRM ${ctEsc(t.crm_id)}</small></span><span data-label="Сегмент">${ctEsc(ctSegment(t))}</span><span data-label="Дата">${ctDate(t.due_date)}</span><span data-label="Статус"><span class="ct-chip${t.done?' ct-success':t.due_date<ctToday()?' ct-danger':''}">${t.done?ctEsc(CT_RESULTS[t.result]||'Выполнено'):t.due_date<ctToday()?'Просрочено':'В работе'}</span></span><span data-label="След. контакт">${t.next_contact?ctDate(t.next_contact):'—'}</span><span data-label="Комментарий" class="ct-team-comment" title="${ctEsc(t.comment||'')}">${ctEsc(t.comment||'—')}</span><span data-label="Отметка" class="ct-team-mark" title="${ctEsc(mark)}">${ctEsc(mark)}</span></div>`;}).join(''):'<div class="ct-empty">Нет задач по выбранному фильтру.</div>'}</div></div>`;
 }
 function ctManagerAdminCard(ctx,admin){const rows=ctx.data.tasks.filter(t=>t.admin_id===admin.id&&!t.reserve&&!t.do_not_contact&&!t.meta?.superseded_snapshot),st=ctTaskStats(rows),opened=ctx.openAdmins[admin.id]===true,branch=CT_BRANCHES[admin.branch]||CT_BRANCHES.masherova;
  const initials=admin.name.split(' ').filter(Boolean).slice(0,2).map(x=>x[0]).join('');
- return `<section class="ct-admin" data-ct-admin-card="${admin.id}"><button type="button" class="ct-admin-head" data-ct-open="${admin.id}" aria-expanded="${opened}">
+ return `<section class="ct-admin" data-ct-admin-card="${admin.id}"><button type="button" class="ct-admin-head" data-ct-open="${admin.id}" aria-label="${opened?'Свернуть':'Раскрыть'} задачи ${ctEsc(admin.name)}" aria-expanded="${opened}">
   <div class="ct-admin-name"><span class="ct-avatar" style="--ct-branch:${branch.color}">${ctEsc(initials)}</span><span><b>${ctEsc(admin.name)}</b><small>${ctEsc(branch.name)}</small></span></div>
   <div class="ct-progress"><div class="ct-bar"><i style="width:${ctPct(st.done,st.total)}%"></i></div><span class="ct-hint">${st.done} из ${st.total} · ${ctPct(st.done,st.total)}%</span></div>
   <span class="ct-stat"><b>${st.paid}/${admin.target||0}</b><small>оплатили</small></span><span class="ct-stat"><b>${st.promised}</b><small>обещали</small></span><span class="ct-stat"><b ${st.overdue?'class="ct-danger-text"':''}>${st.overdue}</b><small>просрочено</small></span>
-  <span class="ct-last ct-hint">${st.last?'Активность '+ctStamp(st.last):'Нет активности'}</span><span class="ct-arrow">⌄</span></button>${opened?ctManagerRows(ctx,admin):''}</section>`;
+  <span class="ct-last ct-hint">${st.last?'Активность '+ctStamp(st.last):'Нет активности'}</span><span class="ct-arrow" aria-hidden="true">⌄</span></button>${opened?ctManagerRows(ctx,admin):''}</section>`;
 }
-function ctRenderManager(ctx){const p=ctx.data.plan,st=ctx.data.staff||[];
- const name=p?.name||'Активный план ещё не создан',archive=ctx.data.archive||[];
+function ctRenderManager(ctx){const p=ctx.data.plan,st=ctx.data.staff||[],archive=ctx.data.archive||[],name=p?.name||'Активный план ещё не создан';
  const filteredStaff=st.filter(a=>ctx.managerBranch==='all'||a.branch===ctx.managerBranch);
- ctx.page.innerHTML=`<div class="ct-planbar"><div><h3>${ctEsc(name)}</h3><div class="ct-meta">${p?`${ctDate(p.date_from)} – ${ctDate(p.date_to)} · цель ${p.target_sales} продаж · ${ctEsc(p.source)} · загружено ${ctDate(p.uploaded_at)}`:'Загрузите файл подготовленных задач ImpulseCRM, затем активируйте план'}</div></div>
- <div class="ct-planbar-actions">${p&&p.status==='archived'?ctBtn('Вернуться к текущему плану','active','ct-btn-sm'):''}${ctx.access.manage?ctBtn(ctx.showImport?'Закрыть загрузку':'Загрузить новую базу / новый план','newplan','ct-btn-primary'):''}</div></div>
+ ctx.page.innerHTML=`<div class="ct-planbar"><div><h3>${ctEsc(name)}</h3><div class="ct-meta">${p?`${ctDate(p.date_from)} – ${ctDate(p.date_to)} · цель ${p.target_sales} продаж · ${ctEsc(p.source)} · загружено ${ctDate(p.uploaded_at)}`:'Загрузите файл подготовленных задач ImpulseCRM, затем активируйте план'}${p?` · резерв Allsports/GymFit: ${ctx.data.tasks.filter(t=>t.reserve&&!t.do_not_contact).length}${ctx.access.owner?` · запрещены обращения: ${ctx.data.tasks.filter(t=>t.do_not_contact).length}`:''}`:''}</div></div>
+ <div class="ct-planbar-actions">${p&&p.status==='archived'?ctBtn('Вернуться к текущему плану','active','ct-btn-sm'):''}${ctx.access.manage?ctBtn(ctx.showImport?'Закрыть загрузку':'Загрузить новую базу / новый план','newplan','ct-btn-primary ct-btn-sm'):''}</div></div>
  ${ctx.showImport?'<div data-ct-import></div>':''}
- ${p?`<div class="ct-kpis">${ctManagerStats(ctx)}</div><div class="ct-filters"><select class="ct-select" data-ct-branch><option value="all">Все филиалы</option>${Object.entries(CT_BRANCHES).map(([k,v])=>`<option value="${k}" ${ctx.managerBranch===k?'selected':''}>${v.name}</option>`).join('')}</select><span class="ct-count">Список администраторов · просмотр задач только для чтения</span></div>
- <div class="ct-count">Резерв Allsports/GymFit: ${ctx.data.tasks.filter(t=>t.reserve&&!t.do_not_contact).length}${ctx.access.owner?` · Запрещены обращения: ${ctx.data.tasks.filter(t=>t.do_not_contact).length}`:''}. Не включаются в личную очередь и отправку сообщений.</div><div class="ct-list" data-ct-manager-list>${filteredStaff.map(a=>ctManagerAdminCard(ctx,a)).join('')||'<div class="ct-empty">Нет назначенных администраторов.</div>'}</div>`:''}
- <h3 class="ct-title">Архив планов</h3><div class="ct-archive">${archive.length?archive.map(x=>`<div class="ct-archive-item"><b>${ctEsc(x.name)}</b><span>${ctDate(x.from)} – ${ctDate(x.to)}</span><span>Выполнено ${ctPct(x.done,x.total)}%</span><span>Отметили оплату ${x.sales} из ${x.target}</span>${ctx.access.team?`<button class="ct-btn ct-btn-sm" type="button" data-ct-archive="${x.id}">Открыть</button>`:''}</div>`).join(''):'<div class="ct-empty">Архивных планов пока нет.</div>'}</div>
+ ${p?`<div class="ct-kpis">${ctManagerStats(ctx)}</div><div class="ct-manager-filter"><div class="ct-branch-tabs">${[['all','Все филиалы'],...Object.entries(CT_BRANCHES).map(([key,v])=>[key,v.name])].map(([key,label])=>`<button type="button" class="ct-branch-chip${ctx.managerBranch===key?' on':''}" data-ct-branch-pick="${key}" aria-label="Филиал: ${ctEsc(label)}" aria-pressed="${ctx.managerBranch===key}">${key!=='all'?`<i style="background:${CT_BRANCHES[key].color}"></i>`:''}${label}</button>`).join('')}</div><span class="ct-count">Список администраторов · просмотр задач только для чтения</span></div><div class="ct-list ct-manager-list" data-ct-manager-list>${filteredStaff.map(a=>ctManagerAdminCard(ctx,a)).join('')||'<div class="ct-empty">Нет назначенных администраторов.</div>'}</div>`:''}
+ <details class="ct-archive-details"><summary>Архив планов · ${archive.length}</summary><div class="ct-archive">${archive.length?archive.map(x=>`<div class="ct-archive-item"><b>${ctEsc(x.name)}</b><span>${ctDate(x.from)} – ${ctDate(x.to)}</span><span>Выполнено ${ctPct(x.done,x.total)}%</span><span>Отметили оплату ${x.sales} из ${x.target}</span>${ctx.access.team?`<button class="ct-btn ct-btn-sm" type="button" data-ct-archive="${x.id}" aria-label="Открыть архивный план ${ctEsc(x.name)}">Открыть</button>`:''}</div>`).join(''):'<div class="ct-empty">Архивных планов пока нет.</div>'}</div></details>
  <div class="ct-error" data-ct-page-error hidden></div>`;
  if(ctx.showImport)ctRenderImport(ctx);
 }
@@ -12542,6 +12724,7 @@ function ctValidate(t,card){const result=card.querySelector('[data-ct-field="res
  return null;
 }
 function ctShowTaskError(ctx,t,err){const card=ctx.page.querySelector(`[data-ct-task="${t.id}"]`);if(!card)return;
+ ctx.expandedTasks[String(t.id)]=true;ctSyncExpanded(ctx,t);
  const text=card.querySelector(`[data-ct-error="${t.id}"]`);if(text)text.textContent=err?.message||String(err||'');
  if(err?.field){const input=card.querySelector(`[data-ct-field="${err.field}"]`);if(input){input.classList.add('ct-invalid');input.focus();}}
 }
@@ -12549,26 +12732,23 @@ async function ctSaveTask(ctx,t,patch,collapse){const id=String(t.id),prior=ctx.
  const next=prior.catch(()=>{}).then(async()=>{
   const el=ctx.page.querySelector(`[data-ct-task="${id}"]`),status=el?.querySelector('[data-ct-save]');if(status)status.textContent='Сохранение…';
   try{const updated=await rpc('app_client_task_save',{p_token:TOKEN,p_task_id:Number(t.id),p_version:t.row_version,p_patch:patch});
-   Object.assign(t,updated);
+   Object.assign(t,updated);if(patch.done===true)delete ctx.expandedTasks[id];
    const cur=ctx.page.querySelector(`[data-ct-task="${id}"]`);
    if(cur){if(collapse){
     const filtered=ctFilterTasks(ctx).some(row=>String(row.id)===id);
-    if(!filtered)cur.remove();else{cur.outerHTML=ctTaskView(t);const current=ctx.page.querySelector(`[data-ct-task="${id}"]`);
-      const list=ctx.page.querySelector('[data-ct-list]');if(list&&current){
-        const order=ctFilterTasks(ctx);const nextRow=order.slice(order.findIndex(x=>String(x.id)===id)+1).find(x=>ctx.page.querySelector(`[data-ct-task="${x.id}"]`));
-        if(nextRow)list.insertBefore(current,ctx.page.querySelector(`[data-ct-task="${nextRow.id}"]`));else list.appendChild(current);
+    if(!filtered)cur.remove();else{cur.outerHTML=ctTaskView(t,ctx);const current=ctx.page.querySelector(`[data-ct-task="${id}"]`);
+      const list=ctx.page.querySelector('[data-ct-list]');if(list&&current){const order=ctFilterTasks(ctx),idx=order.findIndex(x=>String(x.id)===id);
+       const nextRow=order.slice(idx+1).find(x=>ctx.page.querySelector(`[data-ct-task="${x.id}"]`));
+       if(nextRow)list.insertBefore(current,ctx.page.querySelector(`[data-ct-task="${nextRow.id}"]`));else list.appendChild(current);
       }
     }
-    const kpis=ctx.page.querySelector('[data-ct-kpis]');if(kpis)kpis.innerHTML=ctAdminKpis(ctx);
-    const count=ctx.page.querySelector('[data-ct-count]');if(count)count.textContent=`Показано ${ctFilterTasks(ctx).length} из ${ctx.data.tasks.filter(x=>!x.reserve&&!x.do_not_contact).length} карточек`;
-   }else{
-    const s=cur.querySelector('[data-ct-save]');if(s)s.textContent='Сохранено '+ctStamp(t.updated_at);
+    ctUpdateSummary(ctx);
+   }else{const s=cur.querySelector('[data-ct-save]');if(s)s.textContent='Сохранено '+ctStamp(t.updated_at);
     const e=cur.querySelector('[data-ct-error]');if(e)e.textContent='';
    }}
    return updated;
   }catch(err){const now=ctx.page.querySelector(`[data-ct-task="${id}"]`);const s=now?.querySelector('[data-ct-save]');if(s)s.textContent='Ошибка сохранения';ctShowTaskError(ctx,t,err);throw err;}
- });
- ctx.queues[id]=next;return next;
+ });ctx.queues[id]=next;return next;
 }
 async function ctCopy(v){try{await navigator.clipboard.writeText(v);return true;}catch(_){
  const ta=document.createElement('textarea');ta.value=v;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();let ok=false;
@@ -12586,8 +12766,8 @@ async function ctImportGo(ctx){const imp=ctx.imp;if(!imp.loaded)throw Error('С�
 function ctFreshImport(){const month=ctToday().slice(0,7),end=new Date(Date.parse(month+'-01T00:00:00Z'));end.setUTCMonth(end.getUTCMonth()+1);end.setUTCDate(0);
  return {loaded:null,key:`flexico-${month}-retention`,name:`${month} · клиенты и задачи`,from:month+'-01',to:end.toISOString().slice(0,10),target:40,dist:'branch',carry:true,reserve:true,confirm:false,error:'',progress:''};}
 async function renderClients(body){if(!session||!TOKEN){body.innerHTML='<div class="ct-empty">Для работы нужен вход в FAD.</div>';return;}
- const page=document.createElement('section');page.className='ct-root';body.replaceChildren(page);
- const ctx={page,access:null,data:null,filters:{q:'',date:'all',segment:'all',status:'open'},managerBranch:'all',openAdmins:{},taskFilters:{},queues:{},showImport:false,imp:ctFreshImport(),importing:false,directory:[]};CT_ACTIVE=ctx;
+ const page=document.createElement('section');page.className='ct-root ct-compact';body.replaceChildren(page);
+ const ctx={page,access:null,data:null,filters:{q:'',date:'all',segment:'all',status:'open'},quickView:'open',expandedTasks:{},managerBranch:'all',openAdmins:{},taskFilters:{},queues:{},showImport:false,imp:ctFreshImport(),importing:false,directory:[]};CT_ACTIVE=ctx;
  page.innerHTML='<div class="ct-loading">Загрузка защищённого списка клиентских задач…</div>';
  try{
   ctx.access=await rpc('app_client_access',{p_token:TOKEN});if(!page.isConnected)return;
@@ -12600,28 +12780,49 @@ async function renderClients(body){if(!session||!TOKEN){body.innerHTML='<div cla
   }
  }catch(e){if(page.isConnected)page.innerHTML='<div class="ct-empty">Не удалось получить защищённый список клиентов. Проверьте установку SQL и права роли.<div class="ct-error">'+ctEsc(e?.message||e)+'</div></div>';return;}
  page.addEventListener('click',async ev=>{
-  const btn=ev.target.closest('[data-ct-act],[data-ct-open],[data-ct-task-filter],[data-ct-archive],[data-ct-copy],[data-ct-contact-copy]');if(!btn)return;
+  const btn=ev.target.closest('[data-ct-act],[data-ct-open],[data-ct-task-filter],[data-ct-archive],[data-ct-copy],[data-ct-contact-copy],[data-ct-expand],[data-ct-quick],[data-ct-branch-pick]');if(!btn)return;
   const action=btn.dataset.ctAct;
   try{
+   if(btn.hasAttribute('data-ct-quick')){const k=btn.dataset.ctQuick;ctx.quickView=k;
+    ctx.filters.status=k==='done'?'done':k==='all'?'all':'open';ctx.filters.date=k==='today'?'today':k==='overdue'?'overdue':'all';
+    const date=page.querySelector('[data-ct-filter="date"]');if(date)date.value=ctx.filters.date;
+    const specific=page.querySelector('[data-ct-specific-date]');if(specific)specific.style.display='none';ctRenderAdminList(ctx);return;}
+   if(btn.hasAttribute('data-ct-expand')){const t=ctx.data.tasks.find(x=>String(x.id)===btn.dataset.ctExpand);if(!t)return;
+    const id=String(t.id);ctx.expandedTasks[id]=!ctTaskIsOpen(ctx,t);ctSyncExpanded(ctx,t);return;}
+   if(btn.hasAttribute('data-ct-branch-pick')){ctx.managerBranch=btn.dataset.ctBranchPick;
+    page.querySelectorAll('[data-ct-branch-pick]').forEach(b=>{const on=b.dataset.ctBranchPick===ctx.managerBranch;b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on));});
+    const list=page.querySelector('[data-ct-manager-list]');if(list){
+     list.querySelectorAll('[data-ct-admin-card],.ct-empty').forEach(e=>{if(!e.dataset.ctAdminCard||!ctx.data.staff.some(a=>String(a.id)===e.dataset.ctAdminCard&&(ctx.managerBranch==='all'||a.branch===ctx.managerBranch)))e.remove();});
+     for(const a of ctx.data.staff.filter(a=>ctx.managerBranch==='all'||a.branch===ctx.managerBranch)){
+      if(!list.querySelector(`[data-ct-admin-card="${a.id}"]`)){const temp=document.createElement('div');temp.innerHTML=ctManagerAdminCard(ctx,a);list.appendChild(temp.firstElementChild);}
+     }
+     if(!list.children.length)list.innerHTML='<div class="ct-empty">Нет назначенных администраторов.</div>';
+    }return;}
    if(btn.dataset.ctContactCopy){
     const t=ctx.data.tasks.find(x=>String(x.id)===btn.dataset.ctContactCopy);
     if(!t)return;
     const contact=ctTaskContact(t);
     if(!contact.value)return;
     const ok=await ctCopy(contact.value);
-    const feedback=btn.closest('.ct-contact-wrap')?.querySelector('.ct-contact-feedback');
+    const feedback=btn.closest('.ct-row-person')?.querySelector('.ct-contact-feedback');
     if(feedback){feedback.textContent=ok?'Скопировано':'Не удалось скопировать';
       setTimeout(()=>{if(feedback.isConnected)feedback.textContent='';},2100);}
     if(ok)toast(contact.kind==='phone'?'Телефон скопирован':'Instagram скопирован');
     return;
    }
-   if(btn.dataset.ctCopy){const t=ctx.data.tasks.find(x=>String(x.id)===btn.dataset.ctCopy);if(!t||!t.crm_verified||!t.message)return;
+   if(btn.dataset.ctCopy){const t=ctx.data.tasks.find(x=>String(x.id)===btn.dataset.ctCopy);if(!t||!t.crm_verified||!t.message||t.do_not_contact)return;
     const message=t.message.replace(/^ПОСЛЕ ПРОВЕРКИ[^:]*:\s*/i,'');const ok=await ctCopy(message);
     if(!ok)throw Error('Не удалось скопировать сообщение');await ctSaveTask(ctx,t,{copied_at:'now'},false);
     btn.textContent='Скопировано ✓';toast('Сообщение скопировано');return;
    }
-   if(btn.dataset.ctOpen){const id=btn.dataset.ctOpen;ctx.openAdmins[id]=!ctx.openAdmins[id];ctRenderManager(ctx);return;}
-   if(btn.dataset.ctTaskFilter){ctx.taskFilters[btn.dataset.ctAdmin]=btn.dataset.ctTaskFilter;ctRenderManager(ctx);return;}
+   if(btn.dataset.ctOpen){const id=btn.dataset.ctOpen;ctx.openAdmins[id]=!ctx.openAdmins[id];
+    const admin=ctx.data.staff.find(a=>String(a.id)===String(id)),card=page.querySelector(`[data-ct-admin-card="${id}"]`);
+    if(admin&&card){const tmp=document.createElement('div');tmp.innerHTML=ctManagerAdminCard(ctx,admin);card.replaceWith(tmp.firstElementChild);}
+    return;}
+   if(btn.dataset.ctTaskFilter){const id=btn.dataset.ctAdmin;ctx.taskFilters[id]=btn.dataset.ctTaskFilter;
+    const admin=ctx.data.staff.find(a=>String(a.id)===String(id)),card=page.querySelector(`[data-ct-admin-card="${id}"]`);
+    if(admin&&card){const body=card.querySelector('.ct-admin-body');if(body){const temp=document.createElement('div');temp.innerHTML=ctManagerRows(ctx,admin);body.replaceWith(temp.firstElementChild);}}
+    return;}
    if(btn.dataset.ctArchive){await ctLoadData(ctx,Number(btn.dataset.ctArchive));ctRenderManager(ctx);return;}
    if(action==='active'){await ctLoadData(ctx,null);ctRenderManager(ctx);return;}
    if(action==='newplan'){ctx.showImport=!ctx.showImport;ctx.imp.confirm=false;ctRenderManager(ctx);return;}
@@ -12645,7 +12846,7 @@ async function renderClients(body){if(!session||!TOKEN){body.innerHTML='<div cla
   }
   if(el.matches('[data-ct-branch]')){ctx.managerBranch=el.value;ctRenderManager(ctx);return;}
   if(el.matches('[data-ct-filter]')){
-   const k=el.dataset.ctFilter;ctx.filters[k]=el.value;
+   const k=el.dataset.ctFilter;ctx.filters[k]=el.value;if(k==='date'){ctx.quickView='custom';}
    const specific=page.querySelector('[data-ct-specific-date]');if(k==='date'&&specific){specific.style.display=el.value==='specific'?'':'none';if(el.value==='specific'&&specific.value)ctx.filters.date=specific.value;}
    ctRenderAdminList(ctx);return;
   }
@@ -12661,7 +12862,11 @@ async function renderClients(body){if(!session||!TOKEN){body.innerHTML='<div cla
   }
   if(el.matches('[data-ct-field]')){const t=ctx.data.tasks.find(x=>String(x.id)===el.dataset.ctId);if(!t)return;
    const key=el.dataset.ctField,value=el.type==='checkbox'?el.checked:el.value;
-   try{await ctSaveTask(ctx,t,{[key]:value},key==='crm_verified');}catch(_){/* error shown inside row */}
+   if(key==='result'){if(ctNeedsExtra(value))ctx.expandedTasks[String(t.id)]=true;
+    ctSyncExpanded(ctx,t,{result:value});}
+   if(key==='crm_verified'){const copy=el.closest('.ct-card')?.querySelector('[data-ct-copy]');if(copy)copy.disabled=!(value&&t.message&&!t.do_not_contact);}
+   try{await ctSaveTask(ctx,t,{[key]:value},false);}catch(_){if(key==='crm_verified'){
+    el.checked=!!t.crm_verified;const copy=el.closest('.ct-card')?.querySelector('[data-ct-copy]');if(copy)copy.disabled=!(t.crm_verified&&t.message&&!t.do_not_contact);}}
    return;
   }
  });
