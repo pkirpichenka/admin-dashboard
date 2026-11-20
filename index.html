@@ -3457,6 +3457,152 @@ input[type="time"]::-webkit-calendar-picker-indicator{position:absolute;right:8p
  .ct-root.ct-compact .ct-task-line .ct-row:not(.ct-row-done) .ct-row-actions .ct-result-select{font-size:11px!important}
 }
 
+/* FAD DF · База знаний · исключительно scoped стили */
+#tabbody .kb-root{
+ --kb-bg:var(--surface-2,#f3f6f2);--kb-card:var(--surface,#fff);
+ --kb-border:var(--line,#d5ded6);--kb-muted:var(--ink-soft,#5c6e64);
+ --kb-ink:var(--ink,#17261f);--kb-green:var(--accent,#2e7d5b);
+ --kb-soft:var(--fad-success-soft,#e7f3ea);--kb-warning:var(--fad-warning-soft,#fff3d9);
+ --kb-warn-ink:#805c1a;--kb-shadow:var(--fad-shadow,0 2px 10px #0000000b);
+ display:flex;flex-direction:column;gap:17px;max-width:1350px;width:100%;min-width:0;color:var(--kb-ink);padding-bottom:48px;
+}
+#tabbody .kb-root *{box-sizing:border-box}
+#tabbody .kb-root [hidden]{display:none!important}
+#tabbody .kb-root button,#tabbody .kb-root input,#tabbody .kb-root textarea,#tabbody .kb-root select{font:inherit}
+#tabbody .kb-root button{cursor:pointer}
+#tabbody .kb-root .kb-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+#tabbody .kb-root .kb-eyebrow{color:var(--kb-muted);font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:650}
+#tabbody .kb-root .kb-title{font-family:Unbounded,'Golos Text',sans-serif;font-weight:750;font-size:21px;line-height:1.3;margin:3px 0 0}
+#tabbody .kb-root .kb-actions{display:flex;align-items:center;flex-wrap:wrap;gap:9px}
+#tabbody .kb-root .kb-switch{display:inline-flex;align-items:center;gap:8px;cursor:pointer;color:var(--kb-muted);font-size:13px}
+#tabbody .kb-root .kb-switch input{accent-color:var(--kb-green);width:17px;height:17px}
+#tabbody .kb-root .kb-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:35px;padding:7px 12px;border:1px solid var(--kb-border);border-radius:9px;background:var(--kb-card);color:var(--kb-ink);font-size:12px;font-weight:650;text-align:center;transition:border-color .12s}
+#tabbody .kb-root .kb-btn:hover{border-color:var(--kb-green)}
+#tabbody .kb-root .kb-primary{background:var(--kb-green);border-color:var(--kb-green);color:#fff}
+#tabbody .kb-root .kb-danger{color:#b94133;border-color:#dfb4ad}
+#tabbody .kb-root .kb-small{min-height:29px;padding:5px 9px;font-size:11px}
+#tabbody .kb-root .kb-ghost{background:transparent;border-color:transparent;color:var(--kb-muted)}
+#tabbody .kb-root button:focus-visible,#tabbody .kb-root input:focus-visible,#tabbody .kb-root textarea:focus-visible,#tabbody .kb-root select:focus-visible{outline:2px solid var(--kb-green);outline-offset:2px}
+#tabbody .kb-root .kb-search{display:flex;align-items:center;gap:10px;min-height:55px;background:var(--kb-card);border:1px solid var(--kb-border);border-radius:12px;padding:4px 13px;box-shadow:var(--kb-shadow)}
+#tabbody .kb-root .kb-search:focus-within{border-color:var(--kb-green);box-shadow:0 0 0 3px var(--kb-soft)}
+#tabbody .kb-root .kb-search-icon{font-size:21px;color:var(--kb-muted)}
+#tabbody .kb-root #kbSearch{border:0;outline:0;background:transparent;color:var(--kb-ink);font-size:15px;flex:1;min-width:0;width:100%;padding:12px 0}
+#tabbody .kb-root .kb-search kbd{padding:1px 7px;border:1px solid var(--kb-border);border-radius:5px;font-size:12px;color:var(--kb-muted)}
+#tabbody .kb-root .kb-quick{display:flex;align-items:center;flex-wrap:wrap;gap:7px;color:var(--kb-muted);font-size:12px;margin-top:9px}
+#tabbody .kb-root .kb-chip{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:30px;padding:5px 11px;border:1px solid var(--kb-border);border-radius:999px;background:var(--kb-card);color:var(--kb-ink);font-size:11px;white-space:normal}
+#tabbody .kb-root .kb-chip:hover{border-color:var(--kb-green)}
+#tabbody .kb-root .kb-chip.on{background:var(--kb-green);color:#fff;border-color:var(--kb-green)}
+#tabbody .kb-root .kb-tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+#tabbody .kb-root .kb-tile{display:flex;align-items:center;gap:10px;min-height:72px;text-align:left;border:1px solid var(--kb-border);border-radius:12px;background:var(--kb-card);padding:12px;min-width:0}
+#tabbody .kb-root .kb-tile.on{border-color:var(--kb-green);background:var(--kb-soft)}
+#tabbody .kb-root .kb-tile .kb-ico{height:36px;width:36px;flex:0 0 36px;display:grid;place-items:center;border-radius:10px;background:var(--kb-soft);color:var(--kb-green);font-size:18px}
+#tabbody .kb-root .kb-tile .kb-tile-label{display:block;min-width:0;font-size:12px;font-weight:700;line-height:1.4;overflow-wrap:anywhere}
+#tabbody .kb-root .kb-tile .kb-tile-count{display:block;margin-top:3px;color:var(--kb-muted);font-size:11px}
+#tabbody .kb-root .kb-layout{display:grid;grid-template-columns:minmax(255px,345px) minmax(0,1fr);gap:16px;min-width:0;align-items:start}
+#tabbody .kb-root .kb-left{display:flex;flex-direction:column;gap:9px;min-width:0}
+#tabbody .kb-root .kb-filters{display:flex;flex-wrap:wrap;gap:6px}
+#tabbody .kb-root .kb-count{font-size:12px;color:var(--kb-muted);margin:2px 0}
+#tabbody .kb-root .kb-articles{display:flex;flex-direction:column;gap:8px;min-width:0}
+#tabbody .kb-root .kb-item{width:100%;border:1px solid var(--kb-border);background:var(--kb-card);border-radius:11px;text-align:left;padding:12px;min-width:0;box-shadow:var(--kb-shadow)}
+#tabbody .kb-root .kb-item.selected{border-color:var(--kb-green);background:var(--kb-soft)}
+#tabbody .kb-root .kb-item:hover{border-color:var(--kb-green)}
+#tabbody .kb-root .kb-item-meta{display:flex;align-items:center;flex-wrap:wrap;gap:7px;font-size:10px;color:var(--kb-muted)}
+#tabbody .kb-root .kb-item-title{font-size:13px;font-weight:700;line-height:1.45;margin-top:5px;overflow-wrap:anywhere}
+#tabbody .kb-root .kb-item-summary{font-size:11px;color:var(--kb-muted);line-height:1.55;margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+#tabbody .kb-root .kb-pin{margin-left:auto;color:var(--kb-green)}
+#tabbody .kb-root .kb-pane{background:var(--kb-card);border:1px solid var(--kb-border);border-radius:13px;padding:21px;min-height:410px;min-width:0;box-shadow:var(--kb-shadow);overflow-wrap:anywhere}
+#tabbody .kb-root .kb-pane h2{font-family:Unbounded,'Golos Text',sans-serif;font-size:19px;line-height:1.4;margin:5px 0 13px}
+#tabbody .kb-root .kb-pane h3{font-size:14px;margin:23px 0 10px}
+#tabbody .kb-root .kb-muted{color:var(--kb-muted);font-size:12px}
+#tabbody .kb-root .kb-badges{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin-bottom:10px}
+#tabbody .kb-root .kb-badge{background:var(--kb-soft);color:var(--kb-green);border-radius:999px;padding:4px 9px;font-size:10px;font-weight:700}
+#tabbody .kb-root .kb-badge.neutral{background:var(--kb-bg);color:var(--kb-muted)}
+#tabbody .kb-root .kb-badge.example{background:var(--kb-warning);color:var(--kb-warn-ink)}
+#tabbody .kb-root .kb-lead{background:var(--kb-soft);border-radius:10px;padding:14px 16px;margin:14px 0 20px}
+#tabbody .kb-root .kb-lead b{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--kb-green);margin-bottom:5px}
+#tabbody .kb-root .kb-lead p{font-size:14px;margin:0;line-height:1.6}
+#tabbody .kb-root .kb-progress{display:flex;gap:10px;align-items:center;font-size:11px;color:var(--kb-muted);margin-bottom:11px}
+#tabbody .kb-root .kb-progress-bar{flex:1;height:6px;border-radius:8px;background:var(--kb-border);overflow:hidden}
+#tabbody .kb-root .kb-progress-bar i{display:block;height:100%;background:var(--kb-green)}
+#tabbody .kb-root .kb-step-list{display:flex;flex-direction:column;gap:8px;list-style:none;margin:0;padding:0}
+#tabbody .kb-root .kb-step{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--kb-border);border-radius:9px;padding:10px 11px;cursor:pointer;font-size:12px;line-height:1.5}
+#tabbody .kb-root .kb-step input{accent-color:var(--kb-green);width:17px;height:17px;margin:1px 0 0;flex-shrink:0}
+#tabbody .kb-root .kb-step.done{background:var(--kb-soft);border-color:transparent}
+#tabbody .kb-root .kb-step.done span{text-decoration:line-through;color:var(--kb-muted)}
+#tabbody .kb-root .kb-paragraph{white-space:pre-wrap;font-size:13px;line-height:1.7;overflow-wrap:anywhere}
+#tabbody .kb-root .kb-warning{border:1px solid #e6cb8e;background:var(--kb-warning);color:var(--kb-warn-ink);padding:12px 13px;border-radius:9px;margin-top:18px;font-size:12px;line-height:1.6}
+#tabbody .kb-root .kb-contact{border:1px solid var(--kb-border);border-radius:9px;padding:12px;margin-top:12px;font-size:12px}
+#tabbody .kb-root .kb-related{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+#tabbody .kb-root .kb-related button{background:transparent;border:0;color:var(--kb-green);padding:5px 0;font-size:12px;text-align:left}
+#tabbody .kb-root .kb-feedback{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin-top:25px;border-top:1px solid var(--kb-border);padding-top:13px;font-size:12px}
+#tabbody .kb-root .kb-feedback .kb-meta{margin-left:auto;color:var(--kb-muted);font-size:10px}
+#tabbody .kb-root .kb-pins{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr));gap:10px;margin:12px 0}
+#tabbody .kb-root .kb-pin-card{background:var(--kb-bg);border:1px solid var(--kb-border);padding:12px;border-radius:10px;text-align:left;display:flex;flex-direction:column;align-items:flex-start;gap:6px;overflow-wrap:anywhere}
+#tabbody .kb-root .kb-pin-card strong{font-size:12px}
+#tabbody .kb-root .kb-pin-card span{font-size:11px;color:var(--kb-muted)}
+#tabbody .kb-root .kb-question-box{display:flex;flex-direction:column;gap:10px;padding:16px;border:1px solid var(--kb-border);border-radius:11px;margin-top:22px}
+#tabbody .kb-root .kb-question-row{display:flex;align-items:center;gap:10px;border:1px solid var(--kb-border);border-radius:9px;padding:10px;font-size:12px;margin-top:7px}
+#tabbody .kb-root .kb-question-row span{flex:1;min-width:0;overflow-wrap:anywhere}
+#tabbody .kb-root .kb-field{display:flex;flex-direction:column;gap:5px;min-width:0}
+#tabbody .kb-root .kb-field label{font-size:11px;font-weight:700}
+#tabbody .kb-root .kb-field input:not([type=checkbox]),#tabbody .kb-root .kb-field select,#tabbody .kb-root .kb-field textarea,#tabbody .kb-root .kb-question-box textarea{width:100%;max-width:100%;min-width:0;background:var(--kb-card);color:var(--kb-ink);border:1px solid var(--kb-border);border-radius:9px;padding:10px 12px;font-size:12px;line-height:1.6}
+#tabbody .kb-root .kb-field textarea,#tabbody .kb-root .kb-question-box textarea{min-height:89px;resize:vertical}
+#tabbody .kb-root mark{background:#ffe18b;color:#433500;padding:0 1px;border-radius:3px}
+#tabbody .kb-root .kb-empty{border:1px dashed var(--kb-border);background:var(--kb-card);border-radius:10px;padding:22px;text-align:center;color:var(--kb-muted);font-size:12px;line-height:1.6}
+#tabbody .kb-root .kb-back{display:none;margin-bottom:12px}
+#tabbody .kb-root .kb-overlay{position:fixed;z-index:2500;inset:0;background:rgba(12,25,17,.55);padding:18px;display:flex;justify-content:center;align-items:center;overflow-y:auto}
+#tabbody .kb-root .kb-modal{background:var(--kb-card);color:var(--kb-ink);border:1px solid var(--kb-border);border-radius:14px;width:min(690px,100%);max-height:min(92vh,960px);overflow-y:auto;padding:21px;box-shadow:0 20px 60px #0005;position:relative}
+#tabbody .kb-root .kb-modal h2{font-family:Unbounded,'Golos Text',sans-serif;font-size:18px;margin:0 0 15px}
+#tabbody .kb-root .kb-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#tabbody .kb-root .kb-wide{grid-column:1/-1}
+#tabbody .kb-root .kb-modal-footer{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin-top:17px}
+#tabbody .kb-root .kb-modal-footer .kb-spacer{flex:1}
+#tabbody .kb-root .kb-confirm{border:1px solid #e6baa8;border-radius:10px;background:var(--kb-warning);padding:12px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:12px;font-size:12px}
+#tabbody .kb-root .kb-mini-footer{font-size:11px;color:var(--kb-muted);margin:0}
+#tabbody .kb-root .kb-status{font-size:11px;color:var(--kb-muted);min-height:14px}
+/* При переключении темы FAD наследуем общие токены; отдельные тёмные токены нужны только предупреждению. */
+html[data-theme="dark"] #tabbody .kb-root,body[data-theme="dark"] #tabbody .kb-root,.dark #tabbody .kb-root{--kb-warning:#473a17;--kb-warn-ink:#f9d88b}
+@media(max-width:1100px){#tabbody .kb-root .kb-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:790px){
+ #tabbody .kb-root .kb-layout{display:block}
+ #tabbody .kb-root .kb-layout.kb-reading .kb-left{display:none}
+ #tabbody .kb-root .kb-layout:not(.kb-reading) .kb-pane{display:none}
+ #tabbody .kb-root .kb-back{display:inline-flex}
+ #tabbody .kb-root .kb-pane{padding:16px;margin-top:0;min-height:0}
+ #tabbody .kb-root .kb-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:460px){
+ #tabbody .kb-root{gap:13px}
+ #tabbody .kb-root .kb-title{font-size:18px}
+ #tabbody .kb-root .kb-head{align-items:flex-start}
+ #tabbody .kb-root .kb-tiles{gap:8px}
+ #tabbody .kb-root .kb-tile{min-height:63px;padding:9px;gap:8px}
+ #tabbody .kb-root .kb-tile .kb-ico{height:31px;width:31px;flex-basis:31px;font-size:16px}
+ #tabbody .kb-root .kb-tile .kb-tile-label{font-size:11px}
+ #tabbody .kb-root .kb-tile .kb-tile-count{font-size:10px}
+ #tabbody .kb-root .kb-search{min-height:50px}
+ #tabbody .kb-root #kbSearch{font-size:13px}
+ #tabbody .kb-root .kb-modal{padding:15px;max-height:calc(100dvh - 18px)}
+ #tabbody .kb-root .kb-overlay{padding:9px}
+ #tabbody .kb-root .kb-form-grid{grid-template-columns:minmax(0,1fr)}
+ #tabbody .kb-root .kb-wide{grid-column:auto}
+ #tabbody .kb-root .kb-question-row{flex-wrap:wrap}
+}
+
+/* Системная тёмная тема и явно выбранная тёмная тема FAD. */
+html[data-theme="dark"] #tabbody .kb-root,body[data-theme="dark"] #tabbody .kb-root,.theme-dark #tabbody .kb-root{
+ --kb-bg:#142219;--kb-card:#1c2c22;--kb-border:#365042;--kb-muted:#a2b6a8;
+ --kb-ink:#e8f3eb;--kb-green:#7cc69e;--kb-soft:#244331;--kb-warning:#443716;
+ --kb-warn-ink:#f0d289;--kb-shadow:0 2px 10px #0003;color-scheme:dark;
+}
+@media(prefers-color-scheme:dark){
+ html:not([data-theme="light"]) #tabbody .kb-root{
+ --kb-bg:#142219;--kb-card:#1c2c22;--kb-border:#365042;--kb-muted:#a2b6a8;
+ --kb-ink:#e8f3eb;--kb-green:#7cc69e;--kb-soft:#244331;--kb-warning:#443716;
+ --kb-warn-ink:#f0d289;--kb-shadow:0 2px 10px #0003;color-scheme:dark;
+ }
+}
+
 </style>
 
 <div id="root"></div>
@@ -3477,7 +3623,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '20.11.2026-de'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '20.11.2026-df'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -4352,6 +4498,7 @@ const NAV_ITEMS = [
   {id:'plan',label:'План',icon:'M12 2a10 10 0 1 0 0 20a10 10 0 1 0 0-20 M12 6a6 6 0 1 0 0 12a6 6 0 1 0 0-12 M12 10a2 2 0 1 0 0 4a2 2 0 1 0 0-4',group:'work'},
   {id:'clients',label:'Клиенты · Задачи',icon:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8a4 4 0 0 0 0 8 M18 8h4 M20 6v4',group:'work'},
   {id:'schedule',label:'Расписание',icon:'M8 2v4 M16 2v4 M3 9h18 M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z M8 13h3 M8 17h3 M15 13h2',group:'work'},
+  {id:'knowledge',label:'База знаний',icon:'M4 5a2 2 0 0 1 2-2h6v17H6a2 2 0 0 0-2 2V5z M20 5a2 2 0 0 0-2-2h-6v17h6a2 2 0 0 1 2 2V5z M8 7h2 M14 7h2 M8 11h2 M14 11h2',group:'work'},
   {id:'salaries',label:'Зарплаты',icon:'M3 6h18v13H3z M3 10h18 M16 15h2 M6 3h12',group:'people'},
   {id:'replacements',label:'Замены',icon:'M7 7h14 M17 3l4 4-4 4 M17 17H3 M7 13l-4 4 4 4',group:'people'},
   {id:'employees',label:'Сотрудники',icon:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8a4 4 0 0 0 0 8 M22 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75',group:'people'},
@@ -4394,6 +4541,7 @@ function getNavigationTabs(){
     clients:{key:'clients',label:'Клиенты · Задачи',render:renderClients},
     reports:{key:'reports',label:'Отчёты',render:renderAllReports},
     schedule:{key:'schedule',label:'Расписание',render:renderSchedule},
+    knowledge:{key:'knowledge',label:'База знаний',render:renderKnowledge},
     salaries:{label:'Зарплаты',key:'salaries',render:renderSalaries},
     replacements:{label:'Замены',key:'replacements',render:renderReplacements},
     employees:{label:'Сотрудники',key:'employees',render:renderEmployees},
@@ -4403,9 +4551,9 @@ function getNavigationTabs(){
     messages:{key:'messages',label:'Сообщения',render:renderMessages}
   };
   getNavigationTabs.registry=definitions; // только для проверки валидности NAV_ITEMS
-  const ownerOrder=['reports','plan','clients','schedule','salaries','replacements','employees','roles','marketing','calendar','messages'];
-  const gorovayaOrder=['shift','plan','clients','reports','schedule','salaries','replacements','employees','marketing','calendar','messages'];
-  const adminOrder=['shift','plan','clients','schedule','replacements','marketing'];
+  const ownerOrder=['reports','plan','clients','schedule','knowledge','salaries','replacements','employees','roles','marketing','calendar','messages'];
+  const gorovayaOrder=['shift','plan','clients','reports','schedule','knowledge','salaries','replacements','employees','marketing','calendar','messages'];
+  const adminOrder=['shift','plan','clients','schedule','knowledge','replacements','marketing'];
   const order=isOwner?ownerOrder:(isGorovaya?gorovayaOrder:adminOrder);
   const canSee={
     shift:!isOwner,
@@ -4413,6 +4561,7 @@ function getNavigationTabs(){
     clients:!!session.clientsAccess?.enabled&&(!!session.clientsAccess?.own||!!session.clientsAccess?.team),
     reports:isOwner||(isGorovaya&&can('reports.view_all')),
     schedule:true,
+    knowledge:true,
     salaries:isOwner||(isGorovaya&&session.adminPayrollAccess===true),
     replacements:isOwner||session.role==='admin',
     employees:isOwner||(isGorovaya&&['employees.view','employees.manage','admins.view','admins.manage','admins.permissions','admins.audit','telegram.manage'].some(k=>can(k))),
@@ -4424,8 +4573,9 @@ function getNavigationTabs(){
   if(!isOwner&&session.fadRolePermissions){
     // Для назначенных ролей сервер проверяет права действий; nav.* управляет только видимостью вкладок.
     const p=session.fadRolePermissions;
-    const roleOrder=['shift','plan','clients','reports','schedule','salaries','replacements','employees','marketing','calendar','messages'];
+    const roleOrder=['shift','plan','clients','reports','schedule','knowledge','salaries','replacements','employees','marketing','calendar','messages'];
     return roleOrder.filter(key=>{
+      if(key==='knowledge')return true; // доступ на чтение всем, редактирование решает сервер RPC
       if(key==='clients')return !!session.clientsAccess?.enabled&&(!!session.clientsAccess?.own||!!session.clientsAccess?.team);
       if(p['nav.'+key]!==true)return false;
       if(key==='reports')return can('reports.view_all');
@@ -13102,6 +13252,299 @@ async function renderClients(body){if(!session||!TOKEN){body.innerHTML='<div cla
  page.addEventListener('input',ev=>{const el=ev.target;
   if(el.matches('[data-ct-filter="q"]')){ctx.filters.q=el.value;ctRenderAdminList(ctx);}
  });
+}
+
+/* ================= FAD 20.11.2026-df · База знаний (FAD native / RPC only) ================= */
+async function renderKnowledge(body){
+  const TYPES={steps:'Инструкция',fix:'Проблема и решение',info:'Справка',faq:'Вопрос и ответ'};
+  const QUICK=['не варит кофе','застрял товар','закрытие смены','заморозка абонемента','тренер заболел'];
+  const STOP=new Set(['как','что','где','или','для','при','это','над','под','про']);
+  const state={categories:[],articles:[],questions:[],canEdit:false,editor:false,
+    cat:'all',type:'all',query:'',selected:null,reading:false,checked:{},feedback:{},
+    modal:null,busy:false,questionConfirm:null,originQuestion:null};
+  const e=escapeHtml;
+  let kbAbort=null;
+  if(window.fadKbKeyboardAbort)window.fadKbKeyboardAbort.abort();
+  kbAbort=new AbortController();window.fadKbKeyboardAbort=kbAbort;
+  body.innerHTML=`<div class="kb-root" id="kbRoot"><div class="kb-empty">Загружаем базу знаний…</div></div>`;
+  const root=body.querySelector('#kbRoot');
+  const active=()=>root.isConnected&&!!session&&!!TOKEN;
+  const el=id=>root.querySelector('#'+id);
+  const categoryLabel=id=>state.categories.find(c=>c.code===id)?.title||id||'Без раздела';
+  const formatDate=v=>{try{return new Date(v).toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'});}catch(_){return '';}};
+  const plural=n=>{const z=n%100,m=n%10;return m===1&&z!==11?'статья':m>=2&&m<=4&&(z<12||z>14)?'статьи':'статей';};
+  const catIcon=code=>code==='studio'?'⌂':code==='coffee'?'☕':code==='vending'?'▣':'▦';
+  function tokenize(q){return String(q||'').toLowerCase().replace(/[^\p{L}\p{N}\s-]/gu,' ')
+    .split(/[\s-]+/).filter(w=>w.length>=3&&!STOP.has(w))
+    .map(w=>w.length>5?w.slice(0,-2):(w.length>3?w.slice(0,-1):w)).filter(Boolean);
+  }
+  function highlight(text,stems){
+    const val=String(text??'');if(!stems?.length)return e(val);
+    const raw=stems.map(t=>t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).filter(Boolean);
+    if(!raw.length)return e(val);
+    const re=new RegExp('('+raw.join('|')+')','giu');
+    return val.split(re).map((p,i)=>i%2?`<mark>${e(p)}</mark>`:e(p)).join('');
+  }
+  function rank(a,stems,all){
+    const fields=[['title',5],['tags',4],['summary',2],['rest',1]];
+    const hay={title:String(a.title||'').toLowerCase(),tags:(a.tags||[]).join(' ').toLowerCase(),
+      summary:String(a.summary||'').toLowerCase(),rest:((a.steps||[]).join(' ')+' '+(a.body||'')+' '+(a.warning||'')).toLowerCase()};
+    let hits=0,total=0;
+    for(const s of stems){let points=0;for(const [k,w] of fields)if(hay[k].includes(s))points+=w;
+      if(points){hits++;total+=points;}}
+    return (!all||hits===stems.length)?total:0;
+  }
+  function found(){
+    const base=state.articles.filter(a=>(state.cat==='all'||a.category===state.cat)&&(state.type==='all'||a.type===state.type));
+    const stems=tokenize(state.query);
+    if(!stems.length)return {stems,partial:false,items:base.sort((a,b)=>Number(b.pinned)-Number(a.pinned)||String(a.title).localeCompare(String(b.title),'ru'))};
+    let matches=base.map(a=>({a,score:rank(a,stems,true)})).filter(x=>x.score>0);
+    let partial=false;
+    if(!matches.length){matches=base.map(a=>({a,score:rank(a,stems,false)})).filter(x=>x.score>0);partial=matches.length>0;}
+    matches.sort((a,b)=>b.score-a.score||Number(b.a.pinned)-Number(a.a.pinned)||String(a.a.title).localeCompare(String(b.a.title),'ru'));
+    return {stems,partial,items:matches.map(x=>x.a)};
+  }
+  const articleById=id=>state.articles.find(a=>a.id===id);
+  const byPinned=()=>state.articles.filter(a=>a.pinned).sort((a,b)=>String(a.title).localeCompare(String(b.title),'ru'));
+  function toastKb(message,err=false){
+    if(!active())return;
+    const output=el('kbStatus');if(!output)return;
+    output.textContent=(err?'⚠ ':'✓ ')+String(message);output.style.color=err?'var(--clay)':'var(--kb-green)';
+  }
+  function errorMessage(err){return String(err?.message||err?.details||err||'Не удалось выполнить запрос').replace(/^Error:\s*/,'');}
+  const send=async(name,args={})=>rpc(name,{p_token:TOKEN,...args});
+  async function refresh({questions=true}={}){
+    const data=await send('app_kb_articles_list');
+    if(!active())return;
+    state.categories=Array.isArray(data?.categories)?data.categories:[];
+    state.articles=Array.isArray(data?.articles)?data.articles:[];
+    state.canEdit=!!data?.can_edit;
+    if(!state.canEdit){state.editor=false;state.questions=[];}
+    else if(questions){state.questions=await send('app_kb_questions_list')||[];if(!active())return;}
+    if(state.selected&&!articleById(state.selected))state.selected=null;
+    if(state.cat!=='all'&&!state.categories.some(x=>x.code===state.cat))state.cat='all';
+  }
+  function renderTiles(){
+    const counts={all:state.articles.length};for(const c of state.categories)counts[c.code]=0;
+    for(const a of state.articles)counts[a.category]=(counts[a.category]||0)+1;
+    const cat=[{code:'all',title:'Все разделы'},...state.categories];
+    el('kbTiles').innerHTML=cat.map(c=>`<button type="button" class="kb-tile${state.cat===c.code?' on':''}" data-kb="category" data-value="${e(c.code)}"><span class="kb-ico" aria-hidden="true">${catIcon(c.code)}</span><span><span class="kb-tile-label">${e(c.title)}</span><span class="kb-tile-count">${counts[c.code]||0} ${plural(counts[c.code]||0)}</span></span></button>`).join('');
+  }
+  function renderList(){
+    const result=found();
+    const t=[['all','Все типы'],...Object.entries(TYPES)];
+    let html=`<div class="kb-filters">${t.map(([key,val])=>`<button type="button" class="kb-chip${state.type===key?' on':''}" data-kb="type" data-value="${e(key)}">${e(val)}</button>`).join('')}</div>`;
+    html+=`<div class="kb-count">${state.query?'Найдено':'Статей'}: ${result.items.length}</div>`;
+    if(result.partial)html+='<div class="kb-empty" style="padding:12px;text-align:left">Точных совпадений нет. Показаны статьи с частичным совпадением.</div>';
+    if(!result.items.length){html+=`<div class="kb-empty"><strong>Ничего не найдено</strong><div>Попробуйте другие слова или отправьте вопрос руководителю.</div><button type="button" class="kb-btn kb-primary" data-kb="ask-search">Задать вопрос</button></div>`;}
+    else html+=`<div class="kb-articles">${result.items.map(a=>`<button type="button" class="kb-item${state.selected===a.id?' selected':''}" data-kb="open" data-id="${e(a.id)}"><div class="kb-item-meta"><span>${e(categoryLabel(a.category))} · ${e(TYPES[a.type]||a.type)}</span>${a.pinned?'<span class="kb-pin">◆ Закреплено</span>':''}</div><div class="kb-item-title">${highlight(a.title,result.stems)}</div><div class="kb-item-summary">${highlight(a.summary,result.stems)}</div></button>`).join('')}</div>`;
+    el('kbList').innerHTML=html;
+  }
+  function renderHome(){
+    let s='<h2>Что нужно найти?</h2><p class="kb-muted">Начните вводить вопрос в поиске или откройте один из быстрых ответов ниже.</p>';
+    s+='<h3>Быстрые ответы</h3>';
+    const pinned=byPinned();
+    s+=pinned.length?`<div class="kb-pins">${pinned.map(a=>`<button type="button" class="kb-pin-card" data-kb="open" data-id="${e(a.id)}"><span class="kb-badge">${e(categoryLabel(a.category))}</span><strong>${e(a.title)}</strong><span>${e(a.summary)}</span></button>`).join('')}</div>`:'<div class="kb-empty">Закреплённых статей пока нет.</div>';
+    s+=`<div class="kb-question-box"><h3 style="margin:0">Не нашли ответ?</h3><div class="kb-muted">Напишите вопрос. Руководитель увидит его и сможет подготовить инструкцию.</div><textarea id="kbAskText" maxlength="2000" placeholder="Например: что делать, если автомат показывает ошибку E5?"></textarea><div><button type="button" class="kb-btn kb-primary" data-kb="ask-form">Отправить вопрос</button></div></div>`;
+    if(state.canEdit&&state.editor){
+      s+=`<h3>Вопросы без ответа (${state.questions.length})</h3>`;
+      if(!state.questions.length)s+='<div class="kb-empty">Пока вопросов нет.</div>';
+      else s+=state.questions.map(q=>`<div class="kb-question-row"><span>${e(q.text)}<div class="kb-muted">${e(q.created_by||'')} · ${e(formatDate(q.created_at))}</div></span><button class="kb-btn kb-small" data-kb="question-article" data-id="${e(q.id)}">Написать статью</button><button class="kb-btn kb-small kb-danger" data-kb="question-close" data-id="${e(q.id)}">${state.questionConfirm===q.id?'Подтвердить':'Убрать'}</button></div>`).join('');
+    }
+    return s;
+  }
+  function related(a){return state.articles.filter(x=>x.id!==a.id).map(x=>({x,score:(x.category===a.category?2:0)+(x.tags||[]).filter(t=>(a.tags||[]).includes(t)).length})).filter(q=>q.score>0).sort((x,y)=>y.score-x.score).slice(0,3).map(q=>q.x);}
+  function renderReader(a){
+    const stems=tokenize(state.query),checks=state.checked[a.id]||new Set();
+    const steps=Array.isArray(a.steps)?a.steps:[],done=steps.reduce((n,_,i)=>n+(checks.has(i)?1:0),0);
+    let s='<button type="button" class="kb-btn kb-ghost kb-back" data-kb="back">← К списку</button>';
+    s+=`<div class="kb-badges"><span class="kb-badge">${e(categoryLabel(a.category))}</span><span class="kb-badge neutral">${e(TYPES[a.type]||a.type)}</span>${a.example?'<span class="kb-badge example">Пример</span>':''}</div>`;
+    s+=`<h2>${highlight(a.title,stems)}</h2>`;
+    if(state.editor&&state.canEdit)s+=`<div style="display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px"><button type="button" class="kb-btn kb-small" data-kb="edit" data-id="${e(a.id)}">Редактировать</button><button type="button" class="kb-btn kb-small" data-kb="pin" data-id="${e(a.id)}">${a.pinned?'Открепить':'Закрепить'}</button><button type="button" class="kb-btn kb-small kb-danger" data-kb="archive" data-id="${e(a.id)}">Удалить</button></div>`;
+    if(a.summary)s+=`<div class="kb-lead"><b>Коротко</b><p>${highlight(a.summary,stems)}</p></div>`;
+    if(steps.length){
+      s+=`<h3>${a.type==='fix'?'Что проверить по порядку':'Пошаговая инструкция'}</h3><div class="kb-progress"><span>${done} из ${steps.length}</span><span class="kb-progress-bar"><i style="width:${100*done/steps.length}%"></i></span><button type="button" class="kb-btn kb-ghost kb-small" data-kb="reset-steps" data-id="${e(a.id)}">Сбросить</button></div>`;
+      s+=`<ol class="kb-step-list">${steps.map((step,i)=>`<li><label class="kb-step${checks.has(i)?' done':''}"><input type="checkbox" data-kb-step="${i}" data-id="${e(a.id)}" ${checks.has(i)?'checked':''}><span>${i+1}. ${highlight(step,stems)}</span></label></li>`).join('')}</ol>`;
+    }
+    if(a.body)s+=`<h3>Подробности</h3><div class="kb-paragraph">${highlight(a.body,stems)}</div>`;
+    if(a.warning)s+=`<div class="kb-warning"><b>⚠ Важно.</b> ${highlight(a.warning,stems)}</div>`;
+    if(a.contact)s+=`<div class="kb-contact"><div class="kb-muted">Если не помогло — кому звонить</div><strong>${e(a.contact)}</strong></div>`;
+    const others=related(a);
+    if(others.length)s+=`<h3>Смотрите также</h3><div class="kb-related">${others.map(x=>`<button type="button" data-kb="open" data-id="${e(x.id)}">${e(x.title)}</button>`).join('')}</div>`;
+    const response=state.feedback[a.id];
+    s+=`<div class="kb-feedback">${response?`<span>${response==='yes'?'Спасибо за отзыв!':'Вопрос отправлен руководителю.'}</span>`:`<span>Статья помогла?</span><button type="button" class="kb-btn kb-small" data-kb="vote-yes" data-id="${e(a.id)}">Да</button><button type="button" class="kb-btn kb-small" data-kb="vote-no" data-id="${e(a.id)}">Нет</button>`}<span class="kb-meta">Обновлено ${e(formatDate(a.updated_at))}${a.updated_by?' · '+e(a.updated_by):''}</span></div>`;
+    return s;
+  }
+  function draw(){
+    if(!active())return;
+    renderTiles();renderList();
+    const a=articleById(state.selected);
+    el('kbPane').innerHTML=a?renderReader(a):'<button type="button" class="kb-btn kb-ghost kb-back" data-kb="back">← К списку</button>'+renderHome();
+    el('kbLayout').classList.toggle('kb-reading',!!state.reading);
+    const edit=el('kbEditMode');if(edit){edit.checked=state.editor;edit.closest('label').hidden=!state.canEdit;}
+    el('kbNew').hidden=!(state.canEdit&&state.editor);
+    el('kbAddCat').hidden=!(state.canEdit&&state.editor);
+    el('kbQuestions').hidden=!(state.canEdit&&state.editor);
+    if(state.canEdit)el('kbQuestions').textContent=`Вопросы (${state.questions.length})`;
+    el('kbSearchClear').hidden=!state.query;
+    el('kbSearchSlash').hidden=!!state.query;
+  }
+  function fillEditor(a,preset){
+    const p=a||preset||{};
+    const categories=state.categories.map(c=>`<option value="${e(c.code)}" ${p.category===c.code?'selected':''}>${e(c.title)}</option>`).join('');
+    const type=Object.entries(TYPES).map(([key,title])=>`<option value="${e(key)}" ${p.type===key?'selected':''}>${e(title)}</option>`).join('');
+    return `<form id="kbEditForm"><h2>${a?'Редактирование статьи':'Новая статья'}</h2><div class="kb-form-grid">
+      <div class="kb-field"><label>Раздел</label><select name="category" required>${categories}</select></div>
+      <div class="kb-field"><label>Тип статьи</label><select name="type">${type}</select></div>
+      <div class="kb-field kb-wide"><label>Заголовок</label><input name="title" required maxlength="200" value="${e(p.title||'')}" placeholder="Как администратор сформулирует проблему"></div>
+      <div class="kb-field kb-wide"><label>Короткий ответ (1–2 предложения)</label><textarea name="summary" maxlength="2000">${e(p.summary||'')}</textarea></div>
+      <div class="kb-field kb-wide"><label>Шаги (по одному на строку)</label><textarea name="steps" style="min-height:130px" placeholder="Первый шаг&#10;Второй шаг">${e((p.steps||[]).join('\n'))}</textarea></div>
+      <div class="kb-field kb-wide"><label>Подробности</label><textarea name="body" style="min-height:120px">${e(p.body||'')}</textarea></div>
+      <div class="kb-field kb-wide"><label>Важно / предупреждение</label><textarea name="warning" style="min-height:65px">${e(p.warning||'')}</textarea></div>
+      <div class="kb-field"><label>Кому звонить, если не помогло</label><input name="contact" value="${e(p.contact||'')}"></div>
+      <div class="kb-field"><label>Теги для поиска (через запятую)</label><input name="tags" value="${e((p.tags||[]).join(', '))}"></div>
+      <div class="kb-field kb-wide"><label class="kb-switch"><input name="pinned" type="checkbox" ${p.pinned?'checked':''}> Закрепить на главной</label></div>
+      </div><div id="kbEditorError" class="kb-status" role="alert"></div><div class="kb-modal-footer"><button class="kb-btn kb-primary" type="submit">Сохранить статью</button><button type="button" class="kb-btn" data-kb="modal-close">Отмена</button></div></form>`;
+  }
+  function openModal(mode,obj=null,preset=null){
+    if(!state.canEdit||!state.editor)return;
+    state.modal={mode,id:obj?.id||null,originQuestion:preset?.originQuestion||null};
+    const popup=el('kbPopup');
+    let html='';
+    if(mode==='edit')html=fillEditor(obj,preset);
+    else if(mode==='category')html=`<form id="kbCategoryForm"><h2>Добавить раздел</h2><div class="kb-field"><label>Название нового раздела</label><input name="title" maxlength="80" minlength="2" required placeholder="Например: Закупки"></div><div id="kbEditorError" class="kb-status" role="alert"></div><div class="kb-modal-footer"><button class="kb-btn kb-primary" type="submit">Добавить</button><button type="button" class="kb-btn" data-kb="modal-close">Отмена</button></div></form>`;
+    else if(mode==='archive')html=`<div><h2>Удалить статью?</h2><p>«${e(obj?.title||'')}» будет перемещена в архив и исчезнет из базы знаний. Это не удалит историю вопросов.</p><div id="kbEditorError" class="kb-status"></div><div class="kb-modal-footer"><button type="button" class="kb-btn kb-danger" data-kb="archive-confirm">Да, убрать в архив</button><button type="button" class="kb-btn" data-kb="modal-close">Отмена</button></div></div>`;
+    popup.hidden=false;popup.innerHTML=`<div class="kb-modal" role="dialog" aria-modal="true" aria-label="Редактор базы знаний">${html}</div>`;
+    if(mode==='edit'||mode==='category')popup.querySelector('input:not([type=checkbox])')?.focus();
+  }
+  function closeModal(){const popup=el('kbPopup');popup.hidden=true;popup.replaceChildren();state.modal=null;clearAppDirty('kb-editor');}
+  function disableModalBusy(flag){state.busy=flag;for(const b of root.querySelectorAll('#kbPopup button'))b.disabled=flag;}
+  async function submitArticle(form){
+    if(!state.canEdit||!state.modal||state.busy)return;
+    const values=new FormData(form);
+    const data={category:String(values.get('category')||''),type:String(values.get('type')||'steps'),
+      title:String(values.get('title')||'').trim(),summary:String(values.get('summary')||'').trim(),
+      steps:String(values.get('steps')||'').split(/\r?\n/).map(t=>t.trim()).filter(Boolean),
+      body:String(values.get('body')||'').trim(),warning:String(values.get('warning')||'').trim(),
+      contact:String(values.get('contact')||'').trim(),tags:String(values.get('tags')||'').split(',').map(t=>t.trim().toLowerCase()).filter(Boolean),
+      pinned:values.get('pinned')!==null};
+    if(state.modal.id)data.id=state.modal.id;
+    disableModalBusy(true);
+    try{
+      const saved=await send('app_kb_article_save',{p_article:data});
+      const original=state.modal?.originQuestion;
+      let closeWarning='';
+      if(original){try{await send('app_kb_question_close',{p_id:original});}catch(err){closeWarning=errorMessage(err);}}
+      closeModal();await refresh();
+      if(!active())return;
+      state.selected=saved.id;state.reading=true;state.query='';el('kbSearch').value='';
+      draw();toastKb(closeWarning?'Статья сохранена, но вопрос остался открытым: '+closeWarning:'Статья сохранена',!!closeWarning);
+    }catch(err){const t=el('kbEditorError');if(t)t.textContent='Ошибка: '+errorMessage(err);}finally{disableModalBusy(false);}
+  }
+  async function addQuestion(text,source='form',articleId=null){
+    const v=String(text||'').trim();if(v.length<3){toastKb('Введите вопрос (от 3 символов)',true);return false;}
+    if(state.busy)return false;
+    state.busy=true;
+    try{await send('app_kb_question_add',{p_text:v,p_source:source,p_article_id:articleId});
+      if(state.canEdit){state.questions=await send('app_kb_questions_list')||[];}
+      toastKb('Вопрос передан руководителю');return true;
+    }catch(err){toastKb('Не удалось отправить вопрос: '+errorMessage(err),true);return false;}
+    finally{state.busy=false;}
+  }
+  function goToArticle(id){if(!articleById(id))return;state.selected=id;state.reading=true;draw();root.scrollIntoView({block:'start'});}
+  function goHome(){state.selected=null;state.reading=true;draw();root.scrollIntoView({block:'start'});}
+  root.innerHTML=`<div class="kb-head"><div><div class="kb-eyebrow">FLEXICO · АДМИНИСТРАТОРЫ</div><h1 class="kb-title">База знаний</h1></div><div class="kb-actions"><button type="button" class="kb-btn kb-small" data-kb="home">Быстрые ответы</button><label class="kb-switch" hidden><input type="checkbox" id="kbEditMode"> Режим редактора</label><button type="button" class="kb-btn kb-small" id="kbQuestions" data-kb="questions" hidden>Вопросы</button><button type="button" class="kb-btn kb-small" id="kbAddCat" data-kb="new-category" hidden>+ Раздел</button><button type="button" class="kb-btn kb-primary kb-small" id="kbNew" data-kb="new" hidden>+ Новая статья</button></div></div>
+    <div><div class="kb-search"><span class="kb-search-icon" aria-hidden="true">⌕</span><input id="kbSearch" type="search" autocomplete="off" placeholder="Опишите вопрос: не варит кофе, закрыть смену…" aria-label="Поиск по базе знаний"><button type="button" class="kb-btn kb-ghost kb-small" id="kbSearchClear" data-kb="clear" hidden aria-label="Очистить">✕</button><kbd id="kbSearchSlash">/</kbd></div><div class="kb-quick"><span>Частые запросы:</span>${QUICK.map(q=>`<button type="button" class="kb-chip" data-kb="quick" data-value="${e(q)}">${e(q)}</button>`).join('')}</div></div>
+    <div class="kb-tiles" id="kbTiles"></div><div class="kb-layout" id="kbLayout"><aside class="kb-left" id="kbList" aria-label="Список статей"></aside><main class="kb-pane" id="kbPane" aria-live="polite"></main></div><div id="kbStatus" class="kb-status" role="status"></div><p class="kb-mini-footer">Материалы хранятся в Supabase. Статьи с пометкой «Пример» требуют проверки и заполнения руководителем.</p><div class="kb-overlay" id="kbPopup" hidden></div>`;
+  try{await refresh();draw();}
+  catch(err){root.innerHTML=`<div class="kb-head"><div><div class="kb-eyebrow">FLEXICO · АДМИНИСТРАТОРЫ</div><h1 class="kb-title">База знаний</h1></div></div><div class="kb-empty"><strong>Не удалось загрузить базу знаний</strong><div>${e(errorMessage(err))}</div><div>Проверьте, что миграция FAD DF выполнена в Supabase.</div><button type="button" class="kb-btn" id="kbRetry">Повторить загрузку</button></div>`;
+    root.querySelector('#kbRetry')?.addEventListener('click',()=>renderKnowledge(body));return;}
+  root.addEventListener('input',ev=>{
+    if(ev.target.id==='kbSearch'){state.query=ev.target.value;state.selected=null;state.reading=false;draw();}
+    if(ev.target.closest('#kbEditForm,#kbCategoryForm'))markAppDirty('kb-editor');
+  });
+  root.addEventListener('change',ev=>{
+    if(ev.target.id==='kbEditMode'){if(!state.canEdit)return;state.editor=ev.target.checked;state.questionConfirm=null;draw();return;}
+    if(ev.target.matches('[data-kb-step]')){
+      const idx=Number(ev.target.dataset.kbStep),id=ev.target.dataset.id;
+      if(!articleById(id))return;
+      const current=state.checked[id]||new Set();state.checked[id]=current;
+      if(ev.target.checked)current.add(idx);else current.delete(idx);
+      el('kbPane').innerHTML=renderReader(articleById(id));
+      if(current.size===(articleById(id).steps||[]).length)toastKb('Все шаги выполнены');
+    }
+  });
+  root.addEventListener('submit',async ev=>{
+    if(ev.target.id==='kbEditForm'){ev.preventDefault();await submitArticle(ev.target);}
+    if(ev.target.id==='kbCategoryForm'){
+      ev.preventDefault();if(state.busy)return;
+      const title=String(new FormData(ev.target).get('title')||'').trim();disableModalBusy(true);
+      try{const result=await send('app_kb_category_add',{p_title:title});closeModal();await refresh();state.cat=result.code;state.selected=null;state.reading=false;draw();toastKb('Раздел добавлен');}
+      catch(err){el('kbEditorError').textContent='Ошибка: '+errorMessage(err);}finally{disableModalBusy(false);}
+    }
+  });
+  root.addEventListener('click',async ev=>{
+    const btn=ev.target.closest('[data-kb]');if(!btn||state.busy)return;
+    const act=btn.dataset.kb,id=btn.dataset.id,val=btn.dataset.value;
+    if(state.modal&&!['modal-close','archive-confirm'].includes(act))return;
+    switch(act){
+      case 'category':state.cat=val;state.selected=null;state.reading=false;draw();break;
+      case 'type':state.type=val;state.selected=null;state.reading=false;draw();break;
+      case 'quick':state.query=val;el('kbSearch').value=val;state.selected=null;state.reading=false;draw();break;
+      case 'clear':state.query='';el('kbSearch').value='';state.selected=null;state.reading=false;draw();el('kbSearch').focus();break;
+      case 'open':goToArticle(id);break;
+      case 'back':state.selected=null;state.reading=false;draw();break;
+      case 'home':case 'questions':goHome();break;
+      case 'new':openModal('edit');break;
+      case 'edit':openModal('edit',articleById(id));break;
+      case 'new-category':openModal('category');break;
+      case 'modal-close':if(!state.busy)closeModal();break;
+      case 'archive':openModal('archive',articleById(id));break;
+      case 'archive-confirm':{
+        if(!state.canEdit||!state.modal?.id)return;
+        disableModalBusy(true);
+        try{await send('app_kb_article_archive',{p_id:state.modal.id});closeModal();await refresh();state.selected=null;state.reading=false;draw();toastKb('Статья перемещена в архив');}
+        catch(err){el('kbEditorError').textContent='Ошибка: '+errorMessage(err);}finally{disableModalBusy(false);}break;
+      }
+      case 'pin':{
+        if(!state.canEdit)return;const a=articleById(id);if(!a)return;
+        try{await send('app_kb_article_save',{p_article:{id:a.id,category:a.category,type:a.type,title:a.title,summary:a.summary,steps:a.steps,body:a.body,warning:a.warning,contact:a.contact,tags:a.tags,pinned:!a.pinned}});
+          await refresh({questions:false});draw();toastKb(a.pinned?'Статья откреплена':'Статья закреплена');}
+        catch(err){toastKb(errorMessage(err),true);}break;
+      }
+      case 'reset-steps':state.checked[id]=new Set();if(articleById(id))el('kbPane').innerHTML=renderReader(articleById(id));break;
+      case 'vote-yes':state.feedback[id]='yes';el('kbPane').innerHTML=renderReader(articleById(id));break;
+      case 'vote-no':{
+        const a=articleById(id);if(!a)return;
+        if(await addQuestion('Статья «'+a.title+'» не помогла, нужно дополнить','feedback',a.id)){
+          state.feedback[id]='no';el('kbPane').innerHTML=renderReader(a);}
+        break;
+      }
+      case 'ask-form':{const field=el('kbAskText');if(!field)return;
+        if(await addQuestion(field.value,'form')){field.value='';draw();}break;
+      }
+      case 'ask-search':await addQuestion(state.query,'search');draw();break;
+      case 'question-article':{
+        if(!state.canEdit)return;const q=state.questions.find(x=>x.id===id);if(q)openModal('edit',null,{title:q.text,originQuestion:q.id});break;
+      }
+      case 'question-close':{
+        if(!state.canEdit)return;if(state.questionConfirm!==id){state.questionConfirm=id;draw();return;}
+        try{await send('app_kb_question_close',{p_id:id});state.questionConfirm=null;state.questions=await send('app_kb_questions_list')||[];draw();toastKb('Вопрос убран из очереди');}
+        catch(err){toastKb(errorMessage(err),true);}break;
+      }
+    }
+  });
+  document.addEventListener('keydown',ev=>{
+    if(!active())return;
+    const tag=document.activeElement?.tagName;
+    if(ev.key==='/'&&!ev.ctrlKey&&!ev.altKey&&!ev.metaKey&&!['INPUT','TEXTAREA','SELECT'].includes(tag)){
+      ev.preventDefault();el('kbSearch')?.focus();
+    }
+    if(ev.key==='Escape'){
+      if(state.modal){ev.preventDefault();if(!state.busy)closeModal();}
+      else if(state.query){ev.preventDefault();state.query='';el('kbSearch').value='';draw();}
+    }
+  },{signal:kbAbort.signal});
 }
 
 </script>
