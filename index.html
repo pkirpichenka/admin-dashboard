@@ -3734,7 +3734,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '20.11.2026-dg'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '20.11.2026-dh'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -4070,6 +4070,7 @@ async function refreshPermissions(){
   catch(e){ session.adminPayrollAccess=false; }
   try{
     const role=await rpc('app_roles_my',{p_token:TOKEN});
+    session.fadRoleLoadFailed=false;
     session.fadRoleCode=role&&role.code!=='owner'?String(role.code):'';
     session.fadRoleName=role&&role.code!=='owner'?String(role.name||''):'';
     session.fadRolePermissions=role&&role.code!=='owner'&&role.permissions&&typeof role.permissions==='object'?{...role.permissions}:null;
@@ -4079,7 +4080,7 @@ async function refreshPermissions(){
       try{forecastAllowed=(await rpc('app_role_forecast_my',{p_token:TOKEN}))===true;}catch(_){/* fail closed */}
       session.fadRolePermissions={...(session.fadRolePermissions||{}),'plan.forecast':forecastAllowed};
     }
-  }catch(_){session.fadRoleCode='';session.fadRoleName='';session.fadRolePermissions=null;}
+  }catch(_){session.fadRoleCode='';session.fadRoleName='';session.fadRolePermissions=null;session.fadRoleLoadFailed=true;}
   try{session.clientsAccess=await rpc('app_client_access',{p_token:TOKEN});}
   catch(_){session.clientsAccess={owner:false,own:false,team:false,manage:false,enabled:false};}
   persistSession();
@@ -4677,7 +4678,7 @@ function getNavigationTabs(){
     clients:!!session.clientsAccess?.enabled&&(!!session.clientsAccess?.own||!!session.clientsAccess?.team),
     reports:isOwner||(isGorovaya&&can('reports.view_all')),
     schedule:true,
-    knowledge:true,
+    knowledge:isOwner||(session.role==='admin'&&!session.fadRoleLoadFailed),
     salaries:isOwner||(isGorovaya&&session.adminPayrollAccess===true),
     replacements:isOwner||session.role==='admin',
     employees:isOwner||(isGorovaya&&['employees.view','employees.manage','admins.view','admins.manage','admins.permissions','admins.audit','telegram.manage'].some(k=>can(k))),
@@ -4685,15 +4686,15 @@ function getNavigationTabs(){
     marketing:isOwner||session.role==='admin',
     calendar:isOwner||(isGorovaya&&(can('calendar.view')||can('calendar.manage'))),
     messages:isOwner||(isGorovaya&&can('messages.manage')),
-    events:true
+    events:isOwner||(session.role==='admin'&&!session.fadRoleLoadFailed)
   };
   if(!isOwner&&session.fadRolePermissions){
     // Для назначенных ролей сервер проверяет права действий; nav.* управляет только видимостью вкладок.
     const p=session.fadRolePermissions;
     const roleOrder=['shift','plan','clients','reports','schedule','knowledge','salaries','replacements','employees','marketing','calendar','messages','events'];
     return roleOrder.filter(key=>{
-      if(key==='knowledge')return true; // доступ на чтение всем, редактирование решает сервер RPC
-      if(key==='events')return true; // сотрудник видит только свои события, сервер проверяет аудиторию
+      // Два независимых права каждого модуля: nav.* = просмотр, *.edit/manage = изменение.
+      // Роли тренеров проверяются отдельно выше; для администратора действуют галочки из «Роли».
       if(key==='clients')return !!session.clientsAccess?.enabled&&(!!session.clientsAccess?.own||!!session.clientsAccess?.team);
       if(p['nav.'+key]!==true)return false;
       if(key==='reports')return can('reports.view_all');
@@ -9726,13 +9727,14 @@ const ROLE_NAV_DEFS=[
   ['nav.plan','План','Отображать план продаж; права изменения планов проверяются отдельными RPC'],
   ['nav.reports','Отчёты','Отображать отчёты только при наличии права просмотра'],
   ['nav.schedule','Расписание','Отображать расписание; изменения требуют соответствующих прав'],
+  ['nav.knowledge','База знаний · просмотр','Показывать вкладку «База знаний» и разрешать чтение статей и отправку вопросов'],
   ['nav.salaries','Зарплаты','Отображать вкладку при фактическом серверном доступе к зарплате'],
   ['nav.replacements','Замены','Отображать подбор замен; существующие серверные ограничения сохраняются'],
   ['nav.employees','Сотрудники','Отображать справочник при наличии прав просмотра'],
   ['nav.marketing','Маркетинг','Отображать раздел маркетинга'],
   ['nav.calendar','Календарь','Отображать календарь при наличии прав просмотра'],
   ['nav.messages','Сообщения','Отображать настройки сообщений при наличии разрешения'],
-  ['nav.events','Мероприятия','Видимость раздела мероприятий (чтение открыто всем сотрудникам)']
+  ['nav.events','Мероприятия · просмотр','Показывать вкладку «Мероприятия» и разрешать чтение и подтверждение участия']
 ].map(([key,label,desc])=>({key,label,desc,group:'Разделы меню · видимость'}));
 const ROLE_PAYROLL_DEFS=[
   {key:'payroll.admin.view',group:'Зарплата администраторов',label:'Просмотр всех администраторов',desc:'Серверный доступ к расчётам, авансам и детализации смен; не даёт права изменения'},
@@ -9749,8 +9751,9 @@ const ROLE_CLIENT_DEFS=[
   {key:'clients.team',group:'Клиенты и задачи',label:'Просматривать задачи команды',desc:'Общий контроль работы администраторов и просмотр архивных планов'},
   {key:'clients.manage',group:'Клиенты и задачи',label:'Управлять планами и импортом',desc:'Загрузка баз, активация планов, сохранение архивов и переназначение задач'}
 ];
-const ROLE_EVENT_DEFS=[{key:'events.manage',group:'Команда и мероприятия',label:'Управление мероприятиями',desc:'Создавать, менять, отменять и удалять события, видеть все ответы, отправлять Telegram-анонсы и напоминания. Проверяется сервером.'}];
-const ROLE_ACTIVE_DEFS=[...ROLE_NAV_DEFS,...PERMISSION_DEFS,...ROLE_PAYROLL_DEFS,...ROLE_DIRECTION_DEFS,...ROLE_FORECAST_DEFS,...ROLE_CLIENT_DEFS,...ROLE_EVENT_DEFS];
+const ROLE_KNOWLEDGE_DEFS=[{key:'knowledge.edit',group:'База знаний',label:'Редактировать базу знаний',desc:'Создавать, править, закреплять и архивировать статьи, создавать разделы и разбирать вопросы. Требуется «База знаний · просмотр». Серверная проверка.'}];
+const ROLE_EVENT_DEFS=[{key:'events.manage',group:'Команда и мероприятия',label:'Редактировать и управлять мероприятиями',desc:'Создавать, менять, отменять и удалять события, видеть ответы всех участников, отправлять Telegram-анонсы и напоминания. Требуется «Мероприятия · просмотр». Серверная проверка.'}];
+const ROLE_ACTIVE_DEFS=[...ROLE_NAV_DEFS,...PERMISSION_DEFS,...ROLE_PAYROLL_DEFS,...ROLE_DIRECTION_DEFS,...ROLE_FORECAST_DEFS,...ROLE_CLIENT_DEFS,...ROLE_KNOWLEDGE_DEFS,...ROLE_EVENT_DEFS];
 const ROLE_FUTURE_DEFS={
   'Смена':['Открывать смену','Закрывать смену','Изменять только свою смену','Изменять смены других','Корректировать кассовые операции','Редактировать закрытую смену','Подтверждать закрытие смены','Удалять кассовые операции'],
   'План и продажи':['Видеть планы всех филиалов','Изменять план филиала','Видеть продажи всех сотрудников','Корректировать источник продаж','Утверждать месячный бонус','Изменять пороги бонусов'],
@@ -9824,7 +9827,7 @@ async function renderRoles(body){
       <div><span class="roles-badge${locked?' warn':''}">${locked?'Защищена':`${Number(r.users||0)} назначений`}</span></div></div>
       <div class="roles-grid" style="margin-top:12px"><label class="roles-field">Название роли<input class="roles-input" data-role-name maxlength="80" ${disabled} value="${escapeHtml(r.name||'')}"></label><label class="roles-field">Ограничение отчётов, последних дней<input class="roles-input" data-role-days type="number" min="0" max="3650" ${disabled} value="${r.permissions?.['reports.days']||0}" title="0 — без ограничения"></label></div>
       <label class="roles-field" style="margin-top:10px">Описание<textarea class="roles-input" data-role-description maxlength="1000" ${disabled}>${escapeHtml(r.description||'')}</textarea></label>
-      <div class="roles-hint"><b>Рабочие разрешения.</b> Отмеченные права применяются серверными RPC или проверками действующего FAD. Права в разделе «Разделы меню» управляют только видимостью навигации, но не заменяют серверных запретов.</div>
+      <div class="roles-hint"><b>Рабочие разрешения.</b> Отмеченные права применяются серверными RPC или проверками действующего FAD. Для «Базы знаний» и «Мероприятий» галочка просмотра управляет также доступом к чтению в Supabase; право редактирования дополнительно проверяется сервером. При отключении просмотра редактирование тоже снимается.</div>
       ${roleActiveGroups().map(g=>`<section class="roles-category"><h3>${escapeHtml(g)}</h3><div class="roles-grid">${ROLE_ACTIVE_DEFS.filter(d=>d.group===g).map(check).join('')}</div></section>`).join('')}
       <details class="roles-soon"><summary>Предложения по дальнейшей детализации — ${Object.values(ROLE_FUTURE_DEFS).reduce((n,a)=>n+a.length,0)} прав</summary>
         <div class="roles-hint">Это проект каталога. Эти разрешения пока нельзя включить: сначала необходимы серверные проверки для соответствующих действий. Они не создают ложного ощущения защиты.</div>
@@ -9847,7 +9850,20 @@ async function renderRoles(body){
       <div class="roles-shell"><aside class="roles-panel"><div class="roles-subtitle" style="margin-top:0">Список ролей</div><div class="roles-list">${roles.map(roleRow).join('')}${chosen==='__new'?'<button class="roles-item active" type="button"><strong>Новая роль</strong><small>Несохранённая</small></button>':''}</div></aside>
       <section class="roles-panel">${form()}</section></div>${assignmentTable()}
       <details class="roles-panel" style="margin-top:16px"><summary style="font-weight:700;cursor:pointer">История изменения ролей</summary><div class="roles-table-wrap"><table class="roles-table"><thead><tr><th>Когда</th><th>Кто</th><th>Действие</th><th>Роль / аккаунт</th></tr></thead><tbody>${(data.audit||[]).map(x=>`<tr><td>${escapeHtml(auditFmtDateTime(x.changed_at))}</td><td>${escapeHtml(x.actor_login||'')}</td><td>${escapeHtml(({create:'Создана',update:'Изменена',delete:'Удалена',assign:'Назначена',unassign:'Снята'})[x.operation]||x.operation)}</td><td>${escapeHtml(x.role_code||'')}${x.user_login?' · '+escapeHtml(x.user_login):''}</td></tr>`).join('')}</tbody></table></div></details>`;
-    body.querySelectorAll('[data-role-name],[data-role-description],[data-role-days],[data-role-permission]').forEach(el=>el.addEventListener('change',mark));
+    body.querySelectorAll('[data-role-name],[data-role-description],[data-role-days],[data-role-permission]').forEach(el=>el.addEventListener('change',ev=>{
+      const key=ev.target?.dataset?.rolePermission;
+      const pairs={'knowledge.edit':'nav.knowledge','events.manage':'nav.events'};
+      if(key&&pairs[key]&&ev.target.checked){
+        const view=body.querySelector(`[data-role-permission="${pairs[key]}"]`);
+        if(view)view.checked=true;
+      }
+      if(key&&Object.values(pairs).includes(key)&&!ev.target.checked){
+        const edit=Object.keys(pairs).find(k=>pairs[k]===key);
+        const checkbox=body.querySelector(`[data-role-permission="${edit}"]`);
+        if(checkbox)checkbox.checked=false;
+      }
+      mark();
+    }));
     body.querySelectorAll('[data-role-name],[data-role-description]').forEach(el=>el.addEventListener('input',mark));
     body.querySelectorAll('[data-role-select]').forEach(btn=>btn.onclick=()=>{if(!confirmDiscard())return;clearAppDirty('roles');chosen=btn.dataset.roleSelect;draft=roleClone(roleMap().get(chosen));dirty=false;draw();});
     body.querySelector('[data-role-new]').onclick=()=>{if(!confirmDiscard())return;clearAppDirty('roles');chosen='__new';draft=roleClone({name:'Новая роль',permissions:{},description:''});dirty=false;draw();};
