@@ -477,6 +477,52 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 #schedRoot .coffee-legend-item{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
 #schedRoot .coffee-legend-swatch{width:20px;height:14px;display:inline-flex;align-items:center;justify-content:center;border-radius:4px;background:#E3F0E4;border:1px solid #BED6C2;flex-shrink:0}
 #schedRoot .coffee-legend-swatch.assigned{background:#A6743C;border-color:#A6743C;color:#fff;font-size:10px}
+/* DE · Подсветка сегодняшнего дня и три независимых вида работ. */
+#schedRoot .abs-dh.eq-today-head{background:#215940;color:#fff!important;border-radius:5px;font-weight:800;font-size:11px;box-shadow:0 1px 3px rgba(0,0,0,.12);padding:3px 1px;transform:translateY(-1px)}
+#schedRoot .abs-cell.eq-today-cell{box-shadow:inset 0 0 0 2px #377c56;border-color:#377c56!important}
+#schedRoot .abs-cell.eq-today-cell.eq-completed{box-shadow:inset 0 0 0 2px #fff,0 0 0 1px #377c56}
+#schedRoot .eq-tabs{display:flex;flex-wrap:wrap;gap:5px;margin:9px 0 12px;padding:4px;background:#f6f8f6;border:1px solid var(--line);border-radius:10px;width:fit-content;max-width:100%}
+#schedRoot .eq-tab{border:1px solid transparent;background:transparent;color:var(--ink-soft);border-radius:7px;padding:6px 11px;font:inherit;font-size:12px;cursor:pointer;white-space:nowrap}
+#schedRoot .eq-tab.on{background:#235e44;color:white;font-weight:750;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+#schedRoot .eq-tab:not(.on):hover{background:#eaf1eb}
+#schedRoot .eq-help{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;font-size:11px;color:var(--ink-soft);margin:6px 0}
+#schedRoot .eq-help span{display:inline-flex;align-items:center;gap:5px}
+#schedRoot .eq-swatch{width:17px;height:13px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:3px;background:#fff;font-style:normal;line-height:1;font-size:10px}
+#schedRoot .eq-swatch.eq-shift{background:#e3f0e4;border-color:#bed6c2}
+#schedRoot .eq-swatch.eq-assigned{background:#a6743c;border-color:#a6743c}
+#schedRoot .eq-swatch.eq-done{background:#216a4b;border-color:#216a4b;color:#fff;font-weight:800}
+#schedRoot .eq-swatch.eq-today{border:2px solid #377c56}
+#schedRoot .eq-hint,#schedRoot .eq-foot{font-size:11px;color:var(--ink-faint);line-height:1.5;margin:7px 0 9px}
+#schedRoot .eq-foot{margin-top:10px}
+#schedRoot .eq-foot b{color:#215940;font-weight:700}
+#schedRoot .eq-warning{border:1px solid #e3bfb2;background:#fcf2ed;border-radius:10px;padding:10px 12px;color:#9d4330;font-size:12px;margin:10px 0}
+#schedRoot .abs-grid.eq-grid{min-width:850px;column-gap:3px}
+#schedRoot .abs-cell.eq-cell{height:22px;cursor:pointer;user-select:none}
+#schedRoot .abs-cell.eq-cell:focus-visible{outline:2px solid #1b6041;outline-offset:1px}
+#schedRoot .abs-cell.eq-cell.eq-completed{background:#216a4b;border-color:#216a4b;color:white;font-weight:900;font-size:12px}
+#schedRoot .eq-pay-head{display:flex;align-items:center;justify-content:space-between;gap:16px;border:1px solid var(--line);border-radius:12px;background:#fff;padding:14px 16px;margin:9px 0}
+#schedRoot .eq-pay-head b{font-size:16px}#schedRoot .eq-pay-head p{font-size:12px;color:var(--ink-soft);margin:4px 0 0}
+#schedRoot .eq-pay-total{display:flex;flex-direction:column;gap:4px;align-items:flex-end;white-space:nowrap}
+#schedRoot .eq-pay-total small{font-size:11px;color:var(--ink-faint)}
+#schedRoot .eq-pay-total strong{color:#1c6444;font-size:21px;font-weight:850}
+#schedRoot .eq-rates{padding:14px;border:1px solid var(--line);border-radius:12px;background:#fff;margin:10px 0}
+#schedRoot .eq-rates>b{font-size:13px}
+#schedRoot .eq-rate-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:10px 0}
+#schedRoot .eq-rate-row label{font-size:11.5px;display:flex;flex-direction:column;gap:6px;color:var(--ink-soft)}
+#schedRoot .eq-rate-row label span{display:flex;align-items:center;gap:6px}
+#schedRoot .eq-rate-row input{width:100%;max-width:130px;min-width:0;border:1px solid var(--line);border-radius:7px;padding:7px 9px;font:inherit;font-size:13px;color:var(--ink)}
+#schedRoot .eq-pay-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:11px;background:#fff;margin-top:10px}
+#schedRoot .eq-pay-table{border-collapse:collapse;width:100%;font-size:12px;min-width:620px}
+#schedRoot .eq-pay-table th,#schedRoot .eq-pay-table td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line)}
+#schedRoot .eq-pay-table th{font-size:11px;font-weight:650;color:var(--ink-soft);background:#f5f8f6}
+#schedRoot .eq-pay-table tbody tr:last-child td{border-bottom:0}
+#schedRoot .eq-pay-table b{color:#1c6444}
+#schedRoot .eq-no-data{text-align:center!important;color:var(--ink-faint);padding:19px!important}
+.eq-modal-info{color:var(--ink-soft);font-size:12px;margin:9px 0}
+.eq-modal-note{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--ink-soft);margin:10px 0}
+.eq-modal-note textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:9px;font:inherit;resize:vertical}
+@media(max-width:750px){#schedRoot .eq-rate-row{grid-template-columns:1fr}#schedRoot .eq-pay-head{align-items:flex-start;flex-direction:column}#schedRoot .eq-pay-total{align-items:flex-start}}
+
 #schedRoot .abs-cell.coffee-cell:hover{outline:2px solid #A6743C;outline-offset:-1px}
 #schedRoot .ro .coffee-cell{cursor:default}
 #schedRoot .ro .coffee-cell:hover{outline:none}
@@ -3431,7 +3477,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '20.11.2026-dd'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '20.11.2026-de'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -9908,6 +9954,12 @@ function confirmModal(msg,onYes){
   el.querySelector('#c-ok').onclick=async()=>{closeModal(el);await onYes();};
 }
 
+/* DE · Оборудование: раздельные задания и выплаты (RPC с проверкой FAD-сессии). */
+async function apiEquipmentSnapshot(month){return rpc('app_equipment_snapshot',{p_token:TOKEN,p_period:month});}
+async function apiEquipmentMutate(date,type,action,login=null,note=''){
+  return rpc('app_equipment_mutate',{p_token:TOKEN,p_date:date,p_type:type,p_action:action,p_login:login,p_note:note});
+}
+async function apiEquipmentSetRate(type,amount){return rpc('app_equipment_set_rate',{p_token:TOKEN,p_type:type,p_amount:amount});}
 /* ================= Расписание (модуль) ================= */
 const MON2=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 const SCH_DOW=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
@@ -9967,7 +10019,7 @@ function drawSchedule(body, editor){
   const sub=[['calendar','Календарь'],['overview','Обзор']];
   if(canAbsence||can('schedule.leave_norms')) sub.push(['absences','Отсутствия']);
   if(session.role!=='owner') sub.push(['dashboard','Моё расписание']);
-  if(canCoffee||myCoffee||session.role==='owner') sub.push(['coffee','Кофе+снеки']);
+  sub.push(['coffee','Кофе · Автоматы']);
   if(!sub.some(x=>x[0]===SCH.view)) SCH.view=sub[0][0];
   body.innerHTML=`<div id="schedRoot">
     <div class="sch-bar">
@@ -10002,72 +10054,209 @@ function drawSub(root){
   else renderSchPersonal(el);
 }
 const ABS_CLR={otpusk:'#FAC775',bol:'#F09595',otgul:'#B4B2A9'};
-async function renderSchCoffee(el){
-  const isOwner=session.role==='owner', manager=can('schedule.coffee');
-  let settings={}; try{ settings=await apiGetSettings(); }catch(e){}
-  const seen=new Set(), roster=[];
-  TEAM.filter(a=>a.coffee).forEach(a=>{ if(!seen.has(a.login)){ seen.add(a.login); roster.push({login:a.login,name:a.name}); } });
-  if(isOwner){
-    if(!seen.has(session.login)){ seen.add(session.login); roster.push({login:session.login,name:session.name,me:true}); }
-    if(!settings.coffeeOwner || settings.coffeeOwner.login!==session.login || settings.coffeeOwner.name!==session.name){
-      try{ await apiSaveSettings(Object.assign({},settings,{coffeeOwner:{login:session.login,name:session.name}})); }catch(e){}
-    }
-  } else if(settings.coffeeOwner && !seen.has(settings.coffeeOwner.login)){
-    seen.add(settings.coffeeOwner.login); roster.push({login:settings.coffeeOwner.login,name:settings.coffeeOwner.name});
-  }
-  COFFEE_ROSTER=roster;
-  el.innerHTML=`
-    <div class="section-title">☕ Кофе+снеки · ${MON2[SCH.m]} ${SCH.y} <small style="color:var(--ink-faint);font-weight:500">(Машерова)</small></div>
-    <div class="coffee-legend">
-      <span class="coffee-legend-item"><i class="coffee-legend-swatch" aria-hidden="true"></i>Есть смена на Машерова</span>
-      <span class="coffee-legend-item"><i class="coffee-legend-swatch assigned" aria-hidden="true">☕</i>Назначен ответственным</span>
-    </div>
-    <div class="hintline" style="margin-bottom:10px">${manager?'Дни смен подсвечиваются автоматически из расписания. Нажмите на ячейку, чтобы назначить или снять ответственного.':'Светлые ячейки — ваши дни работы на Машерова; тёмные — назначения кофе+снеки. Только просмотр.'}</div>
-    <div id="coffeeTL" class="sch-scroll"></div>`;
-  drawCoffeeTimeline(el, roster, !manager);
-}
-// DD: display-only projection of the existing shift schedule; never writes coffee assignments.
-// Coffee+snacks is performed at Masherova, so shifts at other branches do not count.
+/* DE: existing coffee assignments remain in schedule.data.coffee.
+   New vending assignments, completion audit, and frozen per-task pay live in
+   independent secured RPCs; do not write new fields into schedule.data. */
+const EQUIPMENT_TYPES=[
+  {id:'coffee_service',label:'Кофемашина',short:'Обслуживание кофемашины',symbol:'☕'},
+  {id:'vending_refill',label:'Пополнение автомата',short:'Пополнение торгового автомата',symbol:'+'},
+  {id:'vending_service',label:'Обслуживание автомата',short:'Обслуживание торгового автомата',symbol:'•'}
+];
+let EQUIPMENT_VIEW='coffee_service', EQUIPMENT_DATA=null, EQUIPMENT_BUSY=false;
+const equipToday=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Minsk',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+const equipmentTask=(type,date)=>EQUIPMENT_DATA?.tasks?.find(t=>t.type===type&&t.date===date)||null;
+const equipPrice=(n)=>Number(n||0).toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' BYN';
 function coffeeShiftsAtMasherova(login, iso){
   const day=(SCHDATA?.assignments||{})[iso+'_masherova'];
-  if(!day||day.closed||absOn(login,iso)) return [];
+  if(!day||day.closed||absOn(login,iso))return [];
   return Array.isArray(day.shifts)?day.shifts.filter(sh=>sh&&sh.adminId===login):[];
 }
-function drawCoffeeTimeline(el, roster, readonly){
-  const box=el.querySelector('#coffeeTL'); if(!box) return;
-  const y=SCH.y,m=SCH.m,n=schDaysIn(y,m);
-  if(!roster.length){ box.innerHTML='<div class="hintline" style="padding:10px">Добавьте людей в список выше — они появятся строками.</div>'; return; }
-  const coffee=SCHDATA.coffee||{};
-  let html=`<div class="abs-grid" style="grid-template-columns:150px repeat(${n},1fr) 40px"><div></div>`;
-  for(let d=1;d<=n;d++){const we=[0,6].includes(schDow(y,m,d));html+=`<div class="abs-dh${we?' we':''}">${d}</div>`;}
-  html+='<div class="abs-dh">раз</div>';
-  roster.forEach(p=>{
-    let cnt=0;
-    html+=`<div class="abs-name"${p.login===session.login?' style="color:var(--accent-deep)"':''}>${p.login===session.login?'Я · ':''}${escapeHtml(shortName(p.name))}</div>`;
-    for(let d=1;d<=n;d++){
-      const iso=schIso(y,m,d), on=coffee[iso]===p.login;
-      if(on)cnt++;
-      const we=[0,6].includes(schDow(y,m,d));
-      const shifts=coffeeShiftsAtMasherova(p.login,iso);
-      const inShift=shifts.length>0;
-      const shiftLabel=inShift?shifts.map(sh=>[sh.start,sh.end].filter(Boolean).join('–')).filter(Boolean).join(', '):'';
-      const status=on?'Назначен ответственным за кофе+снеки':inShift?'Есть смена на Машерова':'Нет смены на Машерова';
-      const tip=status+(inShift?(shiftLabel?' · '+shiftLabel:''):(on?' · нет рабочей смены на Машерова':''));
-      html+=`<div class="abs-cell coffee-cell${we?' we':''}${inShift?' coffee-shift':''}${on?' coffee-assigned':''}" data-iso="${iso}" data-login="${escapeHtml(p.login)}" title="${escapeHtml(tip)}" aria-label="${escapeHtml(adminName(p.login)+' · '+iso+' · '+tip)}">${on?'☕':''}</div>`;
+async function renderSchCoffee(el){
+  const seen=new Set(), roster=[];
+  TEAM.filter(a=>a.coffee).forEach(a=>{if(!seen.has(a.login)){seen.add(a.login);roster.push({login:a.login,name:a.name});}});
+  // Preserve the existing owner row and coffee settings without silently changing assignments.
+  let settings={};try{settings=await apiGetSettings();}catch(e){}
+  if(session.role==='owner'){
+    if(!seen.has(session.login)){seen.add(session.login);roster.push({login:session.login,name:session.name,me:true});}
+    if(!settings.coffeeOwner||settings.coffeeOwner.login!==session.login||settings.coffeeOwner.name!==session.name){
+      try{await apiSaveSettings({...settings,coffeeOwner:{login:session.login,name:session.name}});}catch(e){}
     }
-    html+=`<div class="abs-tot">${cnt||'—'}</div>`;
-  });
-  html+='</div>';
-  box.innerHTML=html;
-  box.classList.toggle('ro', !!readonly);
-  if(!readonly){
-    box.onclick=async(ev)=>{ const c=ev.target.closest('.coffee-cell[data-iso]'); if(!c) return;
-      const iso=c.dataset.iso, login=c.dataset.login;
-      SCHDATA.coffee=SCHDATA.coffee||{};
-      if(SCHDATA.coffee[iso]===login) delete SCHDATA.coffee[iso]; else SCHDATA.coffee[iso]=login;
-      try{ await saveMonth(); reflowSchedule(); }catch(e){ handleErr(e); }
-    };
+  }else if(settings.coffeeOwner&&!seen.has(settings.coffeeOwner.login)){
+    seen.add(settings.coffeeOwner.login);roster.push({login:settings.coffeeOwner.login,name:settings.coffeeOwner.name});
   }
+  COFFEE_ROSTER=roster;
+  el.innerHTML=`<div class="section-title">Оборудование · ${MON2[SCH.m]} ${SCH.y} <small style="color:var(--ink-faint);font-weight:500">(Машерова)</small></div>
+    <div class="eq-tabs" role="tablist" aria-label="Виды работ с оборудованием">
+      ${[...EQUIPMENT_TYPES,{id:'bonus',label:'Доплаты'}].map(x=>`<button type="button" class="eq-tab${EQUIPMENT_VIEW===x.id?' on':''}" data-eq-view="${x.id}" role="tab" aria-selected="${EQUIPMENT_VIEW===x.id}">${escapeHtml(x.label)}</button>`).join('')}
+    </div><div id="eqHost"><div class="hintline">Загружаем задания…</div></div>`;
+  el.querySelectorAll('[data-eq-view]').forEach(btn=>btn.onclick=()=>{
+    EQUIPMENT_VIEW=btn.dataset.eqView;
+    el.querySelectorAll('[data-eq-view]').forEach(b=>{b.classList.toggle('on',b.dataset.eqView===EQUIPMENT_VIEW);b.setAttribute('aria-selected',String(b.dataset.eqView===EQUIPMENT_VIEW));});
+    drawEquipmentPanel(el);
+  });
+  try{EQUIPMENT_DATA=await apiEquipmentSnapshot(monthKey(SCH.y,SCH.m));}
+  catch(e){EQUIPMENT_DATA={error:String(e?.message||e),tasks:[],totals:[],rates:[],can_manage:can('schedule.coffee')};}
+  if(el.isConnected)drawEquipmentPanel(el);
+}
+function equipRoster(type){
+  if(type==='coffee_service')return COFFEE_ROSTER;
+  const roster=new Map();
+  for(const a of TEAM){
+    if(a.coffee||Array.from({length:schDaysIn(SCH.y,SCH.m)},(_,i)=>schIso(SCH.y,SCH.m,i+1)).some(date=>coffeeShiftsAtMasherova(a.login,date).length))
+      roster.set(a.login,{login:a.login,name:a.name});
+  }
+  for(const t of EQUIPMENT_DATA?.tasks||[]){
+    if(t.type!==type||!t.login||roster.has(t.login))continue;
+    const a=teamById(t.login);roster.set(t.login,{login:t.login,name:a?.name||t.login});
+  }
+  return [...roster.values()].sort((a,b)=>String(a.name).localeCompare(String(b.name),'ru'));
+}
+function drawEquipmentPanel(el){
+  const host=el.querySelector('#eqHost');if(!host)return;
+  if(EQUIPMENT_VIEW==='bonus')return drawEquipmentBonuses(el,host);
+  const type=EQUIPMENT_VIEW,kind=EQUIPMENT_TYPES.find(x=>x.id===type)||EQUIPMENT_TYPES[0];
+  const hasApi=!EQUIPMENT_DATA?.error;
+  const mgr=can('schedule.coffee'), isCoffee=type==='coffee_service';
+  host.innerHTML=`<div class="eq-help">
+    <span><i class="eq-swatch eq-shift"></i> Смена на Машерова</span>
+    <span><i class="eq-swatch eq-assigned"></i> Назначен</span>
+    <span><i class="eq-swatch eq-done">✓</i> Выполнено</span>
+    <span><i class="eq-swatch eq-today"></i> Сегодня</span>
+  </div><p class="eq-hint">${isCoffee?
+    'Назначения кофемашины сохранены из прежнего графика «Кофе+снеки». Отметка выполнения для доплаты ведётся отдельно от чек-листа смены.':
+    mgr?'Нажмите на день сотрудника, чтобы назначить работу. Исполнитель отмечает выполнение после обслуживания.':
+    'Доступно подтверждение только собственных назначенных заданий.'}</p>
+  ${!hasApi?`<div class="eq-warning">${escapeHtml(EQUIPMENT_DATA.error)}. Для учёта выполнения и премий установите SQL-миграцию DE. Прежний график кофемашины остаётся доступен.</div>`:''}
+  <div id="eqTimeline" class="sch-scroll"></div>
+  <div class="eq-foot">${isCoffee?'Назначение — одно на день.':'Каждый вид работ назначается отдельно; одно задание данного вида на день.'} <b>Сегодня: ${escapeHtml(equipToday().slice(8,10)+'.'+equipToday().slice(5,7)+'.'+equipToday().slice(0,4))}</b></div>`;
+  if(isCoffee)drawCoffeeTimeline(el,COFFEE_ROSTER,!mgr,!hasApi);
+  else drawVendingTimeline(el,type,equipRoster(type),mgr,hasApi);
+}
+function equipmentCellState(type,login,iso){
+  const t=equipmentTask(type,iso);
+  const done=!!(t?.done&&t.login===login);
+  // Keep a completed coffee task visible even if the legacy schedule was later changed.
+  const on=type==='coffee_service'?((SCHDATA?.coffee||{})[iso]===login||done):(t&&t.login===login);
+  const shifts=coffeeShiftsAtMasherova(login,iso);
+  const hours=shifts.map(sh=>[sh.start,sh.end].filter(Boolean).join('–')).filter(Boolean).join(', ');
+  return {on:!!on,done,shift:shifts.length>0,hours,task:t};
+}
+function equipmentTimelineHeader(n){
+  const y=SCH.y,m=SCH.m,today=equipToday();
+  let html=`<div class="abs-grid eq-grid" style="grid-template-columns:150px repeat(${n},minmax(23px,1fr)) 40px"><div></div>`;
+  for(let d=1;d<=n;d++){
+    const we=[0,6].includes(schDow(y,m,d)),date=schIso(y,m,d),now=date===today;
+    html+=`<div class="abs-dh${we?' we':''}${now?' eq-today-head':''}" title="${escapeHtml(date)}${now?' — сегодня':''}">${d}</div>`;
+  }
+  return html+'<div class="abs-dh">раз</div>';
+}
+function equipmentTimelineRow(p,type,n){
+  const y=SCH.y,m=SCH.m,today=equipToday();let count=0;
+  let html=`<div class="abs-name"${p.login===session.login?' style="color:var(--accent-deep)"':''}>${p.login===session.login?'Я · ':''}${escapeHtml(shortName(p.name))}</div>`;
+  for(let d=1;d<=n;d++){
+    const iso=schIso(y,m,d),we=[0,6].includes(schDow(y,m,d)),st=equipmentCellState(type,p.login,iso);
+    if(st.on)count++;
+    const tip=[st.done?'Выполнено':st.on?'Назначен':st.shift?'Есть смена на Машерова':'Нет смены на Машерова',st.hours].filter(Boolean).join(' · ');
+    html+=`<div role="button" tabindex="0" class="abs-cell coffee-cell eq-cell${we?' we':''}${st.shift?' coffee-shift':''}${st.on?' coffee-assigned':''}${st.done?' eq-completed':''}${iso===today?' eq-today-cell':''}" data-iso="${iso}" data-login="${escapeHtml(p.login)}" data-eq-type="${type}" title="${escapeHtml(tip)}" aria-label="${escapeHtml(shortName(p.name)+' · '+iso+' · '+tip)}">${st.done?'✓':st.on?(type==='coffee_service'?'☕':type==='vending_refill'?'+':'•'):''}</div>`;
+  }
+  return html+`<div class="abs-tot">${count||'—'}</div>`;
+}
+function drawCoffeeTimeline(el,roster,readonly,disableSave=false){
+  const box=el.querySelector('#eqTimeline');if(!box)return;
+  const n=schDaysIn(SCH.y,SCH.m);
+  if(!roster.length){box.innerHTML='<div class="hintline" style="padding:10px">Отметьте сотрудников в разделе «Сотрудники → кофе+снеки».</div>';return;}
+  let html=equipmentTimelineHeader(n);
+  roster.forEach(p=>{html+=equipmentTimelineRow(p,'coffee_service',n);});
+  box.innerHTML=html+'</div>';
+  box.onclick=ev=>{const cell=ev.target.closest('.eq-cell');if(cell)void equipmentCellClick(el,cell,readonly,disableSave);};
+  box.onkeydown=ev=>{if((ev.key==='Enter'||ev.key===' ')&&ev.target.matches('.eq-cell')){ev.preventDefault();void equipmentCellClick(el,ev.target,readonly,disableSave);}};
+}
+function drawVendingTimeline(el,type,roster,manager,hasApi){
+  const box=el.querySelector('#eqTimeline');if(!box)return;
+  const n=schDaysIn(SCH.y,SCH.m);
+  if(!roster.length){box.innerHTML='<div class="hintline" style="padding:10px">Нет сотрудников со сменами на Машерова за выбранный месяц.</div>';return;}
+  let html=equipmentTimelineHeader(n);
+  roster.forEach(p=>html+=equipmentTimelineRow(p,type,n));
+  box.innerHTML=html+'</div>';
+  box.onclick=ev=>{const cell=ev.target.closest('.eq-cell');if(cell)void equipmentCellClick(el,cell,!manager,!hasApi);};
+  box.onkeydown=ev=>{if((ev.key==='Enter'||ev.key===' ')&&ev.target.matches('.eq-cell')){ev.preventDefault();void equipmentCellClick(el,ev.target,!manager,!hasApi);}};
+}
+async function equipmentReload(el){
+  try{EQUIPMENT_DATA=await apiEquipmentSnapshot(monthKey(SCH.y,SCH.m));}
+  catch(err){handleErr(err);EQUIPMENT_DATA={error:String(err.message||err),tasks:[],rates:[],totals:[]};}
+  if(el.isConnected)drawEquipmentPanel(el);
+}
+async function equipmentSave(el,date,type,action,login=null,note=''){
+  if(EQUIPMENT_BUSY)return;
+  EQUIPMENT_BUSY=true;
+  try{
+    await apiEquipmentMutate(date,type,action,login,note);
+    toast(action==='complete'?'Выполнение сохранено':action==='undo'?'Выполнение отменено':'Назначение сохранено');
+    await equipmentReload(el);
+  }catch(err){handleErr(err);}
+  finally{EQUIPMENT_BUSY=false;}
+}
+async function equipmentCellClick(el,cell,readonly,disableSave){
+  const date=cell.dataset.iso,login=cell.dataset.login,type=cell.dataset.eqType;
+  const st=equipmentCellState(type,login,date),isOwner=session.role==='owner',manager=!readonly;
+  const canComplete=st.on&&!st.done&&(login===session.login||isOwner)&&!disableSave&&date<=equipToday()&&(isOwner||date>=isoAddDays(equipToday(),-7));
+  const canUndo=st.done&&isOwner&&!disableSave;
+  // Legacy coffee schedule remains editable if the new SQL has not been installed.
+  const canAssign=!st.on&&manager&&(!disableSave||type==='coffee_service');
+  const canUnassign=st.on&&manager&&!st.done&&(!disableSave||type==='coffee_service');
+  if(!canComplete&&!canUndo&&!canAssign&&!canUnassign)return;
+  if(st.task?.done&&st.task.login!==login){toast('За этот день уже отмечено выполнение. Сначала отмените его у прежнего ответственного.',true);return;}
+  const label=EQUIPMENT_TYPES.find(x=>x.id===type)?.short||'Задание';
+  const box=modal(`<h3>${escapeHtml(label)}</h3><p>${escapeHtml(shortName(teamById(login)?.name||COFFEE_ROSTER.find(a=>a.login===login)?.name||login))} · ${escapeHtml(date.slice(8)+'.'+date.slice(5,7)+'.'+date.slice(0,4))}</p>
+    <p class="eq-modal-info">${st.done?'Выполнено · '+equipPrice(st.task?.amount):st.on?'Назначено, ожидает выполнения':st.shift?'Есть смена на Машерова':'В расписании на Машерова смены нет'}</p>
+    ${canComplete?'<label class="eq-modal-note">Комментарий (необязательно)<textarea id="eqNote" maxlength="500" rows="2" placeholder="Что было выполнено"></textarea></label>':''}
+    <div class="actions"><button type="button" class="btn" data-x>Закрыть</button>
+      ${canAssign?'<button type="button" class="btn btn-primary" data-eq-do="assign">Назначить</button>':''}
+      ${canComplete?'<button type="button" class="btn btn-primary" data-eq-do="complete">Отметить выполненным</button>':''}
+      ${canUndo?'<button type="button" class="btn" data-eq-do="undo">Отменить выполнение</button>':''}
+      ${canUnassign?'<button type="button" class="btn" data-eq-do="unassign">Снять назначение</button>':''}
+    </div>`);
+  box.querySelectorAll('[data-eq-do]').forEach(btn=>btn.onclick=async()=>{
+    const action=btn.dataset.eqDo; if(EQUIPMENT_BUSY)return;
+    const note=box.querySelector('#eqNote')?.value.trim()||'';
+    closeModal(box);
+    if(type==='coffee_service'&&(action==='assign'||action==='unassign')){
+      const old={...(SCHDATA.coffee||{})};
+      SCHDATA.coffee=SCHDATA.coffee||{};
+      if(action==='assign')SCHDATA.coffee[date]=login;
+      else if(SCHDATA.coffee[date]===login)delete SCHDATA.coffee[date];
+      EQUIPMENT_BUSY=true;
+      try{await saveMonth();toast('График кофемашины обновлён');await equipmentReload(el);}
+      catch(err){SCHDATA.coffee=old;handleErr(err);drawEquipmentPanel(el);}
+      finally{EQUIPMENT_BUSY=false;}
+    }else await equipmentSave(el,date,type,action,login,note);
+  });
+}
+function drawEquipmentBonuses(el,host){
+  if(EQUIPMENT_DATA?.error){host.innerHTML=`<div class="eq-warning">Не удалось получить доплаты: ${escapeHtml(EQUIPMENT_DATA.error)}. Установите SQL DE и обновите страницу.</div>`;return;}
+  const owner=session.role==='owner',rates=EQUIPMENT_DATA?.rates||[],totals=EQUIPMENT_DATA?.totals||[];
+  const val=type=>Number(rates.find(r=>r.type===type)?.amount||0);
+  const sum=totals.reduce((s,t)=>s+Number(t.amount||0),0);
+  const zeroRates=owner?EQUIPMENT_TYPES.filter(t=>val(t.id)===0).map(t=>t.label):[];
+  host.innerHTML=`<div class="eq-pay-head"><div><b>Доплаты за оборудование</b><p>Только отмеченные как выполненные работы. Каждая операция сохраняет ставку на дату выполнения.</p></div>
+    <div class="eq-pay-total"><small>${owner?'Итого начислено за месяц':'Мои доплаты за месяц'}</small><strong>${equipPrice(sum)}</strong></div></div>
+    ${zeroRates.length?`<div class="eq-warning">Ставка 0 BYN: ${escapeHtml(zeroRates.join(', '))}. Укажите суммы до отметок выполнения — ранее закрытые задания автоматически не пересчитываются.</div>`:''}
+    ${owner?`<div class="eq-rates"><b>Ставки за одно выполненное задание</b><div class="eq-rate-row">${EQUIPMENT_TYPES.map(t=>`<label>${escapeHtml(t.short)}<span><input type="number" min="0" max="1000" step="0.01" inputmode="decimal" data-eq-rate="${t.id}" value="${val(t.id).toFixed(2)}"> BYN</span></label>`).join('')}</div><button type="button" class="btn btn-sm btn-primary" id="eqRateSave">Сохранить ставки</button><p class="eq-hint">Новые ставки действуют только для будущих отметок выполнения. Уже начисленные суммы не пересчитываются задним числом.</p></div>`:''}
+    <div class="eq-pay-table-wrap"><table class="eq-pay-table"><thead><tr><th>Администратор</th><th>Кофемашина</th><th>Пополнение</th><th>Обслуживание</th><th>Всего работ</th><th>Доплата</th></tr></thead><tbody>
+      ${totals.length?totals.map(t=>`<tr><td>${escapeHtml(teamById(t.login)?.name||COFFEE_ROSTER.find(p=>p.login===t.login)?.name||t.login)}</td><td>${Number(t.coffee||0)}</td><td>${Number(t.refill||0)}</td><td>${Number(t.service||0)}</td><td>${Number(t.count||0)}</td><td><b>${equipPrice(t.amount)}</b></td></tr>`).join(''):'<tr><td colspan="6" class="eq-no-data">Пока нет выполненных заданий</td></tr>'}
+    </tbody></table></div><p class="eq-hint">Доплата автоматически включается в зарплату администраторов отдельной строкой. Изменения не затрагивают бонус филиала, качество и базу расчёта премии старшего.</p>`;
+  const save=host.querySelector('#eqRateSave');if(save)save.onclick=async()=>{
+    if(EQUIPMENT_BUSY)return;
+    const fields=[...host.querySelectorAll('[data-eq-rate]')],items=fields.map(input=>({type:input.dataset.eqRate,amount:Number(input.value.replace(',','.'))}));
+    if(items.some(x=>!Number.isFinite(x.amount)||x.amount<0||x.amount>1000||Math.abs(Math.round(x.amount*100)-x.amount*100)>0.000001)){
+      toast('Ставки: от 0 до 1000 BYN, максимум 2 знака после запятой',true);return;
+    }
+    EQUIPMENT_BUSY=true;save.disabled=true;
+    try{
+      for(const item of items)if(Math.abs(item.amount-val(item.type))>0.0001)await apiEquipmentSetRate(item.type,item.amount);
+      toast('Ставки сохранены');await equipmentReload(el);
+    }catch(err){handleErr(err);}finally{EQUIPMENT_BUSY=false;if(save.isConnected)save.disabled=false;}
+  };
 }
 async function renderSchAbsences(el){
   const manageAbs=can('schedule.absences'), manageNorms=can('schedule.leave_norms');
@@ -11778,7 +11967,7 @@ function renderAdminPayroll(host){
   const isPayrollOwner=session.role==='owner';
   const canPayrollEdit=()=>isPayrollOwner||state.model?.can_edit===true;
   const page=document.createElement('section');page.className='adpay fade-in';host.replaceChildren(page);
-  const state={month:BONUS_MONTH,filter:'all',open:null,model:null,days:[],byId:new Map(),busy:false,resetting:false,ticket:0,saving:new Map(),daySaving:new Map(),lastError:'',syncStatus:'',syncStatusError:false,syncWarnings:[],autoAttempted:new Set(),calendarPeriod:BONUS_MONTH,calendarOpen:false,draftDate:null,rangeFrom:null,rangeTo:null,paytechOpen:'',paytechNotices:[],paytechHighlightIds:[],paytechSyncStats:null,advanceWarnings:[],advanceDiagnostics:[]};
+  const state={month:BONUS_MONTH,filter:'all',open:null,model:null,days:[],byId:new Map(),busy:false,resetting:false,ticket:0,saving:new Map(),daySaving:new Map(),lastError:'',syncStatus:'',syncStatusError:false,syncWarnings:[],autoAttempted:new Set(),calendarPeriod:BONUS_MONTH,calendarOpen:false,draftDate:null,rangeFrom:null,rangeTo:null,paytechOpen:'',paytechNotices:[],paytechHighlightIds:[],paytechSyncStats:null,advanceWarnings:[],advanceDiagnostics:[],equipmentById:new Map(),equipmentError:''};
   // Календарь визуально и по выбору двух дат совпадает с зарплатой тренеров.
   // Важный контракт: ставки, корректировки, премии и авансы администраторов
   // хранятся помесячно. Частичный диапазон обозначает даты просмотра смен,
@@ -11917,10 +12106,12 @@ function renderAdminPayroll(host){
     const seniorBase=isSenior?round2(rows().filter(a=>String(a.id)!==seniorId()).reduce((t,a)=>{
       const r=basic(a);return t+Math.max(0,cfg().senior_bonus_basis==='hours_only'?r.acc:r.before);},0)):0;
     const senior=isSenior?round2(seniorBase*num(cfg().senior_bonus_percent)/100):0;
-    const total=round2(b.before+senior),rest=round2(total-b.advance);
-    return {...b,seniorBase,senior,total,rest,pay:ceil5(rest)};
+    // Equipment supplements are independent: never enter the senior bonus base.
+    const equipment=round2(num(state.equipmentById.get(String(s.id))?.amount));
+    const total=round2(b.before+senior+equipment),rest=round2(total-b.advance);
+    return {...b,seniorBase,senior,equipment,total,rest,pay:ceil5(rest)};
   }
-  function totals(selected){return selected.reduce((o,s)=>{const c=calc(s);for(const k of ['h','adj','acc','bf','bq','senior','fine','advance','total','rest','pay'])o[k]=(k==='h'||k==='adj'?round4(o[k]+c[k]):round2(o[k]+c[k]));o.sales+=num(s.count);o.paid+=record(s).paid===true?1:0;return o;},{h:0,adj:0,acc:0,bf:0,bq:0,senior:0,fine:0,advance:0,total:0,rest:0,pay:0,sales:0,paid:0});}
+  function totals(selected){return selected.reduce((o,s)=>{const c=calc(s);for(const k of ['h','adj','acc','bf','bq','senior','equipment','fine','advance','total','rest','pay'])o[k]=(k==='h'||k==='adj'?round4(o[k]+c[k]):round2(o[k]+c[k]));o.sales+=num(s.count);o.paid+=record(s).paid===true?1:0;return o;},{h:0,adj:0,acc:0,bf:0,bq:0,senior:0,equipment:0,fine:0,advance:0,total:0,rest:0,pay:0,sales:0,paid:0});}
   const shiftLabel=d=>d.shift_label||d.shift_start&&d.shift_end?String(d.shift_label||`${d.shift_start}–${d.shift_end}`):'';
   function dayText(s){
     const c=calc(s),r=record(s),list=[`${s.name.split(' ')[1]||'Здравствуйте'}, ${(()=>{const hr=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Minsk',hour:'2-digit',hourCycle:'h23'}).format(new Date()));return hr>=5&&hr<12?'доброе утро':hr>=12&&hr<18?'добрый день':'добрый вечер';})()} 🌼`,'',
@@ -11940,6 +12131,7 @@ function renderAdminPayroll(host){
     if(c.bf)list.push(`Бонус Flexico (план филиала ${fmt(c.percent)}%): +${money(c.bf)}`);
     if(c.bq)list.push(`Бонус за качество работы: +${money(c.bq)}`);
     if(c.senior)list.push(`Бонус старшего администратора: +${money(c.senior)}`);
+    if(c.equipment)list.push(`Обслуживание оборудования: +${money(c.equipment)}`);
     if(c.fine)list.push(`Штрафы: −${money(c.fine)}${r.fine_comment?' ('+r.fine_comment+')':''}`);
     list.push(`Итого начислено: ${money(c.total)}`,`Авансы: ${c.advance?'−'+money(c.advance):'нет'}`);
     const payments=advanceDetails(s);
@@ -12035,7 +12227,7 @@ function renderAdminPayroll(host){
   },true);
   function renderCards(){const x=state.model,all=rows(),selected=all.filter(s=>state.filter==='all'||s.studio===state.filter),t=totals(selected);
     const card=(label,value,sub,main=false)=>`<div class="adpay-kpi"><small>${esc(label)}</small><b class="${main?'adpay-pos':''}">${esc(value)}</b><small>${esc(sub)}</small></div>`;
-    const kpis=card('К выдаче (округл.)',money(t.pay),`${t.paid} из ${selected.length} выдано`,true)+card('Начислено за смены',money(t.acc),`${fmt(t.h)} ч`)+card('Бонусы','+'+money(t.bf+t.bq+t.senior),`филиала ${fmt(t.bf)} · качества ${fmt(t.bq)} · старшего ${fmt(t.senior)}`)+card('Штрафы',money(t.fine),'вычитаются из итога')+card('Авансы выданы',money(t.advance),`остаток ${money(t.rest)}`);
+    const kpis=card('К выдаче (округл.)',money(t.pay),`${t.paid} из ${selected.length} выдано`,true)+card('Начислено за смены',money(t.acc),`${fmt(t.h)} ч`)+card('Бонусы и доплаты','+'+money(t.bf+t.bq+t.senior+t.equipment),`филиала ${fmt(t.bf)} · качества ${fmt(t.bq)} · оборудование ${fmt(t.equipment)}`)+card('Штрафы',money(t.fine),'вычитаются из итога')+card('Авансы выданы',money(t.advance),`остаток ${money(t.rest)}`);
     const branches=x.branches.map(b=>{
       const stages=x.tiers.map(t=>`<span class="${b.pct!=null&&b.pct+1e-8>=t.pct?'hit':''}">${t.pct}%</span>`).join('');
       const progress=b.pct==null?0:Math.max(0,Math.min(100,(b.pct-85)/30*100));
@@ -12072,12 +12264,12 @@ function renderAdminPayroll(host){
       <textarea data-id="${s.id}" data-date="${date}" data-day-field="hours_comment" ${canPayrollEdit()?'':'disabled'} placeholder="Причина корректировки за этот день">${esc(d.hours_comment||'')}</textarea>
       </div>`;
     };
-    return `<tr class="adpay-details"><td colspan="14"><div class="adpay-days"><div class="adpay-days-head"><div><h4>Отработанные дни · данные Impulse${isPartial()?' · выделены '+dateRangeText():''}</h4><div class="adpay-muted">${ds.length} дней · ${fmt(c.hi)} ч по данным Impulse · ${signed(c.adj)} ч корректировки · итого ${fmt(c.h)} ч</div></div>${isPayrollOwner?`<button type="button" class="btn btn-sm adpay-reset-manual" data-action="reset-manual-one" data-id="${s.id}" ${state.busy||state.resetting?'disabled':''}>Сбросить все правки администратора</button>`:''}</div>
+    return `<tr class="adpay-details"><td colspan="15"><div class="adpay-days"><div class="adpay-days-head"><div><h4>Отработанные дни · данные Impulse${isPartial()?' · выделены '+dateRangeText():''}</h4><div class="adpay-muted">${ds.length} дней · ${fmt(c.hi)} ч по данным Impulse · ${signed(c.adj)} ч корректировки · итого ${fmt(c.h)} ч</div></div>${isPayrollOwner?`<button type="button" class="btn btn-sm adpay-reset-manual" data-action="reset-manual-one" data-id="${s.id}" ${state.busy||state.resetting?'disabled':''}>Сбросить все правки администратора</button>`:''}</div>
     ${legacyMonthAdjustment(s)?`<div class="adpay-note adpay-source-warning">Сохранена историческая месячная корректировка ${signed(legacyMonthAdjustment(s))} ч. Новые корректировки вносятся только по дням; историческая сумма сохранена, чтобы не потерять начисления.</div>`:''}
     <div class="adpay-daygrid">${ds.length?ds.map(dayCard).join(''):'<div class="adpay-day">Данные Impulse ещё не синхронизированы</div>'}</div></div>
-    ${r.updated_by?`<div class="adpay-muted" style="padding:5px 18px">Последнее изменение: ${esc(r.updated_by)}${r.updated_at?' · '+esc(new Date(r.updated_at).toLocaleString('ru-RU',{timeZone:'Europe/Minsk'})):''}</div>`:''}<div class="adpay-detail-cols"><div><h4>Расчётный листок</h4>${line(`${fmt(c.hi)} ч по сменам × ${fmt(rate())} BYN`,money(c.hi*rate()))}${source(s)?.accrued_source!=null?line('Начислено в Impulse (сверка)',money(source(s).accrued_source)):''}${line(`Корректировки по дням: ${signed(c.adj)} ч`,signed(round2(c.adj*rate()))+' BYN',c.adj<0?'adpay-neg':'adpay-pos')}${line(`Бонус Flexico · ${fmt(c.percent)}% плана`,'+'+money(c.bf),'adpay-pos')}${line('Бонус за качество','+'+money(c.bq),'adpay-pos')}${c.senior?line(`Старший · ${fmt(num(cfg().senior_bonus_percent))}% от ${money(c.seniorBase)}`,'+'+money(c.senior),'adpay-pos'):''}${line('Штрафы','−'+money(c.fine),'adpay-neg')}<div class="adpay-line strong"><span>Итого</span><span>${money(c.total)}</span></div>${line('Авансы','−'+money(c.advance))}${advanceDetails(s).length?advanceDetails(s).map(a=>line('  • '+dateLabel(a.payment_date),money(a.amount))).join(''):(c.advance>0?'<p class="adpay-muted">Даты авансов ещё не подтверждены журналом Impulse. Обновите расчёт для сверки.</p>':'')}<div class="adpay-line strong"><span>К выдаче</span><span class="${c.pay<0?'adpay-neg':''}">${money(c.pay)}</span></div></div>
+    ${r.updated_by?`<div class="adpay-muted" style="padding:5px 18px">Последнее изменение: ${esc(r.updated_by)}${r.updated_at?' · '+esc(new Date(r.updated_at).toLocaleString('ru-RU',{timeZone:'Europe/Minsk'})):''}</div>`:''}<div class="adpay-detail-cols"><div><h4>Расчётный листок</h4>${line(`${fmt(c.hi)} ч по сменам × ${fmt(rate())} BYN`,money(c.hi*rate()))}${source(s)?.accrued_source!=null?line('Начислено в Impulse (сверка)',money(source(s).accrued_source)):''}${line(`Корректировки по дням: ${signed(c.adj)} ч`,signed(round2(c.adj*rate()))+' BYN',c.adj<0?'adpay-neg':'adpay-pos')}${line(`Бонус Flexico · ${fmt(c.percent)}% плана`,'+'+money(c.bf),'adpay-pos')}${line('Бонус за качество','+'+money(c.bq),'adpay-pos')}${line('Доплата за оборудование','+'+money(c.equipment),'adpay-pos')}${c.senior?line(`Старший · ${fmt(num(cfg().senior_bonus_percent))}% от ${money(c.seniorBase)}`,'+'+money(c.senior),'adpay-pos'):''}${line('Штрафы','−'+money(c.fine),'adpay-neg')}<div class="adpay-line strong"><span>Итого</span><span>${money(c.total)}</span></div>${line('Авансы','−'+money(c.advance))}${advanceDetails(s).length?advanceDetails(s).map(a=>line('  • '+dateLabel(a.payment_date),money(a.amount))).join(''):(c.advance>0?'<p class="adpay-muted">Даты авансов ещё не подтверждены журналом Impulse. Обновите расчёт для сверки.</p>':'')}<div class="adpay-line strong"><span>К выдаче</span><span class="${c.pay<0?'adpay-neg':''}">${money(c.pay)}</span></div></div>
     <div><h4>Качество работы · ${money(state.model.settings.quality_amount)}</h4>${criteria().map(q=>`<label class="adpay-check"><input type="checkbox" data-id="${s.id}" data-quality="${esc(q.key)}" ${checks[q.key]===true?'checked':''} ${canPayrollEdit()?'':'disabled'}><span>${esc(q.label)}</span></label>`).join('')}<div class="adpay-muted">Бонус начисляется при выполнении всех критериев</div><h4 style="margin-top:12px">Штраф / комментарий</h4><textarea class="adpay-comment" data-id="${s.id}" data-field="fine_comment" ${canPayrollEdit()?'':'disabled'} placeholder="Причина штрафа (попадёт в расчёт)">${esc(r.fine_comment||'')}</textarea></div>
-    <div><h4>Сообщение в Telegram</h4><pre class="adpay-preview">${esc(dayText(s))}</pre><div class="adpay-muted">Ник Telegram</div>${isPayrollOwner?`<input class="adpay-nick" type="text" data-id="${s.id}" data-telegram-nick value="${esc(s.username||'')}" placeholder="@nickname" aria-label="Ник Telegram ${esc(s.name)}" style="max-width:215px">`:`<div class="adpay-muted">${esc(s.username?'@'+String(s.username).replace(/^@/,''):'не указан')}</div>`}<div class="adpay-actions" style="margin-top:9px"><button type="button" class="btn btn-primary btn-sm" data-action="preview" data-id="${s.id}">Скопировать / Telegram</button><label class="adpay-paid-check"><input data-id="${s.id}" data-field="paid" type="checkbox" ${r.paid===true?'checked':''} ${canPayrollEdit()?'':'disabled'}> Выдано</label></div></div></div></td></tr>`;
+    <div><h4>Сообщение в Telegram</h4><pre class="adpay-preview">${esc(dayText(s))}</pre><div class="adpay-muted">Ник Telegram</div>${isPayrollOwner?`<input class="adpay-nick" type="text" data-id="${s.id}" data-telegram-nick value="${esc(s.username||'')}" placeholder="@nickname" aria-label="Ник Telegram ${esc(s.name)}" style="max-width:215px">`:`<div class="adpay-muted">${esc(s.username?'@'+String(s.username).replace(/^@/,''):'не указан')}</div>`}<div class="adpay-actions" style="margin-top:9px"><button type="button" class="btn btn-primary btn-sm" data-action="preview" data-id="${s.id}">Скопировать / Telegram</button><label class="adpay-paid-check"><input data-id="${s.id}" data-field="paid" type="checkbox" ${r.paid===true?'checked':''} ${(canPayrollEdit()&&!state.equipmentError)?'':'disabled'}> Выдано</label></div></div></div></td></tr>`;
   }
 
 
@@ -12133,6 +12325,7 @@ function renderAdminPayroll(host){
       if(/расхождения между начислением/i.test(msg)&&out.some(n=>n.kind==='source-days'))continue;
       out.push({severity:'warning',kind:'mapping',title:'Необходимо проверить импорт',text:String(msg),actionLabel:'Обновить из Impulse',action:'sync'});
     }
+    if(state.equipmentError)out.push({severity:'warning',kind:'equipment',title:'Доплаты за оборудование недоступны',text:'Расчёт ниже НЕ включает обслуживание оборудования. Установите SQL DE и обновите зарплату. '+state.equipmentError});
     if(isPartial()){out.push({severity:'info',kind:'period',title:'Выбран неполный месяц',text:`В карточках выделены даты ${dateRangeText()}. Денежные итоги, премии и авансы относятся ко всему месяцу; их нельзя считать выплатой за выбранные дни.`});}
     return out;
   }
@@ -12173,15 +12366,16 @@ function renderAdminPayroll(host){
   function draw(){if(!page.isConnected||!state.model)return;const {kpis,branches,selected,t}=renderCards();
     const warnings=adminTechNotices();const badAdvanceIds=new Set(warnings.filter(n=>n.kind==='advances').flatMap(n=>n.ids||[]));const badRateIds=new Set(warnings.filter(n=>n.kind==='rate').flatMap(n=>n.ids||[]));const receipt=state.model.receivedAt?` · снимок Impulse ${new Date(state.model.receivedAt).toLocaleString('ru-RU',{timeZone:'Europe/Minsk'})}`:'';
     page.innerHTML=`<div class="adpay-head"><div><h1>Зарплата администраторов</h1><div class="adpay-muted">Часы по дням — Impulse · план и продажи — «План»</div></div><div class="adpay-controls"><label>Ставка, BYN/ч ${isPayrollOwner?`<input id="adpay-rate" type="number" step="0.5" min="0" value="${rate()}">`:`<strong class="adpay-readonly-rate">${fmt(rate())}</strong>`}</label>${calendarMarkup()}<button type="button" class="btn btn-primary" data-action="sync" ${state.busy?'disabled':''}>${state.busy?'Получаем данные…':'Обновить из Impulse'}</button>${isPayrollOwner?'<button type="button" class="btn btn-sm" data-action="settings">⚙ Настройки</button>':''}</div></div>
+    ${state.equipmentError?`<div class="adpay-note error" role="alert">Доплаты за оборудование не загружены — итог показан без них. Не выдавайте зарплату до восстановления учёта. ${esc(state.equipmentError)}</div>`:''}
     ${canPayrollEdit()?'':'<div class="adpay-note" role="status">Режим просмотра: руководитель отключил редактирование зарплат. Все расчёты и расшифровки доступны.</div>'}
     ${state.syncStatusError?`<div class="adpay-note error" role="alert"><b>Ошибка обновления ImpulseCRM</b><div>${esc(state.syncStatus)}</div></div>`:''}
     <div class="paytech-holder" id="paytechAdmin"></div>
     <div class="adpay-kpis">${kpis}</div><div class="adpay-branches">${branches}</div>
     <div class="adpay-toolbar">${[{id:'all',name:'Все'},...BONUS_BRANCHES].map(b=>`<button type="button" class="adpay-chip${state.filter===b.id?' on':''}" data-action="filter" data-id="${b.id}">${b.id==='all'?'':`<i class="adpay-dot" style="background:${b.color}"></i>`}${esc(b.name)}</button>`).join('')}<span class="grow"></span><button type="button" class="btn btn-sm" data-action="summary">Сводка руководителю</button><button type="button" class="btn btn-sm btn-primary" data-action="all">Расчёты для копирования</button></div>
-    <div class="adpay-scroll"><table class="adpay-table"><thead><tr><th>Администратор</th><th>Часы</th><th>± по дням</th><th>Продажи</th><th>Начислено</th><th>Бонус филиала</th><th>Бонус качества</th><th title="Бонус старшего администратора: процент от начислений остальных">Старший %</th><th>Штрафы</th><th>Итого</th><th>Авансы</th><th>Остаток</th><th>К выдаче</th><th>Telegram</th></tr></thead>
+    <div class="adpay-scroll"><table class="adpay-table"><thead><tr><th>Администратор</th><th>Часы</th><th>± по дням</th><th>Продажи</th><th>Начислено</th><th>Бонус филиала</th><th>Бонус качества</th><th>Оборудование</th><th title="Бонус старшего администратора: процент от начислений остальных">Старший %</th><th>Штрафы</th><th>Итого</th><th>Авансы</th><th>Остаток</th><th>К выдаче</th><th>Telegram</th></tr></thead>
     <tbody>${selected.map(s=>{const c=calc(s),r=record(s);
-    return `<tr class="adpay-row${r.paid===true?' adpay-paid':''}${state.paytechHighlightIds.includes(String(s.id))?' paytech-row-highlight':''}" data-open-id="${s.id}"><td class="adpay-name"><i class="adpay-dot" style="background:${studioColor(s.studio)}"></i>${esc(s.name)}${String(s.id)===seniorId()?'<span class="adpay-senior-tag">старший</span>':''}<small>${esc(studioName(s.studio))}${c.adj?' · ✎ часы скорректированы':''}</small></td><td>${fmt(c.h)}${c.adj?`<span class="adpay-hint">Impulse ${fmt(c.hi)}</span>`:''}</td><td class="${c.adj?'adpay-adjusted-cell':''}">${signed(c.adj)}</td><td>${fmt(s.count)}</td><td>${money(c.acc)}${badRateIds.has(String(s.id))?paytechMarker('Начисление отличается от отчёта Impulse, открыть панель предупреждений'):""}</td><td>${numeric(s,'bonus_filial_override',c.bf,{override:true,auto:c.autoFil,min:0})}</td><td>${numeric(s,'bonus_quality_override',c.bq,{override:true,auto:c.autoQ,min:0})}</td><td class="adpay-pos">${c.senior?money(c.senior):'—'}</td><td>${numeric(s,'fine',c.fine,{min:0,step:.01})}</td><td><b>${money(c.total)}</b></td><td class="adpay-advance-readonly">${source(s)?.advance_source==null?'—':money(c.advance)}${badAdvanceIds.has(String(s.id))?paytechMarker('Даты авансов не сопоставлены, открыть панель предупреждений'):''}</td><td class="${c.rest<0?'adpay-neg':''}">${money(c.rest)}</td><td class="adpay-big ${c.pay<0?'adpay-neg':''}">${money(c.pay)}</td><td><button type="button" class="adpay-tg" data-action="preview" data-id="${s.id}" aria-label="Telegram ${esc(s.name)}">✈</button></td></tr>${state.open===String(s.id)?rowDetail(s):''}`;}).join('')}</tbody>
-    <tfoot><tr><td>Итого</td><td>${fmt(t.h)}</td><td>${signed(t.adj)}</td><td>${fmt(t.sales)}</td><td>${money(t.acc)}</td><td>${money(t.bf)}</td><td>${money(t.bq)}</td><td>${money(t.senior)}</td><td>${money(t.fine)}</td><td>${money(t.total)}</td><td>${money(t.advance)}</td><td>${money(t.rest)}</td><td class="adpay-big ${t.pay<0?'adpay-neg':''}">${money(t.pay)}</td><td></td></tr></tfoot></table></div>
+    return `<tr class="adpay-row${r.paid===true?' adpay-paid':''}${state.paytechHighlightIds.includes(String(s.id))?' paytech-row-highlight':''}" data-open-id="${s.id}"><td class="adpay-name"><i class="adpay-dot" style="background:${studioColor(s.studio)}"></i>${esc(s.name)}${String(s.id)===seniorId()?'<span class="adpay-senior-tag">старший</span>':''}<small>${esc(studioName(s.studio))}${c.adj?' · ✎ часы скорректированы':''}</small></td><td>${fmt(c.h)}${c.adj?`<span class="adpay-hint">Impulse ${fmt(c.hi)}</span>`:''}</td><td class="${c.adj?'adpay-adjusted-cell':''}">${signed(c.adj)}</td><td>${fmt(s.count)}</td><td>${money(c.acc)}${badRateIds.has(String(s.id))?paytechMarker('Начисление отличается от отчёта Impulse, открыть панель предупреждений'):""}</td><td>${numeric(s,'bonus_filial_override',c.bf,{override:true,auto:c.autoFil,min:0})}</td><td>${numeric(s,'bonus_quality_override',c.bq,{override:true,auto:c.autoQ,min:0})}</td><td class="adpay-pos">${c.equipment?money(c.equipment):'—'}</td><td class="adpay-pos">${c.senior?money(c.senior):'—'}</td><td>${numeric(s,'fine',c.fine,{min:0,step:.01})}</td><td><b>${money(c.total)}</b></td><td class="adpay-advance-readonly">${source(s)?.advance_source==null?'—':money(c.advance)}${badAdvanceIds.has(String(s.id))?paytechMarker('Даты авансов не сопоставлены, открыть панель предупреждений'):''}</td><td class="${c.rest<0?'adpay-neg':''}">${money(c.rest)}</td><td class="adpay-big ${c.pay<0?'adpay-neg':''}">${money(c.pay)}</td><td><button type="button" class="adpay-tg" data-action="preview" data-id="${s.id}" aria-label="Telegram ${esc(s.name)}">✈</button></td></tr>${state.open===String(s.id)?rowDetail(s):''}`;}).join('')}</tbody>
+    <tfoot><tr><td>Итого</td><td>${fmt(t.h)}</td><td>${signed(t.adj)}</td><td>${fmt(t.sales)}</td><td>${money(t.acc)}</td><td>${money(t.bf)}</td><td>${money(t.bq)}</td><td>${money(t.equipment)}</td><td>${money(t.senior)}</td><td>${money(t.fine)}</td><td>${money(t.total)}</td><td>${money(t.advance)}</td><td>${money(t.rest)}</td><td class="adpay-big ${t.pay<0?'adpay-neg':''}">${money(t.pay)}</td><td></td></tr></tfoot></table></div>
     `;
     renderAdminTech();
   }
@@ -12193,6 +12387,15 @@ function renderAdminPayroll(host){
         rpc('app_admin_payroll_advance_diagnostics',{p_token:TOKEN,p_period:pageMonth})
       ]):await (async()=>{const data=await rpc('app_admin_payroll_staff_snapshot',{p_token:TOKEN,p_period:pageMonth});return [data,data?.advance_details||[],data?.advance_diagnostics||[]];})();
       if(seq!==state.ticket||!page.isConnected)return;
+      // Dedicated secured RPC returns monthly completion totals keyed by employee ID.
+      // Missing migration/data is a visible warning, not fabricated zero payouts.
+      state.equipmentById=new Map();state.equipmentError='';
+      try{
+        const equipment=await rpc('app_equipment_payroll_totals',{p_token:TOKEN,p_period:pageMonth});
+        if(seq!==state.ticket||!page.isConnected)return;
+        if(!Array.isArray(equipment))throw Error('Некорректный ответ учёта оборудования');
+        for(const r of equipment)state.equipmentById.set(String(r.admin_id),r);
+      }catch(err){state.equipmentError=String(err?.message||err);}
       state.advanceDetails=Array.isArray(advances)?advances:[];
       state.advanceDiagnostics=Array.isArray(diagnostics)?diagnostics:[];
       if(!payload?.bonus||(isPayrollOwner?payload.bonus.owner!==true:typeof payload.can_edit!=='boolean'))throw Error('Недостаточно прав для просмотра зарплаты администраторов');
@@ -12226,7 +12429,7 @@ function renderAdminPayroll(host){
     }catch(e){if(seq!==state.ticket||!page.isConnected)return;page.innerHTML=`<div class="adpay-note error">Не удалось загрузить зарплату администраторов. Проверьте миграцию SQL и права доступа.<div class="adpay-muted">${esc(e.message||String(e))}</div></div><button class="btn" data-action="reload">Повторить</button>`;handleErr(e);}
   }
   function summaryText(){const lines=[`Сводка по зарплате администраторов — ${per()}`,''];
-    for(const b of state.model.branches){const staff=rows().filter(s=>s.studio===b.id),t=totals(staff);lines.push(`${b.name}: план ${b.target??'—'}, факт ${fmt(b.fact)}${b.pct==null?'':' ('+bonusPct(b.pct)+')'}`,`Начислено ${money(t.acc)}, бонусы ${money(t.bf+t.bq)}, старшему ${money(t.senior)}, штрафы ${money(t.fine)}, авансы ${money(t.advance)}`,`К выдаче: ${money(t.pay)}`,'');}
+    for(const b of state.model.branches){const staff=rows().filter(s=>s.studio===b.id),t=totals(staff);lines.push(`${b.name}: план ${b.target??'—'}, факт ${fmt(b.fact)}${b.pct==null?'':' ('+bonusPct(b.pct)+')'}`,`Начислено ${money(t.acc)}, бонусы ${money(t.bf+t.bq)}, доплата за оборудование ${money(t.equipment)}, старшему ${money(t.senior)}, штрафы ${money(t.fine)}, авансы ${money(t.advance)}`,`К выдаче: ${money(t.pay)}`,'');}
     lines.push(`Всего к выдаче: ${money(totals(rows()).pay)}`);return lines.join('\n');}
   // Ручной Telegram: сообщение только копируется в буфер; отправка происходит пользователем в Telegram.
   function previewManual(title,msg,s){
