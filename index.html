@@ -470,6 +470,13 @@ input[readonly]{background:#EFF2EE;color:var(--ink-soft);cursor:not-allowed}
 #schedRoot .abs-cell.covx{display:flex;align-items:center;justify-content:center;font-size:8.5px;font-weight:800;color:#2C2C2A;line-height:1}
 #schedRoot .abs-cell.clk{cursor:pointer}
 #schedRoot .abs-cell.coffee-cell{display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer}
+/* DD: A light cell means a real shift at Masherova; dark coffee remains a separate manual assignment. */
+#schedRoot .abs-cell.coffee-cell.coffee-shift{background:#E3F0E4;border-color:#BED6C2}
+#schedRoot .abs-cell.coffee-cell.coffee-assigned{background:#A6743C;border-color:#A6743C;color:#fff}
+#schedRoot .coffee-legend{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:0 0 10px;color:var(--ink-faint);font-size:11.5px}
+#schedRoot .coffee-legend-item{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+#schedRoot .coffee-legend-swatch{width:20px;height:14px;display:inline-flex;align-items:center;justify-content:center;border-radius:4px;background:#E3F0E4;border:1px solid #BED6C2;flex-shrink:0}
+#schedRoot .coffee-legend-swatch.assigned{background:#A6743C;border-color:#A6743C;color:#fff;font-size:10px}
 #schedRoot .abs-cell.coffee-cell:hover{outline:2px solid #A6743C;outline-offset:-1px}
 #schedRoot .ro .coffee-cell{cursor:default}
 #schedRoot .ro .coffee-cell:hover{outline:none}
@@ -3424,7 +3431,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '20.11.2026-dc'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '20.11.2026-dd'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -10011,9 +10018,20 @@ async function renderSchCoffee(el){
   COFFEE_ROSTER=roster;
   el.innerHTML=`
     <div class="section-title">☕ Кофе+снеки · ${MON2[SCH.m]} ${SCH.y} <small style="color:var(--ink-faint);font-weight:500">(Машерова)</small></div>
-    <div class="hintline" style="margin-bottom:10px">${manager?'В списке — сотрудники с флажком «☕ кофе+снеки». Клик по клетке — назначить или снять назначение.':'Ваш график кофе+снеки на месяц (только просмотр). Ваша строка отмечена «Я».'}</div>
+    <div class="coffee-legend">
+      <span class="coffee-legend-item"><i class="coffee-legend-swatch" aria-hidden="true"></i>Есть смена на Машерова</span>
+      <span class="coffee-legend-item"><i class="coffee-legend-swatch assigned" aria-hidden="true">☕</i>Назначен ответственным</span>
+    </div>
+    <div class="hintline" style="margin-bottom:10px">${manager?'Дни смен подсвечиваются автоматически из расписания. Нажмите на ячейку, чтобы назначить или снять ответственного.':'Светлые ячейки — ваши дни работы на Машерова; тёмные — назначения кофе+снеки. Только просмотр.'}</div>
     <div id="coffeeTL" class="sch-scroll"></div>`;
   drawCoffeeTimeline(el, roster, !manager);
+}
+// DD: display-only projection of the existing shift schedule; never writes coffee assignments.
+// Coffee+snacks is performed at Masherova, so shifts at other branches do not count.
+function coffeeShiftsAtMasherova(login, iso){
+  const day=(SCHDATA?.assignments||{})[iso+'_masherova'];
+  if(!day||day.closed||absOn(login,iso)) return [];
+  return Array.isArray(day.shifts)?day.shifts.filter(sh=>sh&&sh.adminId===login):[];
 }
 function drawCoffeeTimeline(el, roster, readonly){
   const box=el.querySelector('#coffeeTL'); if(!box) return;
@@ -10026,9 +10044,17 @@ function drawCoffeeTimeline(el, roster, readonly){
   roster.forEach(p=>{
     let cnt=0;
     html+=`<div class="abs-name"${p.login===session.login?' style="color:var(--accent-deep)"':''}>${p.login===session.login?'Я · ':''}${escapeHtml(shortName(p.name))}</div>`;
-    for(let d=1;d<=n;d++){ const iso=schIso(y,m,d), on=coffee[iso]===p.login; if(on)cnt++;
+    for(let d=1;d<=n;d++){
+      const iso=schIso(y,m,d), on=coffee[iso]===p.login;
+      if(on)cnt++;
       const we=[0,6].includes(schDow(y,m,d));
-      html+=`<div class="abs-cell coffee-cell${we?' we':''}" data-iso="${iso}" data-login="${escapeHtml(p.login)}"${on?' style="background:#A6743C;border-color:#A6743C;color:#fff"':''}>${on?'☕':''}</div>`; }
+      const shifts=coffeeShiftsAtMasherova(p.login,iso);
+      const inShift=shifts.length>0;
+      const shiftLabel=inShift?shifts.map(sh=>[sh.start,sh.end].filter(Boolean).join('–')).filter(Boolean).join(', '):'';
+      const status=on?'Назначен ответственным за кофе+снеки':inShift?'Есть смена на Машерова':'Нет смены на Машерова';
+      const tip=status+(inShift?(shiftLabel?' · '+shiftLabel:''):(on?' · нет рабочей смены на Машерова':''));
+      html+=`<div class="abs-cell coffee-cell${we?' we':''}${inShift?' coffee-shift':''}${on?' coffee-assigned':''}" data-iso="${iso}" data-login="${escapeHtml(p.login)}" title="${escapeHtml(tip)}" aria-label="${escapeHtml(adminName(p.login)+' · '+iso+' · '+tip)}">${on?'☕':''}</div>`;
+    }
     html+=`<div class="abs-tot">${cnt||'—'}</div>`;
   });
   html+='</div>';
