@@ -3603,6 +3603,117 @@ html[data-theme="dark"] #tabbody .kb-root,body[data-theme="dark"] #tabbody .kb-r
  }
 }
 
+/* FAD DG · Мероприятия команды — scoped, FAD-native components */
+#tabbody .tev-root{--ev-card:var(--surface,#fff);--ev-line:var(--line,#dce5dd);--ev-ink:var(--ink,#19352b);--ev-muted:var(--ink-soft,#718176);--ev-green:var(--accent,#207451);--ev-soft:#e9f4ec;--ev-hover:#f5f8f4;display:flex;flex-direction:column;gap:16px;max-width:1550px;width:100%;min-width:0;color:var(--ev-ink);padding-bottom:40px}
+#tabbody .tev-root *{box-sizing:border-box}
+#tabbody .tev-root [hidden]{display:none!important}
+#tabbody .tev-root button,#tabbody .tev-root input,#tabbody .tev-root select,#tabbody .tev-root textarea{font:inherit;color:inherit}
+#tabbody .tev-root button{cursor:pointer}
+#tabbody .tev-root .ev-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+#tabbody .tev-root .ev-head h2{font-family:Unbounded,'Golos Text',sans-serif;font-size:20px;margin:0 0 5px;line-height:1.4}
+#tabbody .tev-root .ev-subtitle{font-size:12px;color:var(--ev-muted);line-height:1.5}
+#tabbody .tev-root .ev-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+#tabbody .tev-root .ev-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--ev-line);background:var(--ev-card);color:var(--ev-ink);border-radius:9px;min-height:44px;padding:9px 13px;text-align:center;font-size:12px;font-weight:650;transition:background .15s,border-color .15s}
+#tabbody .tev-root .ev-btn:hover:not(:disabled){border-color:var(--ev-green);background:var(--ev-hover)}
+#tabbody .tev-root .ev-btn-primary{background:var(--ev-green);color:#fff;border-color:var(--ev-green)}
+#tabbody .tev-root .ev-btn-primary:hover:not(:disabled){background:#226246;color:#fff}
+#tabbody .tev-root .ev-btn-danger{color:#a83838;border-color:#bd7777}
+#tabbody .tev-root button:disabled{cursor:not-allowed;opacity:.46}
+#tabbody .tev-root button:focus-visible,#tabbody .tev-root :is(input,select,textarea):focus-visible{outline:2px solid var(--ev-green);outline-offset:2px}
+#tabbody .tev-root .ev-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+#tabbody .tev-root .ev-kpi{min-width:0;border:1px solid var(--ev-line);background:var(--ev-card);border-radius:12px;padding:14px 15px;min-height:106px}
+#tabbody .tev-root .ev-kpi .ev-kpi-label{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ev-muted);font-weight:750}
+#tabbody .tev-root .ev-kpi strong{font-family:Unbounded,'Golos Text',sans-serif;display:block;font-size:18px;line-height:1.35;margin:7px 0 5px;overflow-wrap:anywhere}
+#tabbody .tev-root .ev-kpi small{display:block;font-size:11px;line-height:1.45;color:var(--ev-muted)}
+#tabbody .tev-root .ev-filters{padding:13px;background:var(--ev-card);border:1px solid var(--ev-line);border-radius:12px;display:flex;align-items:center;gap:9px 16px;flex-wrap:wrap}
+#tabbody .tev-root .ev-filter-line{display:flex;flex-wrap:wrap;align-items:center;gap:7px;min-width:0}
+#tabbody .tev-root .ev-filter-line>span{font-size:11px;color:var(--ev-muted);margin-right:2px}
+#tabbody .tev-root .ev-chip{display:inline-flex;align-items:center;gap:4px;justify-content:center;background:var(--ev-card);color:var(--ev-ink);border:1px solid var(--ev-line);border-radius:999px;min-height:44px;padding:7px 11px;font-size:11px;font-weight:650}
+#tabbody .tev-root .ev-chip[aria-pressed=true]{color:#fff;background:var(--ev-green);border-color:var(--ev-green)}
+#tabbody .tev-root .ev-toggle{display:flex;align-items:center;gap:7px;color:var(--ev-ink);font-size:12px;cursor:pointer;min-height:44px}
+#tabbody .tev-root .ev-toggle input{accent-color:var(--ev-green);height:17px;width:17px}
+#tabbody .tev-root .ev-year{background:var(--ev-card);border:1px solid var(--ev-line);border-radius:9px;padding:9px;min-height:44px}
+#tabbody .tev-root .ev-layout{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(310px,0.9fr);align-items:start;gap:13px;min-width:0}
+#tabbody .tev-root .ev-month{margin:0 0 13px}
+#tabbody .tev-root .ev-month-title{font-size:10px;color:var(--ev-muted);letter-spacing:.09em;text-transform:uppercase;margin:6px 0 8px;font-weight:750}
+#tabbody .tev-root .ev-event{width:100%;display:grid;grid-template-columns:39px minmax(0,1fr) auto;gap:10px;align-items:center;min-height:67px;border:1px solid var(--ev-line);background:var(--ev-card);border-radius:10px;padding:10px;text-align:left;margin-bottom:6px}
+#tabbody .tev-root .ev-event:hover{border-color:var(--ev-green)}
+#tabbody .tev-root .ev-event[aria-pressed=true]{border:2px solid var(--ev-green);padding:9px}
+#tabbody .tev-root .ev-event.ev-past{opacity:.64}
+#tabbody .tev-root .ev-day{display:flex;flex-direction:column;align-items:center;gap:1px}
+#tabbody .tev-root .ev-day strong{font-size:20px;line-height:1}
+#tabbody .tev-root .ev-day small{font-size:10px;color:var(--ev-muted);text-transform:uppercase}
+#tabbody .tev-root .ev-event-name{font-size:12px;line-height:1.4;font-weight:750;overflow-wrap:anywhere}
+#tabbody .tev-root .ev-event-meta{font-size:10px;color:var(--ev-muted);margin-top:4px;overflow-wrap:anywhere}
+#tabbody .tev-root .ev-event-tags{display:flex;flex-wrap:wrap;gap:4px;max-width:240px;justify-content:flex-end;align-items:center}
+#tabbody .tev-root .ev-tag{display:inline-flex;align-items:center;padding:4px 7px;border-radius:7px;font-size:10px;line-height:1.2;font-weight:700;white-space:nowrap;background:var(--ev-soft);color:var(--ev-ink)}
+#tabbody .tev-root .ev-tag.ev-meeting{background:#e8ecf2;color:#334155}
+#tabbody .tev-root .ev-tag.ev-training{background:#e8e9fb;color:#3730a3}
+#tabbody .tev-root .ev-tag.ev-attestation{background:#fbe8f1;color:#9d2b64}
+#tabbody .tev-root .ev-tag.ev-leisure{background:#e2f4ee;color:#0b6b53}
+#tabbody .tev-root .ev-tag.ev-outline{background:transparent;border:1px solid var(--ev-muted);color:var(--ev-ink)}
+#tabbody .tev-root .ev-tag.ev-draft{background:#fff4dc;color:#805f22}
+#tabbody .tev-root .ev-panel{background:var(--ev-card);border:1px solid var(--ev-line);border-radius:12px;padding:16px;min-width:0;position:sticky;top:18px}
+#tabbody .tev-root .ev-panel h3{font-size:17px;line-height:1.5;margin:11px 0 8px;overflow-wrap:anywhere}
+#tabbody .tev-root .ev-date-line{font-size:12px;color:var(--ev-muted);line-height:1.5}
+#tabbody .tev-root .ev-info{display:grid;grid-template-columns:110px minmax(0,1fr);gap:8px 11px;margin:15px 0;font-size:12px}
+#tabbody .tev-root .ev-info dt{color:var(--ev-muted)}
+#tabbody .tev-root .ev-info dd{margin:0;overflow-wrap:anywhere}
+#tabbody .tev-root .ev-description{font-size:12px;line-height:1.7;margin:14px 0;white-space:pre-wrap;overflow-wrap:anywhere}
+#tabbody .tev-root .ev-divider{border-top:1px solid var(--ev-line);margin:13px 0}
+#tabbody .tev-root .ev-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;text-align:center;margin:12px 0}
+#tabbody .tev-root .ev-stats strong{display:block;font-size:18px}
+#tabbody .tev-root .ev-stats span{font-size:10px;color:var(--ev-muted)}
+#tabbody .tev-root .ev-progress{display:flex;height:7px;background:var(--ev-line);border-radius:99px;overflow:hidden}
+#tabbody .tev-root .ev-progress .ev-yes{background:#2c9464}#tabbody .tev-root .ev-progress .ev-no{background:#c8794f}
+#tabbody .tev-root .ev-respondents{margin:15px 0}
+#tabbody .tev-root .ev-respondents h4{font-size:11px;color:var(--ev-muted);font-weight:750;text-transform:uppercase;letter-spacing:.07em;margin:11px 0 5px}
+#tabbody .tev-root .ev-person{display:flex;align-items:center;gap:10px;justify-content:space-between;border-bottom:1px solid var(--ev-line);padding:7px 0;font-size:11px;min-width:0}
+#tabbody .tev-root .ev-person>span:first-child{overflow-wrap:anywhere;min-width:0}
+#tabbody .tev-root .ev-answer{font-size:10px;padding:5px 8px;border-radius:7px;background:var(--ev-hover);color:var(--ev-muted);white-space:nowrap}
+#tabbody .tev-root .ev-answer.yes{background:#e5f4eb;color:#216846}#tabbody .tev-root .ev-answer.no{background:#fcebe8;color:#aa4040}
+#tabbody .tev-root .ev-panel-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:15px}
+#tabbody .tev-root .ev-panel-actions .ev-btn{flex:1 1 130px}
+#tabbody .tev-root .ev-empty{padding:24px 16px;text-align:center;background:var(--ev-card);border:1px dashed var(--ev-line);border-radius:12px;font-size:12px;color:var(--ev-muted)}
+#tabbody .tev-root .ev-year-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:10px}
+#tabbody .tev-root .ev-year-month{background:var(--ev-card);border:1px solid var(--ev-line);border-radius:12px;min-width:0;padding:14px}
+#tabbody .tev-root .ev-year-month h3{margin:0 0 10px;font-size:13px}
+#tabbody .tev-root .ev-year-item{width:100%;text-align:left;border:1px solid var(--ev-line);border-radius:8px;background:var(--ev-hover);padding:9px;min-height:44px;font-size:11px;line-height:1.4;margin:3px 0}
+#tabbody .tev-root .ev-year-item[aria-pressed=true]{border:2px solid var(--ev-green)}
+#tabbody .tev-root .ev-year-item.ev-past{opacity:.6}
+#tabbody .tev-root .ev-staff-card{border:1px solid var(--ev-line);border-radius:13px;background:var(--ev-card);padding:18px;max-width:690px}
+#tabbody .tev-root .ev-staff-card h3{font-size:20px;margin:12px 0;line-height:1.4}
+#tabbody .tev-root .ev-staff-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:18px 0 9px}
+#tabbody .tev-root .ev-staff-choices button{min-height:48px}
+#tabbody .tev-root .ev-more h3{font-size:13px;margin:0 0 9px}
+#tabbody .tev-root .ev-more-card{width:100%;display:flex;align-items:center;gap:13px;text-align:left;border:1px solid var(--ev-line);border-radius:10px;background:var(--ev-card);min-height:62px;padding:10px;margin-bottom:7px}
+#tabbody .tev-root .ev-more-card[aria-pressed=true]{border:2px solid var(--ev-green)}
+#tabbody .tev-root .ev-more-card b{font-size:12px;display:block}.tev-root .ev-more-card small{font-size:11px;color:var(--ev-muted)}
+#tabbody .tev-root .ev-overlay{position:fixed;inset:0;background:#0c2115a6;display:flex;justify-content:center;align-items:center;z-index:3200;padding:12px;overflow:auto}
+#tabbody .tev-root .ev-modal{width:min(710px,100%);max-height:calc(100dvh - 24px);overflow:auto;background:var(--ev-card);color:var(--ev-ink);border:1px solid var(--ev-line);border-radius:14px;padding:22px;box-shadow:0 20px 70px #0003;position:relative}
+#tabbody .tev-root .ev-modal h2{font-size:18px;margin:0 0 6px}.tev-root .ev-modal p{font-size:12px;color:var(--ev-muted);margin:0 0 15px;line-height:1.5}
+#tabbody .tev-root .ev-form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+#tabbody .tev-root .ev-field{display:flex;flex-direction:column;gap:5px;font-size:12px;min-width:0;font-weight:650}
+#tabbody .tev-root .ev-field.ev-wide{grid-column:1/-1}
+#tabbody .tev-root .ev-field :is(input,select,textarea){width:100%;min-height:44px;border:1px solid var(--ev-line);border-radius:8px;background:var(--ev-card);color:var(--ev-ink);padding:10px;font-size:13px;font-weight:400}
+#tabbody .tev-root .ev-field textarea{min-height:92px;resize:vertical}
+#tabbody .tev-root .ev-modal-title{font-weight:800;font-size:12px;margin:15px 0 7px}
+#tabbody .tev-root .ev-modal-footer{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;margin-top:20px;padding-top:12px;border-top:1px solid var(--ev-line)}
+#tabbody .tev-root .ev-checks{display:flex;flex-wrap:wrap;gap:10px}
+#tabbody .tev-root .ev-check{display:inline-flex;align-items:center;gap:7px;font-size:12px;min-height:44px;cursor:pointer}
+#tabbody .tev-root .ev-check input{accent-color:var(--ev-green);width:17px;height:17px}
+#tabbody .tev-root .ev-staff-picker{max-height:200px;overflow:auto;border:1px solid var(--ev-line);border-radius:9px;padding:8px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 10px}
+#tabbody .tev-root .ev-staff-picker .ev-check{min-height:44px}
+#tabbody .tev-root .ev-inline-warning{border:1px solid #d8ae5a;background:#fff4db;color:#785517;padding:11px;border-radius:8px;font-size:12px;margin:10px 0}
+#tabbody .tev-root .ev-detail-back{display:none;margin-bottom:8px}
+#tabbody .tev-root .ev-status-line{font-size:11px;min-height:16px;color:var(--ev-muted)}
+html[data-theme=dark] #tabbody .tev-root,body[data-theme=dark] #tabbody .tev-root,.theme-dark #tabbody .tev-root{--ev-card:#1d3026;--ev-line:#354e40;--ev-ink:#ecf4ef;--ev-muted:#a4b7ab;--ev-green:#67b98b;--ev-soft:#294533;--ev-hover:#243b2f}
+html[data-theme=dark] #tabbody .tev-root .ev-chip[aria-pressed=true],html[data-theme=dark] #tabbody .tev-root .ev-btn-primary{color:#112b1d}
+@media(prefers-color-scheme:dark){html:not([data-theme=light]) #tabbody .tev-root{--ev-card:#1d3026;--ev-line:#354e40;--ev-ink:#ecf4ef;--ev-muted:#a4b7ab;--ev-green:#67b98b;--ev-soft:#294533;--ev-hover:#243b2f}}
+@media(max-width:1130px){#tabbody .tev-root .ev-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}#tabbody .tev-root .ev-event{grid-template-columns:39px minmax(0,1fr)}#tabbody .tev-root .ev-event-tags{grid-column:2;max-width:none;justify-content:flex-start}}
+@media(max-width:810px){#tabbody .tev-root .ev-layout{display:block}#tabbody .tev-root .ev-panel{position:static;margin-top:12px}#tabbody .tev-root .ev-layout.ev-mobile-detail .ev-left{display:none}#tabbody .tev-root .ev-layout:not(.ev-mobile-detail) .ev-panel{display:none}#tabbody .tev-root .ev-detail-back{display:inline-flex}#tabbody .tev-root .ev-year-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){#tabbody .tev-root .ev-head h2{font-size:17px}#tabbody .tev-root .ev-head{align-items:flex-start}#tabbody .tev-root .ev-kpi{padding:11px;min-height:92px}#tabbody .tev-root .ev-kpi strong{font-size:15px}#tabbody .tev-root .ev-filters{padding:9px}#tabbody .tev-root .ev-filter-line{gap:5px}#tabbody .tev-root .ev-chip{font-size:10px;padding:7px 9px}#tabbody .tev-root .ev-year-grid{grid-template-columns:1fr}#tabbody .tev-root .ev-modal{padding:14px}#tabbody .tev-root .ev-form-grid{grid-template-columns:minmax(0,1fr)}#tabbody .tev-root .ev-staff-picker{grid-template-columns:1fr}#tabbody .tev-root .ev-kpis{gap:7px}#tabbody .tev-root .ev-event-name{font-size:11px}#tabbody .tev-root .ev-tools .ev-btn{flex:1 1 auto}}
+
 </style>
 
 <div id="root"></div>
@@ -3623,7 +3734,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '20.11.2026-df'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '20.11.2026-dg'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -3934,6 +4045,7 @@ function persistSession(){
 }
 async function refreshPermissions(){
   if(!session) return;
+  if(session.role==='trainer'){session.permissions=normalizePermissions({});session.permissionsLoaded=true;session.fadRolePermissions=null;session.clientsAccess={enabled:false};persistSession();return;}
   if(session.role==='owner'){
     session.permissions=normalizePermissions(PERMISSION_PRESETS.full); session.permissionsLoaded=true; session.adminPayrollAccess=true;
     try{session.clientsAccess=await rpc('app_client_access',{p_token:TOKEN});}catch(_){session.clientsAccess={owner:true,own:true,team:true,manage:true,enabled:false};}
@@ -4412,7 +4524,7 @@ async function boot(){
   let saved=null; try{ saved=JSON.parse(sessionStorage.getItem('sess')); }catch(e){}
   if(saved && saved.token){
     TOKEN=saved.token; session={login:saved.login,name:saved.name,role:saved.role,senior:!!saved.senior,canEdit:!!saved.canEdit,home:saved.home||null,permissions:normalizePermissions(saved.permissions||{}),permissionsLoaded:false,fadRoleCode:saved.fadRoleCode||'',fadRoleName:saved.fadRoleName||'',fadRolePermissions:saved.fadRolePermissions||null};
-    try{ await refreshPermissions(); await loadReports(true); renderApp(); return; }
+    try{ await refreshPermissions(); if(session.role!=='trainer')await loadReports(true); renderApp(); return; }
     catch(e){ TOKEN=null; session=null; try{sessionStorage.removeItem('sess');}catch(_){} }
   }
   let needs;
@@ -4483,6 +4595,7 @@ function renderLogin(){
 /* ================= App shell / routing ================= */
 function roleLabel(){
   if(session.role==='owner') return 'Руководитель';
+  if(session.role==='trainer')return 'Тренер';
   if(session.fadRoleName) return session.fadRoleName;
   const p=normalizePermissions(session.permissions||{});
   const isSenior=PERMISSION_KEYS.filter(k=>p[k]).length===SENIOR_PERMISSION_KEYS.length && SENIOR_PERMISSION_KEYS.every(k=>p[k]);
@@ -4505,7 +4618,8 @@ const NAV_ITEMS = [
   {id:'roles',label:'Роли',icon:'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z M9 12l2 2 4-4',group:'people'},
   {id:'marketing',label:'Маркетинг',icon:'M3 11v3l12 4V7L3 11z M15 9l4-2 M15 16l4 2 M4 15l2 6h3l-2-5',group:'comms'},
   {id:'calendar',label:'Календарь',icon:'M8 2v4 M16 2v4 M3 9h18 M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z',group:'comms'},
-  {id:'messages',label:'Сообщения',icon:'M21 11.5a8.5 8.5 0 0 1-8.5 8.5H5l-3 2v-8a8.5 8.5 0 1 1 19-2.5z',group:'comms'}
+  {id:'messages',label:'Сообщения',icon:'M21 11.5a8.5 8.5 0 0 1-8.5 8.5H5l-3 2v-8a8.5 8.5 0 1 1 19-2.5z',group:'comms'},
+  {id:'events',label:'Мероприятия',icon:'M8 2v4 M16 2v4 M3 9h18 M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z M8 13h4 M8 17h8',group:'comms'}
 ];
 function header(){
   // Старые id refreshBtn и logout и их обработчики сохраняются; элементы перемещены в sidebar.
@@ -4548,12 +4662,14 @@ function getNavigationTabs(){
     roles:{label:'Роли',key:'roles',render:renderRoles},
     marketing:{key:'marketing',label:'Маркетинг',render:renderMarketing},
     calendar:{key:'calendar',label:'Календарь',render:renderCalendar},
-    messages:{key:'messages',label:'Сообщения',render:renderMessages}
+    messages:{key:'messages',label:'Сообщения',render:renderMessages},
+    events:{key:'events',label:'Мероприятия',render:renderTeamEvents}
   };
   getNavigationTabs.registry=definitions; // только для проверки валидности NAV_ITEMS
-  const ownerOrder=['reports','plan','clients','schedule','knowledge','salaries','replacements','employees','roles','marketing','calendar','messages'];
-  const gorovayaOrder=['shift','plan','clients','reports','schedule','knowledge','salaries','replacements','employees','marketing','calendar','messages'];
-  const adminOrder=['shift','plan','clients','schedule','knowledge','replacements','marketing'];
+  if(session?.role==='trainer')return [definitions.events];
+  const ownerOrder=['reports','plan','clients','schedule','knowledge','salaries','replacements','employees','roles','marketing','calendar','messages','events'];
+  const gorovayaOrder=['shift','plan','clients','reports','schedule','knowledge','salaries','replacements','employees','marketing','calendar','messages','events'];
+  const adminOrder=['shift','plan','clients','schedule','knowledge','replacements','marketing','events'];
   const order=isOwner?ownerOrder:(isGorovaya?gorovayaOrder:adminOrder);
   const canSee={
     shift:!isOwner,
@@ -4568,14 +4684,16 @@ function getNavigationTabs(){
     roles:isOwner,
     marketing:isOwner||session.role==='admin',
     calendar:isOwner||(isGorovaya&&(can('calendar.view')||can('calendar.manage'))),
-    messages:isOwner||(isGorovaya&&can('messages.manage'))
+    messages:isOwner||(isGorovaya&&can('messages.manage')),
+    events:true
   };
   if(!isOwner&&session.fadRolePermissions){
     // Для назначенных ролей сервер проверяет права действий; nav.* управляет только видимостью вкладок.
     const p=session.fadRolePermissions;
-    const roleOrder=['shift','plan','clients','reports','schedule','knowledge','salaries','replacements','employees','marketing','calendar','messages'];
+    const roleOrder=['shift','plan','clients','reports','schedule','knowledge','salaries','replacements','employees','marketing','calendar','messages','events'];
     return roleOrder.filter(key=>{
       if(key==='knowledge')return true; // доступ на чтение всем, редактирование решает сервер RPC
+      if(key==='events')return true; // сотрудник видит только свои события, сервер проверяет аудиторию
       if(key==='clients')return !!session.clientsAccess?.enabled&&(!!session.clientsAccess?.own||!!session.clientsAccess?.team);
       if(p['nav.'+key]!==true)return false;
       if(key==='reports')return can('reports.view_all');
@@ -4785,7 +4903,7 @@ function renderRoleUI(tabs){
         <button class="fad-sidebar-hamburger" type="button" id="fadSidebarHamburger" aria-label="Открыть меню" aria-expanded="false" aria-controls="fadSidebar">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16 M4 12h16 M4 18h16"/></svg>
         </button>
-        <div class="fad-main-heading"><div class="fad-main-eyebrow">FLEXICO · АДМИНИСТРАТОРЫ</div><h1 id="fadCurrentTitle"></h1></div>
+        <div class="fad-main-heading"><div class="fad-main-eyebrow">${session?.role==='trainer'?'FLEXICO · КОМАНДА':'FLEXICO · АДМИНИСТРАТОРЫ'}</div><h1 id="fadCurrentTitle"></h1></div>
         <span class="fad-main-version" title="Версия FAD">${APP_VERSION}</span>
       </div>
       <div class="wrap"><div id="tabbody" role="region" aria-label="Содержимое выбранной вкладки"></div></div>
@@ -9613,7 +9731,8 @@ const ROLE_NAV_DEFS=[
   ['nav.employees','Сотрудники','Отображать справочник при наличии прав просмотра'],
   ['nav.marketing','Маркетинг','Отображать раздел маркетинга'],
   ['nav.calendar','Календарь','Отображать календарь при наличии прав просмотра'],
-  ['nav.messages','Сообщения','Отображать настройки сообщений при наличии разрешения']
+  ['nav.messages','Сообщения','Отображать настройки сообщений при наличии разрешения'],
+  ['nav.events','Мероприятия','Видимость раздела мероприятий (чтение открыто всем сотрудникам)']
 ].map(([key,label,desc])=>({key,label,desc,group:'Разделы меню · видимость'}));
 const ROLE_PAYROLL_DEFS=[
   {key:'payroll.admin.view',group:'Зарплата администраторов',label:'Просмотр всех администраторов',desc:'Серверный доступ к расчётам, авансам и детализации смен; не даёт права изменения'},
@@ -9630,7 +9749,8 @@ const ROLE_CLIENT_DEFS=[
   {key:'clients.team',group:'Клиенты и задачи',label:'Просматривать задачи команды',desc:'Общий контроль работы администраторов и просмотр архивных планов'},
   {key:'clients.manage',group:'Клиенты и задачи',label:'Управлять планами и импортом',desc:'Загрузка баз, активация планов, сохранение архивов и переназначение задач'}
 ];
-const ROLE_ACTIVE_DEFS=[...ROLE_NAV_DEFS,...PERMISSION_DEFS,...ROLE_PAYROLL_DEFS,...ROLE_DIRECTION_DEFS,...ROLE_FORECAST_DEFS,...ROLE_CLIENT_DEFS];
+const ROLE_EVENT_DEFS=[{key:'events.manage',group:'Команда и мероприятия',label:'Управление мероприятиями',desc:'Создавать, менять, отменять и удалять события, видеть все ответы, отправлять Telegram-анонсы и напоминания. Проверяется сервером.'}];
+const ROLE_ACTIVE_DEFS=[...ROLE_NAV_DEFS,...PERMISSION_DEFS,...ROLE_PAYROLL_DEFS,...ROLE_DIRECTION_DEFS,...ROLE_FORECAST_DEFS,...ROLE_CLIENT_DEFS,...ROLE_EVENT_DEFS];
 const ROLE_FUTURE_DEFS={
   'Смена':['Открывать смену','Закрывать смену','Изменять только свою смену','Изменять смены других','Корректировать кассовые операции','Редактировать закрытую смену','Подтверждать закрытие смены','Удалять кассовые операции'],
   'План и продажи':['Видеть планы всех филиалов','Изменять план филиала','Видеть продажи всех сотрудников','Корректировать источник продаж','Утверждать месячный бонус','Изменять пороги бонусов'],
@@ -13545,6 +13665,239 @@ async function renderKnowledge(body){
       else if(state.query){ev.preventDefault();state.query='';el('kbSearch').value='';draw();}
     }
   },{signal:kbAbort.signal});
+}
+
+/* ================= FAD 20.11.2026-dg · Мероприятия команды (RPC only) ================= */
+async function renderTeamEvents(body){
+  const KINDS={meeting:'Собрание',training:'Обучение',attestation:'Аттестация',leisure:'Отдых'};
+  const AUDIENCES={all:'Все',trainers:'Тренеры',admins:'Администраторы',custom:'Выбраны вручную'};
+  const MONTHS=['ЯНВАРЬ','ФЕВРАЛЬ','МАРТ','АПРЕЛЬ','МАЙ','ИЮНЬ','ИЮЛЬ','АВГУСТ','СЕНТЯБРЬ','ОКТЯБРЬ','НОЯБРЬ','ДЕКАБРЬ'];
+  const MONTHS_GEN=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+  const WD=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+  const WEEK=['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
+  const esc=escapeHtml;
+  const minskNow=()=>{const z=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Minsk',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const p=x=>z.find(v=>v.type===x)?.value||'';return `${p('year')}-${p('month')}-${p('day')}`;};
+  const curDate=minskNow();
+  const state={year:+curDate.slice(0,4),view:'list',aud:'all',kind:'all',past:false,selected:null,mobileDetail:false,
+    events:[],staff:[],manager:false,staffId:null,staffKind:'',today:curDate,modal:null,draft:null,busy:false,status:''};
+  body.innerHTML='<div class="tev-root" id="teamEventsRoot"><div class="ev-empty">Загружаем мероприятия…</div></div>';
+  const root=body.querySelector('#teamEventsRoot');
+  const active=()=>root.isConnected&&!!TOKEN&&!!session;
+  const send=(name,args={})=>rpc(name,{p_token:TOKEN,...args});
+  const getEvent=id=>state.events.find(x=>x.id===id);
+  const dObj=iso=>new Date(String(iso).slice(0,10)+'T12:00:00Z');
+  const dayNum=iso=>String(iso||'').slice(8,10).replace(/^0/,'');
+  const dow=iso=>WD[dObj(iso).getUTCDay()];
+  const fullDate=ev=>`${WEEK[dObj(ev.starts_on).getUTCDay()]}, ${dayNum(ev.starts_on)} ${MONTHS_GEN[+ev.starts_on.slice(5,7)-1]} ${ev.starts_on.slice(0,4)}${ev.starts_at?' · '+String(ev.starts_at).slice(0,5):''}`;
+  const timeOf=ev=>ev.starts_at?String(ev.starts_at).slice(0,5):'Время уточняется';
+  const daysLeft=iso=>Math.round((dObj(iso)-dObj(state.today))/86400000);
+  const localEnd=ev=>ev.starts_on+'T'+(ev.starts_at?String(ev.starts_at).slice(0,5):'00:00');
+  const nowLocal=()=>{const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Minsk',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date());const q=k=>p.find(x=>x.type===k)?.value||'';return `${q('year')}-${q('month')}-${q('day')}T${q('hour')}:${q('minute')}`;};
+  const canReply=ev=>ev&&!ev.is_draft&&ev.status==='planned'&&localEnd(ev)>nowLocal()&&state.staffId!=null&&state.staffKind;
+  const isPast=ev=>ev.starts_on<state.today||(ev.starts_on===state.today&&localEnd(ev)<=nowLocal());
+  const timing=ev=>{const n=daysLeft(ev.starts_on);return n===0?'сегодня':n===1?'завтра':n>1?'через '+n+' дн.':n===-1?'вчера':n<0?Math.abs(n)+' дн. назад':'';};
+  const badge=(k,v)=>`<span class="ev-tag ${k||''}">${esc(v)}</span>`;
+  const evBadges=ev=>`${badge('ev-'+ev.event_type,KINDS[ev.event_type]||ev.event_type)} ${badge('',AUDIENCES[ev.audience]||ev.audience)}${ev.is_mandatory?badge('ev-outline','Обязательно'):''}${ev.is_draft?badge('ev-draft','Предложение'):''}${ev.status==='cancelled'?badge('ev-outline','Отменено'):''}`;
+  const targetAudience=(ev,k)=>ev.audience==='all'||ev.audience===(k==='trainer'?'trainers':'admins')||
+    (ev.audience==='custom'&&Array.isArray(ev.participants)&&ev.participants.some(p=>p.staff_kind===k));
+  function counts(){const a=state.events.filter(ev=>ev.status!=='cancelled');return {
+    total:a.length,mandatory:a.filter(ev=>ev.is_mandatory).length,
+    trainers:a.filter(ev=>targetAudience(ev,'trainer')).length,admins:a.filter(ev=>targetAudience(ev,'admin')).length,
+    next:a.filter(ev=>ev.starts_on>=state.today&&!isPast(ev)).sort((x,y)=>localEnd(x).localeCompare(localEnd(y)))[0]
+  };}
+  function matchesAud(ev,fil){return fil==='all'||targetAudience(ev,fil==='trainers'?'trainer':'admin');}
+  function filtered({yearMode=false}={}){
+    return state.events.filter(ev=>(yearMode||state.past||!isPast(ev))&&matchesAud(ev,state.aud)
+      &&(state.kind==='all'||ev.event_type===state.kind))
+      .sort((a,b)=>localEnd(a).localeCompare(localEnd(b))||a.title.localeCompare(b.title,'ru'));
+  }
+  const allAudienceCount=key=>state.events.filter(ev=>(state.past||!isPast(ev))&&(state.kind==='all'||ev.event_type===state.kind)&&matchesAud(ev,key)).length;
+  const allKindCount=key=>state.events.filter(ev=>(state.past||!isPast(ev))&&matchesAud(ev,state.aud)&&(key==='all'||ev.event_type===key)).length;
+  const isDemo=ev=>ev?.is_draft===true;
+  function ownerHeader(){const n=counts();return `<div class="ev-head"><div><h2>Мероприятия команды</h2><div class="ev-subtitle">Тренеры и администраторы · план на ${state.year} год</div></div>
+   <div class="ev-tools">${session?.role==='owner'?'<button type="button" class="ev-btn" data-ev-action="trainer-access">Доступ тренерам</button>':''}
+   <button type="button" class="ev-btn" data-ev-action="announce" ${!getEvent(state.selected)||isDemo(getEvent(state.selected))?'disabled':''}>Анонс в Telegram</button>
+   <button type="button" class="ev-btn ev-btn-primary" data-ev-action="new">+ Новое мероприятие</button></div></div>
+   <div class="ev-kpis">
+   <div class="ev-kpi"><span class="ev-kpi-label">Ближайшее</span><strong>${n.next?esc(dayNum(n.next.starts_on)+' '+MONTHS_GEN[+n.next.starts_on.slice(5,7)-1]+', '+dow(n.next.starts_on)):'—'}</strong><small>${n.next?esc(n.next.title+' · '+timing(n.next)):'В выбранном году нет будущих мероприятий'}</small></div>
+   <div class="ev-kpi"><span class="ev-kpi-label">Всего в ${state.year}</span><strong>${n.total}</strong><small>Собрания, обучение, аттестации, отдых</small></div>
+   <div class="ev-kpi"><span class="ev-kpi-label">Обязательных</span><strong>${n.mandatory}</strong><small>Участие считается рабочим</small></div>
+   <div class="ev-kpi"><span class="ev-kpi-label">Тренеры / админы</span><strong>${n.trainers} / ${n.admins}</strong><small>Мероприятий для каждой группы</small></div>
+   </div>`;}
+  function filters(){const audience=[['all','Все'],['trainers','Тренеры'],['admins','Администраторы']];
+    return `<div class="ev-filters">
+      <div class="ev-filter-line"><span>Вид</span>${[['list','Список'],['year','Год']].map(([k,n])=>`<button type="button" class="ev-chip" aria-pressed="${state.view===k}" data-ev-view="${k}">${n}</button>`).join('')}</div>
+      <div class="ev-filter-line"><span>Участники</span>${audience.map(([k,n])=>`<button type="button" class="ev-chip" aria-pressed="${state.aud===k}" data-ev-aud="${k}">${n} · ${allAudienceCount(k)}</button>`).join('')}</div>
+      <div class="ev-filter-line"><span>Тип</span>${[['all','Все типы'],...Object.entries(KINDS)].map(([k,n])=>`<button type="button" class="ev-chip" aria-pressed="${state.kind===k}" data-ev-kind="${k}">${n} · ${allKindCount(k)}</button>`).join('')}</div>
+      <label class="ev-filter-line"><span>Год</span><select class="ev-year" data-ev-year aria-label="Год мероприятий">${Array.from({length:10},(_,i)=>2025+i).map(y=>`<option value="${y}" ${state.year===y?'selected':''}>${y}</option>`).join('')}</select></label>
+      <label class="ev-toggle"><input type="checkbox" data-ev-past ${state.past?'checked':''}/> Прошедшие</label></div>`;}
+  function row(ev){return `<button type="button" class="ev-event${isPast(ev)?' ev-past':''}" aria-pressed="${state.selected===ev.id}" data-ev-open="${esc(ev.id)}">
+     <span class="ev-day"><strong>${dayNum(ev.starts_on)}</strong><small>${dow(ev.starts_on)}</small></span>
+     <span><strong class="ev-event-name">${esc(ev.title)}</strong><span class="ev-event-meta">${esc(timeOf(ev))} · ${esc(ev.place||'Место уточняется')}</span></span>
+     <span class="ev-event-tags">${evBadges(ev)}${!isPast(ev)?badge('',timing(ev)):''}</span></button>`;}
+  function list(){const items=filtered();if(!items.length)return '<div class="ev-empty">Нет мероприятий по выбранным фильтрам.</div>';
+    const groups=new Map();for(const ev of items){const k=ev.starts_on.slice(5,7);if(!groups.has(k))groups.set(k,[]);groups.get(k).push(ev);}
+    return [...groups].map(([m,arr])=>`<section class="ev-month"><h3 class="ev-month-title">${MONTHS[+m-1]} · ${arr.length}</h3>${arr.map(row).join('')}</section>`).join('');}
+  function yearly(){const items=filtered({yearMode:true});return `<div class="ev-year-grid">${Array.from({length:12},(_,i)=>{
+    const data=items.filter(ev=>+ev.starts_on.slice(5,7)===i+1);
+    return `<section class="ev-year-month"><h3>${MONTHS[i]} · ${data.length}</h3>${data.length?data.map(ev=>`<button class="ev-year-item${isPast(ev)?' ev-past':''}" type="button" data-ev-open="${esc(ev.id)}" aria-pressed="${state.selected===ev.id}"><b>${dayNum(ev.starts_on)}</b> · ${esc(ev.title)}<span style="display:block;margin-top:4px">${evBadges(ev)}</span></button>`).join(''):'<span class="ev-subtitle">Нет мероприятий</span>'}</section>`;}).join('')}</div>`;}
+  function eventInfo(ev){return `<dl class="ev-info"><dt>Место</dt><dd>${esc(ev.place||'Уточняется')}</dd><dt>Участники</dt><dd>${esc(AUDIENCES[ev.audience]||'—')}</dd><dt>Ответственный</dt><dd>${esc(ev.responsible||'Не назначен')}</dd>${ev.duration_min?`<dt>Длительность</dt><dd>${Number(ev.duration_min)} мин.</dd>`:''}</dl>`;}
+  function rsvpPanel(ev){const staff=Array.isArray(ev.attendees)?ev.attendees:[];
+    const yes=staff.filter(x=>x.answer==='yes').length,no=staff.filter(x=>x.answer==='no').length;
+    const none=staff.length-yes-no,denom=Math.max(1,staff.length);
+    const person=x=>`<div class="ev-person"><span>${esc(x.name)}</span><span class="ev-answer ${x.answer==='yes'?'yes':x.answer==='no'?'no':''}">${x.answer==='yes'?'Придёт':x.answer==='no'?'Не сможет':'Нет ответа'}</span></div>`;
+    return `<div class="ev-divider"></div><div style="font-size:12px;font-weight:750">Подтверждение участия</div><div class="ev-progress" role="img" aria-label="Придут ${yes}, не смогут ${no}, без ответа ${none}"><span class="ev-yes" style="width:${100*yes/denom}%"></span><span class="ev-no" style="width:${100*no/denom}%"></span></div>
+    <div class="ev-stats"><div><strong>${yes}</strong><span>Придут</span></div><div><strong>${no}</strong><span>Не смогут</span></div><div><strong>${none}</strong><span>Без ответа</span></div></div>
+    <div class="ev-respondents">${[['trainer','Тренеры'],['admin','Администраторы']].map(([kind,n])=>{const a=staff.filter(x=>x.staff_kind===kind);return a.length?`<h4>${n} · ${a.length}</h4>${a.map(person).join('')}`:'';}).join('')||'<div class="ev-subtitle">Нет адресованных сотрудников</div>'}</div>`;}
+  function detail(){const ev=getEvent(state.selected);if(!ev)return '<aside class="ev-panel"><div class="ev-empty">Выберите мероприятие из списка.</div></aside>';
+    return `<aside class="ev-panel"><button type="button" class="ev-btn ev-detail-back" data-ev-action="back">← К списку</button>
+      <div class="ev-tools">${evBadges(ev)}</div><h3>${esc(ev.title)}</h3><div class="ev-date-line">${esc(fullDate(ev))}</div>
+      ${eventInfo(ev)}<p class="ev-description">${esc(ev.description||'Описание пока не добавлено.')}</p>
+      ${ev.is_draft?'<div class="ev-inline-warning">Дата предложена для планирования. Сначала подтвердите мероприятие через редактирование и сохранение — до этого уведомления не отправляются.</div>':''}
+      ${rsvpPanel(ev)}<div class="ev-panel-actions"><button type="button" class="ev-btn" data-ev-action="unanswered" ${ev.is_draft||ev.status!=='planned'?'disabled':''}>Напомнить неответившим</button>
+      <button type="button" class="ev-btn ev-btn-primary" data-ev-action="edit">Редактировать</button>
+      <button type="button" class="ev-btn" data-ev-action="status">${ev.status==='cancelled'?'Восстановить':'Отменить'}</button>
+      <button type="button" class="ev-btn ev-btn-danger" data-ev-action="delete">Удалить</button></div></aside>`;}
+  function owner(){return `${ownerHeader()}${filters()}<div class="ev-layout${state.mobileDetail?' ev-mobile-detail':''}">
+     <div class="ev-left">${state.view==='list'?list():yearly()}</div>${detail()}</div>`;}
+  function personal(){const upcoming=state.events.filter(x=>!isPast(x)&&x.status==='planned')
+     .sort((a,b)=>localEnd(a).localeCompare(localEnd(b)));
+    const selected=getEvent(state.selected)||upcoming[0];
+    const eventCard=ev=>{if(!ev)return '<div class="ev-empty">Пока для вас нет запланированных мероприятий.</div>';
+     const available=canReply(ev),other=state.events.filter(x=>x.status==='planned'&&!isPast(x)&&x.id!==ev.id).sort((a,b)=>localEnd(a).localeCompare(localEnd(b))).slice(0,3);
+     return `<div class="ev-staff-card"><div class="ev-tools">${evBadges(ev)}${badge('',timing(ev))}</div><h3>${esc(ev.title)}</h3>
+       <div class="ev-date-line">${esc(fullDate(ev))}</div>${eventInfo(ev)}
+       ${ev.description?`<p class="ev-description">${esc(ev.description)}</p>`:''}
+       <div class="ev-staff-choices"><button type="button" class="ev-btn ${ev.my_answer==='yes'?'ev-btn-primary':''}" data-ev-rsvp="yes" aria-pressed="${ev.my_answer==='yes'}" ${!available?'disabled':''}>✓ Приду</button>
+       <button type="button" class="ev-btn ${ev.my_answer==='no'?'ev-btn-danger':''}" data-ev-rsvp="no" aria-pressed="${ev.my_answer==='no'}" ${!available?'disabled':''}>Не смогу</button></div>
+       <div class="ev-status-line">${ev.is_draft?'Дата пока не подтверждена руководителем':ev.status!=='planned'?'Мероприятие неактивно':!available?'Ответ уже нельзя изменить':ev.my_answer==='yes'?'Ваш ответ: придёте. Его можно изменить':ev.my_answer==='no'?'Ваш ответ: не сможете. Его можно изменить':'Ответ нужен до начала мероприятия'}</div></div>
+       <div class="ev-more" style="margin-top:18px"><h3>Дальше</h3>${other.length?other.map(e=>`<button type="button" class="ev-more-card" data-ev-open="${esc(e.id)}" aria-pressed="false"><span class="ev-day"><strong>${dayNum(e.starts_on)}</strong><small>${dow(e.starts_on)}</small></span><span><b>${esc(e.title)}</b><small>${esc(timeOf(e))} · ${esc(KINDS[e.event_type])}</small></span></button>`).join(''):'<div class="ev-subtitle">Других ближайших событий нет</div>'}</div>`;};
+    return `<div class="ev-head"><div><h2>Мероприятия</h2><div class="ev-subtitle">Ближайшие события команды для вас</div></div>
+    <label class="ev-filter-line"><span>Год</span><select class="ev-year" data-ev-year>${Array.from({length:10},(_,i)=>2025+i).map(y=>`<option ${y===state.year?'selected':''}>${y}</option>`).join('')}</select></label></div>
+    ${state.staffId==null?'<div class="ev-inline-warning">Учетная запись ещё не привязана к сотруднику в FAD. Руководитель должен связать её с карточкой в разделе «Сотрудники».</div>':''}
+    ${eventCard(selected)}`;}
+  function defaultDraft(ev){return ev?{...ev,participants:(ev.participants||[]).map(x=>({staff_id:String(x.staff_id),staff_kind:x.staff_kind}))}:
+    {title:'',event_type:'meeting',starts_on:state.today,starts_at:'10:00',duration_min:90,place:'Студия (филиал уточнить)',audience:'all',participants:[],is_mandatory:false,description:'',responsible:'',remind_7d:false,remind_1d:true,remind_3h:false};}
+  function modalForm(){const d=state.draft||defaultDraft();const canCustom=d.audience==='custom';return `<div class="ev-overlay" role="dialog" aria-modal="true" aria-label="${d.id?'Редактировать мероприятие':'Новое мероприятие'}">
+    <form class="ev-modal" id="evEventForm"><h2>${d.id?'Редактировать мероприятие':'Новое мероприятие'}</h2><p>Тренеры и администраторы увидят его на вкладке «Мероприятия» после сохранения.</p>
+    <div class="ev-form-grid"><label class="ev-field ev-wide">Название<input type="text" name="title" maxlength="180" required value="${esc(d.title||'')}"></label>
+      <div class="ev-field ev-wide"><span>Тип *</span><div class="ev-tools">${Object.entries(KINDS).map(([k,n])=>`<button type="button" class="ev-chip" data-ev-form-type="${k}" aria-pressed="${d.event_type===k}">${n}</button>`).join('')}</div></div>
+      <label class="ev-field">Дата<input type="date" name="starts_on" required value="${esc(d.starts_on||'')}"></label>
+      <label class="ev-field">Начало<input type="time" name="starts_at" value="${esc(String(d.starts_at||'').slice(0,5))}"></label>
+      <label class="ev-field">Длительность, мин.<input type="number" name="duration_min" min="15" max="1440" step="15" value="${esc(String(d.duration_min||''))}"></label>
+      <label class="ev-field ev-wide">Место<input name="place" maxlength="400" value="${esc(d.place||'')}"></label>
+      <div class="ev-field ev-wide"><span>Кто участвует *</span><div class="ev-tools">${Object.entries(AUDIENCES).map(([k,n])=>`<button type="button" data-ev-form-aud="${k}" class="ev-chip" aria-pressed="${d.audience===k}">${n}</button>`).join('')}</div></div>
+      ${canCustom?`<div class="ev-field ev-wide"><span>Отметьте участников</span><div class="ev-staff-picker">${state.staff.map(x=>{const on=(d.participants||[]).some(p=>+p.staff_id===+x.staff_id&&p.staff_kind===x.staff_kind);return `<label class="ev-check"><input type="checkbox" name="participant" value="${esc(x.staff_kind)}:${x.staff_id}" ${on?'checked':''}/> ${esc(x.name)} <span class="ev-subtitle">${x.staff_kind==='trainer'?'Тренер':'Администратор'}</span></label>`;}).join('')}</div></div>`:''}
+      <label class="ev-check ev-wide"><input type="checkbox" name="is_mandatory" ${d.is_mandatory?'checked':''}> Обязательное для участников</label>
+      <label class="ev-field ev-wide">Описание<textarea name="description" maxlength="4000">${esc(d.description||'')}</textarea></label>
+      <div class="ev-field ev-wide"><span>Напоминания в Telegram</span><div class="ev-checks">
+        ${[['remind_7d','За 7 дней'],['remind_1d','За 1 день'],['remind_3h','За 3 часа']].map(([k,n])=>`<label class="ev-check"><input type="checkbox" name="${k}" ${d[k]?'checked':''}/> ${n}</label>`).join('')}</div></div>
+      <label class="ev-field ev-wide">Ответственный<input name="responsible" maxlength="250" value="${esc(d.responsible||'')}"></label></div>
+      ${d.is_draft?'<div class="ev-inline-warning">Это дата-предложение из плана 2027. Сохранение подтвердит мероприятие и разрешит ответы. Напоминания будут работать только по отмеченным галочкам.</div>':''}
+      <div class="ev-modal-footer"><button type="button" class="ev-btn" data-ev-action="close-modal">Отмена</button>
+      <button type="submit" class="ev-btn ev-btn-primary" ${state.busy?'disabled':''}>Сохранить мероприятие</button></div></form></div>`;}
+  function modalConfirm(){const m=state.modal;return `<div class="ev-overlay" role="dialog" aria-modal="true" aria-label="Подтверждение действия"><div class="ev-modal"><h2>${esc(m.title||'Подтвердите действие')}</h2><p>${esc(m.text||'')}</p>
+    ${m.info?`<div class="ev-inline-warning">${esc(m.info)}</div>`:''}<div class="ev-modal-footer"><button type="button" class="ev-btn" data-ev-action="close-modal">Отмена</button>
+    <button type="button" class="ev-btn ${m.danger?'ev-btn-danger':'ev-btn-primary'}" data-ev-action="confirm" ${state.busy?'disabled':''}>${esc(m.confirm||'Подтвердить')}</button></div></div></div>`;}
+  function modalAccess(){const trainers=state.staff.filter(x=>x.staff_kind==='trainer'&&!x.has_access);
+    return `<div class="ev-overlay" role="dialog" aria-modal="true" aria-label="Создать вход тренеру"><form class="ev-modal" id="evAccessForm"><h2>Доступ тренерам</h2>
+    <p>Создайте тренеру отдельный аккаунт FAD. Он получит доступ только к мероприятиям, связанным с его карточкой. Пароль передайте лично.</p>
+    ${trainers.length?`<div class="ev-form-grid"><label class="ev-field ev-wide">Тренер<select name="staff_id" required><option value="">Выберите тренера</option>${trainers.map(x=>`<option value="${x.staff_id}">${esc(x.name)}</option>`).join('')}</select></label>
+    <label class="ev-field ev-wide">Логин<input name="login" required minlength="4" maxlength="40" pattern="[a-z][a-z0-9._-]{3,39}" autocomplete="off" placeholder="trainer.firstname"></label>
+    <label class="ev-field ev-wide">Пароль (не менее 10 символов)<input name="password" required type="password" minlength="10" maxlength="150" autocomplete="new-password"></label></div>`:'<div class="ev-empty">У всех активных тренеров уже есть связанные аккаунты или нет доступных тренеров.</div>'}
+    <div class="ev-modal-footer"><button type="button" class="ev-btn" data-ev-action="close-modal">Закрыть</button>${trainers.length?'<button type="submit" class="ev-btn ev-btn-primary">Создать доступ</button>':''}</div></form></div>`;}
+  function draw(){if(!active())return;root.innerHTML=(state.manager?owner():personal())+
+    `<div class="ev-status-line" id="evStatus" role="status">${esc(state.status||'')}</div>`+
+    (state.modal?(state.modal.kind==='form'?modalForm():state.modal.kind==='access'?modalAccess():modalConfirm()):'');}
+  async function load(year=state.year){if(!active())return;
+    try{const data=await send('app_team_events_list',{p_year:year});if(!active())return;
+      state.manager=!!data.can_manage;state.events=Array.isArray(data.events)?data.events:[];
+      state.staff=Array.isArray(data.staff)?data.staff:[];state.staffId=data.staff_id;state.staffKind=data.staff_kind||'';
+      state.today=data.today_minsk||minskNow();
+      if(!state.events.some(e=>e.id===state.selected))state.selected=null;
+      if(!state.selected){const next=state.events.filter(e=>e.status==='planned'&&!isPast(e)).sort((x,y)=>localEnd(x).localeCompare(localEnd(y)))[0];state.selected=next?.id||state.events[0]?.id||null;}
+      draw();
+    }catch(err){if(active()){root.innerHTML='<div class="ev-empty">Не удалось загрузить мероприятия. Проверьте выполнение SQL-миграции DG. '+esc(String(err?.message||err))+'</div>';}}}
+  function readDraft(){const form=root.querySelector('#evEventForm');if(!form)return;
+    const d=state.draft||defaultDraft();
+    for(const key of ['title','starts_on','starts_at','duration_min','place','description','responsible']){const f=form.elements.namedItem(key);if(f)d[key]=f.value;}
+    for(const k of ['is_mandatory','remind_7d','remind_1d','remind_3h'])d[k]=!!form.elements.namedItem(k)?.checked;
+    if(d.audience==='custom')d.participants=[...form.querySelectorAll('input[name="participant"]:checked')].map(c=>{const [kind,id]=c.value.split(':');return {staff_kind:kind,staff_id:id};});
+    state.draft=d;
+  }
+  async function notify(mode){const ev=getEvent(state.selected);if(!ev)return;
+    try{const preview=await send('app_team_event_notify_preview',{p_id:ev.id,p_mode:mode});if(!active())return;
+      const count=Number(preview?.total||0),ready=Number(preview?.reachable||0);
+      state.modal={kind:'confirm',title:mode==='announce'?'Анонс в Telegram':'Напомнить неответившим',
+        text:`Мероприятие «${ev.title}». Получателей: ${count}. Привязан Telegram: ${ready}. Отправить уведомления?`,
+        info:ready<count?'У некоторых участников Telegram не привязан. Для них сообщение не будет отправлено.':'' ,confirm:'Отправить',
+        action:async()=>{const r=await send('app_team_event_notify',{p_id:ev.id,p_mode:mode});
+          const immediate=await fetch(SUPABASE_URL+'/functions/v1/daily-report',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON_KEY},body:JSON.stringify({mode:'team_events',token:TOKEN})});
+          const j=await immediate.json().catch(()=>({}));
+          if(!immediate.ok||j.ok!==true)throw new Error(j.error||'Telegram: очередь создана, но отправка пока не подтверждена');
+          return `Создано уведомлений: ${Number(r?.queued||0)}. Отправлено сейчас: ${Number(j?.sent||0)}`;}};
+      draw();
+    }catch(err){state.status='Ошибка: '+String(err.message||err);draw();}
+  }
+  root.addEventListener('click',async event=>{const btn=event.target.closest('button');if(!btn||!root.contains(btn))return;
+    const value=btn.dataset;
+    if(value.evOpen){state.selected=value.evOpen;state.mobileDetail=true;draw();return;}
+    if(value.evView){state.view=value.evView;state.mobileDetail=false;draw();return;}
+    if(value.evAud){state.aud=value.evAud;state.mobileDetail=false;draw();return;}
+    if(value.evKind){state.kind=value.evKind;state.mobileDetail=false;draw();return;}
+    if(value.evFormType){readDraft();state.draft.event_type=value.evFormType;draw();return;}
+    if(value.evFormAud){readDraft();state.draft.audience=value.evFormAud;draw();return;}
+    if(value.evRsvp){const ev=getEvent(state.selected);if(!canReply(ev)||state.busy)return;
+      state.busy=true;try{await send('app_team_event_rsvp',{p_id:ev.id,p_answer:value.evRsvp});state.status='Ответ сохранён';await load();
+      if(value.evRsvp==='no'&&ev.is_mandatory){fetch(SUPABASE_URL+'/functions/v1/daily-report',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON_KEY},body:JSON.stringify({mode:'team_events_rsvp',token:TOKEN})}).catch(()=>{});}}
+      catch(e){state.status='Не удалось сохранить ответ: '+String(e.message||e);draw();}finally{state.busy=false;}return;}
+    const action=value.evAction;if(!action)return;
+    if(action==='back'){state.mobileDetail=false;draw();return;}
+    if(action==='close-modal'){state.modal=null;state.draft=null;clearAppDirty('events');draw();return;}
+    if(action==='new'||action==='edit'){state.draft=defaultDraft(action==='edit'?getEvent(state.selected):null);state.modal={kind:'form'};markAppDirty('events');draw();return;}
+    if(action==='trainer-access'){if(session?.role!=='owner'){state.status='Выдать доступ может только руководитель';draw();return;}state.modal={kind:'access'};markAppDirty('events');draw();return;}
+    if(action==='announce'||action==='unanswered'){await notify(action);return;}
+    if(action==='delete'||action==='status'){const ev=getEvent(state.selected);if(!ev)return;
+      const cancel=ev.status!=='cancelled';const actionType=action;
+      state.modal={kind:'confirm',title:action==='delete'?'Удалить мероприятие?':cancel?'Отменить мероприятие?':'Восстановить мероприятие?',
+        text:action==='delete'?`Удалить «${ev.title}» вместе с ответами? Отменить удаление будет нельзя.`:
+        (cancel?`Мероприятие «${ev.title}» будет отмечено как отменённое.`:`Вновь сделать «${ev.title}» запланированным?`),danger:action==='delete',confirm:action==='delete'?'Удалить':cancel?'Отменить мероприятие':'Восстановить',
+        action:async()=>{if(actionType==='delete')await send('app_team_event_delete',{p_id:ev.id});
+          else await send('app_team_event_change_status',{p_id:ev.id,p_status:cancel?'cancelled':'planned'});
+          return actionType==='delete'?'Мероприятие удалено':'Статус обновлён';}};
+      draw();return;}
+    if(action==='confirm'){const a=state.modal?.action;if(!a||state.busy)return;
+      state.busy=true;btn.disabled=true;
+      try{const result=await a();state.modal=null;state.draft=null;clearAppDirty('events');state.status=result||'Готово';await load();}
+      catch(e){state.status='Ошибка: '+String(e?.message||e);state.modal=null;clearAppDirty('events');draw();}
+      finally{state.busy=false;}return;}
+  });
+  root.addEventListener('change',async e=>{const x=e.target;
+    if(x.matches('[data-ev-year]')){state.year=Number(x.value);state.selected=null;state.mobileDetail=false;await load();return;}
+    if(x.matches('[data-ev-past]')){state.past=x.checked;draw();return;}
+    if(x.closest('#evEventForm'))markAppDirty('events');
+  });
+  root.addEventListener('input',e=>{if(e.target.closest('#evEventForm'))markAppDirty('events');});
+  root.addEventListener('submit',async e=>{const form=e.target;if(form.id!=='evEventForm'&&form.id!=='evAccessForm')return;
+    e.preventDefault();if(state.busy)return;
+    state.busy=true;const submit=form.querySelector('[type="submit"]');if(submit)submit.disabled=true;
+    try{
+      if(form.id==='evAccessForm'){
+        const f=new FormData(form);const res=await send('app_team_event_trainer_access',{p_staff_id:Number(f.get('staff_id')),p_login:String(f.get('login')||''),p_password:String(f.get('password')||'')});
+        state.status=`Доступ тренеру ${res.login} создан. Передайте пароль лично.`;
+      }else{
+        readDraft();const d={...state.draft};
+        if(d.audience==='custom'&&(!d.participants||!d.participants.length))throw new Error('Выберите хотя бы одного участника');
+        if(!d.title?.trim()||!d.starts_on||!KINDS[d.event_type])throw new Error('Заполните название, тип и дату');
+        if(!d.duration_min)d.duration_min=null;else d.duration_min=Number(d.duration_min);
+        const saved=await send('app_team_event_save',{p_event:d});state.selected=saved?.id||state.selected;state.year=Number(d.starts_on.slice(0,4));
+        state.status='Мероприятие сохранено';
+      }
+      state.modal=null;state.draft=null;clearAppDirty('events');await load();
+    }catch(err){state.status='Ошибка сохранения: '+String(err.message||err);draw();}
+    finally{state.busy=false;}
+  });
+  await load();
 }
 
 </script>
