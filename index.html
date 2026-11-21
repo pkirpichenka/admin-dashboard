@@ -3895,6 +3895,7 @@ html[data-theme=dark] #schedRoot .dn-dot.late{background:#572b29;border-color:#d
 #schedRoot .do-below .dl-flex-head{flex-wrap:wrap}
 @media(max-width:950px){#schedRoot .do-below{grid-template-columns:1fr}}
 @media(max-width:600px){#schedRoot .do-graph-head{flex-direction:column;align-items:flex-start}#schedRoot .do-graph-head .dl-actions{justify-content:flex-start;flex-wrap:wrap}#schedRoot .do-graph-head .btn{min-height:44px}#schedRoot .dl-scroll{max-width:100%}#schedRoot .dl-mobile-done{min-height:48px}}
+#schedRoot .do-grid-cell:disabled:not(.blocked){opacity:1;cursor:default}
 html[data-theme=dark] #schedRoot .do-grid-cell.shift{background:#274936;border-color:#456c53}
 html[data-theme=dark] #schedRoot .do-grid-cell.assigned{background:#795c28;border-color:#b18b3a;color:#fff}
 html[data-theme=dark] #schedRoot .do-grid-cell.other{background:#484039;border-color:#706254;color:#e2c7a7}
@@ -3921,7 +3922,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '21.11.2026-do'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '21.11.2026-dp'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -9940,7 +9941,11 @@ const ROLE_CLIENT_DEFS=[
 ];
 const ROLE_KNOWLEDGE_DEFS=[{key:'knowledge.edit',group:'База знаний',label:'Редактировать базу знаний',desc:'Создавать, править, закреплять и архивировать статьи, создавать разделы и разбирать вопросы. Требуется «База знаний · просмотр». Серверная проверка.'}];
 const ROLE_EVENT_DEFS=[{key:'events.manage',group:'Команда и мероприятия',label:'Редактировать и управлять мероприятиями',desc:'Создавать, менять, отменять и удалять события, видеть ответы всех участников, отправлять Telegram-анонсы и напоминания. Требуется «Мероприятия · просмотр». Серверная проверка.'}];
-const ROLE_ACTIVE_DEFS=[...ROLE_NAV_DEFS,...PERMISSION_DEFS,...ROLE_PAYROLL_DEFS,...ROLE_DIRECTION_DEFS,...ROLE_FORECAST_DEFS,...ROLE_CLIENT_DEFS,...ROLE_KNOWLEDGE_DEFS,...ROLE_EVENT_DEFS];
+const ROLE_EQUIPMENT_DEFS=[
+ {key:'equipment.view_all',group:'Кофе',label:'Полный график и доплаты · просмотр',desc:'Видеть весь график на Машерова, начисления всех администраторов, историю ставок и журнал. Не разрешает менять назначения или суммы.'},
+ {key:'equipment.manage',group:'Кофе',label:'Управлять графиком и ставкой',desc:'Назначать и снимать задания, отмечать выполнение, управлять участниками и ставкой. Требует полного просмотра; проверяется сервером.'}
+];
+const ROLE_ACTIVE_DEFS=[...ROLE_NAV_DEFS,...PERMISSION_DEFS,...ROLE_PAYROLL_DEFS,...ROLE_DIRECTION_DEFS,...ROLE_FORECAST_DEFS,...ROLE_CLIENT_DEFS,...ROLE_KNOWLEDGE_DEFS,...ROLE_EVENT_DEFS,...ROLE_EQUIPMENT_DEFS];
 const ROLE_FUTURE_DEFS={
   'Смена':['Открывать смену','Закрывать смену','Изменять только свою смену','Изменять смены других','Корректировать кассовые операции','Редактировать закрытую смену','Подтверждать закрытие смены','Удалять кассовые операции'],
   'План и продажи':['Видеть планы всех филиалов','Изменять план филиала','Видеть продажи всех сотрудников','Корректировать источник продаж','Утверждать месячный бонус','Изменять пороги бонусов'],
@@ -10014,7 +10019,7 @@ async function renderRoles(body){
       <div><span class="roles-badge${locked?' warn':''}">${locked?'Защищена':`${Number(r.users||0)} назначений`}</span></div></div>
       <div class="roles-grid" style="margin-top:12px"><label class="roles-field">Название роли<input class="roles-input" data-role-name maxlength="80" ${disabled} value="${escapeHtml(r.name||'')}"></label><label class="roles-field">Ограничение отчётов, последних дней<input class="roles-input" data-role-days type="number" min="0" max="3650" ${disabled} value="${r.permissions?.['reports.days']||0}" title="0 — без ограничения"></label></div>
       <label class="roles-field" style="margin-top:10px">Описание<textarea class="roles-input" data-role-description maxlength="1000" ${disabled}>${escapeHtml(r.description||'')}</textarea></label>
-      <div class="roles-hint"><b>Рабочие разрешения.</b> Отмеченные права применяются серверными RPC или проверками действующего FAD. Для «Базы знаний» и «Мероприятий» галочка просмотра управляет также доступом к чтению в Supabase; право редактирования дополнительно проверяется сервером. При отключении просмотра редактирование тоже снимается.</div>
+      <div class="roles-hint"><b>Рабочие разрешения.</b> Отмеченные права применяются серверными RPC или проверками действующего FAD. Для «Базы знаний», «Мероприятий» и «Кофе» просмотр и изменение разделены. Разрешение на управление проверяется в Supabase. Отключение просмотра снимает право управления.</div>
       ${roleActiveGroups().map(g=>`<section class="roles-category"><h3>${escapeHtml(g)}</h3><div class="roles-grid">${ROLE_ACTIVE_DEFS.filter(d=>d.group===g).map(check).join('')}</div></section>`).join('')}
       <details class="roles-soon"><summary>Предложения по дальнейшей детализации — ${Object.values(ROLE_FUTURE_DEFS).reduce((n,a)=>n+a.length,0)} прав</summary>
         <div class="roles-hint">Это проект каталога. Эти разрешения пока нельзя включить: сначала необходимы серверные проверки для соответствующих действий. Они не создают ложного ощущения защиты.</div>
@@ -10039,7 +10044,7 @@ async function renderRoles(body){
       <details class="roles-panel" style="margin-top:16px"><summary style="font-weight:700;cursor:pointer">История изменения ролей</summary><div class="roles-table-wrap"><table class="roles-table"><thead><tr><th>Когда</th><th>Кто</th><th>Действие</th><th>Роль / аккаунт</th></tr></thead><tbody>${(data.audit||[]).map(x=>`<tr><td>${escapeHtml(auditFmtDateTime(x.changed_at))}</td><td>${escapeHtml(x.actor_login||'')}</td><td>${escapeHtml(({create:'Создана',update:'Изменена',delete:'Удалена',assign:'Назначена',unassign:'Снята'})[x.operation]||x.operation)}</td><td>${escapeHtml(x.role_code||'')}${x.user_login?' · '+escapeHtml(x.user_login):''}</td></tr>`).join('')}</tbody></table></div></details>`;
     body.querySelectorAll('[data-role-name],[data-role-description],[data-role-days],[data-role-permission]').forEach(el=>el.addEventListener('change',ev=>{
       const key=ev.target?.dataset?.rolePermission;
-      const pairs={'knowledge.edit':'nav.knowledge','events.manage':'nav.events'};
+      const pairs={'knowledge.edit':'nav.knowledge','events.manage':'nav.events','equipment.manage':'equipment.view_all'};
       if(key&&pairs[key]&&ev.target.checked){
         const view=body.querySelector(`[data-role-permission="${pairs[key]}"]`);
         if(view)view.checked=true;
@@ -10487,7 +10492,7 @@ function drawSchedule(body, editor){
   const sub=[['calendar','Календарь'],['overview','Обзор']];
   if(canAbsence||can('schedule.leave_norms')) sub.push(['absences','Отсутствия']);
   if(session.role!=='owner') sub.push(['dashboard','Моё расписание']);
-  sub.push(['coffee','Кофе · Автоматы']);
+  sub.push(['coffee','Кофе']);
   if(!sub.some(x=>x[0]===SCH.view)) SCH.view=sub[0][0];
   body.innerHTML=`<div id="schedRoot">
     <div class="sch-bar">
@@ -10532,7 +10537,9 @@ const equipShort=login=>escapeHtml(shortName(equipPerson(login)?.name||login||'�
 const equipTasks=()=>EQUIPMENT_DATA?.tasks||[];
 const equipTask=date=>equipTasks().find(t=>t.date===date)||null;
 const equipRate=()=>Number(EQUIPMENT_DATA?.rate||0);
-const equipOwner=()=>session?.role==='owner';
+const equipOwner=()=>session?.role==='owner'||EQUIPMENT_DATA?.can_manage===true;
+const equipFullView=()=>session?.role==='owner'||EQUIPMENT_DATA?.can_view_all===true;
+const equipIsOwnerPerson=login=>(EQUIPMENT_DATA?.owner_logins||[]).includes(login)||(session?.role==='owner'&&session.login===login);
 const equipManual=login=>(EQUIPMENT_DATA?.manual||[]).some(x=>x.login===login);
 function equipShift(login,iso){
  const day=(SCHDATA?.assignments||{})[iso+'_masherova'];
@@ -10548,8 +10555,8 @@ function equipMonthRoster(){
 }
 const equipCanAssign=(login,iso)=>equipManual(login)||equipShift(login,iso);
 async function renderSchCoffee(el){
- el.innerHTML=`<div class="section-title">Оборудование · ${MON2[SCH.m]} ${SCH.y} <small style="font-weight:500;color:var(--ink-soft)">(Машерова, 11)</small></div>
- <div class="eq-tabs" role="tablist" aria-label="Оборудование"><button class="eq-tab${EQUIPMENT_VIEW==='graph'?' on':''}" data-eq-view="graph" role="tab" aria-selected="${EQUIPMENT_VIEW==='graph'}">График</button><button class="eq-tab${EQUIPMENT_VIEW==='bonus'?' on':''}" data-eq-view="bonus" role="tab" aria-selected="${EQUIPMENT_VIEW==='bonus'}">Доплаты</button></div>
+ el.innerHTML=`<div class="section-title">Кофе · ${MON2[SCH.m]} ${SCH.y} <small style="font-weight:500;color:var(--ink-soft)">(Машерова, 11)</small></div>
+ <div class="eq-tabs" role="tablist" aria-label="Кофе"><button class="eq-tab${EQUIPMENT_VIEW==='graph'?' on':''}" data-eq-view="graph" role="tab" aria-selected="${EQUIPMENT_VIEW==='graph'}">График</button><button class="eq-tab${EQUIPMENT_VIEW==='bonus'?' on':''}" data-eq-view="bonus" role="tab" aria-selected="${EQUIPMENT_VIEW==='bonus'}">Доплаты</button></div>
  <div id="eqHost"><p class="eq-hint">Загрузка оборудования…</p></div>`;
  el.querySelectorAll('[data-eq-view]').forEach(b=>b.onclick=()=>{EQUIPMENT_VIEW=b.dataset.eqView;
    el.querySelectorAll('[data-eq-view]').forEach(c=>{c.classList.toggle('on',c.dataset.eqView===EQUIPMENT_VIEW);c.setAttribute('aria-selected',String(c.dataset.eqView===EQUIPMENT_VIEW));});equipDraw(el);});
@@ -10562,7 +10569,7 @@ async function equipReload(el){
 }
 function equipDraw(el){const host=el.querySelector('#eqHost');if(!host)return;
  if(EQUIPMENT_DATA?.error){host.innerHTML=`<div class="eq-warning" role="alert">Не удалось загрузить единый график: ${escapeHtml(EQUIPMENT_DATA.error)}. Проверьте миграцию DO и единый тариф; старые начисления не затронуты.</div>`;return;}
- if(!equipOwner()){if(EQUIPMENT_VIEW==='bonus')equipDrawMyBonus(el,host);else equipDrawMobile(el,host);return;}
+ if(!equipFullView()){if(EQUIPMENT_VIEW==='bonus')equipDrawMyBonus(el,host);else equipDrawMobile(el,host);return;}
  if(EQUIPMENT_VIEW==='bonus')equipDrawBonus(el,host);else equipDrawGraph(el,host);
 }
 function equipGrid(roster,n,today){
@@ -10576,31 +10583,31 @@ function equipGrid(roster,n,today){
     enabled=shift||equipManual(p.login),locked=t?.done&&!mine,
     status=mine?(t.done?'done':date<today?'late':'assigned'):t?('other'+(t.done?' do-locked':'')):enabled?'shift':'blocked',
     title=mine?(t.done?'Выполнено':date<today?'Не отмечено':'Назначено'):t?('Назначено: '+(equipPerson(t.login)?.name||t.login)+(t.done?' · выполнено, нельзя заменить':'')):(enabled?'Свободно':'Нет смены на Машерова'),
-    disabled=!enabled&&!mine,
+    disabled=!equipOwner()||(!enabled&&!mine),
     symbol=mine?(t.done?'✓':date<today?'!':'·'):t?'·':'';
    html+=`<button type="button" class="do-grid-cell ${status}${date===today?' today':''}${EQUIPMENT_PICK?.date===date&&EQUIPMENT_PICK?.login===p.login?' chosen':''}"
      data-eq-day="${date}" data-eq-login="${escapeHtml(p.login)}" title="${escapeHtml(p.name+' · '+date+' · '+title)}"
      aria-label="${escapeHtml(p.name+' · '+date+' · '+title)}" ${disabled?'disabled':''}>${symbol}</button>`;
   }
-  html+=`<span class="dl-grid-sum">${total.count||'—'}</span><span class="dl-grid-sum">${p.login===session.login?'—':equipPrice(total.amount||0)}</span></div>`;
+  html+=`<span class="dl-grid-sum">${total.count||'—'}</span><span class="dl-grid-sum">${equipIsOwnerPerson(p.login)?'—':equipPrice(total.amount||0)}</span></div>`;
  }
  return `<div class="dl-grid do-grid">${html}</div>`;
 }
 function equipDrawGraph(el,host){
  const roster=equipMonthRoster(),n=schDaysIn(SCH.y,SCH.m),today=equipToday(),thisMonth=monthKey(SCH.y,SCH.m)===today.slice(0,7),
  current=equipTask(today),rate=equipRate();
- host.innerHTML=`<div class="dl-section"><div class="dl-flex-head do-graph-head"><div><b>График · Обслуживание оборудования</b><p class="eq-hint">Нажмите на день сотрудника: назначено → выполнено → снято. Изменения сохраняются сразу.</p></div>
- <div class="dl-actions"><span class="do-rate">Ставка: <b>${equipPrice(rate)}</b> за выполненное</span><button type="button" class="btn btn-sm" data-do-auto>Заполнить по очереди</button><button type="button" class="btn btn-sm" data-do-clear>Снять будущие</button></div></div>
+ host.innerHTML=`<div class="dl-section"><div class="dl-flex-head do-graph-head"><div><b>График · Обслуживание оборудования</b><p class="eq-hint">${equipOwner()?'Нажмите на день сотрудника: назначено → выполнено → снято. Изменения сохраняются сразу.':'Просмотр всего графика. Изменения доступны только при включённом праве «Управлять графиком и ставкой» в разделе «Роли».'}</p></div>
+ <div class="dl-actions"><span class="do-rate">Ставка: <b>${equipPrice(rate)}</b> за выполненное</span>${equipOwner()?'<button type="button" class="btn btn-sm" data-do-auto>Заполнить по очереди</button><button type="button" class="btn btn-sm" data-do-clear>Снять будущие</button>':''}</div></div>
  <div class="dl-legend"><span><i class="dl-leg-shift"></i>смена</span><span><i class="dl-leg-assign"></i>назначено</span><span><i class="dl-leg-done"></i>выполнено</span><span><i class="dl-leg-late"></i>не отмечено</span><span><i class="dl-leg-free"></i>нет смены</span></div>
  <div class="dl-scroll" id="doGrid">${equipGrid(roster,n,today)}</div>
- <div class="do-status" id="doStatus" role="status">${escapeHtml(EQUIPMENT_STATUS||'Выберите ячейку в графике. Выполненное задание нельзя передать другому сотруднику.')}</div></div>
- <div class="do-below"><div class="dl-section"><div class="dl-flex-head"><b>Кто выполняет</b><button type="button" class="btn btn-sm" data-do-add>+ Добавить сотрудника</button></div><div class="dl-chips">${roster.map(p=>`<span class="dl-chip"><b>${escapeHtml(shortName(p.name))}</b><small>${p.login===session.login?'Руководитель · без доплаты':p.manual?'Добавлен вручную':'Машерова · по смене'}</small>${p.manual?`<button type="button" data-do-remove="${escapeHtml(p.login)}" aria-label="Убрать ${escapeHtml(p.name)}">×</button>`:''}</span>`).join('')||'<span class="eq-hint">Нет сотрудников в графике.</span>'}</div></div>
- <div class="dl-section"><b>Сегодня · ${new Date(today+'T12:00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'long',timeZone:'Europe/Minsk'})}</b>${thisMonth?`<div class="dl-today-row"><span><b>Обслуживание оборудования</b><small>${current?equipShort(current.login):'Исполнителя назначает руководитель'}</small></span><span class="dl-status ${current?.done?'done':current?'assigned':'missing'}">${current?.done?'✓ Выполнено':current?'Назначено':'Нет исполнителя'}</span>${current&&!current.done?`<button type="button" class="btn btn-sm" data-do-complete ${rate<=0?'disabled title="Сначала установите ставку"':''}>Выполнено</button>`:''}</div>`:'<p class="eq-hint">Для текущих назначений откройте этот месяц.</p>'}</div></div>
- <div class="dl-section dl-rules"><b>Правила графика</b><p>Одно задание и один исполнитель на день. Назначает руководитель. Администратору — только на смену Машерова; добавленному вручную — любой день. Сотрудник отмечает только своё сегодняшнее задание, руководитель может отметить прошедший день. Будущую дату выполнить нельзя. При ставке 0 отметка заблокирована. Руководителю доплата не начисляется. Ставка сохраняется при выполнении, прежние начисления не пересчитываются.</p></div>`;
+ <div class="do-status" id="doStatus" role="status">${escapeHtml(EQUIPMENT_STATUS||(equipOwner()?'Выберите ячейку в графике. Выполненное задание нельзя передать другому сотруднику.':'Режим просмотра: назначения и выплаты доступны без изменения данных.'))}</div></div>
+ <div class="do-below"><div class="dl-section"><div class="dl-flex-head"><b>Кто выполняет</b>${equipOwner()?'<button type="button" class="btn btn-sm" data-do-add>+ Добавить сотрудника</button>':''}</div><div class="dl-chips">${roster.map(p=>`<span class="dl-chip"><b>${escapeHtml(shortName(p.name))}</b><small>${equipIsOwnerPerson(p.login)?'Руководитель · без доплаты':p.manual?'Добавлен вручную':'Машерова · по смене'}</small>${p.manual&&equipOwner()?`<button type="button" data-do-remove="${escapeHtml(p.login)}" aria-label="Убрать ${escapeHtml(p.name)}">×</button>`:''}</span>`).join('')||'<span class="eq-hint">Нет сотрудников в графике.</span>'}</div></div>
+ <div class="dl-section"><b>Сегодня · ${new Date(today+'T12:00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'long',timeZone:'Europe/Minsk'})}</b>${thisMonth?`<div class="dl-today-row"><span><b>Обслуживание оборудования</b><small>${current?equipShort(current.login):'Исполнителя назначает руководитель'}</small></span><span class="dl-status ${current?.done?'done':current?'assigned':'missing'}">${current?.done?'✓ Выполнено':current?'Назначено':'Нет исполнителя'}</span>${current&&!current.done&&(equipOwner()||current.login===session.login)?`<button type="button" class="btn btn-sm" data-do-complete ${rate<=0?'disabled title="Сначала установите ставку"':''}>Выполнено</button>`:''}</div>`:'<p class="eq-hint">Для текущих назначений откройте этот месяц.</p>'}</div></div>
+ <div class="dl-section dl-rules"><b>Правила графика</b><p>Одно задание и один исполнитель на день. Назначает руководитель или сотрудник с правом управления. Администратору — только на смену Машерова; добавленному вручную — любой день. Исполнитель отмечает только своё сегодняшнее задание, управляющий может отметить прошедший день. Будущую дату выполнить нельзя. При ставке 0 отметка заблокирована. Руководителю доплата не начисляется. Ставка сохраняется при выполнении, прежние начисления не пересчитываются.</p></div>`;
  host.querySelectorAll('[data-eq-day]').forEach(b=>b.onclick=()=>void equipQuickClick(el,b.dataset.eqDay,b.dataset.eqLogin));
- host.querySelector('[data-do-auto]').onclick=()=>equipAutofill(el);
- host.querySelector('[data-do-clear]').onclick=()=>equipClearFuture(el);
- host.querySelector('[data-do-add]').onclick=()=>equipAddModal(el,roster);
+ const fill=host.querySelector('[data-do-auto]');if(fill)fill.onclick=()=>equipAutofill(el);
+ const clear=host.querySelector('[data-do-clear]');if(clear)clear.onclick=()=>equipClearFuture(el);
+ const add=host.querySelector('[data-do-add]');if(add)add.onclick=()=>equipAddModal(el,roster);
  host.querySelectorAll('[data-do-remove]').forEach(b=>b.onclick=()=>equipParticipant(el,b.dataset.doRemove,false));
  const complete=host.querySelector('[data-do-complete]');if(complete)complete.onclick=()=>void equipComplete(el,today);
  if(EQUIPMENT_PICK){host.querySelector('[data-eq-day].chosen')?.scrollIntoView({block:'nearest',inline:'nearest'});}
@@ -10623,25 +10630,29 @@ async function equipQuickClick(el,date,login){
 }
 async function equipComplete(el,date){
  if(EQUIPMENT_BUSY)return;
+ if(!equipOwner()&&equipTask(date)?.login!==session?.login){toast('Разрешено отмечать только своё сегодняшнее задание',true);return;}
+ if(!equipOwner()&&date!==equipToday()){toast('Отметка другого дня доступна только управляющему',true);return;}
  if(equipRate()<=0){toast('Руководитель должен установить ставку выше 0 BYN',true);return;}
  EQUIPMENT_BUSY=true;try{await rpc('app_equipment_u_complete',{p_token:TOKEN,p_date:date});EQUIPMENT_STATUS=`${Number(date.slice(8))} ${MON2[Number(date.slice(5,7))-1].toLowerCase()}: выполнено`;toast('Выполнение отмечено');await equipReload(el);}catch(e){handleErr(e);}finally{EQUIPMENT_BUSY=false;}
 }
 function equipAddModal(el,roster){
+ if(!equipOwner())return;
  const included=new Set(roster.map(p=>p.login));
- const choices=[...TEAM.filter(p=>p.login&&!included.has(p.login)),...(included.has(session.login)?[]:[{login:session.login,name:session.name,home:'owner'}])].filter(p=>p.login).sort((a,b)=>String(a.name).localeCompare(String(b.name),'ru'));
+ const choices=[...TEAM.filter(p=>p.login&&!included.has(p.login)),...(included.has(session.login)?[]:[{login:session.login,name:session.name,home:session.role==='owner'?'Руководитель':'Администратор'}])].filter(p=>p.login).sort((a,b)=>String(a.name).localeCompare(String(b.name),'ru'));
  if(!choices.length){toast('Все сотрудники уже есть в графике');return;}
- const box=modal(`<h3>Добавить сотрудника</h3><p class="eq-hint">Добавленные вручную могут работать без смены на Машерова.</p><div class="dl-add-list">${choices.map(p=>`<button type="button" class="dl-add-choice" data-eq-pick="${escapeHtml(p.login)}">${escapeHtml(p.name)} <small>${p.login===session.login?'Руководитель · без доплаты':escapeHtml(p.home||'Другая студия')}</small></button>`).join('')}</div><div class="actions"><button type="button" class="btn" data-x>Закрыть</button></div>`);
+ const box=modal(`<h3>Добавить сотрудника</h3><p class="eq-hint">Добавленные вручную могут работать без смены на Машерова.</p><div class="dl-add-list">${choices.map(p=>`<button type="button" class="dl-add-choice" data-eq-pick="${escapeHtml(p.login)}">${escapeHtml(p.name)} <small>${equipIsOwnerPerson(p.login)?'Руководитель · без доплаты':escapeHtml(p.home||'Другая студия')}</small></button>`).join('')}</div><div class="actions"><button type="button" class="btn" data-x>Закрыть</button></div>`);
  box.querySelectorAll('[data-eq-pick]').forEach(b=>b.onclick=()=>{const login=b.dataset.eqPick;closeModal(box);void equipParticipantSave(el,login,true);});
 }
 async function equipParticipant(el,login,add){
+ if(!equipOwner())return;
  if(!add){const name=equipPerson(login)?.name||login;const box=modal(`<h3>Убрать сотрудника?</h3><p>${escapeHtml(name)} · сначала снимите его невыполненные назначения.</p><div class="actions"><button type="button" class="btn" data-x>Отмена</button><button type="button" class="btn btn-primary" data-eq-yes>Убрать</button></div>`);box.querySelector('[data-eq-yes]').onclick=()=>{closeModal(box);void equipParticipantSave(el,login,false);};return;}
  await equipParticipantSave(el,login,true);
 }
-async function equipParticipantSave(el,login,add){if(EQUIPMENT_BUSY)return;EQUIPMENT_BUSY=true;
+async function equipParticipantSave(el,login,add){if(EQUIPMENT_BUSY||!equipOwner())return;EQUIPMENT_BUSY=true;
  try{await rpc('app_equipment_u_participant',{p_token:TOKEN,p_period:monthKey(SCH.y,SCH.m),p_login:login,p_add:add});toast(add?'Сотрудник добавлен':'Сотрудник убран');await equipReload(el);}catch(e){handleErr(e);}finally{EQUIPMENT_BUSY=false;}}
 function equipBuildAutofill(){
  const n=schDaysIn(SCH.y,SCH.m),today=equipToday(),start=monthKey(SCH.y,SCH.m)+'-01',begin=start>today?start:today,
- roster=equipMonthRoster().filter(p=>p.login!==session.login),
+ roster=equipMonthRoster().filter(p=>!equipIsOwnerPerson(p.login)),
  counts=new Map(roster.map(p=>[p.login,equipTasks().filter(t=>t.login===p.login&&t.status!=='cancelled').length])),jobs=[];
  for(let d=1;d<=n;d++){
   const date=schIso(SCH.y,SCH.m,d);if(date<begin||equipTask(date))continue;
@@ -10652,18 +10663,19 @@ function equipBuildAutofill(){
  return jobs;
 }
 function equipConfirmBatch(el,jobs,title){
+ if(!equipOwner())return;
  if(!jobs.length){toast('Нет подходящих назначений для изменения');return;}
  const box=modal(`<h3>${escapeHtml(title)}</h3><p>Будет изменено ${jobs.length} заданий. Выполненные работы и прошлые дни не затрагиваются.</p><div class="actions"><button type="button" class="btn" data-x>Отмена</button><button type="button" class="btn btn-primary" data-eq-confirm>Подтвердить</button></div>`);
  box.querySelector('[data-eq-confirm]').onclick=async()=>{closeModal(box);if(EQUIPMENT_BUSY)return;EQUIPMENT_BUSY=true;
  try{await rpc('app_equipment_u_batch',{p_token:TOKEN,p_jobs:jobs});EQUIPMENT_STATUS=`Изменено заданий: ${jobs.length}`;toast('График обновлён');await equipReload(el);}catch(e){handleErr(e);}finally{EQUIPMENT_BUSY=false;}};
 }
-function equipAutofill(el){equipConfirmBatch(el,equipBuildAutofill(),'Заполнить график по очереди?');}
-function equipClearFuture(el){const today=equipToday();equipConfirmBatch(el,equipTasks().filter(t=>t.date>=today&&t.status==='assigned').map(t=>({date:t.date,action:'unassign',login:t.login})),'Снять будущие невыполненные назначения?');}
+function equipAutofill(el){if(!equipOwner())return;equipConfirmBatch(el,equipBuildAutofill(),'Заполнить график по очереди?');}
+function equipClearFuture(el){if(!equipOwner())return;const today=equipToday();equipConfirmBatch(el,equipTasks().filter(t=>t.date>=today&&t.status==='assigned').map(t=>({date:t.date,action:'unassign',login:t.login})),'Снять будущие невыполненные назначения?');}
 function equipDrawMobile(el,host){
  const today=equipToday(),month=monthKey(SCH.y,SCH.m),isCurrent=month===today.slice(0,7),task=equipTask(today),mine=task?.login===session.login,rate=equipRate(),
  total=(EQUIPMENT_DATA?.totals||[]).find(t=>t.login===session.login)||{amount:0,count:0},dates=[];
  for(let i=1;i<=schDaysIn(SCH.y,SCH.m);i++){const d=schIso(SCH.y,SCH.m,i);if(d>today&&equipShift(session.login,d))dates.push(d);}
- host.innerHTML=`<div class="dl-mobile-head"><span>МАШЕРОВА, 11 · КОФЕ · АВТОМАТЫ</span><h2>${isCurrent?'Сегодня, '+new Date(today+'T12:00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'long',timeZone:'Europe/Minsk'}):MON2[SCH.m]+' '+SCH.y}</h2><p>${escapeHtml(session.name)} · ${isCurrent&&equipShift(session.login,today)?'смена на Машерова':'график оборудования'}</p></div>
+ host.innerHTML=`<div class="dl-mobile-head"><span>МАШЕРОВА, 11 · КОФЕ</span><h2>${isCurrent?'Сегодня, '+new Date(today+'T12:00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'long',timeZone:'Europe/Minsk'}):MON2[SCH.m]+' '+SCH.y}</h2><p>${escapeHtml(session.name)} · ${isCurrent&&equipShift(session.login,today)?'смена на Машерова':'график оборудования'}</p></div>
  ${isCurrent?`<div class="dl-mobile-list"><div class="dl-mobile-card"><div class="dl-mobile-row"><b>Обслуживание оборудования</b><span class="dl-status ${task?.done?'done':task?'assigned':'missing'}">${task?.done?'✓ Выполнено':task?(mine?'Назначено':'Другой исполнитель'):'Нет исполнителя'}</span></div><p>Кофемашина и торговый автомат</p><p>${task?(mine?'Назначено на вас':'Исполнитель: '+equipShort(task.login)):'Исполнителя назначает руководитель.'}</p>${mine&&!task.done?`<button type="button" class="btn btn-primary dl-mobile-done" data-do-mobile-complete ${rate<=0?'disabled title="Руководитель должен задать ставку"':''}>Выполнено</button>`:''}</div></div>`:'<p class="eq-hint">Откройте текущий месяц, чтобы отметить задание.</p>'}
  <div class="dl-mobile-card dl-mobile-summary"><div><b>Мои доплаты, ${MON2[SCH.m].toLowerCase()}</b><p>${Number(total.count||0)} заданий выполнено</p></div><strong>${equipPrice(total.amount)}</strong><p>Ближайшие смены на Машерова: ${dates.slice(0,3).length?dates.slice(0,3).map(d=>+d.slice(8)).join(', ')+' '+MON2[SCH.m].toLowerCase():'не назначены'}</p></div>`;
  const btn=host.querySelector('[data-do-mobile-complete]');if(btn)btn.onclick=()=>void equipComplete(el,today);
@@ -10671,7 +10683,7 @@ function equipDrawMobile(el,host){
 function equipDrawMyBonus(el,host){
  const mine=equipTasks().filter(t=>t.login===session.login).sort((a,b)=>b.date.localeCompare(a.date)),
  total=(EQUIPMENT_DATA?.totals||[]).find(t=>t.login===session.login)||{amount:0,count:0};
- host.innerHTML=`<div class="dl-mobile-head"><span>МАШЕРОВА, 11 · ОБОРУДОВАНИЕ</span><h2>Мои доплаты · ${MON2[SCH.m].toLowerCase()} ${SCH.y}</h2></div>
+ host.innerHTML=`<div class="dl-mobile-head"><span>МАШЕРОВА, 11 · КОФЕ</span><h2>Мои доплаты · ${MON2[SCH.m].toLowerCase()} ${SCH.y}</h2></div>
  <div class="dl-kpis"><div class="dl-kpi"><small>Начислено за месяц</small><strong>${equipPrice(total.amount)}</strong></div><div class="dl-kpi"><small>Выполнено</small><strong>${Number(total.count||0)}</strong></div></div>
  <div class="dl-section"><b>Мои задания</b>${mine.length?mine.map(t=>`<div class="dl-today-row"><span><b>Обслуживание оборудования</b><small>${t.date.split('-').reverse().join('.')}</small></span><span class="dl-status ${t.done?'done':'assigned'}">${t.done?'✓ '+equipPrice(t.amount):'Ожидает выполнения'}</span></div>`).join(''):'<p class="eq-hint">Назначений пока нет.</p>'}</div>`;
 }
@@ -10683,15 +10695,16 @@ function equipDrawBonus(el,host){
  old=EQUIPMENT_DATA?.legacy_done||[],merges=EQUIPMENT_DATA?.merged||[];
  host.innerHTML=`<div class="dl-kpis"><div class="dl-kpi"><small>Начислено за месяц</small><strong>${equipPrice(allSum)}</strong></div><div class="dl-kpi"><small>Выполнено заданий</small><strong>${totals.reduce((s,t)=>s+Number(t.count||0),0)}</strong></div><div class="dl-kpi"><small>Без отметки выполнения</small><strong class="${overdue.length?'dl-red':''}">${overdue.length}</strong></div><div class="dl-kpi"><small>Ставка за задание</small><strong>${equipPrice(rate)}</strong></div></div>
  ${overdue.length?`<div class="dl-alert" role="alert"><b>Задание без отметки:</b> ${overdue.slice(0,4).map(t=>`${t.date.slice(8)}.${t.date.slice(5,7)} · ${equipShort(t.login)}`).join(' · ')}${overdue.length>4?' и ещё '+(overdue.length-4):''}<button type="button" class="btn btn-sm" data-do-overdue>Открыть в графике</button></div>`:''}
- <div class="dl-panel-cols"><div class="dl-section"><div class="dl-flex-head"><div><b>Ставка · Обслуживание оборудования</b><p class="eq-hint">Одно задание: кофемашина и торговый автомат. Ставка на дату выполнения сохраняется.</p></div><button type="button" class="btn btn-primary btn-sm" data-do-save-rate>Сохранить ставку</button></div><div class="eq-rate-row"><label>Обслуживание оборудования<span><input type="number" min="0" max="1000" step="0.01" data-do-rate value="${rate.toFixed(2)}"/> BYN</span></label></div><p class="eq-hint">Ставка 0 BYN запрещает подтверждать выполнение. Ранее начисленные суммы не меняются.</p></div>
+ <div class="dl-panel-cols"><div class="dl-section"><div class="dl-flex-head"><div><b>Ставка · Обслуживание оборудования</b><p class="eq-hint">Одно задание: кофемашина и торговый автомат. Ставка на дату выполнения сохраняется.</p></div>${equipOwner()?'<button type="button" class="btn btn-primary btn-sm" data-do-save-rate>Сохранить ставку</button>':''}</div><div class="eq-rate-row"><label>Обслуживание оборудования<span><input type="number" min="0" max="1000" step="0.01" data-do-rate value="${rate.toFixed(2)}" ${equipOwner()?'':'disabled title="Только просмотр"'}/> BYN</span></label></div><p class="eq-hint">Ставка 0 BYN запрещает подтверждать выполнение. Ранее начисленные суммы не меняются.</p></div>
  <div class="dl-section"><b>История ставки</b><div class="dl-hist">${hist.length?hist.slice(0,20).map(h=>`<div><small>с ${new Date(h.from).toLocaleDateString('ru-RU',{timeZone:'Europe/Minsk'})}</small><b>${equipPrice(h.amount)}</b></div>`).join(''):'<p class="eq-hint">История появится после установки ставки.</p>'}</div></div></div>
- <div class="dl-section"><b>Начислено по администраторам</b><p class="eq-hint">Доплата автоматически включается в зарплату администраторов отдельно от бонусов.</p><div class="dl-table-wrap"><table class="dl-table"><thead><tr><th>Администратор</th><th>Выполнено заданий</th><th>Ставка</th><th>Доплата, BYN</th></tr></thead><tbody>${roster.map(p=>{const t=totals.find(x=>x.login===p.login)||{},owner=p.login===session.login;return `<tr><td>${escapeHtml(p.name)}${owner?' <small>· руководитель</small>':''}</td><td>${owner?'—':Number(t.count||0)}</td><td>${owner?'—':equipPrice(rate)}</td><td><b>${owner?'без доплаты':equipPrice(t.amount||0)}</b></td></tr>`;}).join('')||'<tr><td colspan="4">Нет сотрудников</td></tr>'}<tr class="dl-total"><td>Итого</td><td>${totals.reduce((s,x)=>s+Number(x.count||0),0)}</td><td>—</td><td><b>${equipPrice(allSum)}</b></td></tr></tbody></table></div></div>
+ <div class="dl-section"><b>Начислено по администраторам</b><p class="eq-hint">Доплата автоматически включается в зарплату администраторов отдельно от бонусов.</p><div class="dl-table-wrap"><table class="dl-table"><thead><tr><th>Администратор</th><th>Выполнено заданий</th><th>Ставка</th><th>Доплата, BYN</th></tr></thead><tbody>${roster.map(p=>{const t=totals.find(x=>x.login===p.login)||{},owner=equipIsOwnerPerson(p.login);return `<tr><td>${escapeHtml(p.name)}${owner?' <small>· руководитель</small>':''}</td><td>${owner?'—':Number(t.count||0)}</td><td>${owner?'—':equipPrice(rate)}</td><td><b>${owner?'без доплаты':equipPrice(t.amount||0)}</b></td></tr>`;}).join('')||'<tr><td colspan="4">Нет сотрудников</td></tr>'}<tr class="dl-total"><td>Итого</td><td>${totals.reduce((s,x)=>s+Number(x.count||0),0)}</td><td>—</td><td><b>${equipPrice(allSum)}</b></td></tr></tbody></table></div></div>
  <div class="dl-section"><b>Журнал работ</b><p class="eq-hint">Дата, исполнитель, сохранённая ставка, кто отметил; пропуски и отметки задним числом.</p><div class="dl-table-wrap"><table class="dl-table"><thead><tr><th>Дата</th><th>Исполнитель</th><th>Ставка, BYN</th><th>Отметил(а)</th></tr></thead><tbody>${journal.map(t=>`<tr><td>${t.date.slice(8)}.${t.date.slice(5,7)}</td><td>${equipShort(t.login)}</td><td>${t.done?equipPrice(t.amount):'—'}</td><td>${t.done?equipShort(t.completed_by)+(t.backdated?' <span class="dl-badge">задним числом</span>':''):'<span class="dl-status missing">не отмечено</span>'}</td></tr>`).join('')||'<tr><td colspan="4">Заданий нет</td></tr>'}</tbody></table></div></div>
  ${old.length?`<div class="dl-section"><b>Исторические начисления до объединения</b><p class="eq-hint">Сохранены по исходным сотрудникам и суммам, без пересчёта и без удвоения в зарплате.</p><div class="dl-table-wrap"><table class="dl-table"><thead><tr><th>Дата</th><th>Исполнитель</th><th>Старый тип</th><th>Начислено</th></tr></thead><tbody>${old.map(t=>`<tr><td>${t.date.slice(8)}.${t.date.slice(5,7)}</td><td>${equipShort(t.login)}</td><td>${escapeHtml(({coffee_refill:'Кофемашина · пополнение',coffee_service:'Кофемашина · обслуживание',vending_refill:'Автомат · пополнение'})[t.type]||t.type)}</td><td>${equipPrice(t.amount)}</td></tr>`).join('')}</tbody></table></div></div>`:''}
  ${merges.length?`<details class="dl-section"><summary><b>Журнал объединения старых назначений</b></summary><p class="eq-hint">Старые задания не удалены. Для каждой даты выбрана одна строка: сначала выполненная, затем с большей суммой.</p><div class="dl-hist">${merges.map(m=>`<div><small>${escapeHtml(String(m.date))} · ${escapeHtml(m.old_type||'')} · ${escapeHtml(m.login||'—')}</small><b>${m.kept?'оставлено':'в архиве'}</b></div>`).join('')}</div></details>`:''}
  <p class="eq-hint">Доплата не влияет на бонус филиала, качество и расчёт премии старшего администратора.</p>`;
  const open=host.querySelector('[data-do-overdue]');if(open)open.onclick=()=>{const t=overdue[0];EQUIPMENT_VIEW='graph';EQUIPMENT_PICK={date:t.date,login:t.login};el.querySelectorAll('[data-eq-view]').forEach(b=>{b.classList.toggle('on',b.dataset.eqView==='graph');b.setAttribute('aria-selected',String(b.dataset.eqView==='graph'));});equipDraw(el);};
- host.querySelector('[data-do-save-rate]').onclick=async()=>{const raw=host.querySelector('[data-do-rate]').value.replace(',','.'),amount=Number(raw);
+ const saveRate=host.querySelector('[data-do-save-rate]');if(saveRate)saveRate.onclick=async()=>{
+ if(!equipOwner())return;const raw=host.querySelector('[data-do-rate]').value.replace(',','.'),amount=Number(raw);
  if(!raw.trim()||!Number.isFinite(amount)||amount<0||amount>1000||Math.abs(Math.round(amount*100)-amount*100)>.00001){toast('Ставка от 0 до 1000 BYN, не больше двух знаков после запятой',true);return;}
  if(EQUIPMENT_BUSY)return;EQUIPMENT_BUSY=true;try{await rpc('app_equipment_u_set_rate',{p_token:TOKEN,p_amount:amount});toast('Ставка сохранена');await equipReload(el);}catch(e){handleErr(e);}finally{EQUIPMENT_BUSY=false;}};
 }
