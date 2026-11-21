@@ -3734,7 +3734,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '21.11.2026-dj'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '21.11.2026-dk'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -6264,7 +6264,7 @@ const PAYROLL_SYNC_ERRORS = {
   impulse_payroll_report_mismatch:"В отчёте ImpulseCRM расходятся сводка и детализация либо присутствуют дополнительные статьи.",
   impulse_payroll_period_mismatch:"Период отчёта ImpulseCRM отличается от запрошенного.",
   impulse_payroll_unmatched:"Нужна однозначная привязка тренера к карточке FAD.",
-  impulse_payroll_archived_ambiguous:"Строку преподавателя с одинаковыми инициалами пока нельзя безопасно связать с точным ID: отдельные отчёты Impulse и сохранённая детализация занятий не дали однозначного совпадения. Нужна проверка конкретных ID в ImpulseCRM. Предыдущий расчёт сохранён без изменений.",
+  impulse_payroll_archived_ambiguous:"Не удалось подтвердить точный ID преподавателя с одинаковыми инициалами по индивидуальным отчётам и сохранённым занятиям. Ниже указана проверка каждого ID; если совпадений недостаточно, зарплата не перезаписывается.",
   impulse_payroll_ambiguous_teacher:"В ImpulseCRM есть разные преподаватели с одинаковыми сокращёнными ФИО. Не удалось безопасно разделить начисления по ID. Прежний расчёт сохранён. Проверьте, возвращает ли ImpulseCRM отдельные расчёты по ID преподавателей.",
   impulse_payroll_partial_scope:"ImpulseCRM вернул неполный или изменённый отчёт: у ранее рассчитанных тренеров исчезли занятия либо уменьшились начисления. История зарплаты НЕ перезаписана. В ImpulseCRM выберите «Все филиалы» и проверьте архивных тренеров. Если это настоящая корректировка зарплаты, нужна отдельная проверка перед её принятием.",
   impulse_advance_reconciliation:"Нужно сверить авансы из ImpulseCRM с ранее внесёнными в FAD. Последний сохранённый расчёт доступен для просмотра.",
