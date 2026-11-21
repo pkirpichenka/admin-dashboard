@@ -3828,45 +3828,45 @@ html[data-theme=dark] #schedRoot .dl-status.missing{background:#582f31;color:#ff
 html[data-theme=dark] #schedRoot .dl-grid-cell.shift{background:#244c39;border-color:#3e7658}
 html[data-theme=dark] #schedRoot .dl-grid-cell.assigned{background:#795c28;border-color:#b18b3a;color:#fff}
 html[data-theme=dark] #schedRoot .dl-grid-cell.late,html[data-theme=dark] #schedRoot .dl-alert{background:#522d2e;color:#ffe0dd}
-/* DM · One month grid, three operation markers in each day. The underlying tasks remain independent. */
-#schedRoot .dl-work.dm-summary{cursor:default;min-height:124px}
+/* DN: compact single-click equipment scheduling, three status dots per date. */
+#schedRoot .dl-work.dm-summary{cursor:default;min-height:112px}
 #schedRoot .dl-work.dm-summary:hover{border-color:var(--line)}
-#schedRoot .dm-grid{min-width:1590px}
-#schedRoot .dm-grid-row{gap:3px;margin-bottom:3px}
-#schedRoot .dm-grid-cell{height:58px;display:flex;flex-direction:column;justify-content:center;gap:2px;align-items:stretch;padding:3px;border-radius:5px}
-#schedRoot .dm-grid-cell:hover{outline:2px solid var(--accent);outline-offset:-1px}
-#schedRoot .dm-grid-cell.blocked{cursor:pointer}
-#schedRoot .dm-grid-cell .dm-block-dash{font-size:12px;color:var(--ink-faint);font-weight:500}
-#schedRoot .dm-marker{display:block;min-width:0;line-height:14px;min-height:14px;border-radius:3px;font-size:9px;text-align:center;white-space:nowrap;font-weight:850;letter-spacing:.1px;background:var(--surface-2);color:var(--ink-faint);border:1px solid transparent}
-#schedRoot .dm-marker.empty{background:rgba(255,255,255,.48);color:var(--ink-soft)}
-#schedRoot .dm-marker.assigned{background:#edcb96;color:#5c3a06;border-color:#c2a375}
-#schedRoot .dm-marker.done{background:#216a4b;color:#fff;border-color:#216a4b}
-#schedRoot .dm-marker.late{background:#f9eded;color:#a12f27;border-color:#c13d38}
-#schedRoot .dm-editor{margin-top:13px;padding:14px;border:1px solid var(--line);border-radius:11px;background:var(--surface-2)}
-#schedRoot .dm-editor-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px}
-#schedRoot .dm-editor-head>div{display:flex;flex-direction:column;gap:3px}
-#schedRoot .dm-editor-head b{font-size:14px}
-#schedRoot .dm-editor-head small{font-size:12px;color:var(--ink-soft)}
-#schedRoot .dm-editor-rows{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:12px}
-#schedRoot .dm-editor-row{display:flex;align-items:center;gap:9px;justify-content:space-between;padding:10px;border:1px solid var(--line);border-radius:9px;background:var(--surface);min-width:0;flex-wrap:wrap}
-#schedRoot .dm-editor-row label{display:flex;align-items:center;gap:10px;min-width:0;flex:1;cursor:pointer;min-height:44px}
-#schedRoot .dm-editor-row label:has(input:disabled){cursor:default}
-#schedRoot .dm-editor-row input[type=checkbox]{width:19px;height:19px;accent-color:var(--accent-deep);flex-shrink:0}
-#schedRoot .dm-editor-row label>span{display:flex;flex-direction:column;gap:4px;min-width:0}
-#schedRoot .dm-editor-row label b{font-size:12.5px}
-#schedRoot .dm-editor-row label small{font-size:11px;line-height:1.35;color:var(--ink-soft)}
-#schedRoot .dm-editor-row button{min-height:40px;flex-shrink:0}
-#schedRoot .dm-editor-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-top:12px}
-#schedRoot .dm-editor-bottom p{flex:1 1 270px;margin:0;line-height:1.5}
-#schedRoot .dm-editor-bottom button{min-height:44px}
-#schedRoot .dm-editor-bottom button:disabled{opacity:.5;cursor:not-allowed}
-html[data-theme=dark] #schedRoot .dm-marker.empty{background:#34453c;color:#d3e2d8}
-html[data-theme=dark] #schedRoot .dm-marker.assigned{background:#795c28;border-color:#b18b3a;color:white}
-html[data-theme=dark] #schedRoot .dm-marker.done{background:#216a4b;border-color:#338d62;color:white}
-html[data-theme=dark] #schedRoot .dm-marker.late{background:#522d2e;color:#ffe0dd;border-color:#e08b84}
-@media(max-width:1180px){#schedRoot .dm-editor-rows{grid-template-columns:1fr}}
-@media(max-width:550px){#schedRoot .dm-editor{padding:11px}#schedRoot .dm-editor-bottom .dl-actions{width:100%}#schedRoot .dm-editor-bottom button{flex:1 1 auto}}
-
+#schedRoot .dn-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:13px 0 8px}
+#schedRoot .dn-tools-label{font-size:12px;font-weight:750;color:var(--ink-soft);margin-right:4px}
+#schedRoot .dn-tool{display:inline-flex;gap:7px;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);padding:9px 13px;min-height:42px;font:inherit;font-size:12px;font-weight:750;cursor:pointer}
+#schedRoot .dn-tool:hover{border-color:var(--accent)}
+#schedRoot .dn-tool[aria-pressed="true"]{background:var(--accent-deep);color:#fff;border-color:var(--accent-deep)}
+#schedRoot .dn-tool b{font-size:11px;letter-spacing:.1px}
+#schedRoot .dn-help{margin:6px 0;color:var(--ink-soft);font-size:11.5px;line-height:1.5}
+#schedRoot .dn-grid{min-width:1190px;font-size:11px}
+#schedRoot .dn-grid-row{gap:2px;margin-bottom:3px;align-items:center}
+#schedRoot .dn-grid .dl-grid-label{position:sticky;left:0;z-index:2;background:var(--surface);padding:5px 9px 5px 1px;line-height:1.3;font-size:11px}
+#schedRoot .dn-grid-head .dl-grid-label{z-index:3}
+#schedRoot .dn-grid .dl-grid-day{font-size:10px;line-height:23px}
+#schedRoot .dn-grid .dl-grid-day.today{line-height:23px;padding:0}
+#schedRoot .dn-grid-cell{height:34px;width:100%;min-width:0;min-height:34px;display:flex;align-items:center;justify-content:center;gap:2px;border:1px solid var(--line);border-radius:5px;padding:0 2px;background:var(--surface);font:inherit;cursor:pointer;transition:background .12s,border-color .12s}
+#schedRoot .dn-grid-cell.shift{background:#e7f1e9;border-color:#c1dbca}
+#schedRoot .dn-grid-cell.blocked{background:repeating-linear-gradient(135deg,var(--surface),var(--surface) 4px,var(--surface-2) 4px,var(--surface-2) 7px);opacity:.65;cursor:not-allowed}
+#schedRoot .dn-grid-cell:hover:not(:disabled){border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+#schedRoot .dn-grid-cell.today{outline:2px solid #35865b;outline-offset:-1px}
+#schedRoot .dn-grid-cell.chosen{outline:2px solid var(--accent-deep);outline-offset:1px}
+#schedRoot .dn-grid-cell.dn-saving{opacity:.5;cursor:progress}
+#schedRoot .dn-dot{width:8px;height:12px;min-width:8px;flex:0 0 8px;border-radius:3px;border:1px solid rgba(100,130,112,.25);background:transparent}
+#schedRoot .dn-dot.empty{opacity:.22}
+#schedRoot .dn-dot.assigned{background:#dfaf6a;border-color:#bc8b43}
+#schedRoot .dn-dot.done{background:#276f50;border-color:#276f50;position:relative}
+#schedRoot .dn-dot.done:after{content:'✓';position:absolute;inset:0;line-height:11px;text-align:center;font-size:8px;color:white}
+#schedRoot .dn-dot.late{background:#fbe6e4;border:2px solid #bd433c}
+#schedRoot .dn-grid-cell.dn-no-shift{color:var(--ink-faint)}
+#schedRoot .dn-grid .dl-grid-sum{font-size:10px}
+#schedRoot .dn-selected-help{border-top:1px solid var(--line);padding-top:10px;margin-top:8px;font-size:11.5px;color:var(--ink-soft)}
+#schedRoot .dn-selected-help b{color:var(--ink)}
+html[data-theme=dark] #schedRoot .dn-grid-cell.shift{background:#274535;border-color:#456956}
+html[data-theme=dark] #schedRoot .dn-dot.empty{border-color:#718678}
+html[data-theme=dark] #schedRoot .dn-dot.assigned{background:#8c672c;border-color:#d19c56}
+html[data-theme=dark] #schedRoot .dn-dot.done{background:#287651;border-color:#419c70}
+html[data-theme=dark] #schedRoot .dn-dot.late{background:#572b29;border-color:#dc716d}
+@media(max-width:600px){#schedRoot .dn-tools{gap:6px}#schedRoot .dn-tool{padding:8px 10px}#schedRoot .dl-scroll{max-width:100%}}
 </style>
 
 <div id="root"></div>
@@ -3887,7 +3887,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '21.11.2026-dm'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '21.11.2026-dn'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -10499,7 +10499,7 @@ const EQUIPMENT_TYPES=[
  {id:'coffee_service',group:'Кофемашина',label:'Обслуживание',short:'Кофемашина · обслуживание',symbol:'🧽'},
  {id:'vending_refill',group:'Торговый автомат',label:'Пополнение',short:'Торговый автомат · пополнение',symbol:'📦'}
 ];
-let EQUIPMENT_VIEW='graph', EQUIPMENT_TYPE='coffee_refill', EQUIPMENT_DATA=null, EQUIPMENT_BUSY=false, EQUIPMENT_PICK=null;
+let EQUIPMENT_VIEW='graph', EQUIPMENT_TYPE='all', EQUIPMENT_DATA=null, EQUIPMENT_BUSY=false, EQUIPMENT_PICK=null;
 const equipToday=()=>{const p=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Minsk',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()).filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));return `${p.year}-${p.month}-${p.day}`;};
 const equipPrice=n=>Number(n||0).toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' BYN';
 const equipShort=login=>escapeHtml(shortName(equipPerson(login)?.name||login||'—'));
@@ -10561,87 +10561,105 @@ function equipDrawGraph(el,host){
  host.innerHTML=`<div class="dl-section"><div class="dl-equipment-groups"><div><div class="dl-group-title">☕ Кофемашина</div><div class="dl-work-list">${EQUIPMENT_TYPES.slice(0,2).map(equipWorkCard).join('')}</div></div><div><div class="dl-group-title">📦 Торговый автомат · только пополнение</div><div class="dl-work-list">${EQUIPMENT_TYPES.slice(2).map(equipWorkCard).join('')}</div></div></div></div>
  <div class="dl-section"><div class="dl-flex-head"><b>Кто выполняет</b><button type="button" class="btn btn-sm" data-dl-add>+ Добавить сотрудника</button></div><div class="dl-chips">${roster.map(p=>`<span class="dl-chip"><b>${escapeHtml(shortName(p.name))}</b><small>${p.login===session.login?'Руководитель · без доплаты':p.manual?'Добавлен вручную':'Машерова · по смене'}</small>${p.manual?`<button type="button" data-dl-remove="${escapeHtml(p.login)}" aria-label="Убрать ${escapeHtml(p.name)}">×</button>`:''}</span>`).join('')||'<span class="eq-hint">В выбранном месяце нет участников. Добавьте вручную или заполните расписание Машерова.</span>'}</div></div>
  <div class="dl-section"><b>Сегодня · ${new Date(today+'T12:00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'long'})}</b>${isCur?`<div class="dl-today-rows">${EQUIPMENT_TYPES.map(t=>{const s=equipTask(t.id,today);return `<div class="dl-today-row"><span><b>${escapeHtml(t.short)}</b><small>${s?equipShort(s.login):'Исполнитель не назначен'}</small></span><span class="dl-status ${s?.done?'done':s?'assigned':'missing'}">${s?.done?'✓ Выполнено':s?'Назначено':'Нет исполнителя'}</span>${s&&!s.done?`<button type="button" class="btn btn-sm" data-dl-complete="${t.id}" ${equipRate(t.id)>0?'':'disabled title="Сначала установите ставку"'}>Выполнено</button>`:''}</div>`;}).join('')}</div>`:'<p class="eq-hint">Чтобы увидеть назначения на сегодня, откройте текущий месяц.</p>'}</div>
- <div class="dl-section"><div class="dl-flex-head"><div><b>График · Оборудование</b><p class="eq-hint">Один график для трёх работ. Нажмите на день сотрудника и выберите сразу несколько действий.</p></div><div class="dl-actions"><button type="button" class="btn btn-sm" data-dl-autofill>Заполнить по периодичности</button><button type="button" class="btn btn-sm" data-dl-clear>Снять будущие назначения</button></div></div><div class="dl-legend"><span><b>КП</b> кофе · пополнение</span><span><b>КО</b> кофе · обслуживание</span><span><b>ТП</b> автомат · пополнение</span><span><i class="dl-leg-shift"></i>смена</span><span><i class="dl-leg-assign"></i>назначено</span><span><i class="dl-leg-done"></i>выполнено</span><span><i class="dl-leg-late"></i>просрочено</span><span><i class="dl-leg-free"></i>нет смены</span></div><div class="dl-scroll" id="dlGrid">${equipGrid(roster,n,today)}</div><div id="dlCellDetail">${equipCellDetail()}</div></div>
+ <div class="dl-section"><div class="dl-flex-head"><div><b>График · Оборудование</b><p class="eq-hint">Выберите действие, затем просто нажимайте на даты нужного администратора. Назначения сохраняются сразу.</p></div><div class="dl-actions"><button type="button" class="btn btn-sm" data-dl-autofill>Заполнить по периодичности</button><button type="button" class="btn btn-sm" data-dl-clear>Снять будущие назначения</button></div></div>
+ <div class="dn-tools" role="group" aria-label="Что назначать одним нажатием"><span class="dn-tools-label">Назначать:</span><button type="button" class="dn-tool" data-dn-mode="all" aria-pressed="${EQUIPMENT_TYPE==='all'}">Все три</button>${EQUIPMENT_TYPES.map(t=>`<button type="button" class="dn-tool" data-dn-mode="${t.id}" aria-pressed="${EQUIPMENT_TYPE===t.id}"><b>${EQUIPMENT_CODES[t.id]}</b> ${t.id==='coffee_refill'?'Кофе · пополнение':t.id==='coffee_service'?'Кофе · обслуживание':'Автомат · пополнение'}</button>`).join('')}</div>
+ <p class="dn-help">Нажатие ставит назначение; повторное снимает невыполненное. В каждой дате три индикатора слева направо: <b>КП</b> / <b>КО</b> / <b>ТП</b>. Янтарный — назначено, зелёный ✓ — выполнено, красная рамка — просрочено. Пустая ячейка — нет назначений.</p>
+ <div class="dl-scroll" id="dlGrid">${equipGrid(roster,n,today)}</div><p class="dn-selected-help">Светло-зелёная ячейка означает смену на Машерова. Штриховка — нет смены, назначение недоступно. Выполненные работы нельзя переназначить.</p></div>
  <div class="dl-section dl-rules"><b>Правила графика</b><p>Три независимые работы в одной ячейке. Назначает только руководитель. Без смены на Машерова можно назначать лишь добавленных вручную. На дату — один исполнитель для каждого вида работы. Выполненное назначение нельзя заменить. Сотрудник отмечает только свои работы за сегодня; руководитель может отметить прошлую дату. Нулевая ставка блокирует выполнение. Доплаты остаются отдельной строкой зарплаты.</p></div>`;
  host.querySelector('[data-dl-add]').onclick=()=>equipAddModal(el,roster);
  host.querySelectorAll('[data-dl-remove]').forEach(b=>b.onclick=()=>equipParticipant(el,b.dataset.dlRemove,false));
  host.querySelectorAll('[data-dl-complete]').forEach(b=>b.onclick=()=>equipAction(el,today,b.dataset.dlComplete,'complete'));
  host.querySelector('[data-dl-autofill]').onclick=()=>equipAutofill(el);
  host.querySelector('[data-dl-clear]').onclick=()=>equipClearFuture(el);
- host.querySelectorAll('[data-dl-cell]').forEach(b=>{b.onclick=()=>{
-   EQUIPMENT_PICK={date:b.dataset.date,login:b.dataset.login};
-   host.querySelectorAll('[data-dl-cell]').forEach(c=>c.classList.toggle('chosen',c===b));
-   host.querySelector('#dlCellDetail').innerHTML=equipCellDetail();equipBindCellActions(el);
-   if(window.matchMedia?.('(max-width:760px)')?.matches)host.querySelector('#dlCellDetail').scrollIntoView({block:'nearest',behavior:'smooth'});
- };});
- equipBindCellActions(el);
+ host.querySelectorAll('[data-dn-mode]').forEach(b=>b.onclick=()=>{
+   EQUIPMENT_TYPE=b.dataset.dnMode;
+   host.querySelectorAll('[data-dn-mode]').forEach(c=>c.setAttribute('aria-pressed',String(c.dataset.dnMode===EQUIPMENT_TYPE)));
+ });
+ host.querySelector('#dlGrid').onclick=e=>{
+   const cell=e.target.closest('[data-dl-cell]');
+   if(!cell||EQUIPMENT_BUSY)return;
+   void equipQuickClick(el,cell.dataset.date,cell.dataset.login);
+ };
+ if(EQUIPMENT_PICK){const picked=host.querySelector(`[data-dl-cell][data-date="${EQUIPMENT_PICK.date}"][data-login="${CSS.escape(EQUIPMENT_PICK.login)}"]`);if(picked){
+   picked.scrollIntoView({block:'nearest',inline:'nearest'});
+ }}
 }
 const EQUIPMENT_CODES={coffee_refill:'КП',coffee_service:'КО',vending_refill:'ТП'};
 function equipGrid(roster,n,today){
- const tmpl=`170px repeat(${n},minmax(41px,1fr)) 54px 86px`;
- let rows=`<div class="dl-grid-row dm-grid-row" style="grid-template-columns:${tmpl}"><div class="dl-grid-label">Исполнитель</div>${Array.from({length:n},(_,i)=>{const iso=schIso(SCH.y,SCH.m,i+1),we=[0,6].includes(schDow(SCH.y,SCH.m,i+1));return `<span class="dl-grid-day${iso===today?' today':''}${we?' weekend':''}">${i+1}</span>`;}).join('')}<div class="dl-grid-day">Работ</div><div class="dl-grid-day">BYN</div></div>`;
+ const tmpl=`150px repeat(${n},minmax(29px,1fr)) 43px 75px`;
+ let rows=`<div class="dl-grid-row dn-grid-row dn-grid-head" style="grid-template-columns:${tmpl}"><div class="dl-grid-label">Исполнитель</div>${Array.from({length:n},(_,i)=>{const iso=schIso(SCH.y,SCH.m,i+1),we=[0,6].includes(schDow(SCH.y,SCH.m,i+1));return `<span class="dl-grid-day${iso===today?' today':''}${we?' weekend':''}">${i+1}</span>`;}).join('')}<div class="dl-grid-day">Работ</div><div class="dl-grid-day">BYN</div></div>`;
  for(const p of roster){
-  const done=equipTasks().filter(t=>t.login===p.login&&t.done&&EQUIPMENT_CODES[t.type]),paid=p.login===session.login?0:done.reduce((s,t)=>s+Number(t.amount||0),0);
-  rows+=`<div class="dl-grid-row dm-grid-row" style="grid-template-columns:${tmpl}"><div class="dl-grid-label" title="${escapeHtml(p.name)}">${escapeHtml(shortName(p.name))}</div>`;
-  for(let i=1;i<=n;i++){
-   const date=schIso(SCH.y,SCH.m,i),shift=equipShift(p.login,date),allowed=shift||equipManual(p.login),tasks=EQUIPMENT_TYPES.map(x=>equipTask(x.id,date));
-   const active=tasks.some(t=>t?.login===p.login),blocked=!allowed&&!active;
-   const markers=EQUIPMENT_TYPES.map((x,j)=>{const t=tasks[j],mine=t?.login===p.login,late=mine&&!t.done&&date<today;
-     return {code:EQUIPMENT_CODES[x.id],status:mine?(t.done?'done':late?'late':'assigned'):'empty',label:mine?(t.done?'выполнено':late?'не отмечено':'назначено'):'не назначено'};
-   });
-   const summary=markers.map(x=>x.code+': '+x.label).join('; ');
-   rows+=`<button type="button" class="dl-grid-cell dm-grid-cell ${blocked?'blocked':shift?'shift':'free'}${date===today?' today':''}${EQUIPMENT_PICK?.date===date&&EQUIPMENT_PICK?.login===p.login?' chosen':''}" data-dl-cell data-date="${date}" data-login="${escapeHtml(p.login)}" aria-label="${escapeHtml(p.name)} · ${date} · ${summary}" title="${escapeHtml(p.name)} · ${date}: ${summary}">${blocked?'<span class="dm-block-dash">—</span>':markers.map(x=>`<span class="dm-marker ${x.status}">${x.code}${x.status==='done'?' ✓':x.status==='late'?' !':x.status==='assigned'?' ·':''}</span>`).join('')}</button>`;
-  }
-  rows+=`<div class="dl-grid-sum">${done.length||'—'}</div><div class="dl-grid-sum">${p.login===session.login?'—':equipPrice(paid)}</div></div>`;
+   const done=equipTasks().filter(t=>t.login===p.login&&t.done&&EQUIPMENT_CODES[t.type]),paid=p.login===session.login?0:done.reduce((sum,t)=>sum+Number(t.amount||0),0);
+   rows+=`<div class="dl-grid-row dn-grid-row" style="grid-template-columns:${tmpl}"><div class="dl-grid-label" title="${escapeHtml(p.name)}">${escapeHtml(shortName(p.name))}</div>`;
+   for(let d=1;d<=n;d++){
+     const date=schIso(SCH.y,SCH.m,d),shift=equipShift(p.login,date),allowed=shift||equipManual(p.login);
+     const statuses=EQUIPMENT_TYPES.map(x=>{
+       const t=equipTask(x.id,date),mine=t?.login===p.login,late=mine&&!t.done&&date<today;
+       return {code:EQUIPMENT_CODES[x.id],status:mine?(t.done?'done':late?'late':'assigned'):'empty',hint:mine?(t.done?'выполнено':late?'не отмечено':'назначено'):t?'назначено другому: '+(equipPerson(t.login)?.name||t.login):'не назначено'};
+     });
+     const assigned=statuses.some(x=>x.status!=='empty'),disabled=!allowed&&!assigned;
+     const summary=statuses.map(x=>x.code+' — '+x.hint).join('; ');
+     const tooltip=escapeHtml(p.name+' · '+date+': '+summary+(disabled?' · нет смены':''));
+     rows+=`<button type="button" class="dn-grid-cell ${disabled?'blocked dn-no-shift':shift?'shift':'free'}${date===today?' today':''}${EQUIPMENT_PICK?.date===date&&EQUIPMENT_PICK?.login===p.login?' chosen':''}" data-dl-cell data-date="${date}" data-login="${escapeHtml(p.login)}" aria-label="${tooltip}" title="${tooltip}" ${disabled?'disabled':''}>${disabled?'':assigned?statuses.map(x=>`<span class="dn-dot ${x.status}" aria-hidden="true"></span>`).join(''):''}</button>`;
+   }
+   rows+=`<div class="dl-grid-sum">${done.length||'—'}</div><div class="dl-grid-sum">${p.login===session.login?'—':equipPrice(paid)}</div></div>`;
  }
- return `<div class="dl-grid dm-grid">${rows}</div>`;
+ return `<div class="dl-grid dn-grid">${rows}</div>`;
 }
-function equipCellDetail(){
- if(!EQUIPMENT_PICK)return '<div class="dl-selected"><span class="eq-hint">Нажмите на день и сотрудника: здесь можно назначить сразу КП, КО и ТП.</span></div>';
- const {date,login}=EQUIPMENT_PICK,person=equipPerson(login),eligible=equipCanAssign(login,date),today=equipToday();
- const lines=EQUIPMENT_TYPES.map(x=>{
-   const t=equipTask(x.id,date),mine=t?.login===login,locked=!!(t&&(t.done||t.ever_done)),editable=(eligible||mine)&&!locked;
-   const info=mine?(t.done?'✓ Выполнено':locked?'Ранее выполнялось — исполнитель закреплён':'Назначено')
-       :t?(t.done?'✓ Выполнено: '+equipShort(t.login):locked?'Исполнитель закреплён: '+equipShort(t.login):'Назначено: '+equipShort(t.login)+' · при выборе заменится')
-       :eligible?'Свободно':'Нет смены на Машерова';
-   const canComplete=mine&&!t.done&&date<=today;
-   const action=canComplete?`<button type="button" class="btn btn-sm" data-dm-task-action="complete" data-dm-type="${x.id}" ${equipRate(x.id)>0?'':'disabled title="Сначала установите ставку"'}>Отметить выполненным</button>`
-     :mine&&t.done?`<button type="button" class="btn btn-sm" data-dm-task-action="undo" data-dm-type="${x.id}">Вернуть в назначено</button>`:'';
-   return `<div class="dm-editor-row"><label><input type="checkbox" data-dm-select="${x.id}" ${mine?'checked':''} ${editable?'':'disabled'} /><span><b>${escapeHtml(x.short)}</b><small>${info}</small></span></label>${action}</div>`;
- }).join('');
- return `<div class="dm-editor" role="group" aria-label="Назначения на ${date}"><div class="dm-editor-head"><div><b>${escapeHtml(person?.name||login)}</b><small>${date.split('-').reverse().join('.')} · три действия</small></div><span class="dl-status ${eligible?'assigned':'missing'}">${eligible?'Можно назначать':'Нет смены'}</span></div>
- <div class="dm-editor-rows">${lines}</div><div class="dm-editor-bottom"><p class="eq-hint" data-dm-plan aria-live="polite">Выберите нужные действия и сохраните.</p><div class="dl-actions"><button type="button" class="btn btn-sm" data-dm-quick="all">Назначить все 3</button><button type="button" class="btn btn-sm" data-dm-quick="none">Снять все</button><button type="button" class="btn btn-primary btn-sm" data-dm-save>Сохранить</button></div></div></div>`;
+function equipQuickJobs(date,login){
+ const types=EQUIPMENT_TYPE==='all'?EQUIPMENT_TYPES.map(t=>t.id):[EQUIPMENT_TYPE];
+ const eligible=equipCanAssign(login,date),selected=types.map(type=>({type,t:equipTask(type,date)}));
+ const allMine=selected.every(x=>x.t?.login===login);
+ const jobs=[],locked=[];
+ for(const {type,t} of selected){
+   const mine=t?.login===login,immutable=!!(t&&(t.done||t.ever_done));
+   if(allMine){
+     if(mine&&!immutable)jobs.push({date,type,action:'unassign',login});
+     else if(immutable)locked.push(type);
+   }else if(!mine){
+     if(immutable){locked.push(type);continue;}
+     if(!eligible)continue;
+     jobs.push({date,type,action:'assign',login});
+   }
+ }
+ return {jobs,locked,eligible,allMine};
 }
-function equipCellJobs(panel){
- const {date,login}=EQUIPMENT_PICK||{};if(!date||!login)return [];
- return [...panel.querySelectorAll('[data-dm-select]')].flatMap(box=>{
-  const type=box.dataset.dmSelect,t=equipTask(type,date),mine=t?.login===login;
-  if(box.disabled)return [];
-  if(box.checked&&!mine)return [{date,type,action:'assign',login}];
-  if(!box.checked&&mine&&!t.done&&!t.ever_done)return [{date,type,action:'unassign',login}];
-  return [];
- });
-}
-function equipBindCellActions(el){
- const panel=el.querySelector('#dlCellDetail');if(!panel||!EQUIPMENT_PICK)return;
- const redrawPlan=()=>{
-  const jobs=equipCellJobs(panel),note=panel.querySelector('[data-dm-plan]'),save=panel.querySelector('[data-dm-save]');if(!note)return;
-  const replaces=jobs.filter(j=>j.action==='assign'&&!!equipTask(j.type,j.date)&&equipTask(j.type,j.date).login!==j.login);
-  note.textContent=jobs.length?`Изменений: ${jobs.length}.${replaces.length?' Внимание: '+replaces.length+' невыполненных назначений другого сотрудника будут заменены.':''}`:'Изменений нет. Выполненные работы и закреплённые исполнители защищены.';
-  if(save)save.disabled=!jobs.length;
- };
- panel.querySelectorAll('[data-dm-select]').forEach(box=>box.onchange=redrawPlan);
- panel.querySelectorAll('[data-dm-quick]').forEach(b=>b.onclick=()=>{panel.querySelectorAll('[data-dm-select]:not(:disabled)').forEach(c=>{c.checked=b.dataset.dmQuick==='all';});redrawPlan();});
- panel.querySelectorAll('[data-dm-task-action]').forEach(b=>b.onclick=()=>{if(!EQUIPMENT_PICK)return;void equipAction(el,EQUIPMENT_PICK.date,b.dataset.dmType,b.dataset.dmTaskAction);});
- const save=panel.querySelector('[data-dm-save]');if(save)save.onclick=async()=>{
-  const jobs=equipCellJobs(panel);if(!jobs.length||EQUIPMENT_BUSY)return;
-  EQUIPMENT_BUSY=true;save.disabled=true;
-  try{
-   await rpc('app_equipment_batch',{p_token:TOKEN,p_jobs:jobs});
-   toast('Сохранено действий: '+jobs.length);await equipReload(el);
-  }catch(e){handleErr(e);save.disabled=false;}finally{EQUIPMENT_BUSY=false;}
- };
- redrawPlan();
+async function equipQuickClick(el,date,login){
+ if(EQUIPMENT_BUSY||!equipOwner())return;
+ const result=equipQuickJobs(date,login);
+ if(!result.jobs.length){
+   toast(result.locked.length?'Выполненная работа защищена от изменений':!result.eligible?'В этот день нет смены на Машерова. Добавьте сотрудника вручную.':'Назначения уже стоят. Для отдельной работы выберите КП, КО или ТП.',true);
+   return;
+ }
+ const host=el.querySelector('#eqHost'),grid=host?.querySelector('#dlGrid');
+ const scrollX=grid?.scrollLeft||0,scrollY=window.scrollY;
+ const oldTasks=equipTasks();
+ // Optimistic visual update; financial entries and completed tasks are never touched.
+ const next=oldTasks.map(t=>({...t}));
+ for(const job of result.jobs){
+   const ix=next.findIndex(t=>t.type===job.type&&t.date===job.date);
+   if(job.action==='unassign'){
+     if(ix>=0)next.splice(ix,1);
+   }else{
+     const val={date:job.date,type:job.type,login:job.login,status:'assigned',done:false,ever_done:false,amount:0};
+     if(ix>=0)next[ix]=val;else next.push(val);
+   }
+ }
+ EQUIPMENT_PICK={date,login};EQUIPMENT_BUSY=true;
+ EQUIPMENT_DATA.tasks=next;
+ if(grid){grid.innerHTML=equipGrid(equipMonthRoster(),schDaysIn(SCH.y,SCH.m),equipToday());grid.scrollLeft=scrollX;grid.querySelectorAll('[data-dl-cell]').forEach(b=>b.disabled=true);}
+ try{
+   await rpc('app_equipment_batch',{p_token:TOKEN,p_jobs:result.jobs});
+   // Reload creates the current-day summary and ensures the server is the source of truth.
+   await equipReload(el);
+   const newGrid=el.querySelector('#dlGrid');if(newGrid)newGrid.scrollLeft=scrollX;
+   window.scrollTo({top:scrollY,behavior:'instant'});
+   if(result.locked.length)toast('Назначения сохранены. Выполненные задания оставлены без изменений.');
+ }catch(e){
+   EQUIPMENT_DATA.tasks=oldTasks;
+   if(grid?.isConnected){grid.innerHTML=equipGrid(equipMonthRoster(),schDaysIn(SCH.y,SCH.m),equipToday());grid.scrollLeft=scrollX;grid.querySelectorAll('[data-dl-cell]').forEach(b=>b.disabled=b.classList.contains('blocked'));}
+   handleErr(e);
+ }finally{EQUIPMENT_BUSY=false;}
 }
 function equipAddModal(el,roster){
  const included=new Set(roster.map(p=>p.login));
@@ -10703,7 +10721,7 @@ function equipDrawBonus(el,host){
  <div class="dl-section"><b>История ставок</b><div class="dl-hist">${hist.length?hist.slice(0,20).map(h=>`<div><small>${new Date(h.from).toLocaleDateString('ru-RU',{timeZone:'Europe/Minsk'})} · ${escapeHtml(equipType(h.type).short)}</small><b>${equipPrice(h.amount)}</b></div>`).join(''):'<p class="eq-hint">История появится после установки ставок.</p>'}</div></div></div>
  <div class="dl-section"><b>Начислено по администраторам</b><p class="eq-hint">Сумма автоматически включается в зарплату администраторов отдельной строкой «Доплата за оборудование».</p><div class="dl-table-wrap"><table class="dl-table"><thead><tr><th>Администратор</th>${EQUIPMENT_TYPES.map(t=>`<th>${escapeHtml(t.short)}</th>`).join('')}<th>Всего работ</th><th>Доплата, BYN</th></tr></thead><tbody>${roster.map(p=>{const t=totals.find(x=>x.login===p.login)||{},owner=p.login===session.login;return `<tr><td>${escapeHtml(p.name)}${owner?' <small>· без доплаты</small>':''}</td>${EQUIPMENT_TYPES.map(k=>`<td>${owner?'—':Number(t[k.id]||0)}</td>`).join('')}<td>${owner?'—':Number(t.count||0)}</td><td><b>${owner?'без доплаты':equipPrice(t.amount||0)}</b></td></tr>`;}).join('')||'<tr><td colspan="6">Нет сотрудников</td></tr>'}<tr class="dl-total"><td>Итого</td>${EQUIPMENT_TYPES.map(t=>`<td>${totals.reduce((s,x)=>s+Number(x[t.id]||0),0)}</td>`).join('')}<td>${totals.reduce((s,x)=>s+Number(x.count||0),0)}</td><td><b>${equipPrice(allSum)}</b></td></tr></tbody></table></div></div>
  <div class="dl-section"><b>Журнал выполненных работ</b><p class="eq-hint">Дата, исполнитель, ставка на момент отметки, кто отметил; задания без отметки также видны.</p><div class="dl-table-wrap"><table class="dl-table"><thead><tr><th>Дата</th><th>Исполнитель</th><th>Работа</th><th>Ставка, BYN</th><th>Отметил(а)</th></tr></thead><tbody>${journal.map(t=>`<tr><td>${t.date.slice(8)}.${t.date.slice(5,7)}</td><td>${equipShort(t.login)}</td><td>${escapeHtml(equipType(t.type).short)}</td><td>${t.done?equipPrice(t.amount):'—'}</td><td>${t.done?equipShort(t.completed_by)+(t.backdated?' <span class="dl-badge">задним числом</span>':''):'<span class="dl-status missing">не отмечено</span>'}</td></tr>`).join('')||'<tr><td colspan="5">Выполненных работ пока нет</td></tr>'}</tbody></table></div></div><p class="eq-hint">Доплата не влияет на бонус филиала, качество и расчёт премии старшего администратора.</p>`;
- const overdueBtn=host.querySelector('[data-dl-open-overdue]');if(overdueBtn)overdueBtn.onclick=()=>{const t=overdue[0];EQUIPMENT_VIEW='graph';EQUIPMENT_PICK={date:t.date,login:t.login};el.querySelectorAll('[data-eq-view]').forEach(b=>{b.classList.toggle('on',b.dataset.eqView==='graph');b.setAttribute('aria-selected',String(b.dataset.eqView==='graph'));});equipDraw(el);el.querySelector('#dlCellDetail')?.scrollIntoView({block:'nearest'});};
+ const overdueBtn=host.querySelector('[data-dl-open-overdue]');if(overdueBtn)overdueBtn.onclick=()=>{const t=overdue[0];EQUIPMENT_VIEW='graph';EQUIPMENT_PICK={date:t.date,login:t.login};EQUIPMENT_TYPE=t.type;el.querySelectorAll('[data-eq-view]').forEach(b=>{b.classList.toggle('on',b.dataset.eqView==='graph');b.setAttribute('aria-selected',String(b.dataset.eqView==='graph'));});equipDraw(el);el.querySelector('[data-dl-cell].chosen')?.scrollIntoView({block:'nearest',inline:'nearest'});};
  host.querySelector('[data-dl-save-rates]').onclick=async()=>{const fields=[...host.querySelectorAll('[data-dl-rate]')],items=fields.map(i=>({type:i.dataset.dlRate,amount:Number(i.value.replace(',','.'))}));if(items.some(x=>!Number.isFinite(x.amount)||x.amount<0||x.amount>1000||Math.round(x.amount*100)!==x.amount*100&&Math.abs(Math.round(x.amount*100)-x.amount*100)>0.00001)){toast('Ставка должна быть от 0 до 1000 BYN с двумя знаками после запятой',true);return;}if(EQUIPMENT_BUSY)return;EQUIPMENT_BUSY=true;try{for(const x of items)if(Math.abs(x.amount-equipRate(x.type))>.0001)await apiEquipmentSetRate(x.type,x.amount);toast('Ставки сохранены');await equipReload(el);}catch(e){handleErr(e);}finally{EQUIPMENT_BUSY=false;}};
  host.querySelector('[data-dl-save-cadence]').onclick=async()=>{const items=[...host.querySelectorAll('[data-dl-cadence]')].map(i=>({type:i.dataset.dlCadence,days:Number(i.value)}));if(items.some(x=>!Number.isInteger(x.days)||x.days<1||x.days>90)){toast('Периодичность — целое число от 1 до 90 дней',true);return;}if(EQUIPMENT_BUSY)return;EQUIPMENT_BUSY=true;try{for(const x of items)if(x.days!==equipCadence(x.type))await rpc('app_equipment_set_cadence',{p_token:TOKEN,p_type:x.type,p_days:x.days});toast('Периодичность сохранена');await equipReload(el);}catch(e){handleErr(e);}finally{EQUIPMENT_BUSY=false;}};
 }
