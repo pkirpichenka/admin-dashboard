@@ -3922,7 +3922,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '21.11.2026-dp'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '21.11.2026-dq'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -4420,11 +4420,11 @@ function auditDetailsModal(r){
   const body=pairs.length
     ? `<div class="audit-detail-list">${pairs.map(([k,v])=>`<div class="audit-detail-row"><div class="audit-detail-k">${escapeHtml(k)}</div><div class="audit-detail-v">${escapeHtml(v)}</div></div>`).join('')}</div>`
     : `<div class="audit-empty">Дополнительных данных нет.</div>`;
-  return modal(`<h3>${escapeHtml((r&&r.action)||'Детали действия')}</h3><p>${escapeHtml(auditFmtDateTime(r&&r.created_at))} · ${escapeHtml((r&&r.actor_name)||'')} (${escapeHtml((r&&r.actor_login)||'')})</p>${body}<div class="actions"><button class="btn btn-primary" data-x>Закрыть</button></div>`);
+  return modal(`<h3>${escapeHtml((r&&r.action)||'Детали действия')}</h3><p>${escapeHtml(auditFmtDateTime(r&&r.created_at))} · ${escapeHtml(fadPersonName(r?.actor_login,r?.actor_name))} (${escapeHtml((r&&r.actor_login)||'')})</p>${body}<div class="actions"><button class="btn btn-primary" data-x>Закрыть</button></div>`);
 }
 function exportAuditExcel(rows,fromDate,toDate,login){
   if(!rows||!rows.length){toast('Нет данных для выгрузки',true);return}
-  const out=rows.map(r=>({'Дата и время (Минск)':auditFmtDateTime(r.created_at),'Пользователь':r.actor_name||'','Логин':r.actor_login||'','Роль':r.actor_role||'','Действие':r.action||'','Раздел':r.entity_type||'','Объект':r.entity_key||'','Детали':auditDetailsText(r.details||{})}));
+  const out=rows.map(r=>({'Дата и время (Минск)':auditFmtDateTime(r.created_at),'Пользователь':fadPersonName(r.actor_login,r.actor_name),'Логин':r.actor_login||'','Роль':r.actor_role||'','Действие':r.action||'','Раздел':r.entity_type||'','Объект':r.entity_key||'','Детали':auditDetailsText(r.details||{})}));
   const ws=XLSX.utils.json_to_sheet(out); ws['!cols']=[{wch:22},{wch:28},{wch:18},{wch:12},{wch:32},{wch:16},{wch:28},{wch:80}];
   const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Лог действий');
   XLSX.writeFile(wb,`fad-log_${fromDate||'all'}_${toDate||'all'}.xlsx`);
@@ -4676,6 +4676,17 @@ function isoAddDays(iso,delta){const [y,m,dd]=iso.split('-').map(Number);const d
 function fmtTime(iso){if(!iso)return '';return new Date(iso).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});}
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function shortName(name){const p=String(name||'').trim().split(/\s+/).filter(Boolean); if(p.length<=1) return p[0]||''; return p[0]+' '+p.slice(1).map(w=>w[0]?w[0].toUpperCase()+'.':'').join('');}
+/* DQ: Человеческие подписи вместо технических логинов.
+   Логины, имена в БД, права и идентификаторы заданий НЕ изменяем. */
+const FAD_DISPLAY_BY_LOGIN=Object.freeze({'p.kirpichenka':'Кирпиченко П.Ю.'});
+function fadPersonName(login, name, compact=false){
+  const key=String(login??'').trim().toLowerCase();
+  const raw=String(name??'').trim();
+  const display=FAD_DISPLAY_BY_LOGIN[key]||FAD_DISPLAY_BY_LOGIN[raw.toLowerCase()]||raw||String(login??'').trim()||'—';
+  // Already abbreviated official names must stay exactly as written.
+  return compact&&!/^\S+\s+[А-ЯЁ]\.(?:[А-ЯЁ]\.)+$/u.test(display)?shortName(display):display;
+}
+
 
 /* Не даём колесику мыши / тачпаду случайно менять числовые поля.
    Если курсор находится над активным input[type=number], поле теряет фокус,
@@ -4815,13 +4826,13 @@ function header(){
   const full=session.role==='owner'||(PERMISSION_KEYS.every(k=>can(k))&&reportDaysLimit()===0);
   const extended=!full&&hasAnyPermission();
   const pill=full?'<span class="role-pill role-boss">полный доступ</span>':(extended?'<span class="role-pill role-boss">расширенный доступ</span>':'<span class="role-pill role-admin">смена</span>');
-  const name=String(session?.name||session?.login||'');
+  const name=fadPersonName(session?.login,session?.name);
   const initials=name.replace(/[.]/g,' ').trim().split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0].toLocaleUpperCase('ru')).join('')||'F';
   return `<div class="fad-sidebar-brand" title="Версия ${APP_VERSION}">
     <div class="fad-sidebar-logo">${LEAF}</div><span class="fad-sidebar-brand-text">FAD</span></div>
     <div class="fad-sidebar-user">
       <div class="fad-sidebar-identity" title="${escapeHtml(name)}"><span class="fad-sidebar-avatar">${escapeHtml(initials)}</span>
-      <div class="fad-sidebar-user-info"><strong>${escapeHtml(shortName(name))}</strong><span>${escapeHtml(roleLabel())} ${pill}</span></div></div>
+      <div class="fad-sidebar-user-info"><strong>${escapeHtml(fadPersonName(session?.login,session?.name,true))}</strong><span>${escapeHtml(roleLabel())} ${pill}</span></div></div>
       <div class="fad-sidebar-actions"><button class="btn btn-ghost btn-sm" id="refreshBtn" type="button">Обновить</button>
       <button class="btn btn-ghost btn-sm" id="logout" type="button">Выйти</button></div>
     </div>`;
@@ -8907,7 +8918,7 @@ async function employeeAccountSettingsModal(u,emp,onDone){
   const managePerms=session.role==='owner'||can('admins.permissions');
   const settings=await apiGetSettings().catch(()=>({}));
   settings.adminPhones=settings.adminPhones||{};
-  const el=modal(`<h3>Настройки аккаунта</h3><p>${escapeHtml(u.name)} · ${escapeHtml(u.login)}</p><div class="emp-account-panel">${userRow(u,settings.adminPhones[u.login]||emp?.phone||'',{manage:manageAdmins,permissions:managePerms})}</div><div id="empExtraAccess"></div><div class="actions"><button class="btn" data-x>Закрыть</button></div>`);
+  const el=modal(`<h3>Настройки аккаунта</h3><p>${escapeHtml(fadPersonName(u.login,u.name))} · ${escapeHtml(u.login)}</p><div class="emp-account-panel">${userRow(u,settings.adminPhones[u.login]||emp?.phone||'',{manage:manageAdmins,permissions:managePerms})}</div><div id="empExtraAccess"></div><div class="actions"><button class="btn" data-x>Закрыть</button></div>`);
   const row=el.querySelector('.urow');
   const done=()=>{if(el.isConnected)closeModal(el);if(onDone)onDone();};
   row.querySelector('[data-perms]')?.addEventListener('click',()=>permissionsModal(u,done));
@@ -9670,7 +9681,7 @@ async function calendarReminderLogModal(){
 
   function drawRecipients(){
     const cur=recipient.value;
-    const people=[...new Map(rows.map(r=>[String(r.recipient_login||''),String(r.recipient_name||r.recipient_login||'')])).entries()]
+    const people=[...new Map(rows.map(r=>[String(r.recipient_login||''),fadPersonName(r.recipient_login,r.recipient_name)])).entries()]
       .filter(x=>x[0]).sort((a,b)=>a[1].localeCompare(b[1],'ru'));
     recipient.innerHTML='<option value="">Все получатели</option>'+people.map(([login,name])=>`<option value="${escapeHtml(login)}">${escapeHtml(name)} · ${escapeHtml(login)}</option>`).join('');
     if(people.some(x=>x[0]===cur))recipient.value=cur;
@@ -9697,7 +9708,7 @@ async function calendarReminderLogModal(){
       <td class="clog-event">${r.event_type==='birthday'?'🎂 ':r.event_type==='holiday'?'🎉 ':r.event_type==='important'?'📌 ':'🗓 '}${escapeHtml(r.event_title||r.event_key||'Событие')}</td>
       <td class="clog-date">${escapeHtml(r.occurrence_date?fmtLong(r.occurrence_date):'—')}</td>
       <td class="clog-period">${escapeHtml(calendarReminderPeriodLabel(r.days_before))}</td>
-      <td class="clog-person"><b>${escapeHtml(r.recipient_name||r.recipient_login||'—')}</b>${r.recipient_name&&r.recipient_login?`<div class="u-login">${escapeHtml(r.recipient_login)}</div>`:''}</td>
+      <td class="clog-person"><b>${escapeHtml(fadPersonName(r.recipient_login,r.recipient_name))}</b>${r.recipient_name&&r.recipient_login?`<div class="u-login">${escapeHtml(r.recipient_login)}</div>`:''}</td>
       <td class="clog-status"><span class="cal-log-status ${r.status==='sent'?'sent':'pending'}">${r.status==='sent'?'✓ Отправлено':'⏳ Ожидает'}</span></td>
     </tr>`).join('')}</tbody></table>`;
   }
@@ -10032,7 +10043,7 @@ async function renderRoles(body){
     return `<div class="roles-panel" style="margin-top:16px"><div class="roles-main-head"><div class="roles-layout-name">Назначение ролей</div><span class="roles-badge">${(data.users||[]).filter(x=>x.role_code).length} назначено</span></div>
       <p class="roles-hint">Сотрудники без назначенной роли продолжают работать с прежними индивидуальными настройками. Назначение роли заменяет старые права базовой модели; при снятии роли они восстанавливаются.</p>
       <div class="roles-table-wrap"><table class="roles-table"><thead><tr><th>Сотрудник</th><th>Учётная запись</th><th>Роль</th><th>Действие</th></tr></thead><tbody>
-      ${(data.users||[]).map(u=>`<tr><td><b>${escapeHtml(u.name)}</b>${!u.active?' <span class="roles-badge warn">Архив</span>':''}</td><td>${escapeHtml(u.login)}</td><td>${u.is_owner?'<b>Руководитель</b>':`<select data-role-user="${escapeHtml(u.login)}" aria-label="Назначить роль ${escapeHtml(u.name)}"><option value="">Индивидуальные права</option>${(data.roles||[]).filter(r=>!r.is_owner).map(r=>`<option value="${escapeHtml(r.code)}"${u.role_code===r.code?' selected':''}>${escapeHtml(r.name)}</option>`).join('')}</select>`}</td><td>${u.is_owner?'<span class="roles-badge">Защищено</span>':`<button type="button" class="btn btn-sm" data-role-assign="${escapeHtml(u.login)}">Применить</button>`}</td></tr>`).join('')}</tbody></table></div></div>`;
+      ${(data.users||[]).map(u=>`<tr><td><b>${escapeHtml(fadPersonName(u.login,u.name))}</b>${!u.active?' <span class="roles-badge warn">Архив</span>':''}</td><td>${escapeHtml(u.login)}</td><td>${u.is_owner?'<b>Руководитель</b>':`<select data-role-user="${escapeHtml(u.login)}" aria-label="Назначить роль ${escapeHtml(fadPersonName(u.login,u.name))}"><option value="">Индивидуальные права</option>${(data.roles||[]).filter(r=>!r.is_owner).map(r=>`<option value="${escapeHtml(r.code)}"${u.role_code===r.code?' selected':''}>${escapeHtml(r.name)}</option>`).join('')}</select>`}</td><td>${u.is_owner?'<span class="roles-badge">Защищено</span>':`<button type="button" class="btn btn-sm" data-role-assign="${escapeHtml(u.login)}">Применить</button>`}</td></tr>`).join('')}</tbody></table></div></div>`;
   }
   function draw(){
     if(!body.isConnected)return;
@@ -10041,7 +10052,7 @@ async function renderRoles(body){
     body.innerHTML=`<div class="roles-toolbar"><div><h1 class="section-title" style="margin:0">Роли и права доступа</h1><p class="roles-hint">Создавай роли и назначай их сотрудникам. Управление доступно только руководителю.</p></div><button type="button" class="btn btn-primary" data-role-new>+ Создать роль</button></div>
       <div class="roles-shell"><aside class="roles-panel"><div class="roles-subtitle" style="margin-top:0">Список ролей</div><div class="roles-list">${roles.map(roleRow).join('')}${chosen==='__new'?'<button class="roles-item active" type="button"><strong>Новая роль</strong><small>Несохранённая</small></button>':''}</div></aside>
       <section class="roles-panel">${form()}</section></div>${assignmentTable()}
-      <details class="roles-panel" style="margin-top:16px"><summary style="font-weight:700;cursor:pointer">История изменения ролей</summary><div class="roles-table-wrap"><table class="roles-table"><thead><tr><th>Когда</th><th>Кто</th><th>Действие</th><th>Роль / аккаунт</th></tr></thead><tbody>${(data.audit||[]).map(x=>`<tr><td>${escapeHtml(auditFmtDateTime(x.changed_at))}</td><td>${escapeHtml(x.actor_login||'')}</td><td>${escapeHtml(({create:'Создана',update:'Изменена',delete:'Удалена',assign:'Назначена',unassign:'Снята'})[x.operation]||x.operation)}</td><td>${escapeHtml(x.role_code||'')}${x.user_login?' · '+escapeHtml(x.user_login):''}</td></tr>`).join('')}</tbody></table></div></details>`;
+      <details class="roles-panel" style="margin-top:16px"><summary style="font-weight:700;cursor:pointer">История изменения ролей</summary><div class="roles-table-wrap"><table class="roles-table"><thead><tr><th>Когда</th><th>Кто</th><th>Действие</th><th>Роль / аккаунт</th></tr></thead><tbody>${(data.audit||[]).map(x=>`<tr><td>${escapeHtml(auditFmtDateTime(x.changed_at))}</td><td title="${escapeHtml(x.actor_login||'')}">${escapeHtml(fadPersonName(x.actor_login))}</td><td>${escapeHtml(({create:'Создана',update:'Изменена',delete:'Удалена',assign:'Назначена',unassign:'Снята'})[x.operation]||x.operation)}</td><td>${escapeHtml(x.role_code||'')}${x.user_login?' · '+escapeHtml(x.user_login):''}</td></tr>`).join('')}</tbody></table></div></details>`;
     body.querySelectorAll('[data-role-name],[data-role-description],[data-role-days],[data-role-permission]').forEach(el=>el.addEventListener('change',ev=>{
       const key=ev.target?.dataset?.rolePermission;
       const pairs={'knowledge.edit':'nav.knowledge','events.manage':'nav.events','equipment.manage':'equipment.view_all'};
@@ -10199,7 +10210,7 @@ async function renderUsers(body,options={}){
       <div class="audit-toolbar">
         <label class="field-mini"><span>С даты</span><input type="date" id="auditFrom" value="${from}"/></label>
         <label class="field-mini"><span>По дату</span><input type="date" id="auditTo" value="${today}"/></label>
-        <label class="field-mini audit-user-filter"><span>Пользователь</span><select id="auditLogin"><option value="">Все пользователи</option>${allUsers.map(u=>`<option value="${escapeHtml(u.login)}">${escapeHtml(u.name)} · ${escapeHtml(u.login)}</option>`).join('')}</select></label>
+        <label class="field-mini audit-user-filter"><span>Пользователь</span><select id="auditLogin"><option value="">Все пользователи</option>${allUsers.map(u=>`<option value="${escapeHtml(u.login)}">${escapeHtml(fadPersonName(u.login,u.name))} · ${escapeHtml(u.login)}</option>`).join('')}</select></label>
         <button class="btn btn-primary" id="auditLoad">Показать</button><button class="btn" id="auditExcel">⬇ Excel</button>
       </div><div id="auditResult"><div class="audit-empty">Загрузка…</div></div>`;
     const fromEl=el.querySelector('#auditFrom'),toEl=el.querySelector('#auditTo'),loginEl=el.querySelector('#auditLogin'),result=el.querySelector('#auditResult');
@@ -10214,11 +10225,11 @@ async function renderUsers(body,options={}){
         rows.forEach(r=>{
           if(r.actor_login&&!known.has(r.actor_login)){
             const o=document.createElement('option');
-            o.value=r.actor_login; o.textContent=(r.actor_name||r.actor_login)+' · '+r.actor_login;
+            o.value=r.actor_login; o.textContent=fadPersonName(r.actor_login,r.actor_name)+' · '+r.actor_login;
             loginEl.appendChild(o); known.add(r.actor_login);
           }
         });
-        result.innerHTML=rows.length?`<div class="audit-wrap"><table class="audit-tbl"><thead><tr><th class="audit-time">Дата и время</th><th class="audit-user">Пользователь</th><th class="audit-action">Действие</th><th class="audit-object">Объект</th><th class="audit-details">Детали</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td class="audit-time">${escapeHtml(auditFmtDateTime(r.created_at))}</td><td class="audit-user"><b>${escapeHtml(r.actor_name||r.actor_login||'')}</b><br><span style="color:var(--ink-faint)">${escapeHtml(r.actor_login||'')}</span></td><td class="audit-action">${escapeHtml(r.action||'')}</td><td class="audit-object">${escapeHtml(auditObjectLabel(r))}</td><td class="audit-details"><button class="btn btn-sm" data-audit-detail="${i}">Открыть</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="audit-empty">За выбранный период действий нет.</div>';
+        result.innerHTML=rows.length?`<div class="audit-wrap"><table class="audit-tbl"><thead><tr><th class="audit-time">Дата и время</th><th class="audit-user">Пользователь</th><th class="audit-action">Действие</th><th class="audit-object">Объект</th><th class="audit-details">Детали</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td class="audit-time">${escapeHtml(auditFmtDateTime(r.created_at))}</td><td class="audit-user"><b>${escapeHtml(fadPersonName(r.actor_login,r.actor_name))}</b><br><span style="color:var(--ink-faint)">${escapeHtml(r.actor_login||'')}</span></td><td class="audit-action">${escapeHtml(r.action||'')}</td><td class="audit-object">${escapeHtml(auditObjectLabel(r))}</td><td class="audit-details"><button class="btn btn-sm" data-audit-detail="${i}">Открыть</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="audit-empty">За выбранный период действий нет.</div>';
         result.querySelectorAll('[data-audit-detail]').forEach(b=>b.onclick=()=>auditDetailsModal(rows[+b.dataset.auditDetail]));
       }catch(e){result.innerHTML='<div class="audit-empty">Не удалось загрузить лог.</div>';handleErr(e)}
     }
@@ -10231,9 +10242,9 @@ async function renderUsers(body,options={}){
     clearAppDirty('telegram');
     const TG = Object.assign({recipients:{}}, settings.telegram||{}); TG.recipients=TG.recipients||{};
     const recips=[];
-    if(ownerUser&&ownerUser.active) recips.push({login:ownerUser.login,name:shortName(ownerUser.name)+(ownerUser.login===session.login?' (вы)':'')});
-    else if(session.role==='owner') recips.push({login:session.login,name:shortName(session.name)+' (вы)'});
-    active.forEach(u=>recips.push({login:u.login,name:shortName(u.name)+(u.login===session.login?' (вы)':'')}));
+    if(ownerUser&&ownerUser.active) recips.push({login:ownerUser.login,name:fadPersonName(ownerUser.login,ownerUser.name,true)+(ownerUser.login===session.login?' (вы)':'')});
+    else if(session.role==='owner') recips.push({login:session.login,name:fadPersonName(session.login,session.name,true)+' (вы)'});
+    active.forEach(u=>recips.push({login:u.login,name:fadPersonName(u.login,u.name,true)+(u.login===session.login?' (вы)':'')}));
     el.innerHTML=`<div class="section-title" style="margin-top:4px">📨 Telegram-уведомления</div>
       <p class="msg-sub">Для каждого получателя можно отдельно включить ежедневные отчёты и напоминания календаря. Один Chat ID используется для обоих типов уведомлений. Время в таблице относится к ежедневному отчёту; время календарных напоминаний задаётся в разделе «Календарь → Напоминания».</p>
       <div class="card" style="padding:0;overflow:hidden;max-width:980px"><table class="tg-tbl"><thead><tr><th>Получатель</th><th style="text-align:center">Отчёты</th><th style="text-align:center">Календарь</th><th>Telegram chat ID</th><th>Время отчёта</th><th></th></tr></thead><tbody>${recips.map(r=>{const c=TG.recipients[r.login]||{};const calOn=(c.calendar===true)||(c.calendar==null&&r.login===(ownerUser&&ownerUser.login));return `<tr><td class="tg-name">${escapeHtml(r.name)}</td><td data-label="Отчёты" style="text-align:center"><input type="checkbox" data-tgen="${escapeHtml(r.login)}" ${c.enabled?'checked':''}/></td><td data-label="Календарь" style="text-align:center"><input type="checkbox" data-tgcal="${escapeHtml(r.login)}" ${calOn?'checked':''}/></td><td data-label="Telegram chat ID"><input class="tg-inp" data-tgcid="${escapeHtml(r.login)}" value="${escapeHtml(c.chatId||'')}" placeholder="напр. 123456789"/></td><td data-label="Время отчёта"><input type="time" data-tgtime="${escapeHtml(r.login)}" value="${escapeHtml(c.time||'23:00')}"/></td><td class="tg-test" data-label="Проверка"><button class="btn btn-sm" data-tgtest="${escapeHtml(r.login)}">Тест</button></td></tr>`;}).join('')}</tbody></table></div>
@@ -10305,7 +10316,7 @@ function userRow(u,phone,opts){
   opts=opts||{}; const p=userPermissions(u), pName=permissionPresetName(p), disabled=opts.manage?'':' disabled';
   const displayedPhone=belarusPhoneNumber(staffPhoneDial(phone))||phone||'';
   return `<div class="urow" data-login="${escapeHtml(u.login)}">
-    <div class="u-main"><div class="u-name">${escapeHtml(u.name)} <span class="perm-badge${pName==='Полный доступ'?' full':''}">${escapeHtml(pName)}</span></div>
+    <div class="u-main"><div class="u-name">${escapeHtml(fadPersonName(u.login,u.name))} <span class="perm-badge${pName==='Полный доступ'?' full':''}">${escapeHtml(pName)}</span></div>
       <div class="u-login">логин: ${escapeHtml(u.login)}</div></div>
     <div class="u-ctl">
       <span class="bh-home-display" title="Текущий основной филиал">${u.home?escapeHtml(studioName(u.home)):'Филиал не назначен'}</span>
@@ -10324,7 +10335,7 @@ async function permissionsModal(u,onDone){
     const data=await rpc('app_roles_list',{p_token:TOKEN});
     const bound=(data?.users||[]).find(x=>x.login===u.login&&x.role_code);
     if(bound){
-      const el=modal(`<h3>Права назначены ролью</h3><p>${escapeHtml(u.name)} использует роль «${escapeHtml(bound.role_name||bound.role_code)}». Чтобы настройки не противоречили друг другу, права изменяются в разделе «Роли».</p><div class="actions"><button class="btn" data-x>Закрыть</button><button class="btn btn-primary" id="permGoRoles">Открыть роли</button></div>`);
+      const el=modal(`<h3>Права назначены ролью</h3><p>${escapeHtml(fadPersonName(u.login,u.name))} использует роль «${escapeHtml(bound.role_name||bound.role_code)}». Чтобы настройки не противоречили друг другу, права изменяются в разделе «Роли».</p><div class="actions"><button class="btn" data-x>Закрыть</button><button class="btn btn-primary" id="permGoRoles">Открыть роли</button></div>`);
       el.querySelector('#permGoRoles').onclick=()=>{closeModal(el);document.querySelector('.tab[data-tab="roles"]')?.click();};
       return;
     }
@@ -10336,7 +10347,7 @@ async function permissionsModal(u,onDone){
     state=normalizePermissions(state);
   }catch(e){}
   const groups=[...new Set(PERMISSION_DEFS.map(x=>x.group))];
-  const el=modal(`<h3>Права доступа</h3><p>${escapeHtml(u.name)} · ${escapeHtml(u.login)}</p>
+  const el=modal(`<h3>Права доступа</h3><p>${escapeHtml(fadPersonName(u.login,u.name))} · ${escapeHtml(u.login)}</p>
     <div class="perm-presets"><button class="btn btn-sm" data-preset="basic">Обычный</button><button class="btn btn-sm" data-preset="senior">Старший</button><button class="btn btn-sm btn-primary" data-preset="full">Полный доступ</button></div>
     <div class="perm-groups">${groups.map(g=>`<div class="perm-group"><div class="perm-group-title">${escapeHtml(g)}</div>${PERMISSION_DEFS.filter(x=>x.group===g).map(d=>`<label class="perm-row"><input type="checkbox" data-pkey="${d.key}" ${state[d.key]?'checked':''}/><span><b>${escapeHtml(d.label)}</b><small>${escapeHtml(d.desc)}</small></span></label>`).join('')}${g==='Отчёты'?`<div class="perm-days ${state['reports.view_all']?'':'hidden'}" id="permDaysBox"><div class="perm-days-title">Период доступа к отчётам</div><div class="perm-days-line"><span>Последние</span><input id="permDays" type="number" inputmode="numeric" min="0" max="3650" step="1" value="${state['reports.days']||0}"/><span>дней, включая сегодня</span></div><small>Например: 40 дней — доступны сегодняшний день и предыдущие 39 дней. Окно автоматически сдвигается каждый день. 0 дней — без ограничения.</small></div>`:''}</div>`).join('')}</div>
     ${session.role==='owner'&&u.login==='a.gorovaya'?`<div class="perm-group" id="permAdminPayrollEditGroup"><div class="perm-group-title">Зарплата администраторов</div><label class="perm-row"><input type="checkbox" id="permAdminPayrollEdit" disabled/><span><b>Разрешить редактирование зарплат</b><small>Просмотр расчётов всех администраторов останется доступен. При отключении нельзя менять смены, премии, штрафы, качество и отметки выдачи. Настройка сохраняется сразу.</small></span></label><small id="permAdminPayrollEditStatus" role="status">Загружаем право…</small></div>`:''}
@@ -10417,7 +10428,7 @@ function addAdminModal(onDone){
   };
 }
 function resetPwModal(u,onDone){
-  const el=modal(`<h3>Сбросить пароль</h3><p>${escapeHtml(u.name)} · логин ${escapeHtml(u.login)}</p>
+  const el=modal(`<h3>Сбросить пароль</h3><p>${escapeHtml(fadPersonName(u.login,u.name))} · логин ${escapeHtml(u.login)}</p>
     <div class="field"><div class="lbl">Новый пароль</div><input id="r-pass" placeholder="минимум 4 символа"/></div>
     <div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" id="r-ok">Сохранить</button></div>`);
   el.querySelector('#r-ok').onclick=async()=>{
@@ -10448,8 +10459,8 @@ function shiftHours(s,e){let d=toMin(e)-toMin(s);if(d<0)d+=1440;return d/60;}
 function fmtH(x){return (Math.round(x*10)/10).toString().replace('.',',');}
 function uid(){return Math.random().toString(36).slice(2,9);}
 function teamById(id){return TEAM.find(a=>a.login===id);}
-function adminName(id){const a=teamById(id);return a?shortName(a.name):id;}
-function coffeeName(login){const a=teamById(login);if(a)return shortName(a.name);const r=COFFEE_ROSTER.find(x=>x.login===login);if(r)return shortName(r.name);return login;}
+function adminName(id){const a=teamById(id);return fadPersonName(id,a?.name,true);}
+function coffeeName(login){const a=teamById(login),r=COFFEE_ROSTER.find(x=>x.login===login);return fadPersonName(login,a?.name||r?.name,true);}
 function initials(name){return String(name||'').trim().split(/\s+/).map(w=>w[0]||'').join('').slice(0,2).toUpperCase();}
 function absName(t){return t==='otpusk'?'Отпуск':t==='bol'?'Больничный':'Отгул';}
 function homeAdmins(sid){return TEAM.filter(a=>a.home===sid);}
@@ -10532,8 +10543,14 @@ let EQUIPMENT_VIEW='graph', EQUIPMENT_DATA=null, EQUIPMENT_BUSY=false,
  EQUIPMENT_PICK=null, EQUIPMENT_STATUS='';
 const equipToday=()=>{const p=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Minsk',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()).filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));return `${p.year}-${p.month}-${p.day}`;};
 const equipPrice=n=>Number(n||0).toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' BYN';
-const equipPerson=login=>TEAM.find(p=>p.login===login)||(login===session?.login?{login,name:session.name}:null);
-const equipShort=login=>escapeHtml(shortName(equipPerson(login)?.name||login||'—'));
+const equipPerson=login=>{
+  const user=TEAM.find(p=>p.login===login);
+  if(user)return {...user,name:fadPersonName(login,user.name)};
+  if(login===session?.login||FAD_DISPLAY_BY_LOGIN[String(login||'').toLowerCase()])
+    return {login,name:fadPersonName(login,login===session?.login?session.name:'')};
+  return null;
+};
+const equipShort=login=>escapeHtml(fadPersonName(login,equipPerson(login)?.name,true));
 const equipTasks=()=>EQUIPMENT_DATA?.tasks||[];
 const equipTask=date=>equipTasks().find(t=>t.date===date)||null;
 const equipRate=()=>Number(EQUIPMENT_DATA?.rate||0);
@@ -10548,9 +10565,9 @@ function equipShift(login,iso){
 function equipMonthRoster(){
  const set=new Map(),n=schDaysIn(SCH.y,SCH.m);
  for(const p of TEAM){if(!p?.login)continue;
-   for(let d=1;d<=n;d++)if(equipShift(p.login,schIso(SCH.y,SCH.m,d))){set.set(p.login,{login:p.login,name:p.name,manual:false});break;}}
- for(const p of EQUIPMENT_DATA?.manual||[]){const a=equipPerson(p.login);set.set(p.login,{login:p.login,name:a?.name||p.login,manual:true});}
- for(const t of equipTasks())if(t.login&&!set.has(t.login)){const a=equipPerson(t.login);set.set(t.login,{login:t.login,name:a?.name||t.login,historical:true,manual:equipManual(t.login)});}
+   for(let d=1;d<=n;d++)if(equipShift(p.login,schIso(SCH.y,SCH.m,d))){set.set(p.login,{login:p.login,name:fadPersonName(p.login,p.name),manual:false});break;}}
+ for(const p of EQUIPMENT_DATA?.manual||[]){const a=equipPerson(p.login);set.set(p.login,{login:p.login,name:fadPersonName(p.login,a?.name),manual:true});}
+ for(const t of equipTasks())if(t.login&&!set.has(t.login)){const a=equipPerson(t.login);set.set(t.login,{login:t.login,name:fadPersonName(t.login,a?.name),historical:true,manual:equipManual(t.login)});}
  return [...set.values()].sort((a,b)=>String(a.name).localeCompare(String(b.name),'ru'));
 }
 const equipCanAssign=(login,iso)=>equipManual(login)||equipShift(login,iso);
@@ -10577,7 +10594,7 @@ function equipGrid(roster,n,today){
  let html=`<div class="dl-grid-row do-grid-row do-head" style="grid-template-columns:${tmpl}"><div class="dl-grid-label">Исполнитель</div>${Array.from({length:n},(_,i)=>{const date=schIso(SCH.y,SCH.m,i+1),weekend=[0,6].includes(schDow(SCH.y,SCH.m,i+1));return `<span class="dl-grid-day${date===today?' today':''}${weekend?' weekend':''}">${i+1}</span>`;}).join('')}<span class="dl-grid-day">Выполнено</span><span class="dl-grid-day">BYN</span></div>`;
  for(const p of roster){
   const total=(EQUIPMENT_DATA?.totals||[]).find(x=>x.login===p.login)||{amount:0,count:0};
-  html+=`<div class="dl-grid-row do-grid-row" style="grid-template-columns:${tmpl}"><div class="dl-grid-label" title="${escapeHtml(p.name)}">${escapeHtml(shortName(p.name))}</div>`;
+  html+=`<div class="dl-grid-row do-grid-row" style="grid-template-columns:${tmpl}"><div class="dl-grid-label" title="${escapeHtml(p.name)}">${escapeHtml(fadPersonName(p.login,p.name,true))}</div>`;
   for(let d=1;d<=n;d++){
    const date=schIso(SCH.y,SCH.m,d),shift=equipShift(p.login,date),t=equipTask(date),mine=t?.login===p.login,
     enabled=shift||equipManual(p.login),locked=t?.done&&!mine,
@@ -10601,7 +10618,7 @@ function equipDrawGraph(el,host){
  <div class="dl-legend"><span><i class="dl-leg-shift"></i>смена</span><span><i class="dl-leg-assign"></i>назначено</span><span><i class="dl-leg-done"></i>выполнено</span><span><i class="dl-leg-late"></i>не отмечено</span><span><i class="dl-leg-free"></i>нет смены</span></div>
  <div class="dl-scroll" id="doGrid">${equipGrid(roster,n,today)}</div>
  <div class="do-status" id="doStatus" role="status">${escapeHtml(EQUIPMENT_STATUS||(equipOwner()?'Выберите ячейку в графике. Выполненное задание нельзя передать другому сотруднику.':'Режим просмотра: назначения и выплаты доступны без изменения данных.'))}</div></div>
- <div class="do-below"><div class="dl-section"><div class="dl-flex-head"><b>Кто выполняет</b>${equipOwner()?'<button type="button" class="btn btn-sm" data-do-add>+ Добавить сотрудника</button>':''}</div><div class="dl-chips">${roster.map(p=>`<span class="dl-chip"><b>${escapeHtml(shortName(p.name))}</b><small>${equipIsOwnerPerson(p.login)?'Руководитель · без доплаты':p.manual?'Добавлен вручную':'Машерова · по смене'}</small>${p.manual&&equipOwner()?`<button type="button" data-do-remove="${escapeHtml(p.login)}" aria-label="Убрать ${escapeHtml(p.name)}">×</button>`:''}</span>`).join('')||'<span class="eq-hint">Нет сотрудников в графике.</span>'}</div></div>
+ <div class="do-below"><div class="dl-section"><div class="dl-flex-head"><b>Кто выполняет</b>${equipOwner()?'<button type="button" class="btn btn-sm" data-do-add>+ Добавить сотрудника</button>':''}</div><div class="dl-chips">${roster.map(p=>`<span class="dl-chip"><b>${escapeHtml(fadPersonName(p.login,p.name,true))}</b><small>${equipIsOwnerPerson(p.login)?'Руководитель · без доплаты':p.manual?'Добавлен вручную':'Машерова · по смене'}</small>${p.manual&&equipOwner()?`<button type="button" data-do-remove="${escapeHtml(p.login)}" aria-label="Убрать ${escapeHtml(p.name)}">×</button>`:''}</span>`).join('')||'<span class="eq-hint">Нет сотрудников в графике.</span>'}</div></div>
  <div class="dl-section"><b>Сегодня · ${new Date(today+'T12:00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'long',timeZone:'Europe/Minsk'})}</b>${thisMonth?`<div class="dl-today-row"><span><b>Обслуживание оборудования</b><small>${current?equipShort(current.login):'Исполнителя назначает руководитель'}</small></span><span class="dl-status ${current?.done?'done':current?'assigned':'missing'}">${current?.done?'✓ Выполнено':current?'Назначено':'Нет исполнителя'}</span>${current&&!current.done&&(equipOwner()||current.login===session.login)?`<button type="button" class="btn btn-sm" data-do-complete ${rate<=0?'disabled title="Сначала установите ставку"':''}>Выполнено</button>`:''}</div>`:'<p class="eq-hint">Для текущих назначений откройте этот месяц.</p>'}</div></div>
  <div class="dl-section dl-rules"><b>Правила графика</b><p>Одно задание и один исполнитель на день. Назначает руководитель или сотрудник с правом управления. Администратору — только на смену Машерова; добавленному вручную — любой день. Исполнитель отмечает только своё сегодняшнее задание, управляющий может отметить прошедший день. Будущую дату выполнить нельзя. При ставке 0 отметка заблокирована. Руководителю доплата не начисляется. Ставка сохраняется при выполнении, прежние начисления не пересчитываются.</p></div>`;
  host.querySelectorAll('[data-eq-day]').forEach(b=>b.onclick=()=>void equipQuickClick(el,b.dataset.eqDay,b.dataset.eqLogin));
@@ -10638,9 +10655,9 @@ async function equipComplete(el,date){
 function equipAddModal(el,roster){
  if(!equipOwner())return;
  const included=new Set(roster.map(p=>p.login));
- const choices=[...TEAM.filter(p=>p.login&&!included.has(p.login)),...(included.has(session.login)?[]:[{login:session.login,name:session.name,home:session.role==='owner'?'Руководитель':'Администратор'}])].filter(p=>p.login).sort((a,b)=>String(a.name).localeCompare(String(b.name),'ru'));
+ const choices=[...TEAM.filter(p=>p.login&&!included.has(p.login)),...(included.has(session.login)?[]:[{login:session.login,name:fadPersonName(session.login,session.name),home:session.role==='owner'?'Руководитель':'Администратор'}])].filter(p=>p.login).sort((a,b)=>String(fadPersonName(a.login,a.name)).localeCompare(String(fadPersonName(b.login,b.name)),'ru'));
  if(!choices.length){toast('Все сотрудники уже есть в графике');return;}
- const box=modal(`<h3>Добавить сотрудника</h3><p class="eq-hint">Добавленные вручную могут работать без смены на Машерова.</p><div class="dl-add-list">${choices.map(p=>`<button type="button" class="dl-add-choice" data-eq-pick="${escapeHtml(p.login)}">${escapeHtml(p.name)} <small>${equipIsOwnerPerson(p.login)?'Руководитель · без доплаты':escapeHtml(p.home||'Другая студия')}</small></button>`).join('')}</div><div class="actions"><button type="button" class="btn" data-x>Закрыть</button></div>`);
+ const box=modal(`<h3>Добавить сотрудника</h3><p class="eq-hint">Добавленные вручную могут работать без смены на Машерова.</p><div class="dl-add-list">${choices.map(p=>`<button type="button" class="dl-add-choice" data-eq-pick="${escapeHtml(p.login)}">${escapeHtml(fadPersonName(p.login,p.name))} <small>${equipIsOwnerPerson(p.login)?'Руководитель · без доплаты':escapeHtml(p.home||'Другая студия')}</small></button>`).join('')}</div><div class="actions"><button type="button" class="btn" data-x>Закрыть</button></div>`);
  box.querySelectorAll('[data-eq-pick]').forEach(b=>b.onclick=()=>{const login=b.dataset.eqPick;closeModal(box);void equipParticipantSave(el,login,true);});
 }
 async function equipParticipant(el,login,add){
@@ -10675,7 +10692,7 @@ function equipDrawMobile(el,host){
  const today=equipToday(),month=monthKey(SCH.y,SCH.m),isCurrent=month===today.slice(0,7),task=equipTask(today),mine=task?.login===session.login,rate=equipRate(),
  total=(EQUIPMENT_DATA?.totals||[]).find(t=>t.login===session.login)||{amount:0,count:0},dates=[];
  for(let i=1;i<=schDaysIn(SCH.y,SCH.m);i++){const d=schIso(SCH.y,SCH.m,i);if(d>today&&equipShift(session.login,d))dates.push(d);}
- host.innerHTML=`<div class="dl-mobile-head"><span>МАШЕРОВА, 11 · КОФЕ</span><h2>${isCurrent?'Сегодня, '+new Date(today+'T12:00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'long',timeZone:'Europe/Minsk'}):MON2[SCH.m]+' '+SCH.y}</h2><p>${escapeHtml(session.name)} · ${isCurrent&&equipShift(session.login,today)?'смена на Машерова':'график оборудования'}</p></div>
+ host.innerHTML=`<div class="dl-mobile-head"><span>МАШЕРОВА, 11 · КОФЕ</span><h2>${isCurrent?'Сегодня, '+new Date(today+'T12:00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'long',timeZone:'Europe/Minsk'}):MON2[SCH.m]+' '+SCH.y}</h2><p>${escapeHtml(fadPersonName(session.login,session.name))} · ${isCurrent&&equipShift(session.login,today)?'смена на Машерова':'график оборудования'}</p></div>
  ${isCurrent?`<div class="dl-mobile-list"><div class="dl-mobile-card"><div class="dl-mobile-row"><b>Обслуживание оборудования</b><span class="dl-status ${task?.done?'done':task?'assigned':'missing'}">${task?.done?'✓ Выполнено':task?(mine?'Назначено':'Другой исполнитель'):'Нет исполнителя'}</span></div><p>Кофемашина и торговый автомат</p><p>${task?(mine?'Назначено на вас':'Исполнитель: '+equipShort(task.login)):'Исполнителя назначает руководитель.'}</p>${mine&&!task.done?`<button type="button" class="btn btn-primary dl-mobile-done" data-do-mobile-complete ${rate<=0?'disabled title="Руководитель должен задать ставку"':''}>Выполнено</button>`:''}</div></div>`:'<p class="eq-hint">Откройте текущий месяц, чтобы отметить задание.</p>'}
  <div class="dl-mobile-card dl-mobile-summary"><div><b>Мои доплаты, ${MON2[SCH.m].toLowerCase()}</b><p>${Number(total.count||0)} заданий выполнено</p></div><strong>${equipPrice(total.amount)}</strong><p>Ближайшие смены на Машерова: ${dates.slice(0,3).length?dates.slice(0,3).map(d=>+d.slice(8)).join(', ')+' '+MON2[SCH.m].toLowerCase():'не назначены'}</p></div>`;
  const btn=host.querySelector('[data-do-mobile-complete]');if(btn)btn.onclick=()=>void equipComplete(el,today);
@@ -10700,7 +10717,7 @@ function equipDrawBonus(el,host){
  <div class="dl-section"><b>Начислено по администраторам</b><p class="eq-hint">Доплата автоматически включается в зарплату администраторов отдельно от бонусов.</p><div class="dl-table-wrap"><table class="dl-table"><thead><tr><th>Администратор</th><th>Выполнено заданий</th><th>Ставка</th><th>Доплата, BYN</th></tr></thead><tbody>${roster.map(p=>{const t=totals.find(x=>x.login===p.login)||{},owner=equipIsOwnerPerson(p.login);return `<tr><td>${escapeHtml(p.name)}${owner?' <small>· руководитель</small>':''}</td><td>${owner?'—':Number(t.count||0)}</td><td>${owner?'—':equipPrice(rate)}</td><td><b>${owner?'без доплаты':equipPrice(t.amount||0)}</b></td></tr>`;}).join('')||'<tr><td colspan="4">Нет сотрудников</td></tr>'}<tr class="dl-total"><td>Итого</td><td>${totals.reduce((s,x)=>s+Number(x.count||0),0)}</td><td>—</td><td><b>${equipPrice(allSum)}</b></td></tr></tbody></table></div></div>
  <div class="dl-section"><b>Журнал работ</b><p class="eq-hint">Дата, исполнитель, сохранённая ставка, кто отметил; пропуски и отметки задним числом.</p><div class="dl-table-wrap"><table class="dl-table"><thead><tr><th>Дата</th><th>Исполнитель</th><th>Ставка, BYN</th><th>Отметил(а)</th></tr></thead><tbody>${journal.map(t=>`<tr><td>${t.date.slice(8)}.${t.date.slice(5,7)}</td><td>${equipShort(t.login)}</td><td>${t.done?equipPrice(t.amount):'—'}</td><td>${t.done?equipShort(t.completed_by)+(t.backdated?' <span class="dl-badge">задним числом</span>':''):'<span class="dl-status missing">не отмечено</span>'}</td></tr>`).join('')||'<tr><td colspan="4">Заданий нет</td></tr>'}</tbody></table></div></div>
  ${old.length?`<div class="dl-section"><b>Исторические начисления до объединения</b><p class="eq-hint">Сохранены по исходным сотрудникам и суммам, без пересчёта и без удвоения в зарплате.</p><div class="dl-table-wrap"><table class="dl-table"><thead><tr><th>Дата</th><th>Исполнитель</th><th>Старый тип</th><th>Начислено</th></tr></thead><tbody>${old.map(t=>`<tr><td>${t.date.slice(8)}.${t.date.slice(5,7)}</td><td>${equipShort(t.login)}</td><td>${escapeHtml(({coffee_refill:'Кофемашина · пополнение',coffee_service:'Кофемашина · обслуживание',vending_refill:'Автомат · пополнение'})[t.type]||t.type)}</td><td>${equipPrice(t.amount)}</td></tr>`).join('')}</tbody></table></div></div>`:''}
- ${merges.length?`<details class="dl-section"><summary><b>Журнал объединения старых назначений</b></summary><p class="eq-hint">Старые задания не удалены. Для каждой даты выбрана одна строка: сначала выполненная, затем с большей суммой.</p><div class="dl-hist">${merges.map(m=>`<div><small>${escapeHtml(String(m.date))} · ${escapeHtml(m.old_type||'')} · ${escapeHtml(m.login||'—')}</small><b>${m.kept?'оставлено':'в архиве'}</b></div>`).join('')}</div></details>`:''}
+ ${merges.length?`<details class="dl-section"><summary><b>Журнал объединения старых назначений</b></summary><p class="eq-hint">Старые задания не удалены. Для каждой даты выбрана одна строка: сначала выполненная, затем с большей суммой.</p><div class="dl-hist">${merges.map(m=>`<div><small>${escapeHtml(String(m.date))} · ${escapeHtml(m.old_type||'')} · ${escapeHtml(fadPersonName(m.login))}</small><b>${m.kept?'оставлено':'в архиве'}</b></div>`).join('')}</div></details>`:''}
  <p class="eq-hint">Доплата не влияет на бонус филиала, качество и расчёт премии старшего администратора.</p>`;
  const open=host.querySelector('[data-do-overdue]');if(open)open.onclick=()=>{const t=overdue[0];EQUIPMENT_VIEW='graph';EQUIPMENT_PICK={date:t.date,login:t.login};el.querySelectorAll('[data-eq-view]').forEach(b=>{b.classList.toggle('on',b.dataset.eqView==='graph');b.setAttribute('aria-selected',String(b.dataset.eqView==='graph'));});equipDraw(el);};
  const saveRate=host.querySelector('[data-do-save-rate]');if(saveRate)saveRate.onclick=async()=>{
