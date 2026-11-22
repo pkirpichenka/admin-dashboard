@@ -3993,7 +3993,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '22.11.2026-eb'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '22.11.2026-ed'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -5359,7 +5359,7 @@ async function renderBalance(body){
     return `<div class="fb-chips">${texts.map(x=>`<span class="fb-badge">${esc(x)}</span>`).join('')}</div>`;}
   function incomes(){const income=snap().income||[],total=income.reduce((a,x)=>a+z(x.amount),0),byKind=new Map(),byUnit=new Map(),byPay=new Map(),byEntity=new Map();
     for(const x of income){const k=x.income_type||'other';byKind.set(k,z(byKind.get(k))+z(x.amount));byUnit.set(x.unit,z(byUnit.get(x.unit))+z(x.amount));const p=x.payment_method||'unknown';byPay.set(p,z(byPay.get(p))+z(x.amount));if(x.direction==='studio'){const e=x.legal_entity||'unknown';byEntity.set(e,z(byEntity.get(e))+z(x.amount));}}
-    const kindNames={group:'Групповые занятия и абонементы',individual:'Индивидуальные',rent:'Арендные абонементы',single:'Разовые занятия',other:'Другие оплаты'};
+    const kindNames={group:'Групповые занятия и абонементы',individual:'Индивидуальные',rent:'Арендные абонементы',single:'Разовые занятия',prolong:'Продление абонемента',goods:'Товары в студии',account_topup:'Пополнения счёта',other:'Другие оплаты'};
     const kinds=[...byKind].sort((a,b)=>b[1]-a[1]);const units=[...byUnit].sort((a,b)=>b[1]-a[1]);
     const colors=['#b5792a','#d9aa58','#34835e','#96bba5','#7e9da8'];
     const bars=kinds.map(([k,v],i)=>`<span style="flex:${Math.max(.001,v)};background:${colors[i%colors.length]}"></span>`).join('');
@@ -5472,16 +5472,17 @@ async function renderBalance(body){
       const data=await response.json();
       if(!response.ok||!data.ok)throw new Error(String(data.error||'Диагностика не удалась'));
       const names={tolbuhina:'Толбухина',masherova:'Машерова',kuibysheva:'Куйбышева'};
-      const entries=(data.types||[]).map(t=>`<tr><td>${esc(t.code)}</td><td class="fb-left">${esc(t.title||'Без описания')}</td><td>${t.count}</td><td>${fmt(t.signed)}</td><td>${t.linked}</td><td>${fmt(t.linked_amount)}</td><td>${t.selected?'В импорте':'Не подтверждён'}</td></tr>`).join('');
+      const cls=t=>t.classification==='non_revenue'?'Не выручка':t.classification==='refund'?'Возврат':t.classification==='sale'?'Продажа':t.classification==='topup'?'Пополнение счёта':t.selected?'Подтверждённый код':'Нужна проверка';
+      const entries=(data.types||[]).map(t=>`<tr><td>${esc(t.code)}</td><td class="fb-left">${esc(t.title||'Без описания')}</td><td>${t.count}</td><td>${fmt(t.signed)}</td><td>${t.linked}</td><td>${fmt(t.linked_amount)}</td><td>${esc(cls(t))}</td></tr>`).join('');
       const reasons=(data.exclusions||[]).map(t=>`<div class="fb-row"><span>${esc(t.reason)}</span><strong>${t.count} · ${fmt(t.signed)} BYN</strong></div>`).join('');
-      const summary=`ImpulseCRM · ${state.period}\nВсего: ${data.total}\nВ импорте: ${data.accepted} · ${data.accepted_amount} BYN\nНеподтверждённых со связанной продажей: ${data.unverified_sale_linked_count} · ${data.unverified_sale_linked_amount} BYN\n`+
-        (data.types||[]).map(t=>`${t.code} | ${t.title} | ${t.count} | ${t.signed} BYN | со связью ${t.linked}/${t.linked_amount} | ${t.selected?'учитывается':'не подтверждён'}`).join('\n');
+      const summary=`ImpulseCRM · ${state.period}\nВсего: ${data.total}\nВ импорте: ${data.accepted} · ${data.accepted_amount} BYN\nНеизвестных типов со связанной продажей: ${data.unverified_sale_linked_count} · ${data.unverified_sale_linked_amount} BYN\n`+
+        (data.types||[]).map(t=>`${t.code} | ${t.title} | ${t.count} | ${t.signed} BYN | со связью ${t.linked}/${t.linked_amount} | ${cls(t)}`).join('\n');
       const overlay=modal(`<div class="fb-expense-editor" style="width:100%;max-width:100%;max-height:85vh;overflow:auto"><h3>Сверка выручки ImpulseCRM · ${esc(displayPeriod(state.period))}</h3>
-        <p class="fb-muted">Все типы депозитных операций, прочитанные через API. Число записей не означает полноту денежных поступлений. Проверка не изменяет данные.</p>
-        <div class="fb-chips">${badge('Операций: '+data.total)}${badge('Принято: '+data.accepted+' · '+fmt(data.accepted_amount)+' BYN','good')}${badge('Другие типы со связью: '+data.unverified_sale_linked_count,'warn')}</div>
-        <div class="fb-note">Важное: операции разных типов нельзя автоматически сложить — возможен двойной учёт пополнения баланса и оплаты. Сравни эту сводку с отчётом поступлений ImpulseCRM за такой же период.</div>
+        <p class="fb-muted">Продажи (11), пополнения (13), возвраты (15) и прочие движения прочитаны через API. Число записей не подтверждает полноту поступлений. Проверка не изменяет данные.</p>
+        <div class="fb-chips">${badge('Операций: '+data.total)}${badge('Принято: '+data.accepted+' · '+fmt(data.accepted_amount)+' BYN','good')}${badge('Неизвестные типы со связью: '+data.unverified_sale_linked_count,'warn')}</div>
+        <div class="fb-note">Важное: по решению руководителя пополнения счёта (код 13) добавляются к продажам (код 11), а возвраты (15) вычитаются. При последующей оплате из клиентского депозита возможно двойное отражение одних денег. Списания (21), бонусные баллы (31) и выплаты сотрудникам дополнительно не суммируются. Сверь итог с финансовым отчётом ImpulseCRM.</div>
         <div class="fb-inline" style="flex-wrap:wrap;margin:12px 0">${Object.entries(data.by_branch||{}).map(([k,v])=>badge((names[k]||k)+': '+fmt(v)+' BYN')).join('')}</div>
-        <div class="fb-table-scroll"><table class="fb-table"><thead><tr><th>Код</th><th>Название типа</th><th>Всего</th><th>Со знаком, BYN</th><th>С продажей</th><th>Сумма связей, BYN</th><th>Учитывается</th></tr></thead><tbody>${entries||'<tr><td colspan="7">Нет данных</td></tr>'}</tbody></table></div>
+        <div class="fb-table-scroll"><table class="fb-table"><thead><tr><th>Код</th><th>Название типа</th><th>Всего</th><th>Со знаком, BYN</th><th>С продажей</th><th>Сумма связей, BYN</th><th>Классификация</th></tr></thead><tbody>${entries||'<tr><td colspan="7">Нет данных</td></tr>'}</tbody></table></div>
         <details style="margin-top:14px"><summary>Причины исключений</summary>${reasons||'<p>Нет исключений</p>'}</details>
         <p class="fb-muted" style="margin:12px 0">Подтверждённые дополнительные коды можно добавить серверным секретом IMPULSE_ADDITIONAL_PAYMENT_TYPES. Не делай это без сверки с отчётом CRM.</p>
         <div class="fb-actions"><button type="button" class="fb-action" id="fb-copy-audit">Скопировать сводку</button><button type="button" class="fb-action primary" data-x>Закрыть</button></div></div>`);
