@@ -3973,6 +3973,17 @@ html[data-theme=dark] #schedRoot .do-grid-cell.late{background:#522d2e;border-co
 @media(max-width:1100px){.ct-root.ct-compact .ct-team-worklist .ct-row{grid-template-columns:21px minmax(145px,1fr) minmax(120px,1fr) minmax(120px,170px) 24px}.ct-root.ct-compact .ct-team-worklist .ct-row .ct-chips,.ct-root.ct-compact .ct-team-worklist .ct-task-short{display:none}}
 @media(max-width:700px){.ct-root.ct-compact .ct-team-worklist .ct-row{grid-template-columns:21px minmax(0,1fr) 24px;gap:7px}.ct-root.ct-compact .ct-team-worklist .ct-row>.ct-row-actions{grid-column:2/3;grid-row:2;display:flex;gap:5px;flex-wrap:wrap}.ct-root.ct-compact .ct-team-worklist .ct-row>.ct-expand-btn{grid-column:3;grid-row:1}.ct-root.ct-compact .ct-team-worklist .ct-row-done{grid-template-columns:21px minmax(0,1fr) 24px}.ct-root.ct-compact .ct-team-worklist .ct-row-done>.ct-chip,.ct-root.ct-compact .ct-team-worklist .ct-row-done-info{grid-column:2;min-width:0}.ct-root.ct-compact .ct-team-worklist .ct-expanded{padding-left:11px}}
 .overlay>.modal.fb-audit-modal{max-width:min(980px,calc(100vw - 24px));width:100%}
+/* FAD EE: correct expense dialog width, no page-level horizontal overflow. */
+.overlay>.modal:has(.fb-expense-editor){box-sizing:border-box;width:min(800px,calc(100vw - 24px));max-width:min(800px,calc(100vw - 24px));min-width:0;overflow-x:hidden;padding:clamp(14px,2.5vw,25px)}
+.overlay>.modal .fb-expense-editor{box-sizing:border-box;min-width:0!important;max-width:100%!important;width:100%!important;max-height:none!important;overflow:visible!important}
+.fb-expense-editor :is(input,select,button,div,label){box-sizing:border-box;min-width:0;max-width:100%}
+.fb-expense-editor .fb-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.fb-expense-editor .fb-fiscal-card{border:1px solid #dce5dd;border-radius:11px;padding:12px;min-width:0}
+.fb-expense-editor .fb-fiscal-fields{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) minmax(0,1fr);gap:8px}
+.fb-expense-editor .fb-full{width:100%;white-space:normal}
+.fb-expense-editor .fb-paybox-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(140px,.7fr) auto;gap:10px;align-items:center}
+@media(max-width:600px){.fb-expense-editor .fb-form-grid,.fb-expense-editor .fb-fiscal-fields,.fb-expense-editor .fb-paybox-row{grid-template-columns:minmax(0,1fr)}.fb-expense-editor .fb-actions{justify-content:stretch}.fb-expense-editor .fb-actions button{flex:1}}
+
 </style>
 
 <div id="root"></div>
@@ -3993,7 +4004,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '22.11.2026-ed'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '22.11.2026-ee'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -5348,7 +5359,7 @@ async function renderBalance(body){
     return `<div class="fb-note error"><strong>Данные баланса неполные.</strong> Не используйте промежуточную прибыль как окончательный финансовый результат.<div style="margin-top:6px">${list.map(x=>`<span style="display:inline-block;margin-right:14px">• ${esc(String(x).replace('Полная выручка Impulse не загружена','Полнота выручки ImpulseCRM ещё не сверена; нажмите «Сверить выручку Impulse»'))}</span>`).join('')}</div><div style="margin-top:8px"><button class="fb-action" type="button" data-cmd="expense">Заполнить расходы / настройки</button></div></div>`;}
   function kpis(){const m=stats(), profit=ready()?rub(m.profit):'—', be=ready()?rub(m.break_even):'—';
     const cards=[['Выручка',rub(m.revenue),`Средняя: ${m.elapsed?rub(z(m.revenue)/m.elapsed)+' в день':'нет данных'} · К прошлому месяцу: ${snap().previous_revenue!=null&&snap().previous_source_complete?pc(snap().previous_revenue?z(m.revenue)/z(snap().previous_revenue)-1:null):'нет полной истории'}`],
-      ['Расходы',ready()?rub(m.costs):'—',`Учтено: постоянные ${rub(m.fixed_period)}, переменные ${rub(m.variable_period)}`],
+      ['Расходы',rub(m.costs),`Сохранённые и импортированные · ${ready()?'расчёт полный':'предварительно, источники неполные'}. Постоянные ${rub(m.fixed_period)}, переменные ${rub(m.variable_period)}`],
       ['Прибыль за период',profit,`Рентабельность ${ready()?pc(m.profitability):'—'} · ${ready()?'расчёт подтверждён':'ожидается полнота источников'}`],
       ['Точка безубыточности',be,`За месяц · до точки ${ready()&&m.break_even!=null?rub(Math.max(0,m.break_even-z(m.revenue))):'недостаточно данных'}`]];
     return `<div class="fb-kpis">${cards.map((a,i)=>`<div class="fb-panel fb-kpi"><div class="fb-eyebrow">${a[0]}</div><div class="fb-big ${i===2&&ready()?(z(m.profit)<0?'fb-negative':'fb-positive'):''}">${a[1]}</div>${i===3&&ready()&&m.break_even?`<div class="fb-progress"><span style="width:${pctWidth(100*z(m.revenue)/m.break_even)}"></span></div>`:''}<div class="fb-muted">${a[2]}</div></div>`).join('')}</div>`;}
@@ -5359,14 +5370,14 @@ async function renderBalance(body){
     return `<div class="fb-chips">${texts.map(x=>`<span class="fb-badge">${esc(x)}</span>`).join('')}</div>`;}
   function incomes(){const income=snap().income||[],total=income.reduce((a,x)=>a+z(x.amount),0),byKind=new Map(),byUnit=new Map(),byPay=new Map(),byEntity=new Map();
     for(const x of income){const k=x.income_type||'other';byKind.set(k,z(byKind.get(k))+z(x.amount));byUnit.set(x.unit,z(byUnit.get(x.unit))+z(x.amount));const p=x.payment_method||'unknown';byPay.set(p,z(byPay.get(p))+z(x.amount));if(x.direction==='studio'){const e=x.legal_entity||'unknown';byEntity.set(e,z(byEntity.get(e))+z(x.amount));}}
-    const kindNames={group:'Групповые занятия и абонементы',individual:'Индивидуальные',rent:'Арендные абонементы',single:'Разовые занятия',prolong:'Продление абонемента',goods:'Товары в студии',account_topup:'Пополнения счёта',other:'Другие оплаты'};
+    const kindNames={group:'Групповые занятия и абонементы',individual:'Индивидуальные',rent_subscription:'Арендные абонементы',rent_single:'Разовая аренда',rent:'Аренда (старый импорт — обновите)',single:'Разовые занятия',prolong:'Продление абонемента',goods:'Товары в студии',account_topup:'Пополнения счёта',debt_payment:'Оплата долгов по группам',other:'Другие оплаты'};
     const kinds=[...byKind].sort((a,b)=>b[1]-a[1]);const units=[...byUnit].sort((a,b)=>b[1]-a[1]);
     const colors=['#b5792a','#d9aa58','#34835e','#96bba5','#7e9da8'];
     const bars=kinds.map(([k,v],i)=>`<span style="flex:${Math.max(.001,v)};background:${colors[i%colors.length]}"></span>`).join('');
     return section('Доходы','Структура только из подтверждённых поступлений',`<div class="fb-cols">
       <div class="fb-panel"><div class="fb-eyebrow">Из чего складывается выручка</div>${kinds.length?`<div class="fb-bars">${bars}</div>${kinds.map(([k,v],i)=>row(`<span class="fb-dot" style="background:${colors[i%colors.length]}"></span>${esc(kindNames[k]||k)} <span class="fb-source">Impulse</span>`,`${rub(v)} <span class="fb-muted">${total?pc(v/total):'—'}</span>`)).join('')}`:waiting('Нет загруженных доходов по выбранному направлению')}</div>
       <div class="fb-panel"><div class="fb-eyebrow">По филиалам</div>${units.length?units.map(([u,v])=>`<div style="margin:12px 0">${row(`<span class="fb-dot" style="background:${unitColor(u)}"></span>${esc(unitName(u))}`,rub(v))}<div class="fb-progress"><span style="width:${pctWidth(total?100*v/total:0)};background:${unitColor(u)}"></span></div></div>`).join(''):waiting('Поступления пока не загружены')}
-      ${`<div class="fb-eyebrow" style="margin-top:18px">Как платят клиенты студий</div>${byPay.size?[...byPay].map(([k,v])=>row(esc({'cash':'Наличные','card':'Картой','qr':'QR','unknown':'Не определено'}[k]||k),rub(v))).join(''):waiting('Нет разбивки по способам оплаты')}<div class="fb-eyebrow" style="margin-top:15px">Юрлица студий</div>${byEntity.size?[...byEntity].map(([k,v])=>row(esc({'ip':'ИП','ooo':'ООО','unknown':'Не определено'}[k.toLowerCase()]||k),rub(v))).join(''):waiting('Юрлицо не указано в источнике')}`}</div>
+      ${`<div class="fb-eyebrow" style="margin-top:18px">Как платят клиенты студий</div>${byPay.size?[...byPay].map(([k,v])=>row(esc({'cash':'Наличные','card':'Картой','qr':'QR','unknown':'Не определено в CRM'}[k]||k),rub(v))).join(''):waiting('Нет разбивки по способам оплаты')}<div class="fb-muted" style="margin-top:9px">Неизвестные способы оплаты можно уточнить по данным CRM и кассам в «Расходы и ставки». Без подтверждения метод не подменяется.</div><div class="fb-eyebrow" style="margin-top:15px">Юрлица студий</div>${byEntity.size?[...byEntity].map(([k,v])=>row(esc({'ip':'ИП Кирпиченко','ooo':'ООО Флексико','unknown':'Юрлицо не назначено'}[k.toLowerCase()]||k),rub(v))).join(''):waiting('Юрлицо не указано в источнике')}`}</div>
     </div>`);}
   function payroll(){
     const v=snap().trainer||{},a=snap().admin_salary||{},share=z(stats().revenue)>0?(z(v.gross)+z(a.gross))/z(stats().revenue):null;
@@ -5413,7 +5424,7 @@ async function renderBalance(body){
         ${`<div class="fb-eyebrow" style="margin-top:15px">Прогноз плана абонементов</div>${row('Прогноз продаж',m.forecast_sales==null?'—':fmt(m.forecast_sales,1))}${row('Порог 90%',m.plan_bonus_threshold||'—')}${row('Прогноз проходит порог?',m.plan_90_reached==null?'—':m.plan_90_reached?'Да':'Нет')}`}</div></div>`);}
   function units(){const all=snap().units||[],m=stats(),segmentData=snap().segments||[],items=['tolbuhina','masherova','kuibysheva'];
     const rev=Object.fromEntries(all.map(a=>[a.unit,z(a.revenue)]));const segments=Object.fromEntries(segmentData.map(a=>[a.unit,a]));
-    return section('Филиалы','Финансовые показатели трёх студий Flexico',`<div class="fb-panel"><div class="fb-table-scroll"><table class="fb-table"><thead><tr><th>Направление</th><th>Выручка</th><th>Прибыль</th><th>Рентабельность</th><th>Безубыточность</th><th>Прогноз выручки</th><th>Запас</th></tr></thead><tbody>${items.map(k=>{const seg=segments[k]||{};return `<tr><td class="fb-left"><span class="fb-dot" style="background:${unitColor(k)}"></span>${esc(unitName(k))}</td><td>${rub(rev[k]||0)}</td><td>${ready()?rub(seg.profit):'—'}</td><td>${ready()?pc(seg.profitability):'—'}</td><td>${ready()?rub(seg.break_even):'—'}</td><td>${seg.forecast_revenue==null?'—':rub(seg.forecast_revenue)}</td><td>${ready()?pc(seg.safety):'—'}</td></tr>`;}).join('')}</tbody>${items.length>1?`<tfoot><tr><td class="fb-left">Итого</td><td>${rub(m.revenue)}</td><td>${ready()?rub(m.profit):'—'}</td><td>${ready()?pc(m.profitability):'—'}</td><td>${ready()?rub(m.break_even):'—'}</td><td>${rub(m.forecast_revenue)}</td><td>${ready()?pc(m.safety):'—'}</td></tr></tfoot>`:''}</table></div><div class="fb-muted" style="margin-top:10px">Общие расходы распределяются по доле выручки направления, аренда и закупки конкретного объекта — напрямую. Безубыточность каждой строки рассчитывается отдельно и не суммируется арифметически.</div></div>`);}
+    return section('Филиалы','Финансовые показатели трёх студий Flexico',`<div class="fb-panel"><div class="fb-table-scroll"><table class="fb-table"><thead><tr><th>Направление</th><th>Выручка</th><th>Прибыль</th><th>Рентабельность</th><th>Безубыточность</th><th>Прогноз выручки</th><th>Запас</th></tr></thead><tbody>${items.map(k=>{const seg=segments[k]||{};return `<tr><td class="fb-left"><span class="fb-dot" style="background:${unitColor(k)}"></span>${esc(unitName(k))}</td><td>${rub(rev[k]||0)}</td><td>${ready()?rub(seg.profit):'—'}</td><td>${ready()?pc(seg.profitability):'—'}</td><td>${ready()?rub(seg.break_even):'—'}</td><td>${seg.forecast_revenue==null?'—':rub(seg.forecast_revenue)}</td><td>${ready()?pc(seg.safety):'—'}</td></tr>`;}).join('')}</tbody>${items.length>1?`<tfoot><tr><td class="fb-left">Итого</td><td>${rub(m.revenue)}</td><td>${ready()?rub(m.profit):'—'}</td><td>${ready()?pc(m.profitability):'—'}</td><td>${ready()?rub(m.break_even):'—'}</td><td>${rub(m.forecast_revenue)}</td><td>${ready()?pc(m.safety):'—'}</td></tr></tfoot>`:''}</table></div><div class="fb-muted" style="margin-top:10px">Общие расходы распределяются по доле выручки филиала, собственные расходы и налоги каждого филиала — напрямую. Безубыточность каждой строки рассчитывается отдельно и не суммируется арифметически.</div></div>`);}
   function render(){if(!current())return;
     shell.innerHTML=`${firstToolbar()}${providersLine()}<div class="fb-stack">${warningBlock()}${kpis()}${insights()}${incomes()}${payroll()}${expenses()}${breakEven()}${forecast()}${units()}</div>`;
     const per=el('fb-period');if(per)per.onchange=()=>{state.period=per.value;load();};
@@ -5472,19 +5483,19 @@ async function renderBalance(body){
       const data=await response.json();
       if(!response.ok||!data.ok)throw new Error(String(data.error||'Диагностика не удалась'));
       const names={tolbuhina:'Толбухина',masherova:'Машерова',kuibysheva:'Куйбышева'};
-      const cls=t=>t.classification==='non_revenue'?'Не выручка':t.classification==='refund'?'Возврат':t.classification==='sale'?'Продажа':t.classification==='topup'?'Пополнение счёта':t.selected?'Подтверждённый код':'Нужна проверка';
+      const cls=t=>t.classification==='non_revenue'?'Не выручка':t.classification==='refund'?'Возврат → расходы':t.classification==='expense'?'Расход':t.classification==='debt'?'Оплата долга → выручка':t.classification==='sale'?'Продажа':t.classification==='topup'?'Пополнение счёта':t.selected?'Подтверждённый код':'Нужна проверка';
       const entries=(data.types||[]).map(t=>`<tr><td>${esc(t.code)}</td><td class="fb-left">${esc(t.title||'Без описания')}</td><td>${t.count}</td><td>${fmt(t.signed)}</td><td>${t.linked}</td><td>${fmt(t.linked_amount)}</td><td>${esc(cls(t))}</td></tr>`).join('');
       const reasons=(data.exclusions||[]).map(t=>`<div class="fb-row"><span>${esc(t.reason)}</span><strong>${t.count} · ${fmt(t.signed)} BYN</strong></div>`).join('');
-      const summary=`ImpulseCRM · ${state.period}\nВсего: ${data.total}\nВ импорте: ${data.accepted} · ${data.accepted_amount} BYN\nНеизвестных типов со связанной продажей: ${data.unverified_sale_linked_count} · ${data.unverified_sale_linked_amount} BYN\n`+
+      const summary=`ImpulseCRM · ${state.period}\nВсего: ${data.total}\nВыручка: ${data.accepted} · ${data.accepted_amount} BYN\nРасходы: ${data.expenses_count} · ${data.expenses_amount} BYN\nНеизвестных типов со связанной продажей: ${data.unverified_sale_linked_count} · ${data.unverified_sale_linked_amount} BYN\n`+
         (data.types||[]).map(t=>`${t.code} | ${t.title} | ${t.count} | ${t.signed} BYN | со связью ${t.linked}/${t.linked_amount} | ${cls(t)}`).join('\n');
       const overlay=modal(`<div class="fb-expense-editor" style="width:100%;max-width:100%;max-height:85vh;overflow:auto"><h3>Сверка выручки ImpulseCRM · ${esc(displayPeriod(state.period))}</h3>
-        <p class="fb-muted">Продажи (11), пополнения (13), возвраты (15) и прочие движения прочитаны через API. Число записей не подтверждает полноту поступлений. Проверка не изменяет данные.</p>
-        <div class="fb-chips">${badge('Операций: '+data.total)}${badge('Принято: '+data.accepted+' · '+fmt(data.accepted_amount)+' BYN','good')}${badge('Неизвестные типы со связью: '+data.unverified_sale_linked_count,'warn')}</div>
-        <div class="fb-note">Важное: по решению руководителя пополнения счёта (код 13) добавляются к продажам (код 11), а возвраты (15) вычитаются. При последующей оплате из клиентского депозита возможно двойное отражение одних денег. Списания (21), бонусные баллы (31) и выплаты сотрудникам дополнительно не суммируются. Сверь итог с финансовым отчётом ImpulseCRM.</div>
+        <p class="fb-muted">Доходы (11, 12, 13) и расходы (15, 18, 19) прочитаны через API. Число записей не подтверждает полноту поступлений. Проверка не изменяет данные.</p>
+        <div class="fb-chips">${badge('Операций: '+data.total)}${badge('Выручка: '+data.accepted+' · '+fmt(data.accepted_amount)+' BYN','good')}${badge('Расходы: '+data.expenses_count+' · '+fmt(data.expenses_amount)+' BYN','warn')}${badge('Неизвестные типы со связью: '+data.unverified_sale_linked_count,'warn')}</div>
+        <div class="fb-note">Доходы: продажи 11, погашения долгов 12, пополнения 13. Расходы: возвраты 15, дополнительные 18, закупки 19. Возвраты не уменьшают выручку. Повторно не прибавляем расходы по зарплатам 16/17 — начисления уже есть в FAD. Внимание: пополнения 13 могут дублировать последующие оплаты 11; списания 21 и баллы 31 исключены. Сверь итог с финансовым отчётом ImpulseCRM.</div>
         <div class="fb-inline" style="flex-wrap:wrap;margin:12px 0">${Object.entries(data.by_branch||{}).map(([k,v])=>badge((names[k]||k)+': '+fmt(v)+' BYN')).join('')}</div>
         <div class="fb-table-scroll"><table class="fb-table"><thead><tr><th>Код</th><th>Название типа</th><th>Всего</th><th>Со знаком, BYN</th><th>С продажей</th><th>Сумма связей, BYN</th><th>Классификация</th></tr></thead><tbody>${entries||'<tr><td colspan="7">Нет данных</td></tr>'}</tbody></table></div>
         <details style="margin-top:14px"><summary>Причины исключений</summary>${reasons||'<p>Нет исключений</p>'}</details>
-        <p class="fb-muted" style="margin:12px 0">Подтверждённые дополнительные коды можно добавить серверным секретом IMPULSE_ADDITIONAL_PAYMENT_TYPES. Не делай это без сверки с отчётом CRM.</p>
+        <p class="fb-muted" style="margin:12px 0">Неподтверждённые способы оплаты: ${(data.unknown_payment_boxes||[]).map(b=>(names[b.unit]||b.unit)+' / касса '+(b.paybox_id||'без кода')+': '+fmt(b.amount)+' BYN').join('; ')||'нет'}. Данные не исправляем автоматически по догадке.</p><p class="fb-muted" style="margin:12px 0">Подтверждённые дополнительные коды можно добавить серверным секретом IMPULSE_ADDITIONAL_PAYMENT_TYPES. Не делай это без сверки с отчётом CRM.</p>
         <div class="fb-actions"><button type="button" class="fb-action" id="fb-copy-audit">Скопировать сводку</button><button type="button" class="fb-action primary" data-x>Закрыть</button></div></div>`);
       overlay.querySelector('.modal')?.classList.add('fb-audit-modal');
       const copy=overlay.querySelector('#fb-copy-audit');if(copy)copy.onclick=async()=>{
@@ -5494,26 +5505,63 @@ async function renderBalance(body){
     finally{state.busy=false;if(current())render();}
   }
   function editExpenses(){if(!current())return;
-    const data=state.data||{},existing=(data.manual_expenses||[]).filter(x=>x.direction==='studio'),cfg=data.config||{};
-    const overlay=modal(`<div class="fb-expense-editor" style="min-width:min(640px,calc(100vw - 70px))"><h3>Расходы · ${esc(displayPeriod(state.period))}</h3>
-      <p class="fb-muted">Постоянные суммы за полный месяц, переменные — фактические за период. Ставки налога и эквайринга также сохраняются помесячно. Налог/эквайринг рассчитываются автоматически — не дублируйте их ручными статьями.</p>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><label>Налог, %<input type="number" step="0.1" min="0" max="100" id="fb-tax" value="${cfg.tax_percent??6}"></label><label>Эквайринг, %<input type="number" step="0.01" min="0" max="100" id="fb-acq" value="${cfg.acquiring_percent??''}" placeholder="Не задан"></label></div>
-      <button type="button" class="btn btn-primary" id="fb-rates-save">Сохранить ставки налога и эквайринга</button>
-      <div style="max-height:220px;overflow:auto;border-top:1px solid #dde3dc;padding-top:8px"><strong>Сохранённые ручные статьи</strong>${existing.map(x=>`<div class="fb-row"><span>${esc(x.name)} · Студии · ${rub(x.amount)}</span><span><button class="btn" type="button" data-edit="${esc(x.id)}">Изменить</button> <button class="btn" data-remove="${esc(x.id)}" type="button">Удалить</button></span></div>`).join('')||'<p class="fb-muted">Статей пока нет.</p>'}</div>
-      <h3 id="fb-expense-caption">Новая статья</h3><input type="hidden" id="fb-expense-id">
-      <label>Название<input id="fb-name" maxlength="160" placeholder="Например, аренда Машерова"></label>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><label>Тип<select id="fb-kind"><option value="fixed">Постоянный</option><option value="variable">Переменный</option></select></label>
-      <input type="hidden" id="fb-dir" value="studio"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><label>Адрес / аппарат<select id="fb-unit"><option value="">Общая статья</option><option value="masherova">Машерова</option><option value="tolbuhina">Толбухина</option><option value="kuibysheva">Куйбышева</option></select></label>
-      <label>Сумма, BYN<input type="number" id="fb-amount" min="0" step="0.01" placeholder="0,00"></label></div>
-      <div class="fb-actions"><button type="button" class="btn" data-x>Закрыть</button><button type="button" class="btn btn-primary" id="fb-save-exp">Сохранить статью</button></div></div>`);
+    const data=state.data||{},existing=(data.manual_expenses||[]).filter(x=>x.direction==='studio');
+    const branches=['tolbuhina','masherova','kuibysheva'];
+    const fiscal=Object.fromEntries((data.fiscal_config||[]).map(x=>[x.unit,x]));
+    const fiscalForm=branches.map(u=>{const f=fiscal[u]||{};const entity=f.legal_entity||(u==='tolbuhina'?'ip':'ooo');
+      return `<div class="fb-fiscal-card" data-fiscal="${u}"><strong>${esc(unitName(u))}</strong>
+        <div class="fb-fiscal-fields" style="margin-top:9px">
+          <label>Юрлицо<select data-field="entity"><option value="ooo" ${entity==='ooo'?'selected':''}>ООО Флексико</option><option value="ip" ${entity==='ip'?'selected':''}>ИП Кирпиченко</option></select></label>
+          <label>Налог, %<input data-field="tax" type="number" min="0" max="100" step="0.001" placeholder="Укажите ставку" value="${f.tax_percent??''}" required></label>
+          <label>Эквайринг, %<input data-field="acq" type="number" min="0" max="100" step="0.001" placeholder="0, если нет" value="${f.acquiring_percent??''}" required></label>
+        </div></div>`;}).join('');
+    const boxRows=(data.paybox_summary||[]).filter(x=>x.mapped_method==='unknown');
+    const mapBox=boxRows.map((x,i)=>`<div class="fb-paybox-row" style="padding:9px 0;border-bottom:1px solid #e5ebe5" data-box-index="${i}">
+        <span><strong>${esc(unitName(x.unit))}</strong> · касса ${x.paybox_id?('#'+esc(x.paybox_id)):'не указана в CRM'}<br>
+        <span class="fb-muted">${x.records} опер. · ${rub(x.amount)}</span></span>
+        ${x.paybox_id?`<select class="fb-select" data-method><option value="unknown">Нужно уточнить</option><option value="cash">Наличные</option><option value="card">Картой</option><option value="qr">QR</option></select><button type="button" class="fb-action" data-map="${i}">Применить</button>`:'<span class="fb-muted">Невозможно установить по кассе — проверьте исходные операции</span>'}
+      </div>`).join('')||'<p class="fb-muted">Неподтверждённых способов оплаты с кассами нет.</p>';
+    const imported=(data.expenses||[]).filter(x=>x.source==='impulse'||x.source==='fad');
+    const importedList=imported.map(x=>`<div class="fb-row"><span class="fb-ellipsis" title="${esc(x.name)}">${esc(x.name)}${x.unit?' · '+esc(unitName(x.unit)):''} <span class="fb-source">${sourceLabel(x.source)}</span></span><strong>${rub(x.amount)}</strong></div>`).join('');
+    const overlay=modal(`<div class="fb-expense-editor"><h3>Расходы и ставки · ${esc(displayPeriod(state.period))}</h3>
+      <p class="fb-muted">Постоянные суммы — за месяц; переменные — фактические. Расходы ImpulseCRM (15/18/19) и начисленные зарплаты FAD подставляются автоматически. Глобальные 6% и 2% не применяются к разным юрлицам.</p>
+      <div class="fb-note"><strong>Юрлица и ставки по филиалам</strong><div class="fb-muted">Первоначальная привязка взята из карточек филиалов FAD. Проверьте юрлица и реальные ставки — без них налог не будет рассчитан.</div></div>
+      ${fiscalForm}
+      <button class="fb-action primary fb-full" type="button" id="fb-fiscal-save">Сохранить юрлица и ставки трёх студий</button>
+      <details><summary><strong>Нераспознанные способы оплаты</strong> · ${boxRows.length} касс/групп</summary><p class="fb-muted">Укажите тип только после проверки кассы в CRM; не определяйте оплату по предположению. Правило действует на операции с этой кассой в данном филиале.</p>${mapBox}</details>
+      <details open><summary><strong>Уже учтённые автоматически расходы</strong> · ${imported.length}</summary><div style="max-height:230px;overflow-y:auto">${importedList||'<p class="fb-muted">Данных об автоматических расходах пока нет; обновите импорт ImpulseCRM.</p>'}</div></details>
+      <div style="border-top:1px solid #dde3dc;padding-top:10px"><strong>Сохранённые ручные расходы</strong>${existing.map(x=>`<div class="fb-row"><span class="fb-ellipsis">${esc(x.name)} · ${esc(x.unit?unitName(x.unit):'Общие')} · ${rub(x.amount)}</span><span class="fb-inline"><button class="fb-action" type="button" data-edit="${esc(x.id)}">Изменить</button><button class="fb-action" data-remove="${esc(x.id)}" type="button">Удалить</button></span></div>`).join('')||'<p class="fb-muted">Ручных статей пока нет. Аренду помещения и прочие внешние платежи добавьте здесь, если их нет в ImpulseCRM/FAD.</p>'}</div>
+      <h3 id="fb-expense-caption">Новая статья расходов</h3><input type="hidden" id="fb-expense-id">
+      <label>Название<input id="fb-name" maxlength="160" placeholder="Например, аренда помещения · Машерова"></label>
+      <div class="fb-form-grid"><label>Тип<select id="fb-kind"><option value="fixed">Постоянный</option><option value="variable">Переменный</option></select></label>
+        <label>Филиал<select id="fb-unit"><option value="">Общая статья</option><option value="masherova">Машерова</option><option value="tolbuhina">Толбухина</option><option value="kuibysheva">Куйбышева</option></select></label></div>
+      <input type="hidden" id="fb-dir" value="studio">
+      <label>Сумма, BYN<input type="number" id="fb-amount" min="0" step="0.01" placeholder="0,00"></label>
+      <div class="fb-actions"><button type="button" class="fb-action" data-x>Закрыть</button><button type="button" class="fb-action primary" id="fb-save-exp">Сохранить статью</button></div>
+    </div>`);
     const q=id=>overlay.querySelector('#'+id);
+    const fiscalBtn=q('fb-fiscal-save');if(fiscalBtn)fiscalBtn.onclick=async()=>{
+      const rows=[];
+      for(const box of overlay.querySelectorAll('[data-fiscal]')){
+        const u=box.dataset.fiscal,t=box.querySelector('[data-field="tax"]'),a=box.querySelector('[data-field="acq"]');
+        if(t.value.trim()===''||a.value.trim()===''||![t.value,a.value].every(x=>Number.isFinite(Number(x))&&Number(x)>=0&&Number(x)<=100)){
+          toast('Укажите ставки налога и эквайринга для каждого филиала (0 допустим)',true);return;
+        }
+        rows.push({unit:u,legal_entity:box.querySelector('[data-field="entity"]').value,tax_percent:Number(t.value),acquiring_percent:Number(a.value)});
+      }
+      try{fiscalBtn.disabled=true;await rpc('app_balance_fiscal_save_ee',{p_token:TOKEN,p_period:state.period,p_rows:rows});toast('Настройки трёх филиалов сохранены');closeModal(overlay);await load();}
+      catch(e){toast(e.message||'Ошибка настроек',true);}finally{if(fiscalBtn.isConnected)fiscalBtn.disabled=false;}
+    };
+    overlay.querySelectorAll('[data-map]').forEach(b=>b.onclick=async()=>{
+      const x=boxRows[Number(b.dataset.map)],sel=b.closest('[data-box-index]')?.querySelector('[data-method]');
+      if(!x||!sel||sel.value==='unknown'){toast('Выберите подтверждённый способ оплаты',true);return;}
+      try{b.disabled=true;await rpc('app_balance_paybox_save_ee',{p_token:TOKEN,p_unit:x.unit,p_paybox_id:x.paybox_id,p_method:sel.value});toast('Способ оплаты кассы сохранён');closeModal(overlay);await load();}
+      catch(e){toast(e.message||'Ошибка сохранения кассы',true);}finally{if(b.isConnected)b.disabled=false;}
+    });
     overlay.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>{const x=existing.find(a=>String(a.id)===b.dataset.edit);if(!x)return;q('fb-expense-id').value=x.id;q('fb-name').value=x.name;q('fb-kind').value=x.kind;q('fb-dir').value='studio';q('fb-unit').value=x.unit||'';q('fb-amount').value=x.amount;q('fb-expense-caption').textContent='Редактирование статьи';});
     overlay.querySelectorAll('[data-remove]').forEach(b=>b.onclick=async()=>{if(!window.confirm('Удалить эту статью расходов?'))return;try{await rpc('app_balance_expense_delete',{p_token:TOKEN,p_id:b.dataset.remove});closeModal(overlay);await load();}catch(e){toast(e.message||'Ошибка удаления',true);}});
-    q('fb-dir').value='studio';
-    q('fb-rates-save').onclick=async()=>{try{const tax=Number(q('fb-tax').value),acq=q('fb-acq').value===''?null:Number(q('fb-acq').value);await rpc('app_balance_config_save',{p_token:TOKEN,p_period:state.period,p_tax:tax,p_acquiring:acq});toast('Ставки сохранены');closeModal(overlay);load();}catch(e){toast(e.message||'Ошибка',true);}};
     q('fb-save-exp').onclick=async()=>{const name=q('fb-name').value.trim(),amount=Number(q('fb-amount').value);if(!name||q('fb-amount').value===''||!Number.isFinite(amount)||amount<0){toast('Укажите название и сумму',true);return;}
-      try{await rpc('app_balance_expense_save',{p_token:TOKEN,p_period:state.period,p_item:{id:q('fb-expense-id').value||null,name,kind:q('fb-kind').value,direction:q('fb-dir').value,unit:q('fb-unit').value||null,amount}});toast('Расход сохранён');closeModal(overlay);load();}catch(e){toast(e.message||'Ошибка сохранения',true);}};
+      try{await rpc('app_balance_expense_save',{p_token:TOKEN,p_period:state.period,p_item:{id:q('fb-expense-id').value||null,name,kind:q('fb-kind').value,direction:'studio',unit:q('fb-unit').value||null,amount}});toast('Расход сохранён');closeModal(overlay);await load();}catch(e){toast(e.message||'Ошибка сохранения',true);}};
   }
   render();await load();
 }
