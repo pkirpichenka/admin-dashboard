@@ -4004,7 +4004,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '22.11.2026-ee'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '22.11.2026-ef'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -5316,6 +5316,13 @@ async function renderBalance(body){
   const snap=()=>state.data||{};
   const stats=()=>snap().math||{};
   const ready=()=>snap().stale===false;
+  // Calculate provisional cash-flow performance from saved data even when Impulse coverage
+  // is partial. Do not present missing fixed costs as a real 0 BYN break-even point.
+  const hasIncome=()=>Array.isArray(snap().income)&&snap().income.length>0;
+  const hasProfit=()=>hasIncome()&&stats().profit!=null;
+  const hasFixedArticles=()=>Array.isArray(snap().manual_expenses)&&snap().manual_expenses.some(x=>x.direction==='studio'&&x.kind==='fixed');
+  const hasBreakEven=()=>hasProfit()&&hasFixedArticles()&&stats().break_even!=null;
+  const provision=()=>ready()?'Подтверждено':'Предварительно · источники неполные';
   const waiting=txt=>`<div class="fb-placeholder">${esc(txt)}</div>`;
   const noValue=(n,meaning='')=>n==null?'—'+(meaning?' · '+meaning:''):rub(n);
   function badge(text,mode){return `<span class="fb-badge ${mode||''}">${esc(text)}</span>`;}
@@ -5357,34 +5364,36 @@ async function renderBalance(body){
   function warningBlock(){const list=snap().warnings||[];if(state.error)return `<div class="fb-note error">Ошибка загрузки: ${esc(state.error)}</div>`;
     if(!list.length)return '';
     return `<div class="fb-note error"><strong>Данные баланса неполные.</strong> Не используйте промежуточную прибыль как окончательный финансовый результат.<div style="margin-top:6px">${list.map(x=>`<span style="display:inline-block;margin-right:14px">• ${esc(String(x).replace('Полная выручка Impulse не загружена','Полнота выручки ImpulseCRM ещё не сверена; нажмите «Сверить выручку Impulse»'))}</span>`).join('')}</div><div style="margin-top:8px"><button class="fb-action" type="button" data-cmd="expense">Заполнить расходы / настройки</button></div></div>`;}
-  function kpis(){const m=stats(), profit=ready()?rub(m.profit):'—', be=ready()?rub(m.break_even):'—';
+  function kpis(){const m=stats(),profit=hasProfit()?rub(m.profit):'—',be=hasBreakEven()?rub(m.break_even):'—';
+    const profitNote=hasProfit()?`Рентабельность ${pc(m.profitability)} · ${provision()}`:'Сначала загрузите выручку ImpulseCRM';
+    const beNote=!hasFixedArticles()?'Внесите постоянные расходы в «Расходы и ставки»':m.break_even==null?'Недостаточная маржинальность для расчёта':`В месяц · до точки ${rub(Math.max(0,m.break_even-z(m.revenue)))} · ${provision()}`;
     const cards=[['Выручка',rub(m.revenue),`Средняя: ${m.elapsed?rub(z(m.revenue)/m.elapsed)+' в день':'нет данных'} · К прошлому месяцу: ${snap().previous_revenue!=null&&snap().previous_source_complete?pc(snap().previous_revenue?z(m.revenue)/z(snap().previous_revenue)-1:null):'нет полной истории'}`],
-      ['Расходы',rub(m.costs),`Сохранённые и импортированные · ${ready()?'расчёт полный':'предварительно, источники неполные'}. Постоянные ${rub(m.fixed_period)}, переменные ${rub(m.variable_period)}`],
-      ['Прибыль за период',profit,`Рентабельность ${ready()?pc(m.profitability):'—'} · ${ready()?'расчёт подтверждён':'ожидается полнота источников'}`],
-      ['Точка безубыточности',be,`За месяц · до точки ${ready()&&m.break_even!=null?rub(Math.max(0,m.break_even-z(m.revenue))):'недостаточно данных'}`]];
-    return `<div class="fb-kpis">${cards.map((a,i)=>`<div class="fb-panel fb-kpi"><div class="fb-eyebrow">${a[0]}</div><div class="fb-big ${i===2&&ready()?(z(m.profit)<0?'fb-negative':'fb-positive'):''}">${a[1]}</div>${i===3&&ready()&&m.break_even?`<div class="fb-progress"><span style="width:${pctWidth(100*z(m.revenue)/m.break_even)}"></span></div>`:''}<div class="fb-muted">${a[2]}</div></div>`).join('')}</div>`;}
+      ['Расходы',rub(m.costs),`Сохранённые и импортированные · ${provision()}. Постоянные ${rub(m.fixed_period)}, переменные ${rub(m.variable_period)}`],
+      ['Прибыль за период',profit,profitNote],
+      ['Точка безубыточности',be,beNote]];
+    return `<div class="fb-kpis">${cards.map((a,i)=>`<div class="fb-panel fb-kpi"><div class="fb-eyebrow">${a[0]}</div><div class="fb-big ${i===2&&hasProfit()?(z(m.profit)<0?'fb-negative':'fb-positive'):''}">${a[1]}</div>${i===3&&hasBreakEven()&&m.break_even>0?`<div class="fb-progress"><span style="width:${pctWidth(100*z(m.revenue)/m.break_even)}"></span></div>`:''}<div class="fb-muted">${a[2]}</div></div>`).join('')}</div>`;}
   function insights(){const m=stats(),trainer=snap().trainer||{};
-    const texts=[!ready()?'Безубыточность пока не рассчитана':m.break_even_status==='already'?'Безубыточность достигнута':m.break_even_status==='not_this_month'?'Безубыточность по прогнозу не достигается':m.break_even_status==='undefined'?'Безубыточность пока не рассчитана':m.break_even_status?'Безубыточность: '+m.break_even_status:'Точка безубыточности не определена',
-      `Тренеры: к выдаче ${rub(trainer.payable)} · авансы ${rub(trainer.advances)}`,
+    const beStatus=!hasFixedArticles()?'Безубыточность: нужно заполнить постоянные расходы':!hasBreakEven()?'Безубыточность пока не определена':m.break_even_status==='already'?'Безубыточность достигнута (предварительно)':m.break_even_status==='not_this_month'?'Безубыточность по прогнозу не достигается':m.break_even_status==='undefined'?'Безубыточность пока не рассчитана':m.break_even_status?'Безубыточность: '+m.break_even_status:'Безубыточность не определена';
+    const texts=[beStatus,`Тренеры: к выдаче ${rub(trainer.payable)} · авансы ${rub(trainer.advances)}`,
       `План абонементов: ${m.sold||0} / ${m.plan_target||'—'} · порог 90%: ${m.plan_bonus_threshold||'—'}`];
     return `<div class="fb-chips">${texts.map(x=>`<span class="fb-badge">${esc(x)}</span>`).join('')}</div>`;}
   function incomes(){const income=snap().income||[],total=income.reduce((a,x)=>a+z(x.amount),0),byKind=new Map(),byUnit=new Map(),byPay=new Map(),byEntity=new Map();
-    for(const x of income){const k=x.income_type||'other';byKind.set(k,z(byKind.get(k))+z(x.amount));byUnit.set(x.unit,z(byUnit.get(x.unit))+z(x.amount));const p=x.payment_method||'unknown';byPay.set(p,z(byPay.get(p))+z(x.amount));if(x.direction==='studio'){const e=x.legal_entity||'unknown';byEntity.set(e,z(byEntity.get(e))+z(x.amount));}}
-    const kindNames={group:'Групповые занятия и абонементы',individual:'Индивидуальные',rent_subscription:'Арендные абонементы',rent_single:'Разовая аренда',rent:'Аренда (старый импорт — обновите)',single:'Разовые занятия',prolong:'Продление абонемента',goods:'Товары в студии',account_topup:'Пополнения счёта',debt_payment:'Оплата долгов по группам',other:'Другие оплаты'};
+    for(const x of income){const k=x.income_type||'other';byKind.set(k,z(byKind.get(k))+z(x.amount));byUnit.set(x.unit,z(byUnit.get(x.unit))+z(x.amount));if(k!=='refund_gross'){const p=x.payment_method||'unknown';byPay.set(p,z(byPay.get(p))+z(x.amount));}if(x.direction==='studio'){const e=x.legal_entity||'unknown';byEntity.set(e,z(byEntity.get(e))+z(x.amount));}}
+    const kindNames={group:'Групповые занятия и абонементы',individual:'Индивидуальные',rent_subscription:'Арендные абонементы',rent_single:'Разовая аренда',rent:'Аренда (старый импорт — обновите)',single:'Разовые занятия',prolong:'Продление абонемента',goods:'Товары в студии',account_topup:'Пополнения счёта',debt_payment:'Оплата долгов по группам',refund_gross:'Возвраты (также в расходах)',other:'Другие оплаты'};
     const kinds=[...byKind].sort((a,b)=>b[1]-a[1]);const units=[...byUnit].sort((a,b)=>b[1]-a[1]);
     const colors=['#b5792a','#d9aa58','#34835e','#96bba5','#7e9da8'];
     const bars=kinds.map(([k,v],i)=>`<span style="flex:${Math.max(.001,v)};background:${colors[i%colors.length]}"></span>`).join('');
     return section('Доходы','Структура только из подтверждённых поступлений',`<div class="fb-cols">
       <div class="fb-panel"><div class="fb-eyebrow">Из чего складывается выручка</div>${kinds.length?`<div class="fb-bars">${bars}</div>${kinds.map(([k,v],i)=>row(`<span class="fb-dot" style="background:${colors[i%colors.length]}"></span>${esc(kindNames[k]||k)} <span class="fb-source">Impulse</span>`,`${rub(v)} <span class="fb-muted">${total?pc(v/total):'—'}</span>`)).join('')}`:waiting('Нет загруженных доходов по выбранному направлению')}</div>
       <div class="fb-panel"><div class="fb-eyebrow">По филиалам</div>${units.length?units.map(([u,v])=>`<div style="margin:12px 0">${row(`<span class="fb-dot" style="background:${unitColor(u)}"></span>${esc(unitName(u))}`,rub(v))}<div class="fb-progress"><span style="width:${pctWidth(total?100*v/total:0)};background:${unitColor(u)}"></span></div></div>`).join(''):waiting('Поступления пока не загружены')}
-      ${`<div class="fb-eyebrow" style="margin-top:18px">Как платят клиенты студий</div>${byPay.size?[...byPay].map(([k,v])=>row(esc({'cash':'Наличные','card':'Картой','qr':'QR','unknown':'Не определено в CRM'}[k]||k),rub(v))).join(''):waiting('Нет разбивки по способам оплаты')}<div class="fb-muted" style="margin-top:9px">Неизвестные способы оплаты можно уточнить по данным CRM и кассам в «Расходы и ставки». Без подтверждения метод не подменяется.</div><div class="fb-eyebrow" style="margin-top:15px">Юрлица студий</div>${byEntity.size?[...byEntity].map(([k,v])=>row(esc({'ip':'ИП Кирпиченко','ooo':'ООО Флексико','unknown':'Юрлицо не назначено'}[k.toLowerCase()]||k),rub(v))).join(''):waiting('Юрлицо не указано в источнике')}`}</div>
+      ${`<div class="fb-eyebrow" style="margin-top:18px">Как платят клиенты студий</div>${byPay.size?[...byPay].map(([k,v])=>row(esc({'cash':'Наличные','card':'Картой','qr':'QR','unknown':'Не определено в CRM'}[k]||k),rub(v))).join(''):waiting('Нет разбивки по способам оплаты')}<div class="fb-muted" style="margin-top:9px">Разбивка по способам оплаты исключает возвращённые клиентам средства (код 15). Неизвестные способы можно уточнить по CRM и кассам в «Расходы и ставки».</div><div class="fb-eyebrow" style="margin-top:15px">Юрлица студий</div>${byEntity.size?[...byEntity].map(([k,v])=>row(esc({'ip':'ИП Кирпиченко','ooo':'ООО Флексико','unknown':'Юрлицо не назначено'}[k.toLowerCase()]||k),rub(v))).join(''):waiting('Юрлицо не указано в источнике')}`}</div>
     </div>`);}
   function payroll(){
     const v=snap().trainer||{},a=snap().admin_salary||{},share=z(stats().revenue)>0?(z(v.gross)+z(a.gross))/z(stats().revenue):null;
     return section('Зарплаты','Сводка только из сохранённых данных FAD; без ручного пересчёта',`<div class="fb-grid3">
       <div class="fb-panel"><div class="fb-eyebrow">Преподаватели</div><div class="fb-big">${rub(v.gross)}</div>${row('Замены',rub(v.replacements))}${row('Пропуски',rub(v.skips))}${row('Авансы',rub(v.advances))}${row('К выдаче · не ниже 0',rub(v.payable))}<div class="fb-muted">Источник: зарплата преподавателей FAD</div></div>
       <div class="fb-panel"><div class="fb-eyebrow">Администраторы</div><div class="fb-big">${rub(a.gross)}</div>${row('Оплата смен',rub(a.shift))}${row('Бонус Flexico',rub(a.branch_bonus))}${row('Качество',rub(a.quality))}${row('Старший администратор',rub(a.senior))}<div class="fb-muted">Источник: зарплата администраторов FAD</div></div>
-      <div class="fb-panel"><div class="fb-eyebrow">Доля зарплат в выручке</div><div class="fb-big">${ready()&&share!=null?pc(share):'—'}</div><div class="fb-muted">Зарплата тренеров и администраторов по текущим сохранённым данным FAD.</div></div>
+      <div class="fb-panel"><div class="fb-eyebrow">Доля зарплат в выручке</div><div class="fb-big">${share!=null?pc(share):'—'}</div><div class="fb-muted">Зарплата тренеров и администраторов по текущим сохранённым данным FAD.</div></div>
     </div>`);}
   function expenses(){const all=snap().expenses||[],rows=all.filter(x=>state.filter==='all'||x.kind===state.filter);
     const m=stats(),v=all.filter(x=>x.kind==='variable').reduce((a,x)=>a+z(x.amount),0),f=all.filter(x=>x.kind==='fixed').reduce((a,x)=>a+z(x.amount),0);
@@ -5398,10 +5407,10 @@ async function renderBalance(body){
          return `<tr><td class="fb-left">${esc(r.name)}</td><td>${r.kind==='fixed'?'Постоянный':'Переменный'}</td><td>${sourceLabel(r.source)}</td><td>${fmt(val)}</td><td>${m.revenue?pc(val/z(m.revenue)):'—'}</td><td>${projection==null?'—':fmt(projection)}</td></tr>`;}).join('')||'<tr><td colspan="6">Расходы отсутствуют. Заполните месячные статьи.</td></tr>'}</tbody>
       <tfoot><tr><td colspan="3" class="fb-left">Итого учтено</td><td>${fmt(m.costs)}</td><td>${m.revenue?pc(z(m.costs)/z(m.revenue)):'—'}</td><td>${m.forecast_costs==null?'—':fmt(m.forecast_costs)}</td></tr></tfoot></table></div>
     </div>`);}
-  function breakEven(){const m=stats();if(!ready())return section('Точка безубыточности','',`<div class="fb-panel">${waiting('Для достоверного расчёта нужны полная выручка и все расходы. Тестовые цифры не подставляются.')}</div>`);
+  function breakEven(){const m=stats();if(!hasBreakEven())return section('Точка безубыточности','',`<div class="fb-panel"><strong>${!hasFixedArticles()?'Постоянные расходы ещё не заполнены':m.break_even==null?'Маржинальность не позволяет определить порог выручки':'Пока нет достаточных исходных данных'}</strong><div class="fb-muted" style="margin-top:8px">${!hasFixedArticles()?'Система не будет показывать 0 BYN как реальную точку безубыточности. Укажите месячную аренду и остальные постоянные расходы — предварительный расчёт появится сразу, даже если ImpulseCRM ещё не полностью сверен.':'Точка безубыточности не подменяется выдуманной оценкой.'}</div>${!hasFixedArticles()?'<button class="fb-action" type="button" data-cmd="expense" style="margin-top:12px">Внести постоянные расходы</button>':''}</div>`);
     const be=m.break_even,vr=z(m.forecast_revenue)||z(m.revenue),mx=Math.max(be||0,vr,1)*1.15,margin=z(m.variable_share);
     const points=Array.from({length:21},(_,i)=>{const x=mx*i/20;return {label:fmt(x/1000,0),revenue:x,costs:z(m.fixed_month)+margin*x,fixed:z(m.fixed_month)};});
-    return section('Точка безубыточности','Выручка за месяц, при которой доходы равны расходам',`<div class="fb-cols broad"><div class="fb-panel">
+    return section('Точка безубыточности',`Выручка за месяц, при которой доходы равны расходам · ${provision()}`,`<div class="fb-cols broad"><div class="fb-panel">
       <div class="fb-legend"><span><i class="fb-key" style="background:#1a744e"></i>Выручка</span><span><i class="fb-key" style="background:#ca5145"></i>Все расходы</span><span><i class="fb-key" style="background:#748b7f"></i>Постоянные</span></div>
       ${graph(points,['revenue','costs','fixed'],{target:be})}</div><div class="fb-panel"><div class="fb-eyebrow">Как это посчитано</div>
       ${row('Постоянные расходы в месяц',rub(m.fixed_month))}${row('Переменные расходы за период',rub(m.variable_period))}${row('Маржинальность',pc(m.contribution_margin))}
@@ -5416,15 +5425,15 @@ async function renderBalance(body){
        cautious:i>=today-1?z(cautious[i]?.cumulative):null,base:i>=today-1?z(x.cumulative):null,optimistic:i>=today-1?z(optimistic[i]?.cumulative):null}));
     return section('Прогноз до конца месяца','Прогноз по дням недели на основе факта текущего месяца',`<div class="fb-inline">${chip('Осторожный',state.scenario==='cautious','scenario:cautious')}${chip('Базовый',state.scenario==='base','scenario:base')}${chip('Оптимистичный',state.scenario==='optimistic','scenario:optimistic')}</div>
       <div class="fb-cols broad"><div class="fb-panel"><div class="fb-legend"><span><i class="fb-key" style="background:#1a744e"></i>Факт</span><span><i class="fb-key" style="background:#267c59"></i>Базовый</span><span><i class="fb-key" style="background:#b1c7b7"></i>Другие сценарии</span></div>
-        ${days.length?graph(days,['actual','cautious','base','optimistic'],{target:ready()?m.break_even:null}):waiting('Нет исходных дневных данных для прогноза')}
+        ${days.length?graph(days,['actual','cautious','base','optimistic'],{target:hasBreakEven()?m.break_even:null}):waiting('Нет исходных дневных данных для прогноза')}
         ${m.weekday_fallback?'<div class="fb-muted">Для дней недели без истории используется средняя выручка за наблюдаемые дни.</div>':''}
       </div><div class="fb-panel"><div class="fb-eyebrow">Итог месяца · ${esc(state.scenario==='base'?'базовый':state.scenario==='cautious'?'осторожный':'оптимистичный')}</div>
-        ${row('Выручка',rub(m.forecast_revenue))}${row('Расходы',ready()?rub(m.forecast_costs):'—')}${row('Прибыль',ready()?rub(m.forecast_profit):'—')}${row('Рентабельность',ready()?pc(m.forecast_profitability):'—')}
-        <div class="fb-note" style="margin-top:14px">${ready()?`Безубыточность: ${esc(m.break_even_status==='already'?'уже достигнута':m.break_even_status==='not_this_month'?'не в этом месяце':m.break_even_status||'не рассчитана')}`:'Для прогноза безубыточности нужны полные данные.'}</div>
+        ${row('Выручка',rub(m.forecast_revenue))}${row('Расходы',hasProfit()?rub(m.forecast_costs):'—')}${row('Прибыль',hasProfit()?rub(m.forecast_profit):'—')}${row('Рентабельность',hasProfit()?pc(m.forecast_profitability):'—')}
+        <div class="fb-note" style="margin-top:14px">${hasBreakEven()?`Безубыточность: ${esc(m.break_even_status==='already'?'уже достигнута':m.break_even_status==='not_this_month'?'не в этом месяце':m.break_even_status||'не рассчитана')}. ${provision()}`:'Показатели прогноза предварительные. Безубыточность появится после заполнения постоянных расходов.'}</div>
         ${`<div class="fb-eyebrow" style="margin-top:15px">Прогноз плана абонементов</div>${row('Прогноз продаж',m.forecast_sales==null?'—':fmt(m.forecast_sales,1))}${row('Порог 90%',m.plan_bonus_threshold||'—')}${row('Прогноз проходит порог?',m.plan_90_reached==null?'—':m.plan_90_reached?'Да':'Нет')}`}</div></div>`);}
   function units(){const all=snap().units||[],m=stats(),segmentData=snap().segments||[],items=['tolbuhina','masherova','kuibysheva'];
     const rev=Object.fromEntries(all.map(a=>[a.unit,z(a.revenue)]));const segments=Object.fromEntries(segmentData.map(a=>[a.unit,a]));
-    return section('Филиалы','Финансовые показатели трёх студий Flexico',`<div class="fb-panel"><div class="fb-table-scroll"><table class="fb-table"><thead><tr><th>Направление</th><th>Выручка</th><th>Прибыль</th><th>Рентабельность</th><th>Безубыточность</th><th>Прогноз выручки</th><th>Запас</th></tr></thead><tbody>${items.map(k=>{const seg=segments[k]||{};return `<tr><td class="fb-left"><span class="fb-dot" style="background:${unitColor(k)}"></span>${esc(unitName(k))}</td><td>${rub(rev[k]||0)}</td><td>${ready()?rub(seg.profit):'—'}</td><td>${ready()?pc(seg.profitability):'—'}</td><td>${ready()?rub(seg.break_even):'—'}</td><td>${seg.forecast_revenue==null?'—':rub(seg.forecast_revenue)}</td><td>${ready()?pc(seg.safety):'—'}</td></tr>`;}).join('')}</tbody>${items.length>1?`<tfoot><tr><td class="fb-left">Итого</td><td>${rub(m.revenue)}</td><td>${ready()?rub(m.profit):'—'}</td><td>${ready()?pc(m.profitability):'—'}</td><td>${ready()?rub(m.break_even):'—'}</td><td>${rub(m.forecast_revenue)}</td><td>${ready()?pc(m.safety):'—'}</td></tr></tfoot>`:''}</table></div><div class="fb-muted" style="margin-top:10px">Общие расходы распределяются по доле выручки филиала, собственные расходы и налоги каждого филиала — напрямую. Безубыточность каждой строки рассчитывается отдельно и не суммируется арифметически.</div></div>`);}
+    return section('Филиалы','Финансовые показатели трёх студий Flexico · предварительные до сверки источников',`<div class="fb-panel"><div class="fb-table-scroll"><table class="fb-table"><thead><tr><th>Направление</th><th>Выручка</th><th>Прибыль</th><th>Рентабельность</th><th>Безубыточность</th><th>Прогноз выручки</th><th>Запас</th></tr></thead><tbody>${items.map(k=>{const seg=segments[k]||{};return `<tr><td class="fb-left"><span class="fb-dot" style="background:${unitColor(k)}"></span>${esc(unitName(k))}</td><td>${rub(rev[k]||0)}</td><td>${hasProfit()?rub(seg.profit):'—'}</td><td>${hasProfit()?pc(seg.profitability):'—'}</td><td>${hasBreakEven()?rub(seg.break_even):'—'}</td><td>${seg.forecast_revenue==null?'—':rub(seg.forecast_revenue)}</td><td>${hasBreakEven()?pc(seg.safety):'—'}</td></tr>`;}).join('')}</tbody>${items.length>1?`<tfoot><tr><td class="fb-left">Итого</td><td>${rub(m.revenue)}</td><td>${hasProfit()?rub(m.profit):'—'}</td><td>${hasProfit()?pc(m.profitability):'—'}</td><td>${hasBreakEven()?rub(m.break_even):'—'}</td><td>${rub(m.forecast_revenue)}</td><td>${hasBreakEven()?pc(m.safety):'—'}</td></tr></tfoot>`:''}</table></div><div class="fb-muted" style="margin-top:10px">${provision()}. Общие расходы распределяются по доле выручки филиала, собственные расходы и налоги каждого филиала — напрямую. Безубыточность каждой строки рассчитывается отдельно и не суммируется арифметически.</div></div>`);}
   function render(){if(!current())return;
     shell.innerHTML=`${firstToolbar()}${providersLine()}<div class="fb-stack">${warningBlock()}${kpis()}${insights()}${incomes()}${payroll()}${expenses()}${breakEven()}${forecast()}${units()}</div>`;
     const per=el('fb-period');if(per)per.onchange=()=>{state.period=per.value;load();};
@@ -5483,15 +5492,15 @@ async function renderBalance(body){
       const data=await response.json();
       if(!response.ok||!data.ok)throw new Error(String(data.error||'Диагностика не удалась'));
       const names={tolbuhina:'Толбухина',masherova:'Машерова',kuibysheva:'Куйбышева'};
-      const cls=t=>t.classification==='non_revenue'?'Не выручка':t.classification==='refund'?'Возврат → расходы':t.classification==='expense'?'Расход':t.classification==='debt'?'Оплата долга → выручка':t.classification==='sale'?'Продажа':t.classification==='topup'?'Пополнение счёта':t.selected?'Подтверждённый код':'Нужна проверка';
+      const cls=t=>t.classification==='non_revenue'?'Не выручка':t.classification==='refund'?'Возврат → выручка + расходы':t.classification==='expense'?'Расход':t.classification==='debt'?'Оплата долга → выручка':t.classification==='sale'?'Продажа':t.classification==='topup'?'Пополнение счёта':t.selected?'Подтверждённый код':'Нужна проверка';
       const entries=(data.types||[]).map(t=>`<tr><td>${esc(t.code)}</td><td class="fb-left">${esc(t.title||'Без описания')}</td><td>${t.count}</td><td>${fmt(t.signed)}</td><td>${t.linked}</td><td>${fmt(t.linked_amount)}</td><td>${esc(cls(t))}</td></tr>`).join('');
       const reasons=(data.exclusions||[]).map(t=>`<div class="fb-row"><span>${esc(t.reason)}</span><strong>${t.count} · ${fmt(t.signed)} BYN</strong></div>`).join('');
       const summary=`ImpulseCRM · ${state.period}\nВсего: ${data.total}\nВыручка: ${data.accepted} · ${data.accepted_amount} BYN\nРасходы: ${data.expenses_count} · ${data.expenses_amount} BYN\nНеизвестных типов со связанной продажей: ${data.unverified_sale_linked_count} · ${data.unverified_sale_linked_amount} BYN\n`+
         (data.types||[]).map(t=>`${t.code} | ${t.title} | ${t.count} | ${t.signed} BYN | со связью ${t.linked}/${t.linked_amount} | ${cls(t)}`).join('\n');
       const overlay=modal(`<div class="fb-expense-editor" style="width:100%;max-width:100%;max-height:85vh;overflow:auto"><h3>Сверка выручки ImpulseCRM · ${esc(displayPeriod(state.period))}</h3>
-        <p class="fb-muted">Доходы (11, 12, 13) и расходы (15, 18, 19) прочитаны через API. Число записей не подтверждает полноту поступлений. Проверка не изменяет данные.</p>
+        <p class="fb-muted">Доходы (11, 12, 13, 15) и расходы (15, 18, 19) прочитаны через API. Число записей не подтверждает полноту поступлений. Проверка не изменяет данные.</p>
         <div class="fb-chips">${badge('Операций: '+data.total)}${badge('Выручка: '+data.accepted+' · '+fmt(data.accepted_amount)+' BYN','good')}${badge('Расходы: '+data.expenses_count+' · '+fmt(data.expenses_amount)+' BYN','warn')}${badge('Неизвестные типы со связью: '+data.unverified_sale_linked_count,'warn')}</div>
-        <div class="fb-note">Доходы: продажи 11, погашения долгов 12, пополнения 13. Расходы: возвраты 15, дополнительные 18, закупки 19. Возвраты не уменьшают выручку. Повторно не прибавляем расходы по зарплатам 16/17 — начисления уже есть в FAD. Внимание: пополнения 13 могут дублировать последующие оплаты 11; списания 21 и баллы 31 исключены. Сверь итог с финансовым отчётом ImpulseCRM.</div>
+        <div class="fb-note">Доходы: продажи 11, погашения долгов 12, пополнения 13 и возвраты 15 как положительная сумма. Расходы: те же возвраты 15, дополнительные 18, закупки 19. Возврат 15 учитывается + в выручке и + в расходах, поэтому сам по себе не изменяет прибыль. Повторно не прибавляем расходы по зарплатам 16/17 — начисления уже есть в FAD. Внимание: пополнения 13 могут дублировать последующие оплаты 11; списания 21 и баллы 31 исключены. Сверь итог с финансовым отчётом ImpulseCRM.</div>
         <div class="fb-inline" style="flex-wrap:wrap;margin:12px 0">${Object.entries(data.by_branch||{}).map(([k,v])=>badge((names[k]||k)+': '+fmt(v)+' BYN')).join('')}</div>
         <div class="fb-table-scroll"><table class="fb-table"><thead><tr><th>Код</th><th>Название типа</th><th>Всего</th><th>Со знаком, BYN</th><th>С продажей</th><th>Сумма связей, BYN</th><th>Классификация</th></tr></thead><tbody>${entries||'<tr><td colspan="7">Нет данных</td></tr>'}</tbody></table></div>
         <details style="margin-top:14px"><summary>Причины исключений</summary>${reasons||'<p>Нет исключений</p>'}</details>
@@ -5512,8 +5521,8 @@ async function renderBalance(body){
       return `<div class="fb-fiscal-card" data-fiscal="${u}"><strong>${esc(unitName(u))}</strong>
         <div class="fb-fiscal-fields" style="margin-top:9px">
           <label>Юрлицо<select data-field="entity"><option value="ooo" ${entity==='ooo'?'selected':''}>ООО Флексико</option><option value="ip" ${entity==='ip'?'selected':''}>ИП Кирпиченко</option></select></label>
-          <label>Налог, %<input data-field="tax" type="number" min="0" max="100" step="0.001" placeholder="Укажите ставку" value="${f.tax_percent??''}" required></label>
-          <label>Эквайринг, %<input data-field="acq" type="number" min="0" max="100" step="0.001" placeholder="0, если нет" value="${f.acquiring_percent??''}" required></label>
+          <label>Налог, %<input data-field="tax" type="number" min="0" max="100" step="0.001" placeholder="Укажите ставку" value="${f.tax_percent??0}" required></label>
+          <label>Эквайринг, %<input data-field="acq" type="number" min="0" max="100" step="0.001" placeholder="0, если нет" value="${f.acquiring_percent??0}" required></label>
         </div></div>`;}).join('');
     const boxRows=(data.paybox_summary||[]).filter(x=>x.mapped_method==='unknown');
     const mapBox=boxRows.map((x,i)=>`<div class="fb-paybox-row" style="padding:9px 0;border-bottom:1px solid #e5ebe5" data-box-index="${i}">
@@ -5524,8 +5533,8 @@ async function renderBalance(body){
     const imported=(data.expenses||[]).filter(x=>x.source==='impulse'||x.source==='fad');
     const importedList=imported.map(x=>`<div class="fb-row"><span class="fb-ellipsis" title="${esc(x.name)}">${esc(x.name)}${x.unit?' · '+esc(unitName(x.unit)):''} <span class="fb-source">${sourceLabel(x.source)}</span></span><strong>${rub(x.amount)}</strong></div>`).join('');
     const overlay=modal(`<div class="fb-expense-editor"><h3>Расходы и ставки · ${esc(displayPeriod(state.period))}</h3>
-      <p class="fb-muted">Постоянные суммы — за месяц; переменные — фактические. Расходы ImpulseCRM (15/18/19) и начисленные зарплаты FAD подставляются автоматически. Глобальные 6% и 2% не применяются к разным юрлицам.</p>
-      <div class="fb-note"><strong>Юрлица и ставки по филиалам</strong><div class="fb-muted">Первоначальная привязка взята из карточек филиалов FAD. Проверьте юрлица и реальные ставки — без них налог не будет рассчитан.</div></div>
+      <p class="fb-muted">Постоянные суммы — за месяц; переменные — фактические. Расходы ImpulseCRM (15/18/19) и начисленные зарплаты FAD подставляются автоматически. Начальные ставки налога и эквайринга — 0% отдельно по каждой студии; измените их, когда будут подтверждённые значения.</p>
+      <div class="fb-note"><strong>Юрлица и ставки по филиалам</strong><div class="fb-muted">Первоначальная привязка взята из карточек филиалов FAD. Ставки по умолчанию 0% — это настройка, а не подтверждение отсутствия реальных налогов. Заполните их самостоятельно позже.</div></div>
       ${fiscalForm}
       <button class="fb-action primary fb-full" type="button" id="fb-fiscal-save">Сохранить юрлица и ставки трёх студий</button>
       <details><summary><strong>Нераспознанные способы оплаты</strong> · ${boxRows.length} касс/групп</summary><p class="fb-muted">Укажите тип только после проверки кассы в CRM; не определяйте оплату по предположению. Правило действует на операции с этой кассой в данном филиале.</p>${mapBox}</details>
@@ -5549,13 +5558,13 @@ async function renderBalance(body){
         }
         rows.push({unit:u,legal_entity:box.querySelector('[data-field="entity"]').value,tax_percent:Number(t.value),acquiring_percent:Number(a.value)});
       }
-      try{fiscalBtn.disabled=true;await rpc('app_balance_fiscal_save_ee',{p_token:TOKEN,p_period:state.period,p_rows:rows});toast('Настройки трёх филиалов сохранены');closeModal(overlay);await load();}
+      try{fiscalBtn.disabled=true;await rpc('app_balance_fiscal_save_ef',{p_token:TOKEN,p_period:state.period,p_rows:rows});toast('Настройки трёх филиалов сохранены');closeModal(overlay);await load();}
       catch(e){toast(e.message||'Ошибка настроек',true);}finally{if(fiscalBtn.isConnected)fiscalBtn.disabled=false;}
     };
     overlay.querySelectorAll('[data-map]').forEach(b=>b.onclick=async()=>{
       const x=boxRows[Number(b.dataset.map)],sel=b.closest('[data-box-index]')?.querySelector('[data-method]');
       if(!x||!sel||sel.value==='unknown'){toast('Выберите подтверждённый способ оплаты',true);return;}
-      try{b.disabled=true;await rpc('app_balance_paybox_save_ee',{p_token:TOKEN,p_unit:x.unit,p_paybox_id:x.paybox_id,p_method:sel.value});toast('Способ оплаты кассы сохранён');closeModal(overlay);await load();}
+      try{b.disabled=true;await rpc('app_balance_paybox_save_ef',{p_token:TOKEN,p_unit:x.unit,p_paybox_id:x.paybox_id,p_method:sel.value});toast('Способ оплаты кассы сохранён');closeModal(overlay);await load();}
       catch(e){toast(e.message||'Ошибка сохранения кассы',true);}finally{if(b.isConnected)b.disabled=false;}
     });
     overlay.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>{const x=existing.find(a=>String(a.id)===b.dataset.edit);if(!x)return;q('fb-expense-id').value=x.id;q('fb-name').value=x.name;q('fb-kind').value=x.kind;q('fb-dir').value='studio';q('fb-unit').value=x.unit||'';q('fb-amount').value=x.amount;q('fb-expense-caption').textContent='Редактирование статьи';});
