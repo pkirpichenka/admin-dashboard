@@ -4008,7 +4008,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '22.11.2026-eh'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '22.11.2026-ei'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -5394,7 +5394,7 @@ async function renderBalance(body){
     return section('Доходы','Структура только из подтверждённых поступлений',`<div class="fb-cols">
       <div class="fb-panel"><div class="fb-eyebrow">Из чего складывается выручка</div>${kinds.length?`<div class="fb-bars">${bars}</div>${kinds.map(([k,v],i)=>row(`<span class="fb-dot" style="background:${colors[i%colors.length]}"></span>${esc(kindNames[k]||k)} <span class="fb-source">Impulse</span>`,`${rub(v)} <span class="fb-muted">${total?pc(v/total):'—'}</span>`)).join('')}`:waiting('Нет загруженных доходов по выбранному направлению')}</div>
       <div class="fb-panel"><div class="fb-eyebrow">По филиалам</div>${units.length?units.map(([u,v])=>`<div style="margin:12px 0">${row(`<span class="fb-dot" style="background:${unitColor(u)}"></span>${esc(unitName(u))}`,rub(v))}<div class="fb-progress"><span style="width:${pctWidth(total?100*v/total:0)};background:${unitColor(u)}"></span></div></div>`).join(''):waiting('Поступления пока не загружены')}
-      ${`<div class="fb-eyebrow" style="margin-top:18px">Как платят клиенты студий</div>${byPay.size?[...byPay].map(([k,v])=>row(esc({'cash':'Наличные','card':'Картой','qr':'QR','unknown':'Не определено в CRM'}[k]||k),rub(v))).join(''):waiting('Нет разбивки по способам оплаты')}<div class="fb-muted" style="margin-top:9px">Разбивка по способам оплаты исключает возвращённые клиентам средства (код 15). Неизвестные способы можно уточнить по CRM и кассам в «Расходы».</div><div class="fb-eyebrow" style="margin-top:15px">Юрлица студий</div>${byEntity.size?[...byEntity].map(([k,v])=>row(esc({'ip':'ИП Кирпиченко','ooo':'ООО Флексико','unknown':'Юрлицо не назначено'}[k.toLowerCase()]||k),rub(v))).join(''):waiting('Юрлицо не указано в источнике')}`}</div>
+      ${`<div class="fb-eyebrow" style="margin-top:18px">Как платят клиенты студий</div>${byPay.size?[...byPay].map(([k,v])=>row(esc({'cash':'Наличные','card':'Картой','qr':'QR / СБП','balance':'С баланса клиента','transfer':'Банковский перевод','unknown':'Способ не указан в ответе ImpulseCRM'}[k]||k),rub(v))).join(''):waiting('Нет разбивки по способам оплаты')}<div class="fb-muted" style="margin-top:9px">Разбивка по способам оплаты исключает возвращённые клиентам средства (код 15). Способы определяются по полям payment и paymentText API ImpulseCRM; номер кассы сам по себе их не определяет.</div><div class="fb-eyebrow" style="margin-top:15px">Юрлица студий</div>${byEntity.size?[...byEntity].map(([k,v])=>row(esc({'ip':'ИП Кирпиченко','ooo':'ООО Флексико','unknown':'Юрлицо не назначено'}[k.toLowerCase()]||k),rub(v))).join(''):waiting('Юрлицо не указано в источнике')}`}</div>
     </div>`);}
   function payroll(){
     const v=snap().trainer||{},a=snap().admin_salary||{},share=z(stats().revenue)>0?(z(v.gross)+z(a.gross))/z(stats().revenue):null;
@@ -5519,7 +5519,7 @@ async function renderBalance(body){
         <div class="fb-inline" style="flex-wrap:wrap;margin:12px 0">${Object.entries(data.by_branch||{}).map(([k,v])=>badge((names[k]||k)+': '+fmt(v)+' BYN')).join('')}</div>
         <div class="fb-table-scroll"><table class="fb-table"><thead><tr><th>Код</th><th>Название типа</th><th>Всего</th><th>Со знаком, BYN</th><th>С продажей</th><th>Сумма связей, BYN</th><th>Классификация</th></tr></thead><tbody>${entries||'<tr><td colspan="7">Нет данных</td></tr>'}</tbody></table></div>
         <details style="margin-top:14px"><summary>Причины исключений</summary>${reasons||'<p>Нет исключений</p>'}</details>
-        <p class="fb-muted" style="margin:12px 0">Неподтверждённые способы оплаты: ${(data.unknown_payment_boxes||[]).map(b=>(names[b.unit]||b.unit)+' / касса '+(b.paybox_id||'без кода')+': '+fmt(b.amount)+' BYN').join('; ')||'нет'}. Данные не исправляем автоматически по догадке.</p><p class="fb-muted" style="margin:12px 0">Подтверждённые дополнительные коды можно добавить серверным секретом IMPULSE_ADDITIONAL_PAYMENT_TYPES. Не делай это без сверки с отчётом CRM.</p>
+        <p class="fb-muted" style="margin:12px 0">Не распознаны по полям payment/paymentText: ${data.payment_unknown_count??'—'} операций на ${fmt(data.payment_unknown_total??0)} BYN. Подробности — в «Расходы → Проверить способы через ImpulseCRM». Номер кассы не является способом оплаты.</p><p class="fb-muted" style="margin:12px 0">Подтверждённые дополнительные коды можно добавить серверным секретом IMPULSE_ADDITIONAL_PAYMENT_TYPES. Не делай это без сверки с отчётом CRM.</p>
         <div class="fb-actions"><button type="button" class="fb-action" id="fb-copy-audit">Скопировать сводку</button><button type="button" class="fb-action primary" data-x>Закрыть</button></div></div>`);
       overlay.querySelector('.modal')?.classList.add('fb-audit-modal');
       const copy=overlay.querySelector('#fb-copy-audit');if(copy)copy.onclick=async()=>{
@@ -5534,13 +5534,13 @@ async function renderBalance(body){
     const mapBox=boxRows.map((x,i)=>`<div class="fb-paybox-row" style="padding:9px 0;border-bottom:1px solid #e5ebe5" data-box-index="${i}">
         <span><strong>${esc(unitName(x.unit))}</strong> · касса ${x.paybox_id?('#'+esc(x.paybox_id)):'не указана в CRM'}<br>
         <span class="fb-muted">${x.records} опер. · ${rub(x.amount)}</span></span>
-        ${x.paybox_id?`<select class="fb-select" data-method><option value="unknown">Нужно уточнить</option><option value="cash">Наличные</option><option value="card">Картой</option><option value="qr">QR</option></select><button type="button" class="fb-action" data-map="${i}">Применить</button>`:'<span class="fb-muted">Невозможно установить по кассе — проверьте исходные операции</span>'}
-      </div>`).join('')||'<p class="fb-muted">Неподтверждённых способов оплаты с кассами нет.</p>';
+        <span class="fb-muted">Способ оплаты не подтверждён в сохранённой записи</span>
+      </div>`).join('')||'<p class="fb-muted">Все сохранённые способы оплаты распознаны или подтверждены.</p>';
     const imported=(data.expenses||[]).filter(x=>x.source==='impulse'||x.source==='fad');
     const importedList=imported.map(x=>`<div class="fb-row"><span class="fb-ellipsis" title="${esc(x.name)}">${esc(x.name)}${x.unit?' · '+esc(unitName(x.unit)):''} <span class="fb-source">${sourceLabel(x.source)}</span></span><strong>${rub(x.amount)}</strong></div>`).join('');
     const overlay=modal(`<div class="fb-expense-editor"><h3>Расходы · ${esc(displayPeriod(state.period))}</h3>
       <p class="fb-muted">Постоянные суммы — за месяц; переменные — фактические. Расходы ImpulseCRM (15/18/19) и начисленные зарплаты FAD подставляются автоматически. Автоматических начислений налога и эквайринга здесь нет. Ручные расходы сохраняются с обязательным выбором юрлица.</p>
-      <details><summary><strong>Нераспознанные способы оплаты</strong> · ${boxRows.length} касс/групп</summary><p class="fb-muted">Укажите тип только после проверки кассы в CRM; не определяйте оплату по предположению. Правило действует на операции с этой кассой в данном филиале.</p>${mapBox}</details>
+      <details><summary><strong>Операции без установленного способа оплаты</strong> · ${boxRows.length} касс/групп</summary><p class="fb-muted">FAD проверяет payment и paymentText каждой операции ImpulseCRM. Касса — место проведения операции, а не способ оплаты. Для оставшихся записей можно посмотреть фактические значения API без доступа к персональным данным клиентов.</p><div class="fb-actions" style="margin:9px 0"><button type="button" class="fb-action primary" id="fb-source-check">Проверить способы через ImpulseCRM</button></div><div id="fb-source-results" aria-live="polite"></div>${mapBox}</details>
       <details open><summary><strong>Уже учтённые автоматически расходы</strong> · ${imported.length}</summary><div style="max-height:230px;overflow-y:auto">${importedList||'<p class="fb-muted">Данных об автоматических расходах пока нет; обновите импорт ImpulseCRM.</p>'}</div></details>
       <details open><summary><strong>Подтверждение фактических выплат</strong></summary>
         <p class="fb-muted">Вводите только действительно выплаченную сумму. Для тренеров указывайте дополнительные выплаты сверх уже учтённых авансов. У администраторов отметки «Выдано» ставятся в разделе «Зарплаты» — здесь их не меняем. Сумма начислений и прибыли от подтверждения оплаты не изменяется.</p>
@@ -5558,12 +5558,25 @@ async function renderBalance(body){
       <div class="fb-actions"><button type="button" class="fb-action" data-x>Закрыть</button><button type="button" class="fb-action primary" id="fb-save-exp">Сохранить статью</button></div>
     </div>`);
     const q=id=>overlay.querySelector('#'+id);
-    overlay.querySelectorAll('[data-map]').forEach(b=>b.onclick=async()=>{
-      const x=boxRows[Number(b.dataset.map)],sel=b.closest('[data-box-index]')?.querySelector('[data-method]');
-      if(!x||!sel||sel.value==='unknown'){toast('Выберите подтверждённый способ оплаты',true);return;}
-      try{b.disabled=true;await rpc('app_balance_paybox_save_ef',{p_token:TOKEN,p_unit:x.unit,p_paybox_id:x.paybox_id,p_method:sel.value});toast('Способ оплаты кассы сохранён');closeModal(overlay);await load();}
-      catch(e){toast(e.message||'Ошибка сохранения кассы',true);}finally{if(b.isConnected)b.disabled=false;}
-    });
+    const checkSource=q('fb-source-check');
+    if(checkSource)checkSource.onclick=async()=>{
+      const output=q('fb-source-results');checkSource.disabled=true;
+      output.innerHTML='<p class="fb-muted">Читаем исходные коды и названия оплаты из ImpulseCRM…</p>';
+      try{
+        const response=await fetch(SUPABASE_URL+'/functions/v1/fad-balance-sync',{
+          method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY},
+          body:JSON.stringify({token:TOKEN,source:'impulse',month:state.period,mode:'inspect'})});
+        const audit=await response.json();if(!response.ok||!audit.ok)throw Error(String(audit.error||'Ошибка запроса ImpulseCRM'));
+        const groups=(audit.payment_source_evidence||[]).filter(x=>x.method==='unknown');
+        const all=(audit.payment_source_evidence||[]);
+        const heads={cash:'Наличные',card:'Картой',qr:'QR / СБП',balance:'С баланса',transfer:'Банковский перевод',unknown:'Нельзя определить из ответа API'};
+        const summary=all.reduce((o,x)=>{const k=x.method||'unknown';(o[k]??={count:0,amount:0}).count+=Number(x.count)||0;o[k].amount+=Number(x.amount)||0;return o;},{});
+        const summaryHtml=Object.entries(summary).map(([k,x])=>`<div class="fb-row"><span>${esc(heads[k]||k)} · ${x.count} операций</span><strong>${rub(x.amount)}</strong></div>`).join('');
+        const groupHtml=groups.map(x=>`<div class="fb-row"><span><b>${esc(unitName(x.unit))}</b> · касса #${esc(x.paybox_id||'—')} · ${x.count} опер.<br><span class="fb-muted">API: payment=${esc(x.payment_code)}; paymentText=«${esc(x.payment_text)}»${x.paybox_name?' · '+esc(x.paybox_name):''}${x.reason==='conflicting_api_fields'?' · противоречие кода и текста':''}</span></span><strong>${rub(x.amount)}</strong></div>`).join('');
+        output.innerHTML='<div class="fb-note" style="margin:10px 0"><strong>Результат чтения ImpulseCRM</strong><p class="fb-muted">Автоматически распознанные методы применяются при следующем «Обновить данные». Ничего не определяется по номеру кассы.</p>'+summaryHtml+(groups.length?'<h4 style="margin:10px 0">Что ImpulseCRM пока не уточнил</h4>'+groupHtml:'<p class="fb-positive">Все методы присутствуют в ответе API и распознаны.</p>')+'</div>';
+      }catch(e){output.innerHTML='<p class="fb-negative">'+esc(String(e.message||e))+'</p>';}
+      finally{if(checkSource.isConnected)checkSource.disabled=false;}
+    };
     overlay.querySelectorAll('[data-paid-save]').forEach(b=>b.onclick=async()=>{
       const key=b.dataset.paidSave,input=[...overlay.querySelectorAll('[data-paid-input]')].find(e=>e.dataset.paidInput===key);
       if(!input)return;const value=Number(input.value),limit=Number(input.max);
