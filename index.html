@@ -3992,7 +3992,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '22.11.2026-dt'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '22.11.2026-dv'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -5293,7 +5293,7 @@ async function renderBalance(body){
   const displayPeriod=p=>{const [y,m]=p.split('-').map(Number);return mnames[m-1][0].toUpperCase()+mnames[m-1].slice(1)+' '+y;};
   const dates=Array.from({length:24},(_,i)=>{const [y,m]=periodToday.split('-').map(Number);const d=new Date(Date.UTC(y,m-1-i,1));return d.toISOString().slice(0,7);});
   const stored=(()=>{try{return sessionStorage.getItem('fad.balance.scope')}catch(_){return null}})();
-  const state={scope:['all','studio','vending'].includes(stored)?stored:'all',period:periodToday,scenario:'base',filter:'all',data:null,busy:false,error:'',expenseEdit:null};
+  const state={scope:['all','studio','vending'].includes(stored)?stored:'all',period:periodToday,scenario:'base',filter:'all',data:null,providerStatus:[],busy:false,error:'',expenseEdit:null};
   const sc={cautious:.88,base:1,optimistic:1.1};
   const shell=document.createElement('section');shell.className='fad-balance fade-in';body.replaceChildren(shell);
   const current=()=>shell.isConnected&&!!session&&session.role==='owner'&&!!TOKEN;
@@ -5333,6 +5333,17 @@ async function renderBalance(body){
     const age=v.last_success_at?(Date.now()-Date.parse(v.last_success_at))/3600000:Infinity;
     return badge(`${sourceLabel(n)} · ${success}${age>24&&v.last_success_at?' · устарело':''}`,v.coverage==='complete'&&age<=24?'good':v.coverage==='missing'?'bad':'warn');
   }).join('');}
+  function providersLine(){
+    const statuses=state.providerStatus||[];
+    const names={impulse:'ImpulseCRM',smartvend:'SmartVend · кофе',vendista:'Vendista · торговый'};
+    const providers=state.scope==='studio'?['impulse']:state.scope==='vending'?['smartvend','vendista']:['impulse','smartvend','vendista'];
+    return `<div class="fb-inline" style="margin:-3px 0 13px;gap:7px;flex-wrap:wrap">${providers.map(p=>{
+      const row=statuses.find(x=>x.provider===p)||{};
+      const complete=row.coverage==='complete',missing=!row.last_success_at;
+      const when=missing?'не подключено':new Date(row.last_success_at).toLocaleString('ru-RU',{timeZone:'Europe/Minsk',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+      return badge(`${names[p]} · ${when} · ${complete?'полнота подтверждена':'данные неполные'}${row.records?' · '+row.records+' записей':''}`,complete?'good':missing?'bad':'warn');
+    }).join('')}</div>`;
+  }
   function firstToolbar(){const s=snap(),m=stats();return `<div class="fb-tools">
     <div class="fb-controls" style="flex:1"><span class="fb-eyebrow">Направление</span><div class="fb-chips">${chip('Всё',state.scope==='all','scope:all')}${chip('Студии',state.scope==='studio','scope:studio')}${chip('Автоматы',state.scope==='vending','scope:vending')}</div><span class="fb-muted">Студии и автоматы учитываются отдельно, без двойного счёта.</span></div>
     <div class="fb-controls"><label for="fb-period">Период</label><select id="fb-period" class="fb-select">${dates.map(p=>`<option value="${p}"${p===state.period?' selected':''}>${displayPeriod(p)}</option>`).join('')}</select>
@@ -5416,7 +5427,7 @@ async function renderBalance(body){
     const rev=Object.fromEntries(all.map(a=>[a.unit,z(a.revenue)]));const segments=Object.fromEntries(segmentData.map(a=>[a.unit,a]));
     return section('Филиалы и автоматы','Автоматы выделены отдельно от выручки студии на Машерова, 11',`<div class="fb-panel"><div class="fb-table-scroll"><table class="fb-table"><thead><tr><th>Направление</th><th>Выручка</th><th>Прибыль</th><th>Рентабельность</th><th>Безубыточность</th><th>Прогноз выручки</th><th>Запас</th></tr></thead><tbody>${items.map(k=>{const seg=segments[k]||{};return `<tr><td class="fb-left"><span class="fb-dot" style="background:${unitColor(k)}"></span>${esc(unitName(k))}</td><td>${rub(rev[k]||0)}</td><td>${ready()?rub(seg.profit):'—'}</td><td>${ready()?pc(seg.profitability):'—'}</td><td>${ready()?rub(seg.break_even):'—'}</td><td>${seg.forecast_revenue==null?'—':rub(seg.forecast_revenue)}</td><td>${ready()?pc(seg.safety):'—'}</td></tr>`;}).join('')}</tbody>${items.length>1?`<tfoot><tr><td class="fb-left">Итого</td><td>${rub(m.revenue)}</td><td>${ready()?rub(m.profit):'—'}</td><td>${ready()?pc(m.profitability):'—'}</td><td>${ready()?rub(m.break_even):'—'}</td><td>${rub(m.forecast_revenue)}</td><td>${ready()?pc(m.safety):'—'}</td></tr></tfoot>`:''}</table></div><div class="fb-muted" style="margin-top:10px">Общие расходы распределяются по доле выручки направления, аренда и закупки конкретного объекта — напрямую. Безубыточность каждой строки рассчитывается отдельно и не суммируется арифметически.</div></div>`);}
   function render(){if(!current())return;
-    shell.innerHTML=`${firstToolbar()}<div class="fb-stack">${warningBlock()}${kpis()}${insights()}${incomes()}${payroll()}${vending()}${expenses()}${breakEven()}${forecast()}${units()}</div>`;
+    shell.innerHTML=`${firstToolbar()}${providersLine()}<div class="fb-stack">${warningBlock()}${kpis()}${insights()}${incomes()}${payroll()}${vending()}${expenses()}${breakEven()}${forecast()}${units()}</div>`;
     const per=el('fb-period');if(per)per.onchange=()=>{state.period=per.value;load();};
     const refresh=el('fb-reload');if(refresh)refresh.onclick=()=>refreshExternal();
     const edit=el('fb-edit-exp');if(edit)edit.onclick=()=>editExpenses();
@@ -5429,28 +5440,35 @@ async function renderBalance(body){
     }));
   }
   async function load(){if(!current()||state.busy)return;state.busy=true;state.error='';render();
-    try{const d=await rpc('app_balance_snapshot',{p_token:TOKEN,p_period:state.period,p_scope:state.scope,p_scenario:sc[state.scenario]});if(!current())return;state.data=d;}
+    try{
+      const [data,providers]=await Promise.all([
+        rpc('app_balance_snapshot',{p_token:TOKEN,p_period:state.period,p_scope:state.scope,p_scenario:sc[state.scenario]}),
+        rpc('app_balance_integrations_status',{p_token:TOKEN,p_period:state.period}).catch(()=>[])
+      ]);
+      if(!current())return;
+      state.data=data;state.providerStatus=Array.isArray(providers)?providers:[];
+    }
     catch(e){if(!current())return;state.error=String(e?.message||e);state.data=null;}
     finally{state.busy=false;if(current())render();}
   }
   async function refreshExternal(){
     if(!current()||state.busy)return;
     const period=state.period,scope=state.scope;
-    // Never claim a disconnected provider is synchronized. The Impulse adapter
-    // imports only verified group deposits and marks source coverage partial.
-    if(scope!=='vending'){
-      state.busy=true;render();
+    const sources=scope==='studio'?['impulse']:scope==='vending'?['smartvend','vendista']:['impulse','smartvend','vendista'];
+    state.busy=true;render();
+    const messages=[];
+    for(const source of sources){
       try{
         const response=await fetch(SUPABASE_URL+'/functions/v1/fad-balance-sync',{
           method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY},
-          body:JSON.stringify({token:TOKEN,source:'impulse',month:period})});
+          body:JSON.stringify({token:TOKEN,source,month:period,mode:'sync'})});
         const result=await response.json().catch(()=>({}));
-        if(!response.ok||!result.ok)toast('Адаптер Impulse: '+(result.error||'не подключён'),true);
-        else toast('Impulse: частичные подтверждённые поступления обновлены');
-      }catch(_){toast('Обновление Impulse недоступно. Сохранённые данные не менялись.',true);}
-      state.busy=false;
+        if(!response.ok||!result.ok){messages.push(source+': '+String(result.error||'не удалось загрузить'));}
+        else {messages.push(source+': '+String(result.import?.records??0)+' записей, '+(result.import?.coverage==='complete'?'полнота подтверждена':'неполные данные'));}
+      }catch(e){messages.push(source+': связь недоступна, сохранённые записи не изменены');}
     }
-    if(scope!=='studio')toast('Телеметрия автоматов пока не подключена — нужен API или CSV поставщика.',true);
+    state.busy=false;
+    messages.forEach(s=>toast(s,/не удалось|отсутств|недоступ|missing|unverified|invalid|not_configured|неполные/i.test(s)));
     await load();
   }
   function editExpenses(){if(!current())return;
