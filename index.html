@@ -3972,6 +3972,7 @@ html[data-theme=dark] #schedRoot .do-grid-cell.late{background:#522d2e;border-co
 .ct-root.ct-compact .ct-team-worklist .ct-row-done{grid-template-columns:21px minmax(132px,1.1fr) auto minmax(0,2fr) 24px}
 @media(max-width:1100px){.ct-root.ct-compact .ct-team-worklist .ct-row{grid-template-columns:21px minmax(145px,1fr) minmax(120px,1fr) minmax(120px,170px) 24px}.ct-root.ct-compact .ct-team-worklist .ct-row .ct-chips,.ct-root.ct-compact .ct-team-worklist .ct-task-short{display:none}}
 @media(max-width:700px){.ct-root.ct-compact .ct-team-worklist .ct-row{grid-template-columns:21px minmax(0,1fr) 24px;gap:7px}.ct-root.ct-compact .ct-team-worklist .ct-row>.ct-row-actions{grid-column:2/3;grid-row:2;display:flex;gap:5px;flex-wrap:wrap}.ct-root.ct-compact .ct-team-worklist .ct-row>.ct-expand-btn{grid-column:3;grid-row:1}.ct-root.ct-compact .ct-team-worklist .ct-row-done{grid-template-columns:21px minmax(0,1fr) 24px}.ct-root.ct-compact .ct-team-worklist .ct-row-done>.ct-chip,.ct-root.ct-compact .ct-team-worklist .ct-row-done-info{grid-column:2;min-width:0}.ct-root.ct-compact .ct-team-worklist .ct-expanded{padding-left:11px}}
+.overlay>.modal.fb-audit-modal{max-width:min(980px,calc(100vw - 24px));width:100%}
 </style>
 
 <div id="root"></div>
@@ -3992,7 +3993,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '22.11.2026-ea'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '22.11.2026-eb'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -5340,11 +5341,11 @@ async function renderBalance(body){
   function firstToolbar(){const m=stats();return `<div class="fb-tools">
     <div class="fb-controls" style="flex:1"><span class="fb-eyebrow">Направление</span><strong>Студии Flexico</strong><span class="fb-muted">Толбухина, 2 · Машерова, 11 · Куйбышева, 22</span></div>
     <div class="fb-controls"><label for="fb-period">Период</label><select id="fb-period" class="fb-select">${dates.map(p=>`<option value="${p}"${p===state.period?' selected':''}>${displayPeriod(p)}</option>`).join('')}</select>
-    <button type="button" class="fb-action primary" id="fb-reload" ${state.busy?'disabled':''}>${state.busy?'Загружаем…':'Обновить данные'}</button><button type="button" class="fb-action" id="fb-edit-exp">Расходы и ставки</button></div>
+    <button type="button" class="fb-action primary" id="fb-reload" ${state.busy?'disabled':''}>${state.busy?'Загружаем…':'Обновить данные'}</button><button type="button" class="fb-action" id="fb-audit-impulse">Сверить выручку Impulse</button><button type="button" class="fb-action" id="fb-edit-exp">Расходы и ставки</button></div>
   </div><div class="fb-inline" style="margin-bottom:14px">${brokenSources()}<span class="fb-muted">${m.elapsed==null?'':`Факт за 1–${m.elapsed} · ${displayPeriod(state.period)}`}</span></div>`;}
   function warningBlock(){const list=snap().warnings||[];if(state.error)return `<div class="fb-note error">Ошибка загрузки: ${esc(state.error)}</div>`;
     if(!list.length)return '';
-    return `<div class="fb-note error"><strong>Данные баланса неполные.</strong> Не используйте промежуточную прибыль как окончательный финансовый результат.<div style="margin-top:6px">${list.map(x=>`<span style="display:inline-block;margin-right:14px">• ${esc(x)}</span>`).join('')}</div><div style="margin-top:8px"><button class="fb-action" type="button" data-cmd="expense">Заполнить расходы / настройки</button></div></div>`;}
+    return `<div class="fb-note error"><strong>Данные баланса неполные.</strong> Не используйте промежуточную прибыль как окончательный финансовый результат.<div style="margin-top:6px">${list.map(x=>`<span style="display:inline-block;margin-right:14px">• ${esc(String(x).replace('Полная выручка Impulse не загружена','Полнота выручки ImpulseCRM ещё не сверена; нажмите «Сверить выручку Impulse»'))}</span>`).join('')}</div><div style="margin-top:8px"><button class="fb-action" type="button" data-cmd="expense">Заполнить расходы / настройки</button></div></div>`;}
   function kpis(){const m=stats(), profit=ready()?rub(m.profit):'—', be=ready()?rub(m.break_even):'—';
     const cards=[['Выручка',rub(m.revenue),`Средняя: ${m.elapsed?rub(z(m.revenue)/m.elapsed)+' в день':'нет данных'} · К прошлому месяцу: ${snap().previous_revenue!=null&&snap().previous_source_complete?pc(snap().previous_revenue?z(m.revenue)/z(snap().previous_revenue)-1:null):'нет полной истории'}`],
       ['Расходы',ready()?rub(m.costs):'—',`Учтено: постоянные ${rub(m.fixed_period)}, переменные ${rub(m.variable_period)}`],
@@ -5418,6 +5419,7 @@ async function renderBalance(body){
     const per=el('fb-period');if(per)per.onchange=()=>{state.period=per.value;load();};
     const refresh=el('fb-reload');if(refresh)refresh.onclick=()=>refreshExternal();
     const edit=el('fb-edit-exp');if(edit)edit.onclick=()=>editExpenses();
+    const audit=el('fb-audit-impulse');if(audit)audit.onclick=()=>inspectImpulse();
     shell.querySelectorAll('[data-cmd]').forEach(b=>b.addEventListener('click',()=>{
       const [cmd,val]=b.dataset.cmd.split(':');
       if(cmd==='scenario'){state.scenario=val;render();}
@@ -5456,6 +5458,39 @@ async function renderBalance(body){
     state.busy=false;
     messages.forEach(s=>toast(s,/не удалось|отсутств|недоступ|missing|unverified|invalid|not_configured|неполные/i.test(s)));
     await load();
+  }
+  // Read-only payment-type reconciliation. This does not write to ImpulseCRM or Supabase.
+  async function inspectImpulse(){
+    if(!current()||state.busy)return;
+    state.busy=true;render();
+    try{
+      const response=await fetch(SUPABASE_URL+'/functions/v1/fad-balance-sync',{
+        method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,
+          'Authorization':'Bearer '+SUPABASE_ANON_KEY},
+        body:JSON.stringify({token:TOKEN,source:'impulse',month:state.period,mode:'inspect'})
+      });
+      const data=await response.json();
+      if(!response.ok||!data.ok)throw new Error(String(data.error||'Диагностика не удалась'));
+      const names={tolbuhina:'Толбухина',masherova:'Машерова',kuibysheva:'Куйбышева'};
+      const entries=(data.types||[]).map(t=>`<tr><td>${esc(t.code)}</td><td class="fb-left">${esc(t.title||'Без описания')}</td><td>${t.count}</td><td>${fmt(t.signed)}</td><td>${t.linked}</td><td>${fmt(t.linked_amount)}</td><td>${t.selected?'В импорте':'Не подтверждён'}</td></tr>`).join('');
+      const reasons=(data.exclusions||[]).map(t=>`<div class="fb-row"><span>${esc(t.reason)}</span><strong>${t.count} · ${fmt(t.signed)} BYN</strong></div>`).join('');
+      const summary=`ImpulseCRM · ${state.period}\nВсего: ${data.total}\nВ импорте: ${data.accepted} · ${data.accepted_amount} BYN\nНеподтверждённых со связанной продажей: ${data.unverified_sale_linked_count} · ${data.unverified_sale_linked_amount} BYN\n`+
+        (data.types||[]).map(t=>`${t.code} | ${t.title} | ${t.count} | ${t.signed} BYN | со связью ${t.linked}/${t.linked_amount} | ${t.selected?'учитывается':'не подтверждён'}`).join('\n');
+      const overlay=modal(`<div class="fb-expense-editor" style="width:100%;max-width:100%;max-height:85vh;overflow:auto"><h3>Сверка выручки ImpulseCRM · ${esc(displayPeriod(state.period))}</h3>
+        <p class="fb-muted">Все типы депозитных операций, прочитанные через API. Число записей не означает полноту денежных поступлений. Проверка не изменяет данные.</p>
+        <div class="fb-chips">${badge('Операций: '+data.total)}${badge('Принято: '+data.accepted+' · '+fmt(data.accepted_amount)+' BYN','good')}${badge('Другие типы со связью: '+data.unverified_sale_linked_count,'warn')}</div>
+        <div class="fb-note">Важное: операции разных типов нельзя автоматически сложить — возможен двойной учёт пополнения баланса и оплаты. Сравни эту сводку с отчётом поступлений ImpulseCRM за такой же период.</div>
+        <div class="fb-inline" style="flex-wrap:wrap;margin:12px 0">${Object.entries(data.by_branch||{}).map(([k,v])=>badge((names[k]||k)+': '+fmt(v)+' BYN')).join('')}</div>
+        <div class="fb-table-scroll"><table class="fb-table"><thead><tr><th>Код</th><th>Название типа</th><th>Всего</th><th>Со знаком, BYN</th><th>С продажей</th><th>Сумма связей, BYN</th><th>Учитывается</th></tr></thead><tbody>${entries||'<tr><td colspan="7">Нет данных</td></tr>'}</tbody></table></div>
+        <details style="margin-top:14px"><summary>Причины исключений</summary>${reasons||'<p>Нет исключений</p>'}</details>
+        <p class="fb-muted" style="margin:12px 0">Подтверждённые дополнительные коды можно добавить серверным секретом IMPULSE_ADDITIONAL_PAYMENT_TYPES. Не делай это без сверки с отчётом CRM.</p>
+        <div class="fb-actions"><button type="button" class="fb-action" id="fb-copy-audit">Скопировать сводку</button><button type="button" class="fb-action primary" data-x>Закрыть</button></div></div>`);
+      overlay.querySelector('.modal')?.classList.add('fb-audit-modal');
+      const copy=overlay.querySelector('#fb-copy-audit');if(copy)copy.onclick=async()=>{
+        try{await navigator.clipboard.writeText(summary);toast('Сводка скопирована');}catch(_){toast('Скопируйте таблицу вручную',true);}
+      };
+    }catch(e){toast('ImpulseCRM: '+String(e?.message||'ошибка диагностики'),true);}
+    finally{state.busy=false;if(current())render();}
   }
   function editExpenses(){if(!current())return;
     const data=state.data||{},existing=(data.manual_expenses||[]).filter(x=>x.direction==='studio'),cfg=data.config||{};
