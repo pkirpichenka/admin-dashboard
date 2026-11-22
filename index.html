@@ -4008,7 +4008,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '22.11.2026-ei'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '22.11.2026-ek'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -5308,7 +5308,7 @@ async function renderBalance(body){
   const mnames=['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
   const displayPeriod=p=>{const [y,m]=p.split('-').map(Number);return mnames[m-1][0].toUpperCase()+mnames[m-1].slice(1)+' '+y;};
   const dates=Array.from({length:24},(_,i)=>{const [y,m]=periodToday.split('-').map(Number);const d=new Date(Date.UTC(y,m-1-i,1));return d.toISOString().slice(0,7);});
-  const state={scope:'studio',period:periodToday,scenario:'base',filter:'all',data:null,providerStatus:[],busy:false,error:'',expenseEdit:null};
+  const state={scope:'studio',period:periodToday,scenario:'base',filter:'all',data:null,providerStatus:[],paymentSummary:null,paymentError:'',busy:false,error:'',expenseEdit:null};
   const sc={cautious:.88,base:1,optimistic:1.1};
   const shell=document.createElement('section');shell.className='fad-balance fade-in';body.replaceChildren(shell);
   const current=()=>shell.isConnected&&!!session&&session.role==='owner'&&!!TOKEN;
@@ -5368,7 +5368,10 @@ async function renderBalance(body){
   </div><div class="fb-inline" style="margin-bottom:14px">${brokenSources()}<span class="fb-muted">${m.elapsed==null?'':`Факт за 1–${m.elapsed} · ${displayPeriod(state.period)}`}</span></div>`;}
   function warningBlock(){const list=snap().warnings||[];if(state.error)return `<div class="fb-note error">Ошибка загрузки: ${esc(state.error)}</div>`;
     if(!list.length)return '';
-    return `<div class="fb-note error"><strong>Данные баланса неполные.</strong> Не используйте промежуточную прибыль как окончательный финансовый результат.<div style="margin-top:6px">${list.map(x=>`<span style="display:inline-block;margin-right:14px">• ${esc(String(x).replace('Полная выручка Impulse не загружена','Полнота выручки ImpulseCRM ещё не сверена; нажмите «Сверить выручку Impulse»'))}</span>`).join('')}</div><div style="margin-top:8px"><button class="fb-action" type="button" data-cmd="expense">Заполнить расходы</button></div></div>`;}
+    const verified=state.paymentSummary;
+    const explained=list.map(x=>String(x)==='Есть операции с неподтверждённым способом оплаты'&&verified&&verified.period===state.period&&z(verified.unclassified)===0&&z(verified.reconciled)>0
+      ?'Методы EPOS/переводы подтверждены по суммам касс; конкретные операции в ответе ImpulseCRM не размечены':x);
+    return `<div class="fb-note error"><strong>Данные баланса неполные.</strong> Не используйте промежуточную прибыль как окончательный финансовый результат.<div style="margin-top:6px">${explained.map(x=>`<span style="display:inline-block;margin-right:14px">• ${esc(String(x).replace('Полная выручка Impulse не загружена','Полнота выручки ImpulseCRM ещё не сверена; нажмите «Сверить выручку Impulse»'))}</span>`).join('')}</div><div style="margin-top:8px"><button class="fb-action" type="button" data-cmd="expense">Заполнить расходы</button></div></div>`;}
   function kpis(){const m=stats(),profit=hasProfit()?rub(m.profit):'—',be=hasBreakEven()?rub(m.break_even):'—';
     const payouts=snap().payments||{},paySplit=payouts.paid!=null&&payouts.unpaid!=null
       ?`<div class="fb-payment-mini"><div><span>Выплачено</span><b class="fb-positive">${rub(payouts.paid)}</b></div><div><span>Начислено, не выплачено</span><b>${rub(payouts.unpaid)}</b></div></div>`
@@ -5387,6 +5390,15 @@ async function renderBalance(body){
     return `<div class="fb-chips">${texts.map(x=>`<span class="fb-badge">${esc(x)}</span>`).join('')}</div>`;}
   function incomes(){const income=snap().income||[],total=income.reduce((a,x)=>a+z(x.amount),0),byKind=new Map(),byUnit=new Map(),byPay=new Map(),byEntity=new Map();
     for(const x of income){const k=x.income_type||'other';byKind.set(k,z(byKind.get(k))+z(x.amount));byUnit.set(x.unit,z(byUnit.get(x.unit))+z(x.amount));if(k!=='refund_gross'){const p=x.payment_method||'unknown';byPay.set(p,z(byPay.get(p))+z(x.amount));}if(x.direction==='studio'){const e=x.legal_entity||'unknown';byEntity.set(e,z(byEntity.get(e))+z(x.amount));}}
+    const verified=state.paymentSummary;
+    const paymentsAgree=verified&&verified.period===state.period&&Array.isArray(verified.methods)&&Math.abs(z(verified.total)-total)<0.005;
+    if(paymentsAgree){byPay.clear();for(const t of verified.methods){if(z(t.amount)>0)byPay.set(t.method,z(t.amount));}}
+    const paymentNames={cash:'Наличные',qr:'QR',card:'Картой',epos:'EPOS',transfer:'Переводом',balance:'С баланса клиента',unknown:'Не подтверждён способ оплаты'};
+    const paymentOrder=['cash','qr','card','epos','transfer','balance','unknown'];
+    const byPayOrdered=[...byPay].sort((a,b)=>(paymentOrder.indexOf(a[0])<0?99:paymentOrder.indexOf(a[0]))-(paymentOrder.indexOf(b[0])<0?99:paymentOrder.indexOf(b[0])));
+    const explanation='Каждый платёж определяется по полям payment/paymentText ImpulseCRM или по проверенному коду оплаты. Сводки касс не заменяют коды отдельных операций.';
+    const discrepancy=(verified&&Array.isArray(verified.unmatched_boxes)&&verified.unmatched_boxes.length)
+      ?'<div class="fb-muted" style="margin-top:8px">Сверка касс не совпала с новыми данными ImpulseCRM; неподтверждённые суммы оставлены отдельно. Проверьте операции в CRM.</div>':'';
     const kindNames={group:'Групповые занятия и абонементы',individual:'Индивидуальные',rent_subscription:'Арендные абонементы',rent_single:'Разовая аренда',rent:'Аренда (старый импорт — обновите)',single:'Разовые занятия',prolong:'Продление абонемента',goods:'Товары в студии',account_topup:'Пополнения счёта',debt_payment:'Оплата долгов по группам',refund_gross:'Возвраты (техническая запись, не выручка)',other:'Другие оплаты'};
     const kinds=[...byKind].sort((a,b)=>b[1]-a[1]);const units=[...byUnit].sort((a,b)=>b[1]-a[1]);
     const colors=['#b5792a','#d9aa58','#34835e','#96bba5','#7e9da8'];
@@ -5394,7 +5406,7 @@ async function renderBalance(body){
     return section('Доходы','Структура только из подтверждённых поступлений',`<div class="fb-cols">
       <div class="fb-panel"><div class="fb-eyebrow">Из чего складывается выручка</div>${kinds.length?`<div class="fb-bars">${bars}</div>${kinds.map(([k,v],i)=>row(`<span class="fb-dot" style="background:${colors[i%colors.length]}"></span>${esc(kindNames[k]||k)} <span class="fb-source">Impulse</span>`,`${rub(v)} <span class="fb-muted">${total?pc(v/total):'—'}</span>`)).join('')}`:waiting('Нет загруженных доходов по выбранному направлению')}</div>
       <div class="fb-panel"><div class="fb-eyebrow">По филиалам</div>${units.length?units.map(([u,v])=>`<div style="margin:12px 0">${row(`<span class="fb-dot" style="background:${unitColor(u)}"></span>${esc(unitName(u))}`,rub(v))}<div class="fb-progress"><span style="width:${pctWidth(total?100*v/total:0)};background:${unitColor(u)}"></span></div></div>`).join(''):waiting('Поступления пока не загружены')}
-      ${`<div class="fb-eyebrow" style="margin-top:18px">Как платят клиенты студий</div>${byPay.size?[...byPay].map(([k,v])=>row(esc({'cash':'Наличные','card':'Картой','qr':'QR / СБП','balance':'С баланса клиента','transfer':'Банковский перевод','unknown':'Способ не указан в ответе ImpulseCRM'}[k]||k),rub(v))).join(''):waiting('Нет разбивки по способам оплаты')}<div class="fb-muted" style="margin-top:9px">Разбивка по способам оплаты исключает возвращённые клиентам средства (код 15). Способы определяются по полям payment и paymentText API ImpulseCRM; номер кассы сам по себе их не определяет.</div><div class="fb-eyebrow" style="margin-top:15px">Юрлица студий</div>${byEntity.size?[...byEntity].map(([k,v])=>row(esc({'ip':'ИП Кирпиченко','ooo':'ООО Флексико','unknown':'Юрлицо не назначено'}[k.toLowerCase()]||k),rub(v))).join(''):waiting('Юрлицо не указано в источнике')}`}</div>
+      ${`<div class="fb-eyebrow" style="margin-top:18px">Как платят клиенты студий</div>${byPay.size?byPayOrdered.map(([k,v])=>row(esc(paymentNames[k]||k),rub(v))).join(''):waiting('Нет разбивки по способам оплаты')}<div class="fb-muted" style="margin-top:9px">${explanation} Разбивка исключает возвраты (код 15) и не меняет выручку/прибыль.</div>${discrepancy}${state.paymentError?`<div class="fb-muted">Не удалось получить уточнённую сводку оплаты: ${esc(state.paymentError)}. Показаны необработанные методы из FAD.</div>`:''}<div class="fb-eyebrow" style="margin-top:15px">Юрлица студий</div><div class="fb-muted" style="margin:5px 0 8px">Расчётная разбивка FAD по закреплённым филиалам, а не отдельная бухгалтерская выписка ImpulseCRM.</div>${byEntity.size?[...byEntity].map(([k,v])=>row(esc({'ip':'ИП Кирпиченко','ooo':'ООО Флексико','unknown':'Юрлицо не назначено'}[k.toLowerCase()]||k),rub(v))).join(''):waiting('Юрлицо не указано в источнике')}`}</div>
     </div>`);}
   function payroll(){
     const v=snap().trainer||{},a=snap().admin_salary||{},share=z(stats().revenue)>0?(z(v.gross)+z(a.gross))/z(stats().revenue):null;
@@ -5464,14 +5476,16 @@ async function renderBalance(body){
   }
   async function load(){if(!current()||state.busy)return;state.busy=true;state.error='';render();
     try{
+      const period=state.period;
       const [data,providers]=await Promise.all([
-        rpc('app_balance_snapshot',{p_token:TOKEN,p_period:state.period,p_scope:'studio',p_scenario:sc[state.scenario]}),
-        rpc('app_balance_integrations_status',{p_token:TOKEN,p_period:state.period}).catch(()=>[])
+        rpc('app_balance_snapshot',{p_token:TOKEN,p_period:period,p_scope:'studio',p_scenario:sc[state.scenario]}),
+        rpc('app_balance_integrations_status',{p_token:TOKEN,p_period:period}).catch(()=>[])
       ]);
-      if(!current())return;
+      if(!current()||state.period!==period)return;
       state.data=data;state.providerStatus=Array.isArray(providers)?providers:[];
+      state.paymentSummary=null;state.paymentError='';
     }
-    catch(e){if(!current())return;state.error=String(e?.message||e);state.data=null;}
+    catch(e){if(!current())return;state.error=String(e?.message||e);state.data=null;state.paymentSummary=null;}
     finally{state.busy=false;if(current())render();}
   }
   async function refreshExternal(){
@@ -5540,7 +5554,7 @@ async function renderBalance(body){
     const importedList=imported.map(x=>`<div class="fb-row"><span class="fb-ellipsis" title="${esc(x.name)}">${esc(x.name)}${x.unit?' · '+esc(unitName(x.unit)):''} <span class="fb-source">${sourceLabel(x.source)}</span></span><strong>${rub(x.amount)}</strong></div>`).join('');
     const overlay=modal(`<div class="fb-expense-editor"><h3>Расходы · ${esc(displayPeriod(state.period))}</h3>
       <p class="fb-muted">Постоянные суммы — за месяц; переменные — фактические. Расходы ImpulseCRM (15/18/19) и начисленные зарплаты FAD подставляются автоматически. Автоматических начислений налога и эквайринга здесь нет. Ручные расходы сохраняются с обязательным выбором юрлица.</p>
-      <details><summary><strong>Операции без установленного способа оплаты</strong> · ${boxRows.length} касс/групп</summary><p class="fb-muted">FAD проверяет payment и paymentText каждой операции ImpulseCRM. Касса — место проведения операции, а не способ оплаты. Для оставшихся записей можно посмотреть фактические значения API без доступа к персональным данным клиентов.</p><div class="fb-actions" style="margin:9px 0"><button type="button" class="fb-action primary" id="fb-source-check">Проверить способы через ImpulseCRM</button></div><div id="fb-source-results" aria-live="polite"></div>${mapBox}</details>
+      <details><summary><strong>Проверка кодов оплаты ImpulseCRM</strong></summary><p class="fb-muted">Проверяем исходное поле payment отдельно у каждой операции. Номер кассы не является способом оплаты. Если числовые коды позволяют однозначно сопоставить четыре подтверждённые ноябрьские суммы EPOS/переводов, FAD закрепит коды за названиями для следующих импортов. При отсутствии уникальных кодов ничего не сохранится.</p><div class="fb-actions" style="margin:9px 0"><button type="button" class="fb-action primary" id="fb-source-check">Найти и закрепить подтверждённые коды</button></div><div id="fb-source-results" aria-live="polite"></div><p class="fb-muted">Если проверка не дала однозначного результата, ниже показаны группы, оставшиеся в базе до следующего импорта.</p>${mapBox}</details>
       <details open><summary><strong>Уже учтённые автоматически расходы</strong> · ${imported.length}</summary><div style="max-height:230px;overflow-y:auto">${importedList||'<p class="fb-muted">Данных об автоматических расходах пока нет; обновите импорт ImpulseCRM.</p>'}</div></details>
       <details open><summary><strong>Подтверждение фактических выплат</strong></summary>
         <p class="fb-muted">Вводите только действительно выплаченную сумму. Для тренеров указывайте дополнительные выплаты сверх уже учтённых авансов. У администраторов отметки «Выдано» ставятся в разделе «Зарплаты» — здесь их не меняем. Сумма начислений и прибыли от подтверждения оплаты не изменяется.</p>
@@ -5565,15 +5579,15 @@ async function renderBalance(body){
       try{
         const response=await fetch(SUPABASE_URL+'/functions/v1/fad-balance-sync',{
           method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY},
-          body:JSON.stringify({token:TOKEN,source:'impulse',month:state.period,mode:'inspect'})});
+          body:JSON.stringify({token:TOKEN,source:'impulse',month:state.period,mode:'discover_codes'})});
         const audit=await response.json();if(!response.ok||!audit.ok)throw Error(String(audit.error||'Ошибка запроса ImpulseCRM'));
-        const groups=(audit.payment_source_evidence||[]).filter(x=>x.method==='unknown');
-        const all=(audit.payment_source_evidence||[]);
-        const heads={cash:'Наличные',card:'Картой',qr:'QR / СБП',balance:'С баланса',transfer:'Банковский перевод',unknown:'Нельзя определить из ответа API'};
-        const summary=all.reduce((o,x)=>{const k=x.method||'unknown';(o[k]??={count:0,amount:0}).count+=Number(x.count)||0;o[k].amount+=Number(x.amount)||0;return o;},{});
-        const summaryHtml=Object.entries(summary).map(([k,x])=>`<div class="fb-row"><span>${esc(heads[k]||k)} · ${x.count} операций</span><strong>${rub(x.amount)}</strong></div>`).join('');
-        const groupHtml=groups.map(x=>`<div class="fb-row"><span><b>${esc(unitName(x.unit))}</b> · касса #${esc(x.paybox_id||'—')} · ${x.count} опер.<br><span class="fb-muted">API: payment=${esc(x.payment_code)}; paymentText=«${esc(x.payment_text)}»${x.paybox_name?' · '+esc(x.paybox_name):''}${x.reason==='conflicting_api_fields'?' · противоречие кода и текста':''}</span></span><strong>${rub(x.amount)}</strong></div>`).join('');
-        output.innerHTML='<div class="fb-note" style="margin:10px 0"><strong>Результат чтения ImpulseCRM</strong><p class="fb-muted">Автоматически распознанные методы применяются при следующем «Обновить данные». Ничего не определяется по номеру кассы.</p>'+summaryHtml+(groups.length?'<h4 style="margin:10px 0">Что ImpulseCRM пока не уточнил</h4>'+groupHtml:'<p class="fb-positive">Все методы присутствуют в ответе API и распознаны.</p>')+'</div>';
+        const groups=audit.payment_code_groups||[],discovery=audit.payment_code_discovery||{};
+        const heads={cash:'Наличные',card:'Картой',qr:'QR',balance:'С баланса',epos:'EPOS',transfer:'Переводом',unknown:'Не распознан'};
+        const groupHtml=groups.map(x=>`<div class="fb-row"><span><b>${esc(unitName(x.unit))}</b> · <b>код payment=${esc(x.code)}</b> · ${x.count} опер.<br><span class="fb-muted">API: ${esc((x.texts||[]).join(', ')||'paymentText не передан')} · ${(x.methods||[]).map(m=>esc(heads[m]||m)).join(', ')}</span></span><strong>${rub(x.amount)}</strong></div>`).join('');
+        const learned=(discovery.candidates||[]).map(x=>`<div class="fb-row"><span>${esc(unitName(x.unit))}: код <b>${esc(x.payment_code)}</b> = ${esc(heads[x.method]||x.method)} (${x.count} опер.)</span><strong>${rub(x.amount)}</strong></div>`).join('');
+        const issues=(discovery.issues||[]).map(x=>`<div class="fb-muted">${esc(x)}</div>`).join('');
+        const status=audit.saved===4?'<p class="fb-positive">Все четыре соответствия подтверждены по исходным кодам и сохранены. Нажмите «Обновить данные», чтобы классифицировать операции.</p>':'<p class="fb-muted">Соответствия НЕ записаны: недостаточно уникальных данных API или суммы изменились с момента подтверждения. Произвольного распределения нет.</p>';
+        output.innerHTML='<div class="fb-note" style="margin:10px 0"><strong>Фактические коды ImpulseCRM</strong>'+status+(learned?'<h4 style="margin-top:10px">Сопоставления</h4>'+learned:'')+(issues?'<h4 style="margin-top:10px">Причины</h4>'+issues:'')+'<h4 style="margin-top:10px">Все группы по коду платежа</h4>'+groupHtml+'</div>';
       }catch(e){output.innerHTML='<p class="fb-negative">'+esc(String(e.message||e))+'</p>';}
       finally{if(checkSource.isConnected)checkSource.disabled=false;}
     };
