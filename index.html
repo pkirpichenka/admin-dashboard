@@ -3902,6 +3902,38 @@ html[data-theme=dark] #schedRoot .do-grid-cell.other{background:#484039;border-c
 html[data-theme=dark] #schedRoot .do-grid-cell.other.do-locked{background:#3c3934;border-color:#8a7668;color:#d0a987}
 html[data-theme=dark] #schedRoot .do-grid-cell.late{background:#522d2e;border-color:#df6f69;color:#ffe0dd}
 
+
+/* FAD DR · просмотр карточки тренера прямо из двух режимов замены */
+.replacements .rep-name-open{appearance:none;display:inline-block;width:auto;max-width:100%;padding:4px 2px;margin:-4px -2px;border:0;border-radius:6px;background:transparent;color:var(--fad-text,#17261e);font:inherit;font-size:inherit;font-weight:inherit;line-height:inherit;text-align:left;cursor:pointer;overflow-wrap:anywhere}
+.replacements .rep-name-open:hover{text-decoration:underline;text-decoration-color:#2d7155;text-underline-offset:3px;color:#225c43}
+.replacements .rep-name-open:focus-visible{outline:2px solid #2d7155;outline-offset:3px;text-decoration:underline}
+.rep-profile-drawer{position:fixed;inset:0 0 0 auto;width:min(510px,100vw);height:100dvh;max-width:none;max-height:none;margin:0;padding:0;overflow:auto;overscroll-behavior:contain;border:0;border-left:1px solid var(--fad-border,#dce5de);border-radius:16px 0 0 16px;box-shadow:-12px 0 45px rgba(23,38,31,.17);background:var(--fad-surface,#fff);color:var(--fad-text,#17261e);font-family:var(--fad-font,inherit)}
+.rep-profile-drawer::backdrop{background:rgba(18,32,25,.45)}
+.rep-profile-drawer .rep-profile-inner{min-height:100%;display:flex;flex-direction:column;padding:24px 26px 28px;gap:18px}
+.rep-profile-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding-bottom:14px;border-bottom:1px solid var(--fad-border,#dce5de)}
+.rep-profile-head strong{font-size:16px;font-weight:800}
+.rep-profile-close{display:grid;place-items:center;width:44px;height:44px;flex:none;padding:0;border:1px solid var(--fad-border,#dce5de);background:var(--fad-bg,#f4f6f3);color:var(--fad-text,#17261e);border-radius:12px;font-size:25px;line-height:1;cursor:pointer}
+.rep-profile-person{display:flex;align-items:center;gap:14px;min-width:0}
+.rep-profile-avatar{display:grid;place-items:center;width:64px;height:64px;flex:none;background:#dfebe2;color:#225c43;border:1px solid #bed6c7;border-radius:18px;font-size:23px;font-weight:800}
+.rep-profile-person h2{margin:0 0 9px;font-size:20px;line-height:1.33;font-weight:800;overflow-wrap:anywhere;color:var(--fad-text,#17261e)}
+.rep-profile-status{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:999px;background:#e5f3e9;color:#286144;font-size:12px;font-weight:700}
+.rep-profile-status.is-archive{background:#eff1ef;color:#65746c}
+.rep-profile-section{padding:16px 0;border-top:1px solid var(--fad-border,#dce5de)}
+.rep-profile-section h3{margin:0 0 11px;font-size:13px;color:var(--fad-muted,#60716a);font-weight:750}
+.rep-profile-chips{display:flex;flex-wrap:wrap;gap:8px}
+.rep-profile-chip{display:inline-flex;align-items:center;min-height:34px;gap:6px;padding:6px 12px;border:1px solid var(--fad-border,#dce5de);border-radius:999px;background:var(--fad-bg,#f3f6f3);color:var(--fad-text,#17261e);font-size:13px;font-weight:600}
+.rep-profile-chip .sdot{width:8px;height:8px;margin:0}
+.rep-profile-muted{margin:0;color:var(--fad-muted,#60716a);font-size:13px;line-height:1.55}
+.rep-profile-contact-list{display:flex;flex-wrap:wrap;gap:8px}
+.rep-profile-contact-list a{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:9px 13px;border:1px solid var(--fad-border,#dce5de);border-radius:11px;text-decoration:none;color:var(--fad-text,#17261e);background:var(--fad-surface,#fff);font-size:13px;font-weight:700}
+.rep-profile-contact-list a:hover{background:var(--fad-bg,#f3f6f3);border-color:#98b6a5}
+.rep-profile-contact-list a svg{width:18px;height:18px}
+.rep-profile-footer{margin-top:auto;padding-top:20px;border-top:1px solid var(--fad-border,#dce5de);display:flex;flex-wrap:wrap;gap:10px}
+.rep-profile-footer button{min-height:46px;padding:10px 15px;font-size:13px}
+.rep-profile-footer .btn-primary{background:#2d7155;border-color:#2d7155;color:#fff}
+.rep-profile-drawer :is(button,a):focus-visible{outline:2px solid #2d7155;outline-offset:2px}
+.emp-card.rep-profile-target{outline:3px solid #2d7155;outline-offset:3px}
+@media(max-width:600px){.rep-profile-drawer{width:100vw;max-width:100vw;border-radius:0;border-left:0}.rep-profile-drawer .rep-profile-inner{padding:18px 17px 24px}.rep-profile-avatar{width:54px;height:54px;border-radius:16px}.rep-profile-person h2{font-size:18px}.rep-profile-footer{flex-direction:column}.rep-profile-footer button{width:100%}}
 </style>
 
 <div id="root"></div>
@@ -3922,7 +3954,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '21.11.2026-dq'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '21.11.2026-dr'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -7877,6 +7909,64 @@ function mergeTrainerDirection(catalog,direction){
   }
 }
 
+
+/* FAD DR · единая боковая карточка тренера; никаких новых RPC и полномочий.
+   Источник — те же trainers / trainer_directions, которые загрузил app_replacements_list. */
+let REP_PENDING_FULL_PROFILE_ID='';
+function repTrainerInitials(name){
+  const words=String(name||'').trim().split(/\s+/).filter(Boolean);
+  return (words.length>=2?words[0][0]+words[1][0]:(words[0]||'Т').slice(0,2)).toLocaleUpperCase('ru');
+}
+function repBindTrainerProfile(page,trainers,catalog,directionsByTrainer){
+  const trainersMap=new Map((trainers||[]).map(t=>[String(t.id),t]));
+  const directionsMap=new Map((catalog||[]).map(d=>[String(d.id),d]));
+  page.addEventListener('click',event=>{
+    const opener=event.target.closest('[data-rep-open-trainer]');
+    if(!opener||!page.contains(opener))return;
+    const trainer=trainersMap.get(String(opener.dataset.repOpenTrainer));
+    if(!trainer)return;
+    const fullName=String(trainer.full_name||'Тренер');
+    const archived=trainer.is_active===false;
+    const branches=employeeStudios(trainer);
+    const dirIds=directionsByTrainer.get(String(trainer.id))||new Set();
+    const dirNames=[...dirIds].map(id=>directionsMap.get(String(id))?.name).filter(Boolean)
+      .sort((a,b)=>String(a).localeCompare(String(b),'ru'));
+    const raw=staffPhoneDial(trainer.phone||'');
+    const phone=trainerInternationalPhone(raw);
+    const nick=normalizeTrainerTelegramUsername(trainer.telegram_username);
+    const contacts=[];
+    if(phone)contacts.push(`<a href="tel:${escapeHtml(phone)}" aria-label="Позвонить тренеру">${'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg>'}Позвонить</a>`);
+    if(nick)contacts.push(`<a href="https://t.me/${escapeHtml(nick)}" target="_blank" rel="noopener noreferrer">${TRAINER_TELEGRAM_ICON}Telegram</a>`);
+    if(phone)contacts.push(`<a href="viber://chat?number=${encodeURIComponent(phone)}">${TRAINER_VIBER_ICON}Viber</a>`);
+    const canOpenEmployees=!!document.querySelector('.fad-sidebar-tab[data-tab="employees"]')&&
+      (session?.role==='owner'||can('employees.view')||can('employees.manage'));
+    const dialog=document.createElement('dialog');
+    dialog.className='rep-profile-drawer';dialog.setAttribute('aria-labelledby','rep-profile-title');
+    dialog.innerHTML=`<div class="rep-profile-inner">
+      <div class="rep-profile-head"><strong>Карточка тренера</strong><button type="button" class="rep-profile-close" data-rep-profile-close aria-label="Закрыть карточку">×</button></div>
+      <div class="rep-profile-person"><span class="rep-profile-avatar" aria-hidden="true">${escapeHtml(repTrainerInitials(fullName))}</span>
+        <div><h2 id="rep-profile-title">${escapeHtml(fullName)}</h2><span class="rep-profile-status${archived?' is-archive':''}">${archived?'В архиве':'Работает'}</span></div></div>
+      <section class="rep-profile-section"><h3>Филиалы</h3>${branches.length?`<div class="rep-profile-chips">${branches.map(id=>`<span class="rep-profile-chip">${sdot(id)}${escapeHtml(studioName(id))}</span>`).join('')}</div>`:'<p class="rep-profile-muted">Филиалы не указаны</p>'}</section>
+      <section class="rep-profile-section"><h3>Направления</h3>${dirNames.length?`<div class="rep-profile-chips">${dirNames.map(name=>`<span class="rep-profile-chip">${escapeHtml(name)}</span>`).join('')}</div>`:'<p class="rep-profile-muted">Направления не указаны</p>'}</section>
+      <section class="rep-profile-section"><h3>Быстрая связь</h3>${contacts.length?`<div class="rep-profile-contact-list">${contacts.join('')}</div>`:'<p class="rep-profile-muted">Контакты не указаны</p>'}</section>
+      <p class="rep-profile-muted">Подбор замен учитывает направления и статус тренера. Занятость на конкретную дату проверяется отдельно в режиме «Новая · тест».</p>
+      <div class="rep-profile-footer">${canOpenEmployees?'<button type="button" class="btn btn-primary" data-rep-profile-full>Открыть полную карточку</button>':''}<button type="button" class="btn" data-rep-profile-close>Закрыть</button></div>
+    </div>`;
+    dialog.addEventListener('close',()=>{dialog.remove();if(opener.isConnected)opener.focus({preventScroll:true});},{once:true});
+    dialog.addEventListener('click',e=>{
+      if(e.target===dialog||e.target.closest('[data-rep-profile-close]')){dialog.close();return;}
+      if(e.target.closest('[data-rep-profile-full]')){
+        const employeesNav=document.querySelector('.fad-sidebar-tab[data-tab="employees"]');
+        if(!employeesNav){toast('Нет доступа к разделу сотрудников',true);return;}
+        REP_PENDING_FULL_PROFILE_ID=String(trainer.id);
+        EMP_VIEW=archived?'archive':'trainer';
+        dialog.close();employeesNav.click();
+      }
+    });
+    document.body.appendChild(dialog);dialog.showModal();dialog.querySelector('[data-rep-profile-close]')?.focus({preventScroll:true});
+  });
+}
+
 /* FAD BV · карточка тренера для подбора замен.
    В версии BU вызов replacementRow был, но определения не было, из-за чего
    drawResults() прерывался ДО вызова impulse-schedule и оставлял состояние loading. */
@@ -7892,7 +7982,7 @@ function replacementRow({trainer,missing=[]}){
     `<button type="button" class="rep-row-contact" disabled title="Телефон не указан" aria-label="Позвонить: номер не указан">${callIcon}</button>`;
   const contactLinks=trainerMessengerLinks(trainer,raw);
   const notQualified=missing.length?`<span class="rep-missing">${escapeHtml(missing.join(', '))}</span>`:'';
-  return `<li class="rep-row"><div class="rep-row-info"><h4 class="rep-name">${name}</h4>
+  return `<li class="rep-row"><div class="rep-row-info"><h4 class="rep-name"><button type="button" class="rep-name-open" data-rep-open-trainer="${escapeHtml(String(trainer.id))}" aria-label="Открыть карточку тренера ${name}">${name}</button></h4>
     <div class="rep-row-meta">${studioTags}${notQualified}</div></div>
     <div class="rep-row-contacts">${call}${contactLinks}</div></li>`;
 }
@@ -7999,6 +8089,7 @@ async function renderReplacementsAdvanced(body){
     byTrainer.get(String(a.trainer_id))?.add(Number(a.direction_id));
     assignmentCounts.set(Number(a.direction_id),(assignmentCounts.get(Number(a.direction_id))||0)+1);
   }
+  repBindTrainerProfile(page,trainers,catalog,byTrainer);
   const today=repMinskToday(),lastDay=repShiftDate(today,56);
   const emptyLesson=()=>({date:today,start:'18:00',end:'19:00',directionId:0,branch:'',_placeholder:true});
   const st={mode:'trainer',trainerId:'',directionId:0,lessons:[emptyLesson()],buf:15,onlyFull:false,
@@ -8509,7 +8600,7 @@ function replacementRow({trainer,missing}){
   const meta=(branchLabels?`<span class="rep-branches">${branchLabels}</span>`:'')
     +(missing.length?`<span class="rep-missing">Нет: ${escapeHtml(missing.map(d=>d.name).join(', '))}</span>`:'');
   return `<li class="rep-row">
-    <div class="rep-row-info"><div class="rep-name">${name}</div>${meta?`<div class="rep-row-meta">${meta}</div>`:''}</div>
+    <div class="rep-row-info"><div class="rep-name"><button type="button" class="rep-name-open" data-rep-open-trainer="${escapeHtml(String(trainer.id))}" aria-label="Открыть карточку тренера ${name}">${name}</button></div>${meta?`<div class="rep-row-meta">${meta}</div>`:''}</div>
     <div class="rep-row-contacts">${contacts}</div>
   </li>`;
 }
@@ -8566,6 +8657,7 @@ async function renderReplacements(body){
     assignmentCounts.set(direction_id,(assignmentCounts.get(direction_id)||0)+1);
   }
 
+  repBindTrainerProfile(page,trainers,catalog,new Map([...directionsByTrainer].map(([id,values])=>[String(id),values])));
   const state={mode:'trainer',trainerId:'',selected:new Set(),onlyFull:false};
   page.querySelector('.rep-loading').remove();
   page.insertAdjacentHTML('beforeend',`<div class="rep-query">
@@ -9146,6 +9238,15 @@ async function renderEmployees(body){
         canDelete:session.role==='owner'&&archived,
         canAccountSettings:!!account&&manageAdmins});
     }).join('')}</div>`:view==='trash'?`<div class="empty emp-trash-empty">${EMP_CARD_ICONS.trash}<span>Корзина пуста. Удалённые сотрудники появятся здесь.</span></div>`:'<div class="empty">Сотрудников в этом разделе нет.</div>';
+    // FAD DR: переход по кнопке «Открыть полную карточку» из подбора замен.
+    if(REP_PENDING_FULL_PROFILE_ID){
+      const id=REP_PENDING_FULL_PROFILE_ID;
+      const card=[...list.querySelectorAll('.emp-card')].find(el=>el.dataset.empKey==='employee:'+id);
+      if(card){
+        REP_PENDING_FULL_PROFILE_ID='';card.classList.add('rep-profile-target');card.tabIndex=-1;
+        requestAnimationFrame(()=>{if(!card.isConnected)return;card.scrollIntoView({block:'center',behavior:'smooth'});card.focus({preventScroll:true});});
+      }
+    }
   }
   body.querySelectorAll('[data-empv]').forEach(b=>b.onclick=()=>{
     if(appHasUnsavedWork()){toast('Сначала сохраните изменения',true);return;}
