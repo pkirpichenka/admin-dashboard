@@ -3934,6 +3934,37 @@ html[data-theme=dark] #schedRoot .do-grid-cell.late{background:#522d2e;border-co
 .rep-profile-drawer :is(button,a):focus-visible{outline:2px solid #2d7155;outline-offset:2px}
 .emp-card.rep-profile-target{outline:3px solid #2d7155;outline-offset:3px}
 @media(max-width:600px){.rep-profile-drawer{width:100vw;max-width:100vw;border-radius:0;border-left:0}.rep-profile-drawer .rep-profile-inner{padding:18px 17px 24px}.rep-profile-avatar{width:54px;height:54px;border-radius:16px}.rep-profile-person h2{font-size:18px}.rep-profile-footer{flex-direction:column}.rep-profile-footer button{width:100%}}
+/* FAD DS · Owner-only Balance. Locally scoped; leaves all other FAD styles untouched. */
+.fad-balance{color:var(--text,#1d3027);font-family:Manrope,system-ui,sans-serif;max-width:1680px;margin:auto;padding-bottom:36px}
+.fad-balance *{box-sizing:border-box}.fad-balance .fb-stack{display:flex;flex-direction:column;gap:18px}
+.fad-balance .fb-tools,.fad-balance .fb-inline,.fad-balance .fb-chips{display:flex;align-items:center;flex-wrap:wrap;gap:9px}
+.fad-balance .fb-tools{justify-content:space-between;gap:12px;margin:0 0 18px}
+.fad-balance .fb-title{font-size:17px;font-weight:850;margin:0 0 3px;letter-spacing:-.02em}
+.fad-balance .fb-muted{font-size:12px;color:var(--muted,#69796f);line-height:1.55}
+.fad-balance .fb-eyebrow{text-transform:uppercase;font-size:10px;letter-spacing:.085em;font-weight:800;color:var(--muted,#728277)}
+.fad-balance .fb-panel{background:var(--surface,#fff);border:1px solid var(--line,#dce5de);border-radius:15px;padding:17px;box-shadow:0 1px 3px rgba(17,50,31,.035);min-width:0}
+.fad-balance .fb-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.fad-balance .fb-kpi{min-height:118px;display:flex;flex-direction:column;gap:8px}.fad-balance .fb-big{font-size:clamp(23px,2.3vw,32px);font-weight:850;letter-spacing:-.045em;font-variant-numeric:tabular-nums;line-height:1.16}.fad-balance .fb-positive{color:#20744d}.fad-balance .fb-negative{color:#a93630}
+.fad-balance .fb-chips{gap:8px}.fad-balance .fb-chip,.fad-balance .fb-action{font:inherit;font-size:12px;font-weight:750;border-radius:11px;border:1px solid var(--line,#dbe4de);background:var(--surface,#fff);color:var(--text,#203529);min-height:44px;padding:10px 13px;cursor:pointer;white-space:nowrap}
+.fad-balance .fb-chip[aria-pressed="true"],.fad-balance .fb-action.primary{background:#176044;border-color:#176044;color:#fff}
+.fad-balance .fb-chip:hover,.fad-balance .fb-action:not(:disabled):hover{filter:brightness(.97)}.fad-balance .fb-action:disabled{opacity:.45;cursor:not-allowed}
+.fad-balance .fb-badge{border:1px solid var(--line,#dce5de);border-radius:20px;font-size:11px;font-weight:750;padding:7px 10px;display:inline-flex;align-items:center;gap:5px;background:var(--surface,#fff)}.fad-balance .fb-badge.bad{color:#9e3c32;border-color:#ebc7c0;background:#fff2f0}.fad-balance .fb-badge.warn{color:#8d5b12;border-color:#e9d7b1;background:#fff9ef}.fad-balance .fb-badge.good{color:#176044}
+.fad-balance .fb-note{padding:13px 15px;border-radius:12px;background:var(--surface2,#f2f6f1);border:1px solid var(--line,#dfe5df);font-size:12px;line-height:1.55}.fad-balance .fb-note.error{background:#fff2f0;border-color:#eac6c1;color:#9b3d34}
+.fad-balance .fb-group{margin-top:4px;display:flex;flex-direction:column;gap:12px}.fad-balance .fb-section-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap}.fad-balance .fb-section-head h2{font-size:16px;font-weight:850;margin:0;letter-spacing:-.015em}.fad-balance .fb-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}.fad-balance .fb-cols.broad{grid-template-columns:minmax(0,1.25fr) minmax(290px,.75fr)}
+.fad-balance .fb-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line,#e2e8e1);font-size:12px}.fad-balance .fb-row:last-child{border-bottom:0}.fad-balance .fb-row strong{font-variant-numeric:tabular-nums;white-space:nowrap}.fad-balance .fb-progress{height:8px;background:#e9eee9;border-radius:20px;overflow:hidden}.fad-balance .fb-progress>span{display:block;height:100%;background:#2a805a;border-radius:20px}.fad-balance .fb-bars{display:flex;width:100%;height:14px;border-radius:8px;overflow:hidden;margin:8px 0 12px;gap:2px}.fad-balance .fb-bars>span{height:100%}
+.fad-balance .fb-grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.fad-balance .fb-controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}.fad-balance .fb-controls label,.fad-balance .fb-label{font-size:12px;color:var(--muted,#5d7062);font-weight:750}
+.fad-balance .fb-select,.fad-balance .fb-input{height:44px;max-width:100%;border:1px solid var(--line,#d1ddd3);border-radius:10px;background:var(--surface,#fff);color:var(--text,#1b2d22);font-family:inherit;padding:0 12px;font-size:12px;min-width:0}
+.fad-balance .fb-chart{width:100%;min-height:235px;display:block;overflow:visible}.fad-balance .fb-legend{display:flex;flex-wrap:wrap;gap:14px;font-size:11px;color:var(--muted,#617465)}.fad-balance .fb-key{display:inline-block;width:15px;height:3px;border-radius:3px;vertical-align:middle;margin-right:5px}
+.fad-balance .fb-table-scroll{max-width:100%;overflow-x:auto}.fad-balance .fb-table{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap;font-variant-numeric:tabular-nums}.fad-balance .fb-table th{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted,#617365);text-align:left;padding:12px 10px;border-bottom:1px solid var(--line,#dbe3db)}.fad-balance .fb-table td{padding:12px 10px;border-bottom:1px solid var(--line,#e5ebe5)}.fad-balance .fb-table td:not(:first-child),.fad-balance .fb-table th:not(:first-child){text-align:right}.fad-balance .fb-table tfoot td{background:var(--surface2,#f1f5f1);font-weight:850}.fad-balance .fb-table .fb-left{text-align:left!important}
+.fad-balance .fb-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:middle}.fad-balance .fb-source{background:var(--surface2,#eef3ee);color:var(--muted,#667568);font-size:10px;border-radius:12px;padding:3px 7px;margin-left:6px}
+.fad-balance .fb-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.fb-expense-editor{display:flex;flex-direction:column;gap:11px}.fb-expense-editor label{font-size:12px;font-weight:800;display:flex;flex-direction:column;gap:6px}.fb-expense-editor input,.fb-expense-editor select{min-height:44px;width:100%;border:1px solid #d4e0d6;background:var(--surface,#fff);color:inherit;padding:9px 12px;border-radius:10px;font:inherit}.fb-expense-editor .fb-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.fad-balance .fb-label-row{margin-bottom:8px}.fad-balance .fb-dim{opacity:.75}.fad-balance .fb-statusline{font-size:12px;padding:10px 0}.fad-balance .fb-strong{font-weight:850}.fad-balance .fb-ellipsis{min-width:0;overflow:hidden;text-overflow:ellipsis}.fad-balance .fb-placeholder{min-height:86px;display:flex;align-items:center;justify-content:center;color:var(--muted,#738378);font-size:12px;text-align:center}
+@media(max-width:1200px){.fad-balance .fb-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.fad-balance .fb-tiles{grid-template-columns:1fr 1fr}}
+@media(max-width:760px){.fad-balance .fb-cols,.fad-balance .fb-cols.broad,.fad-balance .fb-grid3,.fad-balance .fb-tiles{grid-template-columns:1fr}.fad-balance .fb-kpis{grid-template-columns:1fr 1fr}.fad-balance .fb-panel{padding:13px}.fad-balance .fb-big{font-size:23px}.fad-balance .fb-tools{align-items:flex-start}.fad-balance .fb-controls{align-items:flex-start}.fad-balance .fb-statusline{line-height:1.5}}
+@media(max-width:430px){.fad-balance .fb-kpis{grid-template-columns:1fr 1fr;gap:7px}.fad-balance .fb-kpi{min-height:125px;padding:11px}.fad-balance .fb-big{font-size:20px}.fad-balance .fb-chip{padding:8px 11px;font-size:11px}.fad-balance .fb-select{max-width:180px}.fad-balance .fb-chart{min-height:175px}}
+
 </style>
 
 <div id="root"></div>
@@ -3954,7 +3985,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '21.11.2026-dr'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '22.11.2026-ds'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -4844,6 +4875,7 @@ const NAV_ITEMS = [
   {id:'clients',label:'Клиенты · Задачи',icon:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8a4 4 0 0 0 0 8 M18 8h4 M20 6v4',group:'work'},
   {id:'schedule',label:'Расписание',icon:'M8 2v4 M16 2v4 M3 9h18 M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z M8 13h3 M8 17h3 M15 13h2',group:'work'},
   {id:'knowledge',label:'База знаний',icon:'M4 5a2 2 0 0 1 2-2h6v17H6a2 2 0 0 0-2 2V5z M20 5a2 2 0 0 0-2-2h-6v17h6a2 2 0 0 1 2 2V5z M8 7h2 M14 7h2 M8 11h2 M14 11h2',group:'work'},
+  {id:'balance',label:'Баланс',icon:'M4 20V10 M10 20V4 M16 20v-7 M22 20H2 M4 15h4 M10 9h4 M16 14h4',group:'people'},
   {id:'salaries',label:'Зарплаты',icon:'M3 6h18v13H3z M3 10h18 M16 15h2 M6 3h12',group:'people'},
   {id:'replacements',label:'Замены',icon:'M7 7h14 M17 3l4 4-4 4 M17 17H3 M7 13l-4 4 4 4',group:'people'},
   {id:'employees',label:'Сотрудники',icon:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8a4 4 0 0 0 0 8 M22 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75',group:'people'},
@@ -4888,6 +4920,7 @@ function getNavigationTabs(){
     reports:{key:'reports',label:'Отчёты',render:renderAllReports},
     schedule:{key:'schedule',label:'Расписание',render:renderSchedule},
     knowledge:{key:'knowledge',label:'База знаний',render:renderKnowledge},
+    balance:{label:'Баланс',key:'balance',render:renderBalance},
     salaries:{label:'Зарплаты',key:'salaries',render:renderSalaries},
     replacements:{label:'Замены',key:'replacements',render:renderReplacements},
     employees:{label:'Сотрудники',key:'employees',render:renderEmployees},
@@ -4899,7 +4932,7 @@ function getNavigationTabs(){
   };
   getNavigationTabs.registry=definitions; // только для проверки валидности NAV_ITEMS
   if(session?.role==='trainer')return [definitions.events];
-  const ownerOrder=['reports','plan','clients','schedule','knowledge','salaries','replacements','employees','roles','marketing','calendar','messages','events'];
+  const ownerOrder=['reports','plan','clients','schedule','knowledge','balance','salaries','replacements','employees','roles','marketing','calendar','messages','events'];
   const gorovayaOrder=['shift','plan','clients','reports','schedule','knowledge','salaries','replacements','employees','marketing','calendar','messages','events'];
   const adminOrder=['shift','plan','clients','schedule','knowledge','replacements','marketing','events'];
   const order=isOwner?ownerOrder:(isGorovaya?gorovayaOrder:adminOrder);
@@ -4910,6 +4943,7 @@ function getNavigationTabs(){
     reports:isOwner||(isGorovaya&&can('reports.view_all')),
     schedule:true,
     knowledge:isOwner||(session.role==='admin'&&!session.fadRoleLoadFailed),
+    balance:isOwner,
     salaries:isOwner||(isGorovaya&&session.adminPayrollAccess===true),
     replacements:isOwner||session.role==='admin',
     employees:isOwner||(isGorovaya&&['employees.view','employees.manage','admins.view','admins.manage','admins.permissions','admins.audit','telegram.manage'].some(k=>can(k))),
@@ -5236,6 +5270,206 @@ setInterval(()=>{
   if(panel.querySelector('input[data-bp-plan]:focus')||panel.querySelector('button.bp-toggle:focus'))return;
   renderBonusDashboard(panel);
 }, 120000);
+
+/* FAD DS · Баланс. Owner-only RPC interface; no fake business data. */
+async function renderBalance(body){
+  if(!session||session.role!=='owner'){
+    body.innerHTML='<div class="empty">Доступ к финансовому балансу есть только у руководителя.</div>';return;
+  }
+  const z=n=>Number.isFinite(Number(n))?Number(n):0;
+  const fmt=(n,d=2)=>n==null?'—':Number(n).toLocaleString('ru-RU',{minimumFractionDigits:d,maximumFractionDigits:d}).replace(/-/g,'−');
+  const rub=n=>n==null?'—':fmt(n)+' BYN';
+  const pc=n=>n==null?'—':fmt(n*100,1)+'%';
+  const esc=escapeHtml;
+  const periodToday=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Minsk',year:'numeric',month:'2-digit'}).format(new Date());
+  const mnames=['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
+  const displayPeriod=p=>{const [y,m]=p.split('-').map(Number);return mnames[m-1][0].toUpperCase()+mnames[m-1].slice(1)+' '+y;};
+  const dates=Array.from({length:24},(_,i)=>{const [y,m]=periodToday.split('-').map(Number);const d=new Date(Date.UTC(y,m-1-i,1));return d.toISOString().slice(0,7);});
+  const stored=(()=>{try{return sessionStorage.getItem('fad.balance.scope')}catch(_){return null}})();
+  const state={scope:['all','studio','vending'].includes(stored)?stored:'all',period:periodToday,scenario:'base',filter:'all',data:null,busy:false,error:'',expenseEdit:null};
+  const sc={cautious:.88,base:1,optimistic:1.1};
+  const shell=document.createElement('section');shell.className='fad-balance fade-in';body.replaceChildren(shell);
+  const current=()=>shell.isConnected&&!!session&&session.role==='owner'&&!!TOKEN;
+  const el=id=>shell.querySelector('#'+id);
+  const sourceLabel=s=>s==='impulse'?'Impulse':s==='vending'?'Телеметрия':s==='fad'?'FAD':s==='calculated'?'Расчёт':'Вручную';
+  const unitName=x=>({'masherova':'Машерова, 11','tolbuhina':'Толбухина, 2','kuibysheva':'Куйбышева, 22','coffee':'Кофе-автомат','snacks':'Торговый автомат'})[x]||x;
+  const unitColor=x=>({'masherova':'#2F6FB5','tolbuhina':'#E2711D','kuibysheva':'#E6A700','coffee':'#b5792a','snacks':'#ddb361'})[x]||'#8b9f94';
+  const pctWidth=n=>Math.min(100,Math.max(0,z(n))).toFixed(2)+'%';
+  const visible=d=>d?.direction===state.scope||state.scope==='all';
+  const snap=()=>state.data||{};
+  const stats=()=>snap().math||{};
+  const ready=()=>snap().stale===false;
+  const waiting=txt=>`<div class="fb-placeholder">${esc(txt)}</div>`;
+  const noValue=(n,meaning='')=>n==null?'—'+(meaning?' · '+meaning:''):rub(n);
+  function badge(text,mode){return `<span class="fb-badge ${mode||''}">${esc(text)}</span>`;}
+  function section(title,hint,content){return `<section class="fb-group"><div class="fb-section-head"><h2>${esc(title)}</h2>${hint?`<span class="fb-muted">${esc(hint)}</span>`:''}</div>${content}</section>`;}
+  function row(n,val){return `<div class="fb-row"><span>${n}</span><strong>${val}</strong></div>`;}
+  function chip(label,on,id){return `<button type="button" class="fb-chip" data-cmd="${id}" aria-pressed="${on?'true':'false'}">${esc(label)}</button>`;}
+  function graph(values,keys,{kind='line',target=null,styles=null,height=248}={}){
+    const W=850,H=height,left=55,right=18,top=16,bottom=32;
+    const all=[0,...values.flatMap(v=>keys.filter(k=>v[k]!=null).map(k=>z(v[k]))),z(target)];
+    const high=Math.max(1,...all.map(x=>Number.isFinite(x)?x:0));
+    const magnitude=Math.pow(10,Math.floor(Math.log10(high/4||1)));const options=[1,2,2.5,5,10];
+    const step=(options.find(a=>a*magnitude>=high/4)||10)*magnitude;
+    const maxY=Math.ceil(high/step)*step;
+    const count=Math.max(values.length-1,1),px=i=>left+(W-left-right)*i/count;
+    const py=v=>top+(H-top-bottom)*(1-Math.max(0,z(v))/maxY);
+    const ticks=Array.from({length:Math.round(maxY/step)+1},(_,i)=>{const y=py(i*step),val=i*step;const label=val>=10000?fmt(val/1000,val>=100000?0:1)+' тыс.':fmt(val,0);return `<line x1="${left}" y1="${y}" x2="${W-right}" y2="${y}" stroke="#e2e9e3"/><text x="${left-9}" y="${y+4}" text-anchor="end" fill="#738177" font-size="12">${label}</text>`;}).join('');
+    const colors=styles||{'revenue':'#1a744e','costs':'#ca5145','fixed':'#748b7f','actual':'#1b744e','cautious':'#b1c7b7','base':'#267c59','optimistic':'#8ba3a1'};
+    const paths=keys.map((k,i)=>{let started=false;const list=values.map((x,n)=>{if(x[k]==null||!Number.isFinite(Number(x[k]))){started=false;return '';}const cmd=started?'L':'M';started=true;return `${cmd} ${px(n).toFixed(2)} ${py(x[k]).toFixed(2)}`;}).filter(Boolean).join(' ');return `<path d="${list}" stroke="${colors[k]||'#b5792a'}" fill="none" stroke-width="${i===0?3:2}" stroke-dasharray="${k==='base'||k==='revenue'||k==='actual'?'':'6,4'}" stroke-linejoin="round"/>`;}).join('');
+    const targetLine=target!=null?`<line x1="${left}" x2="${W-right}" y1="${py(target)}" y2="${py(target)}" stroke="#ae5047" stroke-dasharray="7,5"/><text x="${W-right-2}" y="${py(target)-6}" fill="#ae5047" text-anchor="end" font-size="12">Безубыточность · ${fmt(target,0)}</text>`:'';
+    const labs=values.filter((_,i)=>i%Math.max(1,Math.floor(values.length/8))===0||i===values.length-1).map(v=>{const i=values.indexOf(v);return `<text x="${px(i)}" y="${H-10}" font-size="12" fill="#718077" text-anchor="middle">${esc(v.label??String(i+1))}</text>`;}).join('');
+    return `<svg class="fb-chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Финансовый график">${ticks}${targetLine}${paths}${labs}</svg>`;
+  }
+  function brokenSources(){const s=snap().source_status||[];return ['impulse','vending'].filter(n=>state.scope==='all'||state.scope===(n==='impulse'?'studio':'vending')).map(n=>{
+    const v=s.find(x=>x.source===n)||{},success=v.last_success_at?new Date(v.last_success_at).toLocaleString('ru-RU',{timeZone:'Europe/Minsk',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'не подключено';
+    const age=v.last_success_at?(Date.now()-Date.parse(v.last_success_at))/3600000:Infinity;
+    return badge(`${sourceLabel(n)} · ${success}${age>24&&v.last_success_at?' · устарело':''}`,v.coverage==='complete'&&age<=24?'good':v.coverage==='missing'?'bad':'warn');
+  }).join('');}
+  function firstToolbar(){const s=snap(),m=stats();return `<div class="fb-tools">
+    <div class="fb-controls" style="flex:1"><span class="fb-eyebrow">Направление</span><div class="fb-chips">${chip('Всё',state.scope==='all','scope:all')}${chip('Студии',state.scope==='studio','scope:studio')}${chip('Автоматы',state.scope==='vending','scope:vending')}</div><span class="fb-muted">Студии и автоматы учитываются отдельно, без двойного счёта.</span></div>
+    <div class="fb-controls"><label for="fb-period">Период</label><select id="fb-period" class="fb-select">${dates.map(p=>`<option value="${p}"${p===state.period?' selected':''}>${displayPeriod(p)}</option>`).join('')}</select>
+    <button type="button" class="fb-action primary" id="fb-reload" ${state.busy?'disabled':''}>${state.busy?'Загружаем…':'Обновить данные'}</button><button type="button" class="fb-action" id="fb-edit-exp">Расходы и ставки</button></div>
+  </div><div class="fb-inline" style="margin-bottom:14px">${brokenSources()}<span class="fb-muted">${m.elapsed==null?'':`Факт за 1–${m.elapsed} · ${displayPeriod(state.period)}`}</span></div>`;}
+  function warningBlock(){const list=snap().warnings||[];if(state.error)return `<div class="fb-note error">Ошибка загрузки: ${esc(state.error)}</div>`;
+    if(!list.length)return '';
+    return `<div class="fb-note error"><strong>Данные баланса неполные.</strong> Не используйте промежуточную прибыль как окончательный финансовый результат.<div style="margin-top:6px">${list.map(x=>`<span style="display:inline-block;margin-right:14px">• ${esc(x)}</span>`).join('')}</div><div style="margin-top:8px"><button class="fb-action" type="button" data-cmd="expense">Заполнить расходы / настройки</button></div></div>`;}
+  function kpis(){const m=stats(), profit=ready()?rub(m.profit):'—', be=ready()?rub(m.break_even):'—';
+    const cards=[['Выручка',rub(m.revenue),`Средняя: ${m.elapsed?rub(z(m.revenue)/m.elapsed)+' в день':'нет данных'} · К прошлому месяцу: ${snap().previous_revenue!=null&&snap().previous_source_complete?pc(snap().previous_revenue?z(m.revenue)/z(snap().previous_revenue)-1:null):'нет полной истории'}`],
+      ['Расходы',ready()?rub(m.costs):'—',`Учтено: постоянные ${rub(m.fixed_period)}, переменные ${rub(m.variable_period)}`],
+      ['Прибыль за период',profit,`Рентабельность ${ready()?pc(m.profitability):'—'} · ${ready()?'расчёт подтверждён':'ожидается полнота источников'}`],
+      ['Точка безубыточности',be,`За месяц · до точки ${ready()&&m.break_even!=null?rub(Math.max(0,m.break_even-z(m.revenue))):'недостаточно данных'}`]];
+    return `<div class="fb-kpis">${cards.map((a,i)=>`<div class="fb-panel fb-kpi"><div class="fb-eyebrow">${a[0]}</div><div class="fb-big ${i===2&&ready()?(z(m.profit)<0?'fb-negative':'fb-positive'):''}">${a[1]}</div>${i===3&&m.break_even?`<div class="fb-progress"><span style="width:${pctWidth(100*z(m.revenue)/m.break_even)}"></span></div>`:''}<div class="fb-muted">${a[2]}</div></div>`).join('')}</div>`;}
+  function insights(){const m=stats(),trainer=snap().trainer||{},equipment=snap().equipment;
+    const texts=[m.break_even_status==='already'?'Безубыточность достигнута':m.break_even_status==='not_this_month'?'Безубыточность по прогнозу не достигается':m.break_even_status==='undefined'?'Безубыточность пока не рассчитана':m.break_even_status?'Безубыточность: '+m.break_even_status:'Точка безубыточности не определена',
+      state.scope==='vending'?`Доплаты за оборудование: ${rub(equipment)}`:`Тренеры: к выдаче ${rub(trainer.payable)} · авансы ${rub(trainer.advances)}`,
+      state.scope==='vending'?'Автоматы — только прямые расходы':`План абонементов: ${m.sold||0} / ${m.plan_target||'—'} · порог 90%: ${m.plan_bonus_threshold||'—'}`,
+      ...(state.scope==='all'?[`Автоматы: ${rub((snap().income||[]).filter(x=>x.direction==='vending').reduce((acc,x)=>acc+z(x.amount),0))} · только прямые расходы`]:[])];
+    return `<div class="fb-chips">${texts.map(x=>`<span class="fb-badge">${esc(x)}</span>`).join('')}</div>`;}
+  function incomes(){const income=snap().income||[],total=income.reduce((a,x)=>a+z(x.amount),0),byKind=new Map(),byUnit=new Map(),byPay=new Map(),byEntity=new Map();
+    for(const x of income){const k=x.income_type||'other';byKind.set(k,z(byKind.get(k))+z(x.amount));byUnit.set(x.unit,z(byUnit.get(x.unit))+z(x.amount));const p=x.payment_method||'unknown';byPay.set(p,z(byPay.get(p))+z(x.amount));if(x.direction==='studio'){const e=x.legal_entity||'unknown';byEntity.set(e,z(byEntity.get(e))+z(x.amount));}}
+    const kindNames={group:'Групповые занятия и абонементы',individual:'Индивидуальные',rent:'Арендные абонементы',single:'Разовые занятия',other:'Другие оплаты'};
+    const kinds=[...byKind].sort((a,b)=>b[1]-a[1]);const units=[...byUnit].sort((a,b)=>b[1]-a[1]);
+    const colors=['#b5792a','#d9aa58','#34835e','#96bba5','#7e9da8'];
+    const bars=kinds.map(([k,v],i)=>`<span style="flex:${Math.max(.001,v)};background:${colors[i%colors.length]}"></span>`).join('');
+    return section('Доходы','Структура только из подтверждённых поступлений',`<div class="fb-cols">
+      <div class="fb-panel"><div class="fb-eyebrow">Из чего складывается выручка</div>${kinds.length?`<div class="fb-bars">${bars}</div>${kinds.map(([k,v],i)=>row(`<span class="fb-dot" style="background:${colors[i%colors.length]}"></span>${esc(kindNames[k]||k)} <span class="fb-source">${k==='vending'||k==='coffee'||k==='snacks'?'Телеметрия':'Impulse'}</span>`,`${rub(v)} <span class="fb-muted">${total?pc(v/total):'—'}</span>`)).join('')}`:waiting('Нет загруженных доходов по выбранному направлению')}</div>
+      <div class="fb-panel"><div class="fb-eyebrow">По филиалам и автоматам</div>${units.length?units.map(([u,v])=>`<div style="margin:12px 0">${row(`<span class="fb-dot" style="background:${unitColor(u)}"></span>${esc(unitName(u))}`,rub(v))}<div class="fb-progress"><span style="width:${pctWidth(total?100*v/total:0)};background:${unitColor(u)}"></span></div></div>`).join(''):waiting('Поступления пока не загружены')}
+      ${state.scope==='vending'?'':`<div class="fb-eyebrow" style="margin-top:18px">Как платят клиенты студий</div>${byPay.size?[...byPay].map(([k,v])=>row(esc({'cash':'Наличные','card':'Картой','qr':'QR','unknown':'Не определено'}[k]||k),rub(v))).join(''):waiting('Нет разбивки по способам оплаты')}<div class="fb-eyebrow" style="margin-top:15px">Юрлица студий</div>${byEntity.size?[...byEntity].map(([k,v])=>row(esc({'ip':'ИП','ooo':'ООО','unknown':'Не определено'}[k.toLowerCase()]||k),rub(v))).join(''):waiting('Юрлицо не указано в источнике')}`}</div>
+    </div>`);}
+  function payroll(){if(state.scope==='vending')return '';
+    const v=snap().trainer||{},a=snap().admin_salary||{},share=z(stats().revenue)>0?(z(v.gross)+z(a.gross))/z(stats().revenue):null;
+    return section('Зарплаты','Сводка только из сохранённых данных FAD; без ручного пересчёта',`<div class="fb-grid3">
+      <div class="fb-panel"><div class="fb-eyebrow">Преподаватели</div><div class="fb-big">${rub(v.gross)}</div>${row('Замены',rub(v.replacements))}${row('Пропуски',rub(v.skips))}${row('Авансы',rub(v.advances))}${row('К выдаче · не ниже 0',rub(v.payable))}<div class="fb-muted">Источник: зарплата преподавателей FAD</div></div>
+      <div class="fb-panel"><div class="fb-eyebrow">Администраторы</div><div class="fb-big">${rub(a.gross)}</div>${row('Оплата смен',rub(a.shift))}${row('Бонус Flexico',rub(a.branch_bonus))}${row('Качество',rub(a.quality))}${row('Старший администратор',rub(a.senior))}<div class="fb-muted">Доплаты за оборудование сюда не включены.</div></div>
+      <div class="fb-panel"><div class="fb-eyebrow">Доля зарплат в выручке</div><div class="fb-big">${ready()&&share!=null?pc(share):'—'}</div><div class="fb-muted">Зарплата тренеров и администраторов по текущим сохранённым данным FAD.</div></div>
+    </div>`);}
+  function vending(){if(state.scope!=='vending')return '';
+    const income=snap().income||[],d=stats().elapsed||1,unit=k=>income.filter(x=>x.unit===k).reduce((a,x)=>a+z(x.amount),0),total=unit('coffee')+unit('snacks');
+    const card=(k,label)=>{const v=unit(k);return `<div class="fb-panel"><div class="fb-eyebrow">${label}</div><div class="fb-big">${rub(v)}</div>${row('В день',rub(v/d))}${row('Доля выручки автоматов',total?pc(v/total):'—')}</div>`;};
+    return section('Аппараты','Кофе и торговый автомат — отдельное направление',`<div class="fb-grid3">${card('coffee','Кофе-автомат')}${card('snacks','Торговый автомат')}
+    <div class="fb-panel"><div class="fb-eyebrow">Доплаты администраторам</div><div class="fb-big">${rub(snap().equipment||0)}</div>${row('За выполненные работы',rub(snap().equipment||0))}${row('Доля выручки',total?pc(z(snap().equipment)/total):'—')}<div class="fb-muted">Данные совпадают с начислениями «Кофе» в FAD.</div></div></div>`);}
+  function expenses(){const all=snap().expenses||[],rows=all.filter(x=>state.filter==='all'||x.kind===state.filter);
+    const m=stats(),v=all.filter(x=>x.kind==='variable').reduce((a,x)=>a+z(x.amount),0),f=all.filter(x=>x.kind==='fixed').reduce((a,x)=>a+z(x.amount),0);
+    const labels={all:`Все ${all.length}`,fixed:`Постоянные ${all.filter(x=>x.kind==='fixed').length}`,variable:`Переменные ${all.filter(x=>x.kind==='variable').length}`};
+    return section('Расходы','Постоянные начисляются пропорционально дням месяца; переменные — фактические',`<div class="fb-panel">
+      <div class="fb-inline" style="justify-content:space-between;margin-bottom:14px"><div><span class="fb-eyebrow">Постоянные</span> <strong>${rub(f)}</strong> <span class="fb-muted">/ месяц</span>&nbsp;&nbsp;<span class="fb-eyebrow">Переменные</span> <strong>${rub(v)}</strong></div><button type="button" class="fb-action" data-cmd="expense">Редактировать расходы</button></div>
+      <div class="fb-chips" style="margin-bottom:12px">${Object.entries(labels).map(([k,v])=>chip(v,state.filter===k,'filter:'+k)).join('')}</div>
+      <div class="fb-table-scroll"><table class="fb-table"><thead><tr><th>Статья</th><th>Тип</th><th>Источник</th><th>За период, BYN</th><th>% выручки</th><th>Прогноз месяца</th></tr></thead><tbody>${rows.map(r=>{
+         const val=r.kind==='fixed'?z(r.amount)*(z(m.elapsed)/Math.max(1,z(m.days_in_month))):z(r.amount);
+         const projection=r.kind==='fixed'?z(r.amount):z(m.revenue)>0&&m.forecast_revenue!=null?z(r.amount)*z(m.forecast_revenue)/z(m.revenue):null;
+         return `<tr><td class="fb-left">${esc(r.name)}</td><td>${r.kind==='fixed'?'Постоянный':'Переменный'}</td><td>${sourceLabel(r.source)}</td><td>${fmt(val)}</td><td>${m.revenue?pc(val/z(m.revenue)):'—'}</td><td>${projection==null?'—':fmt(projection)}</td></tr>`;}).join('')||'<tr><td colspan="6">Расходы отсутствуют. Заполните месячные статьи.</td></tr>'}</tbody>
+      <tfoot><tr><td colspan="3" class="fb-left">Итого учтено</td><td>${fmt(m.costs)}</td><td>${m.revenue?pc(z(m.costs)/z(m.revenue)):'—'}</td><td>${m.forecast_costs==null?'—':fmt(m.forecast_costs)}</td></tr></tfoot></table></div>
+    </div>`);}
+  function breakEven(){const m=stats();if(!ready())return section('Точка безубыточности','',`<div class="fb-panel">${waiting('Для достоверного расчёта нужны полная выручка и все расходы. Тестовые цифры не подставляются.')}</div>`);
+    const be=m.break_even,vr=z(m.forecast_revenue)||z(m.revenue),mx=Math.max(be||0,vr,1)*1.15,margin=z(m.variable_share);
+    const points=Array.from({length:21},(_,i)=>{const x=mx*i/20;return {label:fmt(x/1000,0),revenue:x,costs:z(m.fixed_month)+margin*x,fixed:z(m.fixed_month)};});
+    return section('Точка безубыточности','Выручка за месяц, при которой доходы равны расходам',`<div class="fb-cols broad"><div class="fb-panel">
+      <div class="fb-legend"><span><i class="fb-key" style="background:#1a744e"></i>Выручка</span><span><i class="fb-key" style="background:#ca5145"></i>Все расходы</span><span><i class="fb-key" style="background:#748b7f"></i>Постоянные</span></div>
+      ${graph(points,['revenue','costs','fixed'],{target:be})}</div><div class="fb-panel"><div class="fb-eyebrow">Как это посчитано</div>
+      ${row('Постоянные расходы в месяц',rub(m.fixed_month))}${row('Переменные расходы за период',rub(m.variable_period))}${row('Маржинальность',pc(m.contribution_margin))}
+      ${row('Безубыточность в месяц',rub(be))}${row('Безубыточность в день',rub(m.break_even_daily))}
+      ${state.scope==='vending'?row('Выручка на автоматы',rub(be)):row('В абонементах',m.break_even_memberships==null?'—':String(m.break_even_memberships))}
+      ${row('Запас прочности',pc(m.safety))}</div></div>`);}
+  function forecast(){if(state.period!==periodToday)return '';
+    const s=snap().scenarios||{}, m=s[state.scenario]||stats();
+    const today=z(m.elapsed),weekdays=[];
+    const base=(s.base?.daily||[]),cautious=(s.cautious?.daily||[]),optimistic=(s.optimistic?.daily||[]);
+    const days=base.map((x,i)=>({label:String(i+1),actual:i<today?z(x.cumulative):null,
+       cautious:i>=today-1?z(cautious[i]?.cumulative):null,base:i>=today-1?z(x.cumulative):null,optimistic:i>=today-1?z(optimistic[i]?.cumulative):null}));
+    return section('Прогноз до конца месяца','Прогноз по дням недели на основе факта текущего месяца',`<div class="fb-inline">${chip('Осторожный',state.scenario==='cautious','scenario:cautious')}${chip('Базовый',state.scenario==='base','scenario:base')}${chip('Оптимистичный',state.scenario==='optimistic','scenario:optimistic')}</div>
+      <div class="fb-cols broad"><div class="fb-panel"><div class="fb-legend"><span><i class="fb-key" style="background:#1a744e"></i>Факт</span><span><i class="fb-key" style="background:#267c59"></i>Базовый</span><span><i class="fb-key" style="background:#b1c7b7"></i>Другие сценарии</span></div>
+        ${days.length?graph(days,['actual','cautious','base','optimistic'],{target:ready()?m.break_even:null}):waiting('Нет исходных дневных данных для прогноза')}
+        ${m.weekday_fallback?'<div class="fb-muted">Для дней недели без истории используется средняя выручка за наблюдаемые дни.</div>':''}
+      </div><div class="fb-panel"><div class="fb-eyebrow">Итог месяца · ${esc(state.scenario==='base'?'базовый':state.scenario==='cautious'?'осторожный':'оптимистичный')}</div>
+        ${row('Выручка',rub(m.forecast_revenue))}${row('Расходы',ready()?rub(m.forecast_costs):'—')}${row('Прибыль',ready()?rub(m.forecast_profit):'—')}${row('Рентабельность',ready()?pc(m.forecast_profitability):'—')}
+        <div class="fb-note" style="margin-top:14px">${ready()?`Безубыточность: ${esc(m.break_even_status==='already'?'уже достигнута':m.break_even_status==='not_this_month'?'не в этом месяце':m.break_even_status||'не рассчитана')}`:'Для прогноза безубыточности нужны полные данные.'}</div>
+        ${state.scope==='vending'?'':`<div class="fb-eyebrow" style="margin-top:15px">Прогноз плана абонементов</div>${row('Прогноз продаж',m.forecast_sales==null?'—':fmt(m.forecast_sales,1))}${row('Порог 90%',m.plan_bonus_threshold||'—')}${row('Прогноз проходит порог?',m.plan_90_reached==null?'—':m.plan_90_reached?'Да':'Нет')}`}</div></div>`);}
+  function units(){const all=snap().units||[],m=stats(),segmentData=snap().segments||[],items=state.scope==='all'?['tolbuhina','masherova','kuibysheva','coffee','snacks']:state.scope==='studio'?['tolbuhina','masherova','kuibysheva']:['coffee','snacks'];
+    const rev=Object.fromEntries(all.map(a=>[a.unit,z(a.revenue)]));const segments=Object.fromEntries(segmentData.map(a=>[a.unit,a]));
+    return section('Филиалы и автоматы','Автоматы выделены отдельно от выручки студии на Машерова, 11',`<div class="fb-panel"><div class="fb-table-scroll"><table class="fb-table"><thead><tr><th>Направление</th><th>Выручка</th><th>Прибыль</th><th>Рентабельность</th><th>Безубыточность</th><th>Прогноз выручки</th><th>Запас</th></tr></thead><tbody>${items.map(k=>{const seg=segments[k]||{};return `<tr><td class="fb-left"><span class="fb-dot" style="background:${unitColor(k)}"></span>${esc(unitName(k))}</td><td>${rub(rev[k]||0)}</td><td>${ready()?rub(seg.profit):'—'}</td><td>${ready()?pc(seg.profitability):'—'}</td><td>${ready()?rub(seg.break_even):'—'}</td><td>${seg.forecast_revenue==null?'—':rub(seg.forecast_revenue)}</td><td>${ready()?pc(seg.safety):'—'}</td></tr>`;}).join('')}</tbody>${items.length>1?`<tfoot><tr><td class="fb-left">Итого</td><td>${rub(m.revenue)}</td><td>${ready()?rub(m.profit):'—'}</td><td>${ready()?pc(m.profitability):'—'}</td><td>${ready()?rub(m.break_even):'—'}</td><td>${rub(m.forecast_revenue)}</td><td>${ready()?pc(m.safety):'—'}</td></tr></tfoot>`:''}</table></div><div class="fb-muted" style="margin-top:10px">Общие расходы распределяются по доле выручки направления, аренда и закупки конкретного объекта — напрямую. Безубыточность каждой строки рассчитывается отдельно и не суммируется арифметически.</div></div>`);}
+  function render(){if(!current())return;
+    shell.innerHTML=`${firstToolbar()}<div class="fb-stack">${warningBlock()}${kpis()}${insights()}${incomes()}${payroll()}${vending()}${expenses()}${breakEven()}${forecast()}${units()}</div>`;
+    const per=el('fb-period');if(per)per.onchange=()=>{state.period=per.value;load();};
+    const refresh=el('fb-reload');if(refresh)refresh.onclick=()=>refreshExternal();
+    const edit=el('fb-edit-exp');if(edit)edit.onclick=()=>editExpenses();
+    shell.querySelectorAll('[data-cmd]').forEach(b=>b.addEventListener('click',()=>{
+      const [cmd,val]=b.dataset.cmd.split(':');
+      if(cmd==='scope'){state.scope=val;try{sessionStorage.setItem('fad.balance.scope',val)}catch(_){}load();}
+      if(cmd==='scenario'){state.scenario=val;render();}
+      if(cmd==='filter'){state.filter=val;render();}
+      if(cmd==='expense')editExpenses();
+    }));
+  }
+  async function load(){if(!current()||state.busy)return;state.busy=true;state.error='';render();
+    try{const d=await rpc('app_balance_snapshot',{p_token:TOKEN,p_period:state.period,p_scope:state.scope,p_scenario:sc[state.scenario]});if(!current())return;state.data=d;}
+    catch(e){if(!current())return;state.error=String(e?.message||e);state.data=null;}
+    finally{state.busy=false;if(current())render();}
+  }
+  async function refreshExternal(){
+    if(!current()||state.busy)return;
+    const period=state.period,scope=state.scope;
+    // Never claim a disconnected provider is synchronized. The Impulse adapter
+    // imports only verified group deposits and marks source coverage partial.
+    if(scope!=='vending'){
+      state.busy=true;render();
+      try{
+        const response=await fetch(SUPABASE_URL+'/functions/v1/fad-balance-sync',{
+          method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY},
+          body:JSON.stringify({token:TOKEN,source:'impulse',month:period})});
+        const result=await response.json().catch(()=>({}));
+        if(!response.ok||!result.ok)toast('Адаптер Impulse: '+(result.error||'не подключён'),true);
+        else toast('Impulse: частичные подтверждённые поступления обновлены');
+      }catch(_){toast('Обновление Impulse недоступно. Сохранённые данные не менялись.',true);}
+      state.busy=false;
+    }
+    if(scope!=='studio')toast('Телеметрия автоматов пока не подключена — нужен API или CSV поставщика.',true);
+    await load();
+  }
+  function editExpenses(){if(!current())return;
+    const data=state.data||{},existing=data.manual_expenses||[],cfg=data.config||{};
+    const overlay=modal(`<div class="fb-expense-editor" style="min-width:min(640px,calc(100vw - 70px))"><h3>Расходы · ${esc(displayPeriod(state.period))}</h3>
+      <p class="fb-muted">Постоянные суммы за полный месяц, переменные — фактические за период. Ставки налога и эквайринга также сохраняются помесячно. Налог/эквайринг рассчитываются автоматически — не дублируйте их ручными статьями.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><label>Налог, %<input type="number" step="0.1" min="0" max="100" id="fb-tax" value="${cfg.tax_percent??6}"></label><label>Эквайринг, %<input type="number" step="0.01" min="0" max="100" id="fb-acq" value="${cfg.acquiring_percent??''}" placeholder="Не задан"></label></div>
+      <button type="button" class="btn btn-primary" id="fb-rates-save">Сохранить ставки налога и эквайринга</button>
+      <div style="max-height:220px;overflow:auto;border-top:1px solid #dde3dc;padding-top:8px"><strong>Сохранённые ручные статьи</strong>${existing.map(x=>`<div class="fb-row"><span>${esc(x.name)} · ${x.direction==='studio'?'Студии':'Автоматы'} · ${rub(x.amount)}</span><span><button class="btn" type="button" data-edit="${esc(x.id)}">Изменить</button> <button class="btn" data-remove="${esc(x.id)}" type="button">Удалить</button></span></div>`).join('')||'<p class="fb-muted">Статей пока нет.</p>'}</div>
+      <h3 id="fb-expense-caption">Новая статья</h3><input type="hidden" id="fb-expense-id">
+      <label>Название<input id="fb-name" maxlength="160" placeholder="Например, аренда Машерова"></label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><label>Тип<select id="fb-kind"><option value="fixed">Постоянный</option><option value="variable">Переменный</option></select></label>
+      <label>Направление<select id="fb-dir"><option value="studio">Студии</option><option value="vending">Автоматы</option></select></label></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><label>Адрес / аппарат<select id="fb-unit"><option value="">Общая статья</option><option value="masherova">Машерова</option><option value="tolbuhina">Толбухина</option><option value="kuibysheva">Куйбышева</option><option value="coffee">Кофе-автомат</option><option value="snacks">Торговый автомат</option></select></label>
+      <label>Сумма, BYN<input type="number" id="fb-amount" min="0" step="0.01" placeholder="0,00"></label></div>
+      <div class="fb-actions"><button type="button" class="btn" data-x>Закрыть</button><button type="button" class="btn btn-primary" id="fb-save-exp">Сохранить статью</button></div></div>`);
+    const q=id=>overlay.querySelector('#'+id);
+    overlay.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>{const x=existing.find(a=>String(a.id)===b.dataset.edit);if(!x)return;q('fb-expense-id').value=x.id;q('fb-name').value=x.name;q('fb-kind').value=x.kind;q('fb-dir').value=x.direction;q('fb-unit').value=x.unit||'';q('fb-amount').value=x.amount;q('fb-expense-caption').textContent='Редактирование статьи';});
+    overlay.querySelectorAll('[data-remove]').forEach(b=>b.onclick=async()=>{if(!window.confirm('Удалить эту статью расходов?'))return;try{await rpc('app_balance_expense_delete',{p_token:TOKEN,p_id:b.dataset.remove});closeModal(overlay);await load();}catch(e){toast(e.message||'Ошибка удаления',true);}});
+    q('fb-dir').onchange=()=>{const v=q('fb-dir').value;const u=q('fb-unit');[...u.options].forEach(o=>{o.hidden=o.value&&((v==='studio'&&['coffee','snacks'].includes(o.value))||(v==='vending'&&!['coffee','snacks'].includes(o.value)));});if(u.selectedOptions[0]?.hidden)u.value='';};q('fb-dir').onchange();
+    q('fb-rates-save').onclick=async()=>{try{const tax=Number(q('fb-tax').value),acq=q('fb-acq').value===''?null:Number(q('fb-acq').value);await rpc('app_balance_config_save',{p_token:TOKEN,p_period:state.period,p_tax:tax,p_acquiring:acq});toast('Ставки сохранены');closeModal(overlay);load();}catch(e){toast(e.message||'Ошибка',true);}};
+    q('fb-save-exp').onclick=async()=>{const name=q('fb-name').value.trim(),amount=Number(q('fb-amount').value);if(!name||q('fb-amount').value===''||!Number.isFinite(amount)||amount<0){toast('Укажите название и сумму',true);return;}
+      try{await rpc('app_balance_expense_save',{p_token:TOKEN,p_period:state.period,p_item:{id:q('fb-expense-id').value||null,name,kind:q('fb-kind').value,direction:q('fb-dir').value,unit:q('fb-unit').value||null,amount}});toast('Расход сохранён');closeModal(overlay);load();}catch(e){toast(e.message||'Ошибка сохранения',true);}};
+  }
+  render();await load();
+}
 
 /* ================= Field builders ================= */
 function moneyField(id,label,sub,val){return `<label class="field"><div class="lbl">${label} ${sub?`<small>${sub}</small>`:''}</div>
