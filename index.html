@@ -3965,6 +3965,13 @@ html[data-theme=dark] #schedRoot .do-grid-cell.late{background:#522d2e;border-co
 @media(max-width:760px){.fad-balance .fb-cols,.fad-balance .fb-cols.broad,.fad-balance .fb-grid3,.fad-balance .fb-tiles{grid-template-columns:1fr}.fad-balance .fb-kpis{grid-template-columns:1fr 1fr}.fad-balance .fb-panel{padding:13px}.fad-balance .fb-big{font-size:23px}.fad-balance .fb-tools{align-items:flex-start}.fad-balance .fb-controls{align-items:flex-start}.fad-balance .fb-statusline{line-height:1.5}}
 @media(max-width:430px){.fad-balance .fb-kpis{grid-template-columns:1fr 1fr;gap:7px}.fad-balance .fb-kpi{min-height:125px;padding:11px}.fad-balance .fb-big{font-size:20px}.fad-balance .fb-chip{padding:8px 11px;font-size:11px}.fad-balance .fb-select{max-width:180px}.fad-balance .fb-chart{min-height:175px}}
 
+
+.ct-root.ct-compact .ct-team-worknote{font-size:11px;color:var(--ct-muted);padding:4px 2px 2px;line-height:1.4}
+.ct-root.ct-compact .ct-team-worklist{background:var(--ct-surface);border:1px solid var(--ct-border);border-radius:10px;overflow:hidden;min-width:0}
+.ct-root.ct-compact .ct-team-worklist .ct-row{grid-template-columns:21px minmax(132px,1.1fr) auto minmax(100px,1.2fr) auto auto minmax(120px,163px) 24px}
+.ct-root.ct-compact .ct-team-worklist .ct-row-done{grid-template-columns:21px minmax(132px,1.1fr) auto minmax(0,2fr) 24px}
+@media(max-width:1100px){.ct-root.ct-compact .ct-team-worklist .ct-row{grid-template-columns:21px minmax(145px,1fr) minmax(120px,1fr) minmax(120px,170px) 24px}.ct-root.ct-compact .ct-team-worklist .ct-row .ct-chips,.ct-root.ct-compact .ct-team-worklist .ct-task-short{display:none}}
+@media(max-width:700px){.ct-root.ct-compact .ct-team-worklist .ct-row{grid-template-columns:21px minmax(0,1fr) 24px;gap:7px}.ct-root.ct-compact .ct-team-worklist .ct-row>.ct-row-actions{grid-column:2/3;grid-row:2;display:flex;gap:5px;flex-wrap:wrap}.ct-root.ct-compact .ct-team-worklist .ct-row>.ct-expand-btn{grid-column:3;grid-row:1}.ct-root.ct-compact .ct-team-worklist .ct-row-done{grid-template-columns:21px minmax(0,1fr) 24px}.ct-root.ct-compact .ct-team-worklist .ct-row-done>.ct-chip,.ct-root.ct-compact .ct-team-worklist .ct-row-done-info{grid-column:2;min-width:0}.ct-root.ct-compact .ct-team-worklist .ct-expanded{padding-left:11px}}
 </style>
 
 <div id="root"></div>
@@ -3985,7 +3992,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '22.11.2026-ds'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '22.11.2026-dt'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -10282,8 +10289,9 @@ const ROLE_DIRECTION_DEFS=[
 const ROLE_FORECAST_DEFS=[{key:'plan.forecast',group:'План и продажи',label:'Прогноз и рекомендации',desc:'Показывать прогноз выполнения плана и сценарии без права изменения бонусов или продаж'}];
 const ROLE_CLIENT_DEFS=[
   {key:'clients.own',group:'Клиенты и задачи',label:'Свои клиентские задачи',desc:'Персональная очередь, проверка CRM, результаты и копирование сообщений'},
-  {key:'clients.team',group:'Клиенты и задачи',label:'Просматривать задачи команды',desc:'Общий контроль работы администраторов и просмотр архивных планов'},
-  {key:'clients.manage',group:'Клиенты и задачи',label:'Управлять планами и импортом',desc:'Загрузка баз, активация планов, сохранение архивов и переназначение задач'}
+  {key:'clients.team',group:'Клиенты и задачи',label:'Просматривать задачи команды',desc:'Видеть задачи всех администраторов и архивные планы, без права изменять чужие задачи'},
+  {key:'clients.edit_all',group:'Клиенты и задачи',label:'Работать с задачами всей команды',desc:'Отмечать CRM, копировать сообщения, указывать результат, комментарий, следующий контакт и завершать задачи любого администратора. Не даёт права импортировать базу или менять план. Требуется просмотр команды.'},
+  {key:'clients.manage',group:'Клиенты и задачи',label:'Управлять планами и импортом',desc:'Загрузка баз, активация планов и управление архивом; не даёт автоматически права работать с чужими клиентами'}
 ];
 const ROLE_KNOWLEDGE_DEFS=[{key:'knowledge.edit',group:'База знаний',label:'Редактировать базу знаний',desc:'Создавать, править, закреплять и архивировать статьи, создавать разделы и разбирать вопросы. Требуется «База знаний · просмотр». Серверная проверка.'}];
 const ROLE_EVENT_DEFS=[{key:'events.manage',group:'Команда и мероприятия',label:'Редактировать и управлять мероприятиями',desc:'Создавать, менять, отменять и удалять события, видеть ответы всех участников, отправлять Telegram-анонсы и напоминания. Требуется «Мероприятия · просмотр». Серверная проверка.'}];
@@ -10327,6 +10335,7 @@ async function renderRoles(body){
     roles.roles=roles.roles.map(r=>({...r,permissions:{...(r.permissions||{}),'plan.forecast':forecastRights[r.code]===true,
       'clients.own':clientsRights[r.code]?.['clients.own']!==false,
       'clients.team':clientsRights[r.code]?.['clients.team']===true,
+      'clients.edit_all':clientsRights[r.code]?.['clients.edit_all']===true,
       'clients.manage':clientsRights[r.code]?.['clients.manage']===true}}));
     return roles;
   }
@@ -10390,7 +10399,7 @@ async function renderRoles(body){
       <details class="roles-panel" style="margin-top:16px"><summary style="font-weight:700;cursor:pointer">История изменения ролей</summary><div class="roles-table-wrap"><table class="roles-table"><thead><tr><th>Когда</th><th>Кто</th><th>Действие</th><th>Роль / аккаунт</th></tr></thead><tbody>${(data.audit||[]).map(x=>`<tr><td>${escapeHtml(auditFmtDateTime(x.changed_at))}</td><td title="${escapeHtml(x.actor_login||'')}">${escapeHtml(fadPersonName(x.actor_login))}</td><td>${escapeHtml(({create:'Создана',update:'Изменена',delete:'Удалена',assign:'Назначена',unassign:'Снята'})[x.operation]||x.operation)}</td><td>${escapeHtml(x.role_code||'')}${x.user_login?' · '+escapeHtml(x.user_login):''}</td></tr>`).join('')}</tbody></table></div></details>`;
     body.querySelectorAll('[data-role-name],[data-role-description],[data-role-days],[data-role-permission]').forEach(el=>el.addEventListener('change',ev=>{
       const key=ev.target?.dataset?.rolePermission;
-      const pairs={'knowledge.edit':'nav.knowledge','events.manage':'nav.events','equipment.manage':'equipment.view_all'};
+      const pairs={'knowledge.edit':'nav.knowledge','events.manage':'nav.events','equipment.manage':'equipment.view_all','clients.edit_all':'clients.team'};
       if(key&&pairs[key]&&ev.target.checked){
         const view=body.querySelector(`[data-role-permission="${pairs[key]}"]`);
         if(view)view.checked=true;
@@ -13633,10 +13642,11 @@ function ctManagerStats(ctx){const all=ctx.data.tasks.filter(t=>!t.reserve&&!t.d
 function ctManagerRows(ctx,admin){const rows=ctx.data.tasks.filter(t=>t.admin_id===admin.id&&!t.reserve&&!t.do_not_contact&&!t.meta?.superseded_snapshot),mode=ctx.taskFilters[admin.id]||'all';
  const filtered=rows.filter(t=>mode==='all'||(mode==='open'&&!t.done)||(mode==='done'&&t.done)||(mode==='overdue'&&!t.done&&t.due_date<ctToday())).sort(ctTaskSort);
  const st=ctTaskStats(rows),filters=[['all',`Все · ${rows.length}`],['open',`Не выполнено · ${rows.length-st.done}`],['done',`Выполнено · ${st.done}`],['overdue',`Просрочено · ${st.overdue}`]];
+ const canWork=!!(ctx.access?.owner||ctx.access?.edit_all)&&ctx.data.plan?.status==='active';
  return `<div class="ct-admin-body"><div class="ct-pills">${filters.map(([key,label])=>`<button class="ct-pill${mode===key?' on':''}" type="button" data-ct-task-filter="${key}" data-ct-admin="${admin.id}" aria-label="${ctEsc(label)}" aria-pressed="${mode===key}">${label}</button>`).join('')}</div>
- <div class="ct-team-grid"><div class="ct-team-grid-head"><span>Клиент</span><span>Сегмент</span><span>Дата</span><span>Статус</span><span>След. контакт</span><span>Комментарий</span><span>Отметка</span></div>
+ ${canWork?`<div class="ct-team-worknote">Рабочая очередь · проверка CRM, результат, комментарий и выполнение сохраняются в FAD. Подробности и переписка — в ImpulseCRM.</div><div class="ct-task-list ct-team-worklist" data-ct-team-list="${admin.id}">${filtered.length?filtered.map(t=>ctTaskView(t,ctx)).join(''):'<div class="ct-empty">Нет задач по выбранному фильтру.</div>'}</div></div>`:`<div class="ct-team-grid"><div class="ct-team-grid-head"><span>Клиент</span><span>Сегмент</span><span>Дата</span><span>Статус</span><span>След. контакт</span><span>Комментарий</span><span>Отметка</span></div>
  ${filtered.length?filtered.map(t=>{const mark=[t.done_at?'Выполнено '+ctStamp(t.done_at):null,t.copied_at?'Скопировано '+ctStamp(t.copied_at):null,t.crm_verified?'CRM проверено':null].filter(Boolean).join(' · ')||'—';
- return `<div class="ct-team-task"><span data-label="Клиент" class="ct-team-person"><b title="${ctEsc(t.client_name)}">${ctEsc(t.client_name)}</b><small>CRM ${ctEsc(t.crm_id)}</small></span><span data-label="Сегмент">${ctEsc(ctSegment(t))}</span><span data-label="Дата">${ctDate(t.due_date)}</span><span data-label="Статус"><span class="ct-chip${t.done?' ct-success':t.due_date<ctToday()?' ct-danger':''}">${t.done?ctEsc(CT_RESULTS[t.result]||'Выполнено'):t.due_date<ctToday()?'Просрочено':'В работе'}</span></span><span data-label="След. контакт">${t.next_contact?ctDate(t.next_contact):'—'}</span><span data-label="Комментарий" class="ct-team-comment" title="${ctEsc(t.comment||'')}">${ctEsc(t.comment||'—')}</span><span data-label="Отметка" class="ct-team-mark" title="${ctEsc(mark)}">${ctEsc(mark)}</span></div>`;}).join(''):'<div class="ct-empty">Нет задач по выбранному фильтру.</div>'}</div></div>`;
+ return `<div class="ct-team-task"><span data-label="Клиент" class="ct-team-person"><b title="${ctEsc(t.client_name)}">${ctEsc(t.client_name)}</b><small>CRM ${ctEsc(t.crm_id)}</small></span><span data-label="Сегмент">${ctEsc(ctSegment(t))}</span><span data-label="Дата">${ctDate(t.due_date)}</span><span data-label="Статус"><span class="ct-chip${t.done?' ct-success':t.due_date<ctToday()?' ct-danger':''}">${t.done?ctEsc(CT_RESULTS[t.result]||'Выполнено'):t.due_date<ctToday()?'Просрочено':'В работе'}</span></span><span data-label="След. контакт">${t.next_contact?ctDate(t.next_contact):'—'}</span><span data-label="Комментарий" class="ct-team-comment" title="${ctEsc(t.comment||'')}">${ctEsc(t.comment||'—')}</span><span data-label="Отметка" class="ct-team-mark" title="${ctEsc(mark)}">${ctEsc(mark)}</span></div>`;}).join(''):'<div class="ct-empty">Нет задач по выбранному фильтру.</div>'}</div></div>`}`;
 }
 function ctManagerAdminCard(ctx,admin){const rows=ctx.data.tasks.filter(t=>t.admin_id===admin.id&&!t.reserve&&!t.do_not_contact&&!t.meta?.superseded_snapshot),st=ctTaskStats(rows),opened=ctx.openAdmins[admin.id]===true,branch=CT_BRANCHES[admin.branch]||CT_BRANCHES.masherova;
  const initials=admin.name.split(' ').filter(Boolean).slice(0,2).map(x=>x[0]).join('');
@@ -13651,7 +13661,7 @@ function ctRenderManager(ctx){const p=ctx.data.plan,st=ctx.data.staff||[],archiv
  ctx.page.innerHTML=`<div class="ct-planbar"><div><h3>${ctEsc(name)}</h3><div class="ct-meta">${p?`${ctDate(p.date_from)} – ${ctDate(p.date_to)} · цель ${p.target_sales} продаж · ${ctEsc(p.source)} · загружено ${ctDate(p.uploaded_at)}`:'Загрузите файл подготовленных задач ImpulseCRM, затем активируйте план'}${p?` · резерв Allsports/GymFit: ${ctx.data.tasks.filter(t=>t.reserve&&!t.do_not_contact).length}${ctx.access.owner?` · запрещены обращения: ${ctx.data.tasks.filter(t=>t.do_not_contact).length}`:''}`:''}</div></div>
  <div class="ct-planbar-actions">${p&&p.status==='archived'?ctBtn('Вернуться к текущему плану','active','ct-btn-sm'):''}${ctx.access.manage?ctBtn(ctx.showImport?'Закрыть загрузку':'Загрузить новую базу / новый план','newplan','ct-btn-primary ct-btn-sm'):''}</div></div>
  ${ctx.showImport?'<div data-ct-import></div>':''}
- ${p?`<div class="ct-kpis">${ctManagerStats(ctx)}</div><div class="ct-manager-filter"><div class="ct-branch-tabs">${[['all','Все филиалы'],...Object.entries(CT_BRANCHES).map(([key,v])=>[key,v.name])].map(([key,label])=>`<button type="button" class="ct-branch-chip${ctx.managerBranch===key?' on':''}" data-ct-branch-pick="${key}" aria-label="Филиал: ${ctEsc(label)}" aria-pressed="${ctx.managerBranch===key}">${key!=='all'?`<i style="background:${CT_BRANCHES[key].color}"></i>`:''}${label}</button>`).join('')}</div><span class="ct-count">Список администраторов · просмотр задач только для чтения</span></div><div class="ct-list ct-manager-list" data-ct-manager-list>${filteredStaff.map(a=>ctManagerAdminCard(ctx,a)).join('')||'<div class="ct-empty">Нет назначенных администраторов.</div>'}</div>`:''}
+ ${p?`<div class="ct-kpis">${ctManagerStats(ctx)}</div><div class="ct-manager-filter"><div class="ct-branch-tabs">${[['all','Все филиалы'],...Object.entries(CT_BRANCHES).map(([key,v])=>[key,v.name])].map(([key,label])=>`<button type="button" class="ct-branch-chip${ctx.managerBranch===key?' on':''}" data-ct-branch-pick="${key}" aria-label="Филиал: ${ctEsc(label)}" aria-pressed="${ctx.managerBranch===key}">${key!=='all'?`<i style="background:${CT_BRANCHES[key].color}"></i>`:''}${label}</button>`).join('')}</div><span class="ct-count">${(ctx.access.owner||ctx.access.edit_all)&&p?.status==='active'?'Список администраторов · общий рабочий доступ':'Список администраторов · просмотр задач только для чтения'}</span></div><div class="ct-list ct-manager-list" data-ct-manager-list>${filteredStaff.map(a=>ctManagerAdminCard(ctx,a)).join('')||'<div class="ct-empty">Нет назначенных администраторов.</div>'}</div>`:''}
  <details class="ct-archive-details"><summary>Архив планов · ${archive.length}</summary><div class="ct-archive">${archive.length?archive.map(x=>`<div class="ct-archive-item"><b>${ctEsc(x.name)}</b><span>${ctDate(x.from)} – ${ctDate(x.to)}</span><span>Выполнено ${ctPct(x.done,x.total)}%</span><span>Отметили оплату ${x.sales} из ${x.target}</span>${ctx.access.team?`<button class="ct-btn ct-btn-sm" type="button" data-ct-archive="${x.id}" aria-label="Открыть архивный план ${ctEsc(x.name)}">Открыть</button>`:''}</div>`).join(''):'<div class="ct-empty">Архивных планов пока нет.</div>'}</div></details>
  <div class="ct-error" data-ct-page-error hidden></div>`;
  if(ctx.showImport)ctRenderImport(ctx);
@@ -13765,6 +13775,15 @@ async function ctSaveTask(ctx,t,patch,collapse){const id=String(t.id),prior=ctx.
   const el=ctx.page.querySelector(`[data-ct-task="${id}"]`),status=el?.querySelector('[data-ct-save]');if(status)status.textContent='Сохранение…';
   try{const updated=await rpc('app_client_task_save',{p_token:TOKEN,p_task_id:Number(t.id),p_version:t.row_version,p_patch:patch});
    Object.assign(t,updated);if(patch.done===true)delete ctx.expandedTasks[id];
+   // Team mode uses the exact same save RPC, validation and audit as the personal queue.
+   // Refresh only the changed admin card and aggregate KPIs on task completion.
+   if(ctx.view==='manager'&&collapse){
+    const admin=ctx.data.staff.find(a=>String(a.id)===String(t.admin_id));
+    const card=ctx.page.querySelector(`[data-ct-admin-card="${t.admin_id}"]`);
+    if(admin&&card){const temp=document.createElement('div');temp.innerHTML=ctManagerAdminCard(ctx,admin);card.replaceWith(temp.firstElementChild);}
+    const kpis=ctx.page.querySelector('.ct-kpis');if(kpis)kpis.innerHTML=ctManagerStats(ctx);
+    return updated;
+   }
    const cur=ctx.page.querySelector(`[data-ct-task="${id}"]`);
    if(cur){if(collapse){
     const filtered=ctFilterTasks(ctx).some(row=>String(row.id)===id);
