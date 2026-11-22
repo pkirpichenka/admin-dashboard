@@ -3992,7 +3992,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '22.11.2026-dy'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '22.11.2026-dz'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -5357,9 +5357,9 @@ async function renderBalance(body){
       ['Расходы',ready()?rub(m.costs):'—',`Учтено: постоянные ${rub(m.fixed_period)}, переменные ${rub(m.variable_period)}`],
       ['Прибыль за период',profit,`Рентабельность ${ready()?pc(m.profitability):'—'} · ${ready()?'расчёт подтверждён':'ожидается полнота источников'}`],
       ['Точка безубыточности',be,`За месяц · до точки ${ready()&&m.break_even!=null?rub(Math.max(0,m.break_even-z(m.revenue))):'недостаточно данных'}`]];
-    return `<div class="fb-kpis">${cards.map((a,i)=>`<div class="fb-panel fb-kpi"><div class="fb-eyebrow">${a[0]}</div><div class="fb-big ${i===2&&ready()?(z(m.profit)<0?'fb-negative':'fb-positive'):''}">${a[1]}</div>${i===3&&m.break_even?`<div class="fb-progress"><span style="width:${pctWidth(100*z(m.revenue)/m.break_even)}"></span></div>`:''}<div class="fb-muted">${a[2]}</div></div>`).join('')}</div>`;}
+    return `<div class="fb-kpis">${cards.map((a,i)=>`<div class="fb-panel fb-kpi"><div class="fb-eyebrow">${a[0]}</div><div class="fb-big ${i===2&&ready()?(z(m.profit)<0?'fb-negative':'fb-positive'):''}">${a[1]}</div>${i===3&&ready()&&m.break_even?`<div class="fb-progress"><span style="width:${pctWidth(100*z(m.revenue)/m.break_even)}"></span></div>`:''}<div class="fb-muted">${a[2]}</div></div>`).join('')}</div>`;}
   function insights(){const m=stats(),trainer=snap().trainer||{},equipment=snap().equipment;
-    const texts=[m.break_even_status==='already'?'Безубыточность достигнута':m.break_even_status==='not_this_month'?'Безубыточность по прогнозу не достигается':m.break_even_status==='undefined'?'Безубыточность пока не рассчитана':m.break_even_status?'Безубыточность: '+m.break_even_status:'Точка безубыточности не определена',
+    const texts=[!ready()?'Безубыточность пока не рассчитана':m.break_even_status==='already'?'Безубыточность достигнута':m.break_even_status==='not_this_month'?'Безубыточность по прогнозу не достигается':m.break_even_status==='undefined'?'Безубыточность пока не рассчитана':m.break_even_status?'Безубыточность: '+m.break_even_status:'Точка безубыточности не определена',
       state.scope==='vending'?`Доплаты за оборудование: ${rub(equipment)}`:`Тренеры: к выдаче ${rub(trainer.payable)} · авансы ${rub(trainer.advances)}`,
       state.scope==='vending'?'Автоматы — только прямые расходы':`План абонементов: ${m.sold||0} / ${m.plan_target||'—'} · порог 90%: ${m.plan_bonus_threshold||'—'}`,
       ...(state.scope==='all'?[`Автоматы: ${rub((snap().income||[]).filter(x=>x.direction==='vending').reduce((acc,x)=>acc+z(x.amount),0))} · только прямые расходы`]:[])];
