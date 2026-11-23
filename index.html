@@ -4490,6 +4490,90 @@ input[type="time"]::-webkit-calendar-picker-indicator{position:absolute;right:8p
 }
 @media (min-width:768px){.fad-mobile-nav,.fad-mobile-more-overlay{display:none!important}#schedRoot .sch-month-actions{display:contents}}
 
+
+/* FAD ET — mobile drawer repair. Only navigation layout; no data/API changes. */
+.fad-sidebar-drawer-close{display:none}
+@media (max-width:767px){
+  /* The phone's bottom navigation remains visible, so the drawer ends above it.
+     Keep the user/logout controls in a non-scrolling footer, with the nav as
+     the only vertical scrolling child. This also avoids iOS Safari scroll bounce. */
+  .fad-app-shell .fad-sidebar,
+  .fad-sidebar-is-collapsed .fad-sidebar{
+    position:fixed!important;
+    z-index:220!important;
+    top:0!important;
+    bottom:calc(64px + env(safe-area-inset-bottom,0px))!important;
+    height:calc(100vh - 64px - env(safe-area-inset-bottom,0px))!important;
+    height:calc(100dvh - 64px - env(safe-area-inset-bottom,0px))!important;
+    min-height:0!important;
+    overflow:hidden!important;
+    display:grid!important;
+    grid-template-rows:auto minmax(0,1fr) auto!important;
+    align-content:stretch;
+    gap:0!important;
+    padding:11px 12px 0!important;
+    overscroll-behavior:contain;
+  }
+  .fad-app-shell .fad-sidebar-brand{
+    min-height:56px!important;
+    padding:0 4px 10px!important;
+    margin:0!important;
+    align-self:stretch;
+    overflow:visible;
+  }
+  .fad-app-shell .fad-sidebar-drawer-close{
+    display:grid!important;
+    place-items:center;
+    margin-left:auto;
+    width:44px;height:44px;flex:0 0 44px;
+    border:1px solid #608576;
+    background:#26523f;color:#fff;
+    border-radius:12px;font-size:28px;line-height:1;
+    cursor:pointer;
+  }
+  .fad-app-shell .fad-sidebar-nav{
+    min-height:0!important;
+    height:100%!important;
+    flex:initial!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-y:contain;
+    touch-action:pan-y;
+    padding:0 0 18px!important;
+    scrollbar-width:thin;
+    scroll-padding-top:8px;
+  }
+  .fad-app-shell .fad-sidebar-user{
+    grid-row:3;
+    margin:0 -12px!important;
+    padding:12px 14px 13px!important;
+    min-width:0;
+    min-height:0!important;
+    border-top:1px solid #3e6753;
+    background:#173f2e!important;
+    box-shadow:0 -7px 18px #10291c50;
+    position:relative;
+    z-index:2;
+  }
+  .fad-app-shell .fad-sidebar-actions{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:9px}
+  .fad-app-shell .fad-sidebar-actions .btn{min-height:44px!important;font-size:14px!important;font-weight:750!important}
+  .fad-app-shell .fad-sidebar-actions #logout{background:#fff!important;color:#173f2e!important;border-color:#fff!important}
+  .fad-app-shell .fad-sidebar-collapse{display:none!important}
+  .fad-app-shell .fad-sidebar-nav .fad-sidebar-tab{min-height:44px;max-height:none;height:auto;padding-top:10px;padding-bottom:10px}
+  .fad-app-shell .fad-sidebar-scrim{z-index:215!important;bottom:calc(64px + env(safe-area-inset-bottom,0px))!important}
+  .fad-mobile-more-list .fad-mobile-logout{
+    margin-top:9px;
+    border-color:#acc3b2;
+    background:#edf4ee;
+    color:#173f2e;
+    font-weight:800;
+  }
+  .fad-app-shell .fad-sidebar-drawer-close:focus-visible,
+  .fad-app-shell .fad-sidebar-actions .btn:focus-visible,
+  .fad-mobile-more-list .fad-mobile-logout:focus-visible{outline:3px solid #f0c75e!important;outline-offset:2px}
+}
+
 </style>
 
 <div id="root"></div>
@@ -4510,7 +4594,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '23.11.2026-es'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '23.11.2026-et'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -5418,7 +5502,8 @@ function header(){
   const name=fadPersonName(session?.login,session?.name);
   const initials=name.replace(/[.]/g,' ').trim().split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0].toLocaleUpperCase('ru')).join('')||'F';
   return `<div class="fad-sidebar-brand" title="Версия ${APP_VERSION}">
-    <div class="fad-sidebar-logo">${LEAF}</div><span class="fad-sidebar-brand-text">FAD</span></div>
+    <div class="fad-sidebar-logo">${LEAF}</div><span class="fad-sidebar-brand-text">FAD</span>
+    <button class="fad-sidebar-drawer-close" type="button" id="fadSidebarDrawerClose" aria-label="Закрыть меню" title="Закрыть меню">×</button></div>
     <div class="fad-sidebar-user">
       <div class="fad-sidebar-identity" title="${escapeHtml(name)}"><span class="fad-sidebar-avatar">${escapeHtml(initials)}</span>
       <div class="fad-sidebar-user-info"><strong>${escapeHtml(fadPersonName(session?.login,session?.name,true))}</strong><span>${escapeHtml(roleLabel())} ${pill}</span></div></div>
@@ -5751,6 +5836,7 @@ function renderRoleUI(tabs){
     if(open){nav.querySelector('.fad-sidebar-tab')?.focus();}else if(document.activeElement?.closest('#fadSidebar')){hamburger.focus();}
   }
   hamburger.addEventListener('click',()=>setDrawer(!shell.classList.contains('fad-sidebar-drawer-open')));
+  root.querySelector('#fadSidebarDrawerClose')?.addEventListener('click',()=>setDrawer(false));
   scrim.addEventListener('click',()=>setDrawer(false));
   const onKeydown=e=>{if(e.key==='Escape'&&shell.classList.contains('fad-sidebar-drawer-open')){e.preventDefault();setDrawer(false);}};
   document.addEventListener('keydown',onKeydown);
@@ -5819,7 +5905,7 @@ function renderRoleUI(tabs){
     mobileNav.innerHTML=primary.map(k=>{const entry=allowedByKey.get(k),label=NAV_ITEMS.find(x=>x.id===k)?.label||entry.tab.label;
       return `<button type="button" class="fad-mobile-nav-item${tabs[currentTab]?.key===k?' active':''}" data-mobile-tab="${k}" aria-current="${tabs[currentTab]?.key===k?'page':'false'}"><span class="fad-mobile-nav-icon" aria-hidden="true">${mobileIcon(k)}</span><span>${escapeHtml(label)}</span></button>`;
     }).join('')+`<button type="button" class="fad-mobile-nav-item${!primary.includes(tabs[currentTab]?.key)?' active':''}" data-mobile-more aria-expanded="false" aria-controls="fadMobileMoreOverlay"><span class="fad-mobile-nav-icon" aria-hidden="true">⋯</span><span>Ещё</span></button>`;
-    mobileMoreList.innerHTML=tabs.filter(tab=>!primary.includes(tab.key)).map(tab=>`<button type="button" data-mobile-tab="${escapeHtml(tab.key)}"><span>${escapeHtml(NAV_ITEMS.find(x=>x.id===tab.key)?.label||tab.label)}</span><span aria-hidden="true">›</span></button>`).join('')||'<p>Другие разделы недоступны для этой роли.</p>';
+    mobileMoreList.innerHTML=(tabs.filter(tab=>!primary.includes(tab.key)).map(tab=>`<button type="button" data-mobile-tab="${escapeHtml(tab.key)}"><span>${escapeHtml(NAV_ITEMS.find(x=>x.id===tab.key)?.label||tab.label)}</span><span aria-hidden="true">›</span></button>`).join('')||'<p>Другие разделы недоступны для этой роли.</p>')+`<button type="button" class="fad-mobile-logout" data-mobile-logout aria-label="Выйти из FAD"><span>Выйти из FAD</span><span aria-hidden="true">↗</span></button>`;
   }
   mobileNav.addEventListener('click',ev=>{
     const more=ev.target.closest('[data-mobile-more]');
@@ -5829,6 +5915,7 @@ function renderRoleUI(tabs){
   });
   mobileMore.addEventListener('click',ev=>{
     if(ev.target.closest('[data-fad-close-more]')){closeMobileMore();return;}
+    if(ev.target.closest('[data-mobile-logout]')){closeMobileMore();void doLogout();return;}
     const link=ev.target.closest('[data-mobile-tab]');if(!link)return;
     const entry=allowedByKey.get(link.dataset.mobileTab);if(entry&&show(entry.index)){closeMobileMore();root.querySelector('#fadMain')?.scrollTo({top:0,behavior:'instant'});}
   });
