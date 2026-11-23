@@ -4282,7 +4282,13 @@ input[type="time"]::-webkit-calendar-picker-indicator{position:absolute;right:8p
  html,body{width:100%;max-width:100%;overflow-x:clip;background:var(--fad-mobile-bg);color:var(--fad-mobile-ink);font-family:var(--fad-font);color-scheme:only light}
  #root,.fad-app-shell,.fad-main,#tabbody,#tabbody.page,.fad-main .wrap{min-width:0!important;max-width:100%!important;box-sizing:border-box}
  #root{padding:0}
- .fad-main{padding:0!important;margin:0!important;width:100%!important;overflow:visible!important}
+ /* ES: Only .fad-main scrolls. .fad-app-shell stays viewport-sized, footer stays fixed. */
+ .fad-app-shell{height:100vh;height:100dvh;overflow:hidden}
+ .fad-main{padding:0!important;margin:0!important;width:100%!important;
+  height:100vh!important;height:100dvh!important;min-height:0!important;
+  overflow-x:hidden!important;overflow-y:auto!important;
+  -webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;
+  scrollbar-gutter:auto}
  .fad-main .wrap{padding:16px!important;margin:0!important;width:100%!important;overflow:visible!important}
  .fad-main-topline{position:sticky!important;top:0;z-index:120;background:#fff;min-height:72px!important;padding:11px 16px!important;box-shadow:0 1px 0 #d6ded6;gap:11px!important;align-items:center}
  .fad-main-heading{min-width:0}.fad-main-eyebrow{font-size:10px!important;line-height:1.4!important;letter-spacing:.08em!important}
@@ -4504,7 +4510,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '23.11.2026-er'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '23.11.2026-es'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -5793,6 +5799,8 @@ function renderRoleUI(tabs){
     if(typeof drawMobileNav==='function')drawMobileNav();
     if(shell.classList.contains('fad-sidebar-drawer-open'))setDrawer(false);
     tabs[i].render(body);
+    // ES · при смене вкладки на телефоне возвращаемся к началу её прокручиваемой области.
+    if(window.matchMedia('(max-width: 767px)').matches)root.querySelector('#fadMain')?.scrollTo({top:0,behavior:'instant'});
     // Записываем только реально открытый раздел; право доступа проверено через tabs.
     try{localStorage.setItem(activeTabStorageKey,key);}catch(_){}
     return true;
@@ -5817,12 +5825,12 @@ function renderRoleUI(tabs){
     const more=ev.target.closest('[data-mobile-more]');
     if(more){mobileMore.hidden=false;more.setAttribute('aria-expanded','true');mobileMore.querySelector('[data-fad-close-more]')?.focus();return;}
     const link=ev.target.closest('[data-mobile-tab]');if(!link)return;
-    const entry=allowedByKey.get(link.dataset.mobileTab);if(entry&&show(entry.index)){closeMobileMore();window.scrollTo({top:0,behavior:'instant'});}
+    const entry=allowedByKey.get(link.dataset.mobileTab);if(entry&&show(entry.index)){closeMobileMore();root.querySelector('#fadMain')?.scrollTo({top:0,behavior:'instant'});}
   });
   mobileMore.addEventListener('click',ev=>{
     if(ev.target.closest('[data-fad-close-more]')){closeMobileMore();return;}
     const link=ev.target.closest('[data-mobile-tab]');if(!link)return;
-    const entry=allowedByKey.get(link.dataset.mobileTab);if(entry&&show(entry.index)){closeMobileMore();window.scrollTo({top:0,behavior:'instant'});}
+    const entry=allowedByKey.get(link.dataset.mobileTab);if(entry&&show(entry.index)){closeMobileMore();root.querySelector('#fadMain')?.scrollTo({top:0,behavior:'instant'});}
   });
   const mobileEscape=e=>{if(e.key==='Escape'&&!mobileMore.hidden)closeMobileMore();};
   document.addEventListener('keydown',mobileEscape);
