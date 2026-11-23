@@ -4855,6 +4855,43 @@ input[type="time"]::-webkit-calendar-picker-indicator{position:absolute;right:8p
 .fb-eu-modal .fb-fd-save-status[hidden]{display:none!important}
 .fad-balance .fb-fd-source{font-size:10px;line-height:1.4;color:#586a5f}
 @media(max-width:767px){.fad-balance .fb-fd-datebox{margin:6px 0;max-width:100%;display:block}.fad-balance .fb-fd-range-btn{width:100%;min-height:44px}.fad-balance .fb-fd-calendar{left:0;right:auto;width:min(345px,calc(100vw - 32px))}.fb-fd-audit .fb-fd-audit-cards{grid-template-columns:1fr}.fad-balance .fb-fd-selected-revenue .fb-action{width:100%}}
+
+/* FF · One calendar language: Balance uses exactly payroll picker geometry. */
+.fad-balance .fb-fd-calendar.payroll-range-popover{width:296px;max-width:calc(100vw - 24px);padding:14px;overflow-y:auto;max-height:min(480px,80dvh);border-radius:14px;background:#fff;border:1px solid #dce5de;box-shadow:0 15px 35px rgba(22,48,31,.2);color:var(--ink);text-align:left}
+.fad-balance .fb-fd-calendar .payroll-range-header{display:grid;grid-template-columns:minmax(0,1fr) 92px;gap:7px;margin-bottom:12px}
+.fad-balance .fb-fd-calendar .payroll-range-header select{box-sizing:border-box;width:100%;height:40px;min-height:40px;margin:0;border:1px solid #dce5de;border-radius:10px;padding:8px 7px;background:#fff;color:#243a2b;font-size:13px;font-weight:700}
+.fad-balance .fb-fd-calendar .payroll-range-weekdays,.fad-balance .fb-fd-calendar .payroll-range-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;margin:0}
+.fad-balance .fb-fd-calendar .payroll-range-weekdays{margin-bottom:5px}
+.fad-balance .fb-fd-calendar .payroll-range-weekdays span{text-align:center;font-size:10px;font-weight:750;line-height:20px;color:#89958e}
+.fad-balance .fb-fd-calendar .payroll-range-day{box-sizing:border-box;width:100%;min-width:0;height:34px;min-height:34px;padding:0;font-size:12px;font-weight:650;border:1px solid transparent;border-radius:6px;cursor:pointer;background:transparent;color:#214735}
+.fad-balance .fb-fd-calendar .payroll-range-day.in-range{background:#e2eee7;color:#214735}
+.fad-balance .fb-fd-calendar .payroll-range-day.range-start,.fad-balance .fb-fd-calendar .payroll-range-day.range-end{background:#2d7a59;border-color:#2d7a59;color:#fff;border-radius:8px}
+.fad-balance .fb-fd-calendar .payroll-range-day.range-draft{background:#2d7a59;border-color:#2d7a59;color:#fff;border-radius:8px}
+.fad-balance .fb-fd-calendar .payroll-range-day.is-today:not(.range-start):not(.range-end):not(.range-draft){outline:1.5px solid #2d7a59;outline-offset:-2px}
+.fad-balance .fb-fd-calendar .payroll-range-day:hover:not(:disabled){border-color:#2d7a59}
+.fad-balance .fb-fd-calendar .payroll-range-day:disabled{opacity:.28;cursor:not-allowed;background:transparent;color:#71857a}
+.fad-balance .fb-ff-cal-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;border-top:1px solid #e9eeea;padding-top:8px;font-size:11px;color:#637469}
+.fad-balance .fb-fd-calendar small{font-size:10px;line-height:1.5;margin:8px 0 0;color:#8b9990}
+.fad-balance .fb-fd-datebox{z-index:15}
+/* Global date inputs use the same custom month/year/day popover as payroll. */
+input[type="date"]{cursor:pointer}
+input[type="date"]::-webkit-calendar-picker-indicator,input[type="month"]::-webkit-calendar-picker-indicator{opacity:0!important;pointer-events:none!important}
+.fad-global-datepicker{box-sizing:border-box;position:fixed;z-index:22000;width:296px;max-width:calc(100vw - 16px);padding:14px;border-radius:14px;background:#fff;color:#203b2b;border:1px solid #dce5de;box-shadow:0 15px 35px rgba(22,48,31,.25);font:inherit;font-family:Manrope,system-ui,Arial,sans-serif}
+.fad-global-datepicker .payroll-range-header{display:grid;grid-template-columns:minmax(0,1fr) 92px;gap:7px;margin-bottom:12px}
+.fad-global-datepicker .payroll-range-header select{box-sizing:border-box;width:100%;height:40px;margin:0;padding:8px 7px;min-width:0;border:1px solid #dce5de;border-radius:10px;background:#fff;color:#243a2b;font:700 13px Manrope,system-ui,sans-serif}
+.fad-global-datepicker .payroll-range-weekdays,.fad-global-datepicker .payroll-range-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
+.fad-global-datepicker .payroll-range-weekdays{margin-bottom:5px}
+.fad-global-datepicker .payroll-range-weekdays span{text-align:center;font-size:10px;font-weight:750;line-height:20px;color:#89958e}
+.fad-global-datepicker .payroll-range-day{box-sizing:border-box;width:100%;min-width:0;height:34px;border:1px solid transparent;border-radius:8px;padding:0;background:transparent;font:650 12px Manrope,system-ui,sans-serif;color:#214735;cursor:pointer}
+.fad-global-datepicker .payroll-range-day:hover:not(:disabled){border-color:#2d7a59;background:#e2eee7}
+.fad-global-datepicker .payroll-range-day.active{background:#2d7a59;color:#fff}
+.fad-global-datepicker .payroll-range-day.is-today:not(.active){outline:1.5px solid #2d7a59;outline-offset:-2px}
+.fad-global-datepicker .payroll-range-day:disabled{opacity:.25;cursor:not-allowed}
+.fad-global-datepicker .fad-gdp-foot{margin-top:9px;display:flex;align-items:center;justify-content:space-between;gap:9px;border-top:1px solid #edf0ed;padding-top:10px}
+.fad-global-datepicker .fad-gdp-foot button{border:0;border-radius:8px;padding:7px 10px;color:#2d6a4a;background:#edf5f0;font:700 11px Manrope,system-ui,sans-serif;cursor:pointer}
+.fad-global-datepicker .fad-gdp-foot span{font-size:10px;color:#87958c}
+.fad-global-datepicker button:focus-visible,.fad-global-datepicker select:focus-visible{outline:2px solid #2d7a59;outline-offset:2px}
+
 </style>
 
 <div id="root"></div>
@@ -4875,7 +4912,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '23.11.2026-fd'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '23.11.2026-ff'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -6305,20 +6342,25 @@ async function renderBalance(body){
   // FD: Choose two calendar dates with the left mouse button. This filters the
   // revenue evidence panel only; existing monthly KPI/expense math stays intact.
   const daysInSelectedMonth=()=>new Date(Date.UTC(+state.period.slice(0,4),+state.period.slice(5),0)).getUTCDate();
-  const dateBounds=()=>({start:state.dateStart||state.period+'-01',end:state.dateEnd||state.period+'-'+String(daysInSelectedMonth()).padStart(2,'0')});
+  const dateBounds=()=>({start:state.dateStart||state.period+'-01',end:state.dateEnd||(state.period===monthToday()?curDate():state.period+'-'+String(daysInSelectedMonth()).padStart(2,'0'))});
   const shortDate=iso=>iso?iso.slice(8)+'.'+iso.slice(5,7):'—';
   function dateCalendar(){
     const [y,m]=state.period.split('-').map(Number),offset=(new Date(Date.UTC(y,m-1,1)).getUTCDay()+6)%7;
     const {start,end}=dateBounds(),selecting=state.dateAwaitEnd;
-    const head=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(x=>`<span class="fb-fd-weekday">${x}</span>`).join('');
+    const monthNames=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+    const years=[...new Set(months.map(x=>x.slice(0,4)))];
+    const head=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(x=>`<span>${x}</span>`).join('');
     let days='';for(let z=0;z<offset;z++)days+='<span aria-hidden="true"></span>';
     for(let d=1;d<=daysInSelectedMonth();d++){
-      const iso=state.period+'-'+String(d).padStart(2,'0'),inRange=!selecting&&iso>=start&&iso<=end;
-      days+=`<button type="button" data-fb-date="${iso}" class="fb-fd-day${inRange?' in-range':''}${iso===start?' is-start':''}${iso===end&&!selecting?' is-end':''}${iso===curDate()?' is-today':''}" aria-label="${d} ${monthTitle(state.period)}" aria-pressed="${inRange}">${d}</button>`;
+      const iso=state.period+'-'+String(d).padStart(2,'0'),blocked=iso>curDate(),inRange=!blocked&&!selecting&&iso>=start&&iso<=end;
+      days+=`<button type="button" data-fb-date="${iso}" class="payroll-range-day${inRange?' in-range':''}${iso===start?' range-start':''}${iso===end&&!selecting&&!blocked?' range-end':''}${iso===curDate()?' is-today':''}${selecting&&iso===start?' range-draft':''}" aria-label="${d} ${monthTitle(state.period)}" aria-pressed="${inRange}" ${blocked?'disabled':''}>${d}</button>`;
     }
-    return `<div class="fb-fd-calendar" role="group" aria-label="Выбор периода по дням"><div class="fb-fd-cal-head"><b>${esc(monthTitle(state.period))}</b><button type="button" data-fb-date-reset class="fb-em-link">Весь месяц</button></div>
-      <p>${selecting?'Укажите конец периода вторым нажатием левой кнопки мыши.':'Нажмите начало периода, затем конец. Выбираются даты внутри месяца.'}</p>
-      <div class="fb-fd-grid">${head}${days}</div><small>Месячные KPI и расходы остаются за весь месяц. Выбор дат уточняет только выручку.</small></div>`;
+    return `<div class="fb-fd-calendar payroll-range-popover" role="dialog" aria-label="Выбор периода по дням">
+      <div class="payroll-range-header"><select data-fb-cal-month aria-label="Месяц календаря">${monthNames.map((name,i)=>`<option value="${String(i+1).padStart(2,'0')}"${i+1===m?' selected':''}>${name}</option>`).join('')}</select>
+      <select data-fb-cal-year aria-label="Год календаря">${years.map(year=>`<option value="${year}"${+year===y?' selected':''}>${year}</option>`).join('')}</select></div>
+      <div class="payroll-range-weekdays" aria-hidden="true">${head}</div><div class="payroll-range-days" role="group" aria-label="Выберите начало и конец периода">${days}</div>
+      <div class="fb-ff-cal-foot"><span>${selecting?'Выберите вторую дату':'Выберите начало и конец'}</span><button type="button" data-fb-date-reset class="fb-em-link">Весь месяц</button></div>
+      <small>Выбранные даты уточняют выручку; расходы и прибыль остаются помесячными.</small></div>`;
   }
   function dateButton(){const b=dateBounds();return `<div class="fb-fd-datebox"><button type="button" class="fb-action fb-fd-range-btn" data-fb-date-open aria-expanded="${state.dateOpen}" aria-label="Выбрать даты выручки">Календарь · ${shortDate(b.start)}–${shortDate(b.end)}</button>${state.dateOpen?dateCalendar():''}</div>`;}
   function dateRevenue(){
@@ -6667,6 +6709,22 @@ async function renderBalance(body){
     const content=mobileSection==='expenses'?table(c):mobileSection==='branches'?mobileBranchCards(c):mobileSection==='forecast'?prediction(c):mobileBalanceOverview(c);
     return `${tabbar}${monthsNav}${dateButton()}<div class="fb-m-subtitle">Студии Flexico · Толбухина, Машерова, Куйбышева</div>${status()}${dateRevenue()}<div class="fb-m-content">${content}</div>`;
   }
+  // FF: Month/year controls inside Balance date selection match payroll calendars.
+  shell.addEventListener('change',ev=>{
+    const s=ev.target.closest('[data-fb-cal-month],[data-fb-cal-year]');if(!s)return;
+    const box=s.closest('.fb-fd-calendar');if(!box)return;
+    const month=box.querySelector('[data-fb-cal-month]')?.value;
+    const year=box.querySelector('[data-fb-cal-year]')?.value;
+    const candidate=year+'-'+month;
+    if(!months.includes(candidate)){
+      toast('Этот месяц вне доступного периода Баланса',true);
+      render();return;
+    }
+    if(candidate===state.period)return;
+    state.period=candidate;state.dateStart=state.dateEnd=null;state.dateAwaitEnd=false;state.dateOpen=true;
+    expView.selected.clear();expView.day=null;expView.expanded={};vDayScrolled=false;
+    void load();
+  });
   function render(){if(!live())return;const c=calc();
     shell.classList.toggle('fb-mobile-view',mobileBalance());
     shell.innerHTML=mobileBalance()?renderMobileBalance(c):toolbar()+status()+dateRevenue()+`<div class="fb-em-stack">${attention()}${kpis(c)}${revenues(c)}${table(c)}${prediction(c)}${branchTable(c)}</div>`;
@@ -16418,5 +16476,89 @@ async function renderTeamEvents(body){
   });
   await load();
 }
+
+
+/* FF · Native date/month input visual calendar unification.
+   Original inputs, IDs, values, min/max/required and change handlers are untouched.
+   No business writes are performed by the calendar widget itself. */
+(function installFadDateCalendar(){
+  const names=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  const week=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+  const today=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Minsk',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  let source=null,popup=null,period='';
+  const valid=x=>/^\d{4}-\d{2}(?:-\d{2})?$/.test(x);
+  const pad=n=>String(n).padStart(2,'0');
+  function close(){if(popup){popup.remove();popup=null;}source=null;}
+  function setDate(date){if(!source||!source.isConnected)return close();const field=source;close();
+    if(field.value!==date){field.value=date;field.dispatchEvent(new Event('input',{bubbles:true}));field.dispatchEvent(new Event('change',{bubbles:true}));}
+  }
+  function render(){if(!source||!popup||!source.isConnected)return close();
+    const [y,m]=period.split('-').map(Number),isMonth=source.type==='month';
+    const min=source.min||'',max=source.max||'',val=source.value;
+    const minY=min&&valid(min)?Number(min.slice(0,4)):1900,maxY=max&&valid(max)?Number(max.slice(0,4)):2100;
+    const years=[];for(let i=Math.max(1900,minY);i<=Math.min(2100,maxY);i++)years.push(i);
+    if(!years.includes(y))years.push(y);years.sort((a,b)=>a-b);
+    const monthSelect=`<select data-gdp-month aria-label="Месяц календаря">${names.map((nm,i)=>`<option value="${pad(i+1)}"${m===i+1?' selected':''}>${nm}</option>`).join('')}</select>`;
+    const yearSelect=`<select data-gdp-year aria-label="Год календаря">${years.map(v=>`<option value="${v}"${v===y?' selected':''}>${v}</option>`).join('')}</select>`;
+    let days='';
+    if(!isMonth){
+      const offset=(new Date(Date.UTC(y,m-1,1)).getUTCDay()+6)%7;
+      days=Array.from({length:offset},()=>'<span aria-hidden="true"></span>').join('');
+      const maxDay=new Date(Date.UTC(y,m,0)).getUTCDate();
+      for(let i=1;i<=maxDay;i++){
+        const d=period+'-'+pad(i),blocked=(min&&d<min)||(max&&d>max),selected=d===val;
+        days+=`<button type="button" data-gdp-day="${d}" class="payroll-range-day${selected?' active':''}${d===today()?' is-today':''}" ${blocked?'disabled':''} aria-pressed="${selected}" aria-label="${d}">${i}</button>`;
+      }
+    }
+    popup.innerHTML=`<div class="payroll-range-header">${monthSelect}${yearSelect}</div>`+
+      (isMonth?'':`<div class="payroll-range-weekdays" aria-hidden="true">${week.map(d=>`<span>${d}</span>`).join('')}</div><div class="payroll-range-days" role="group" aria-label="Выбор даты">${days}</div>`)+
+      `<div class="fad-gdp-foot"><span>${isMonth?'Выбор месяца':'Выбор даты'}</span>${isMonth?'<button type="button" data-gdp-month-apply>Выбрать месяц</button>':''}${source.required?'':'<button type="button" data-gdp-clear>Очистить</button>'}</div>`;
+  }
+  function position(){if(!popup||!source)return;
+    const r=source.getBoundingClientRect(),h=popup.getBoundingClientRect().height,w=popup.getBoundingClientRect().width;
+    const left=Math.max(8,Math.min(innerWidth-w-8,r.left));
+    const below=innerHeight-r.bottom-8,above=r.top-8;
+    const top=below>=h||below>=above?Math.min(innerHeight-h-8,r.bottom+5):Math.max(8,r.top-h-5);
+    popup.style.left=left+'px';popup.style.top=Math.max(8,top)+'px';popup.style.maxHeight='calc(100dvh - 16px)';popup.style.overflowY='auto';
+  }
+  function open(input){if(input.disabled||input.readOnly)return;
+    if(source===input&&popup){close();return;}close();source=input;
+    const current=valid(input.value)?input.value:today(),monthValue=current.slice(0,7);
+    period=monthValue;popup=document.createElement('div');popup.className='fad-global-datepicker';popup.setAttribute('role','dialog');popup.setAttribute('aria-label','Выбор даты');
+    document.body.appendChild(popup);render();position();
+  }
+  document.addEventListener('pointerdown',ev=>{
+    const input=ev.target.closest?.('input[type="date"],input[type="month"]');
+    if(input&&!input.disabled&&!input.readOnly){
+      // Suppress the native browser picker while retaining the original input for forms.
+      ev.preventDefault();open(input);return;
+    }
+    if(popup&&!popup.contains(ev.target))close();
+  },true);
+  document.addEventListener('keydown',ev=>{
+    if(ev.key==='Escape'&&popup){const back=source;close();ev.preventDefault();back?.focus();return;}
+    if((ev.key==='Enter'||ev.key===' '||ev.key==='ArrowDown')&&document.activeElement?.matches?.('input[type="date"],input[type="month"]')){
+      if(!popup||source!==document.activeElement){ev.preventDefault();open(document.activeElement);}
+    }
+  },true);
+  document.addEventListener('change',ev=>{
+    if(!popup||!popup.contains(ev.target))return;
+    if(ev.target.matches('[data-gdp-month],[data-gdp-year]')){
+      period=popup.querySelector('[data-gdp-year]').value+'-'+popup.querySelector('[data-gdp-month]').value;
+      render();position();
+    }
+  });
+  document.addEventListener('click',ev=>{
+    if(!popup||!popup.contains(ev.target))return;
+    const day=ev.target.closest('[data-gdp-day]');if(day){setDate(day.dataset.gdpDay);return;}
+    if(ev.target.closest('[data-gdp-clear]')){setDate('');return;}
+    if(ev.target.closest('[data-gdp-month-apply]')){
+      if(source?.min&&period<source.min.slice(0,7)||source?.max&&period>source.max.slice(0,7))return;
+      setDate(period);
+    }
+  });
+  window.addEventListener('resize',()=>{if(popup)position();},{passive:true});
+  document.addEventListener('scroll',ev=>{if(!popup)return;if(popup.contains(ev.target))return;position();},true);
+})();
 
 </script>
