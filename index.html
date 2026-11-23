@@ -4574,6 +4574,77 @@ input[type="time"]::-webkit-calendar-picker-indicator{position:absolute;right:8p
   .fad-mobile-more-list .fad-mobile-logout:focus-visible{outline:3px solid #f0c75e!important;outline-offset:2px}
 }
 
+/* EU · Import expenses: isolated UI, no desktop/finance CSS changes. */
+.fad-balance-em #fb-en-expenses .fb-eu-top-actions{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:8px}
+.fad-balance-em #fb-en-expenses .fb-eu-open{background:#fff;border-color:#adc9b6;color:#175b3e}
+.fad-balance-em #fb-en-expenses .fb-eu-open:hover{background:#eff7f1}
+.overlay:has(.fb-eu-modal){z-index:11000;align-items:center;padding:12px;box-sizing:border-box}
+.overlay>.modal:has(.fb-eu-modal){width:min(1000px,calc(100vw - 24px));max-height:min(94dvh,980px);overflow:auto;overscroll-behavior:contain;padding:0;border-radius:18px;color:#16241d;background:#fff;box-sizing:border-box}
+.fb-eu-modal{font-family:Manrope,'Golos Text',sans-serif;font-size:13px;line-height:1.5;padding:20px;min-width:0;--eu-green:#1f6b4a;--eu-border:#dce6dd;--eu-ink:#16241d;--eu-muted:#566a5f}
+.fb-eu-modal *{box-sizing:border-box}
+.fb-eu-modal :is(button,input,select){font:inherit}
+.fb-eu-modal :is(button,input,select):focus-visible{outline:3px solid #87b99c;outline-offset:2px}
+.fb-eu-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.fb-eu-head h3{font-size:20px;margin:0 0 5px;line-height:1.3;color:var(--eu-ink)}
+.fb-eu-head p{font-size:12px;color:var(--eu-muted);margin:0}
+.fb-eu-close{width:44px;height:44px;flex:0 0 44px;background:#f1f5f1;color:var(--eu-ink);border:1px solid var(--eu-border);border-radius:12px;cursor:pointer}
+.fb-eu-alert{background:#fdf0d0;color:#6e4a00;padding:12px;border-radius:12px;border:1px solid #eddcae;font-size:12px;margin:14px 0}
+.fb-eu-upload{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:10px}
+.fb-eu-upload label{display:flex;flex-direction:column;gap:6px;color:var(--eu-muted);font-size:12px;font-weight:700;min-width:0}
+.fb-eu-upload input{border:1px solid var(--eu-border);border-radius:10px;padding:9px;width:100%;background:#fff;color:var(--eu-ink);min-height:43px;min-width:0}
+.fb-eu-modal .fb-action{border-radius:10px;min-height:40px;padding:8px 11px;cursor:pointer}
+.fb-eu-notice{font-size:12px;color:var(--eu-muted);min-height:20px;margin:10px 0 4px;overflow-wrap:anywhere}
+.fb-eu-counts{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0}
+.fb-eu-counts span{background:#eef2ee;border:1px solid var(--eu-border);color:var(--eu-muted);border-radius:999px;padding:5px 10px}
+.fb-eu-counts b{color:var(--eu-ink);font-variant-numeric:tabular-nums}
+.fb-eu-filters{display:grid;grid-template-columns:minmax(140px,2fr) minmax(120px,1fr) minmax(110px,1fr);gap:8px;margin:12px 0}
+.fb-eu-filters label,.fb-eu-form-grid>label,.fb-eu-review form>label{display:flex;flex-direction:column;gap:6px;font-weight:650;font-size:12px;color:var(--eu-muted);min-width:0}
+.fb-eu-filters :is(input,select),.fb-eu-form-grid :is(input,select){min-height:42px;width:100%;padding:8px 10px;background:#fff;border:1px solid var(--eu-border);border-radius:10px;color:var(--eu-ink);min-width:0}
+.fb-eu-list{display:grid;gap:8px;min-width:0}
+.fb-eu-item{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:12px;align-items:center;border:1px solid var(--eu-border);border-radius:13px;padding:11px 12px;min-width:0;background:#fff}
+.fb-eu-item.selected{border-color:var(--eu-green);box-shadow:0 0 0 2px #dcebe2}
+.fb-eu-item strong{font-size:13px;white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--eu-ink)}
+.fb-eu-description{min-width:0;display:flex;flex-direction:column;gap:3px}
+.fb-eu-description b{font-size:13px;color:var(--eu-ink);line-height:1.45;overflow-wrap:anywhere}
+.fb-eu-description small{font-size:11px;color:var(--eu-muted);line-height:1.4}
+.fb-eu-item-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:5px}
+.fb-eu-item-actions .fb-action{font-size:11px;min-height:34px;padding:6px 9px}
+.fb-eu-item-actions .fb-em-pill{white-space:nowrap}
+.fb-eu-empty{padding:24px;text-align:center;color:var(--eu-muted);background:#f6f8f6;border-radius:13px}
+.fb-eu-pages{display:flex;align-items:center;justify-content:center;gap:10px;color:var(--eu-muted);margin:12px 0 15px;font-size:12px}
+.fb-eu-review:not(:empty){border:1px solid #b2d0be;border-radius:15px;padding:16px;background:#f7faf7;margin-top:15px;min-width:0}
+.fb-eu-review h4{font-size:17px;margin:0 0 5px;color:var(--eu-ink)}
+.fb-eu-review p{color:var(--eu-muted);font-size:12px;margin:0 0 12px}
+.fb-eu-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0}
+.fb-eu-form-grid .fb-eu-wide{grid-column:1/-1}
+.fb-eu-form-grid .fb-eu-paid,.fb-eu-form-grid .fb-eu-check{flex-direction:row;align-items:flex-start;color:var(--eu-ink);font-weight:600;line-height:1.5}
+.fb-eu-form-grid :is(.fb-eu-paid,.fb-eu-check) input{appearance:auto;width:20px;height:20px;min-height:0;flex:0 0 20px;accent-color:var(--eu-green);margin:1px 6px 0 0}
+.fb-eu-form-grid [hidden]{display:none!important}
+.fb-eu-warning{font-size:12px;padding:10px;background:#fff3dc;border-radius:10px;color:#775019;margin:12px 0}
+.fb-eu-form-actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px;margin-top:12px}
+@media(max-width:767px){
+ .fad-balance-em #fb-en-expenses .fb-em-head{align-items:flex-start;gap:8px;flex-wrap:wrap}
+ .fad-balance-em #fb-en-expenses .fb-eu-top-actions{width:100%;justify-content:space-between}
+ .fad-balance-em #fb-en-expenses .fb-eu-top-actions .fb-action{flex:1 1 150px;min-height:44px}
+ .overlay:has(.fb-eu-modal){padding:0;align-items:flex-end}
+ .overlay>.modal:has(.fb-eu-modal){width:100%;max-height:calc(100dvh - env(safe-area-inset-top) - 12px);border-radius:23px 23px 0 0;padding:0;margin:0}
+ .fb-eu-modal{padding:16px 16px calc(24px + env(safe-area-inset-bottom));font-size:15px}
+ .fb-eu-head h3{font-size:19px}
+ .fb-eu-filters{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+ .fb-eu-filters label:first-child{grid-column:1/-1}
+ .fb-eu-upload{grid-template-columns:minmax(0,1fr)}
+ .fb-eu-upload .fb-action{min-height:48px}
+ .fb-eu-item{grid-template-columns:minmax(0,1fr) auto;gap:7px}
+ .fb-eu-item-actions{grid-column:1/-1;justify-content:stretch}
+ .fb-eu-item-actions .fb-action{flex:1;min-height:44px}
+ .fb-eu-description b{font-size:14px}
+ .fb-eu-description small{font-size:12px}
+ .fb-eu-form-grid{grid-template-columns:minmax(0,1fr)}
+ .fb-eu-form-grid .fb-eu-wide{grid-column:1}
+ .fb-eu-form-actions .fb-action{flex:1;min-height:48px}
+ .fb-eu-form-grid :is(input,select){min-height:48px;font-size:16px}
+}
+
 </style>
 
 <div id="root"></div>
@@ -4594,7 +4665,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '23.11.2026-ev'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '23.11.2026-ew'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -6210,7 +6281,7 @@ async function renderBalance(body){
       <b>Выбрано ${v.selected.size} · ${money(selectedSum)}</b><button type="button" class="fb-action primary" data-en-bulk="pay">Подтвердить оплату</button>
       <button type="button" class="fb-em-link" data-en-bulk="clear">Снять выбор</button></div>`:'';
     return `<section class="fb-panel fb-en-expenses" id="fb-en-expenses"><div class="fb-em-head"><h2>Расходы и платежи</h2>
-      ${isOwner?'<button type="button" class="fb-action primary" id="fb-add">+ Добавить статью</button>':''}</div>
+      ${isOwner?'<div class="fb-eu-top-actions"><button type="button" class="fb-action fb-eu-open" data-eu-import>Импорт банковских расходов</button><button type="button" class="fb-action primary" id="fb-add">+ Добавить статью</button></div>':''}</div>
       ${summary}${timeline}${chips}${tools}
       ${isOwner?'<button class="fb-m-fab" type="button" data-en-mobile-add>+ Статья</button>':''}
       <div class="fb-table-scroll fb-en-scroll"><table class="fb-table fb-em-table fb-en-table"><colgroup><col style="width:3.8%"><col style="width:36%"><col style="width:13.5%"><col style="width:14.5%"><col style="width:16.2%"><col style="width:16%"></colgroup><thead><tr>
@@ -6476,6 +6547,255 @@ async function renderBalance(body){
     });
     const d=ov.querySelector('#fb-date').closest('label');const checked=ov.querySelector('#fb-paid');d.hidden=true;checked.onchange=()=>d.hidden=!checked.checked;
   }
+  /* FAD EU · банковские расходы: staged -> reviewed -> manual ledger.
+     В данном компоненте НЕ происходит импорта в существующие финансовые источники.
+     Неподтверждённые и отклонённые строки существуют только в карантинной таблице EU. */
+  const BANK_CATEGORIES=['Аренда','Налоги и бухгалтерия','Коммунальные','Связь и сервис','Реклама','Персонал','Прочее'];
+  let bankWindow=null;
+  const bankState={rows:[],articles:[],counts:{},status:'pending',legal:'',query:'',page:0,selected:null,busy:false};
+  const bankKey=(legal,name)=>String(legal)+'|'+String(name||'').trim().toLocaleLowerCase('ru-RU');
+  const bankMoney=v=>money(Number(v));
+  function euOpts(items,value){return items.map(([k,label])=>`<option value="${esc(String(k))}"${String(k)===String(value)?' selected':''}>${esc(String(label))}</option>`).join('');}
+  function euToast(message,error=false){toast(message,error);}
+  // Minimal ZIP/XLSX reader using browser-native APIs. No external libraries and no file upload to third parties.
+  async function euZipXml(file,path){
+    const raw=await file.arrayBuffer(),a=new Uint8Array(raw),view=new DataView(raw),u16=i=>view.getUint16(i,true),u32=i=>view.getUint32(i,true);
+    if(a.length<22)throw Error('Повреждённый XLSX');
+    let eocd=-1;for(let i=a.length-22;i>=Math.max(0,a.length-65557);i--)if(u32(i)===0x06054b50){eocd=i;break;}
+    if(eocd<0)throw Error('Не найден каталог XLSX');
+    let p=u32(eocd+16),entries=u16(eocd+10);let offset=-1,size=0,method=0;
+    const decoder=new TextDecoder();
+    for(let i=0;i<entries;i++){
+      if(u32(p)!==0x02014b50)throw Error('Неверный ZIP-каталог');
+      const nameLen=u16(p+28),extra=u16(p+30),comment=u16(p+32);
+      const name=decoder.decode(a.subarray(p+46,p+46+nameLen));
+      if(name===path){offset=u32(p+42);size=u32(p+20);method=u16(p+10);break;}
+      p+=46+nameLen+extra+comment;
+    }
+    if(offset<0)return null;
+    if(u32(offset)!==0x04034b50)throw Error('Неверный ZIP-заголовок');
+    const dataStart=offset+30+u16(offset+26)+u16(offset+28);
+    if(dataStart+size>a.length)throw Error('Неполный XLSX');
+    const bytes=a.slice(dataStart,dataStart+size);
+    if(method===0)return decoder.decode(bytes);
+    if(method!==8)throw Error('Неподдерживаемое сжатие XLSX');
+    if(typeof DecompressionStream==='undefined')throw Error('Этот браузер не поддерживает открытие XLSX. Используйте CSV из комплекта.');
+    let decompressor;try{decompressor=new DecompressionStream('deflate-raw');}catch(_){throw Error('Для этого iPhone используйте CSV из комплекта: браузер не поддерживает deflate-raw.');}
+    const readable=new Blob([bytes]).stream().pipeThrough(decompressor);
+    return await new Response(readable).text();
+  }
+  const euXML=str=>{const doc=new DOMParser().parseFromString(str,'application/xml');if(doc.querySelector('parsererror'))throw Error('Неверный XML в XLSX');return doc;};
+  const euTag=(node,name)=>Array.from(node?.children||[]).find(x=>x.localName===name)||null;
+  function euCell(row,col,strings){
+    const c=Array.from(row.children).find(x=>x.localName==='c'&&String(x.getAttribute('r')||'').replace(/\d+$/,'').toUpperCase()===col);
+    if(!c)return '';
+    const type=c.getAttribute('t');const v=euTag(c,'v')?.textContent??'';
+    if(type==='s')return strings[Number(v)]??'';
+    if(type==='inlineStr')return Array.from(c.getElementsByTagName('*')).filter(x=>x.localName==='t').map(x=>x.textContent).join('');
+    return v;
+  }
+  async function euParseXlsx(file){
+    const xml=await euZipXml(file,'xl/worksheets/sheet1.xml');if(!xml)throw Error('В Excel нет первого листа');
+    const sx=await euZipXml(file,'xl/sharedStrings.xml');
+    const strings=sx?Array.from(euXML(sx).getElementsByTagName('*')).filter(x=>x.localName==='si').map(si=>
+      Array.from(si.getElementsByTagName('*')).filter(t=>t.localName==='t').map(t=>t.textContent).join('')):[];
+    const sheet=euXML(xml),rows=Array.from(sheet.getElementsByTagName('*')).filter(x=>x.localName==='row');
+    const get=(r,n)=>euCell(r,n,strings);
+    let header=null;const parsed=[];let legal=null,skippedPositive=0,skippedBlank=0;
+    for(const row of rows){
+      const first=String(get(row,'A')||'').trim();
+      if(first==='Контрагент'){
+        header=[];for(let col=2;col<=13;col++){let z=col;let letters='';while(z){z--;letters=String.fromCharCode(65+z%26)+letters;z=Math.floor(z/26);}const m=Number(get(row,letters));if(Number.isInteger(m)&&m>=1&&m<=12)header.push([letters,m]);}
+        continue;
+      }
+      if(first==='ИП'||first==='ООО'){legal=first==='ИП'?'ip':'ooo';continue;}
+      if(!header||!legal||!first||/^общий итог$/i.test(first)||/^(итого|всего)\s*:/i.test(first))continue;
+      for(const [col,month] of header){
+        const v=String(get(row,col)||'').trim().replace(/\s/g,'').replace(',','.');
+        if(!v){skippedBlank++;continue;}
+        const number=Number(v);
+        if(!Number.isFinite(number)||Math.abs(number)<0.005)continue;
+        if(number>0){skippedPositive++;continue;}
+        parsed.push({legal,counterparty:first,month:'2026-'+String(month).padStart(2,'0'),amount:(Math.round(-number*100)/100).toFixed(2),row:Number(row.getAttribute('r'))||1});
+      }
+    }
+    if(!header||!parsed.length)throw Error('В Excel не найдены отрицательные суммы по контрагентам и месяцам');
+    return {rows:parsed,positive:skippedPositive,empty:skippedBlank};
+  }
+  // CSV template: Юрлицо;Контрагент;Месяц;Сумма;Строка исходника.
+  function euParseCsvText(text){
+    text=String(text).replace(/^\uFEFF/,'');const first=text.split(/\r?\n/,1)[0];const sep=first.includes(';')?';':first.includes('\t')?'\t':',';
+    const records=[],cells=[];let field='',quoted=false;
+    for(let i=0;i<text.length;i++){
+      const c=text[i];if(c==='"'){if(quoted&&text[i+1]==='"'){field+='"';i++;}else quoted=!quoted;continue;}
+      if(c===sep&&!quoted){cells.push(field);field='';continue;}
+      if((c==='\r'||c==='\n')&&!quoted){if(c==='\r'&&text[i+1]==='\n')i++;cells.push(field);field='';if(cells.some(x=>x.trim()))records.push(cells.splice(0));else cells.length=0;continue;}
+      field+=c;
+    }
+    cells.push(field);if(cells.some(x=>x.trim()))records.push(cells);
+    const norm=s=>String(s||'').toLocaleLowerCase('ru-RU').trim();
+    const header=records.shift()||[];
+    const at=(...p)=>header.findIndex(x=>p.includes(norm(x)));
+    const li=at('юрлицо','legal'),ci=at('контрагент','counterparty'),mi=at('месяц','month'),ai=at('сумма','amount','списание byn','сумма списания','расход byn'),ri=at('строка','исходная строка','row');
+    if([li,ci,mi,ai].some(x=>x<0))throw Error('CSV: нужны колонки Юрлицо;Контрагент;Месяц;Сумма');
+    const result=[];let positive=0;const expenseHeader=/(списани|расход)/.test(norm(header[ai]));
+    for(let i=0;i<records.length;i++){
+      const parts=records[i],lg=norm(parts[li]),legal=lg==='ип'||lg==='ip'?'ip':lg==='ооо'||lg==='ooo'?'ooo':'';
+      const month=String(parts[mi]||'').trim();const amount=Number(String(parts[ai]||'').replace(/\s/g,'').replace(',','.'));
+      if(!legal||!/^20\d{2}-(0[1-9]|1[0-2])$/.test(month)||!Number.isFinite(amount)||amount===0)continue;
+      // Положительные значения без заголовка «Списание/Расход» могут быть доходом — пропускаем.
+      if(amount>0&&!expenseHeader){positive++;continue;}
+      result.push({legal,counterparty:String(parts[ci]||'').trim(),month,amount:Math.abs(amount).toFixed(2),row:Number(parts[ri])||i+2});
+    }
+    if(!result.length)throw Error('CSV не содержит строк для проверки');
+    return {rows:result,positive,empty:0};
+  }
+  async function euParseFile(file){
+    if(!file||file.size>9*1024*1024)throw Error('Выберите XLSX или CSV до 9 МБ');
+    const name=file.name.toLowerCase();
+    if(name.endsWith('.xlsx'))return euParseXlsx(file);
+    if(name.endsWith('.csv'))return euParseCsvText(await file.text());
+    throw Error('Допустимые файлы: .xlsx или .csv');
+  }
+  function euPanelHtml(){return `<div class="fb-eu-modal">
+    <div class="fb-eu-head"><div><h3>Импорт расходов · проверка</h3><p>Деньги попадут в Баланс только после вашего подтверждения каждой строки.</p></div><button class="fb-eu-close" type="button" data-eu-close aria-label="Закрыть">✕</button></div>
+    <div class="fb-eu-alert">Выписка сгруппирована по контрагентам и месяцам. Даты отдельных платежей отсутствуют. <b>Зарплаты, переводы между своими счетами и уже учтённые расходы ImpulseCRM не подтверждайте повторно.</b></div>
+    <div class="fb-eu-upload"><label><span>Выберите Excel или CSV</span><input id="fb-eu-file" type="file" accept=".xlsx,.csv" /></label><button type="button" class="fb-action primary" id="fb-eu-upload">Загрузить в очередь</button></div>
+    <div class="fb-eu-notice" id="fb-eu-progress" role="status"></div>
+    <div id="fb-eu-counts" class="fb-eu-counts"></div>
+    <div class="fb-eu-filters"><label>Поиск<input id="fb-eu-query" type="search" placeholder="Контрагент или месяц" autocomplete="off"></label>
+     <label>Статус<select id="fb-eu-status"><option value="pending">На проверке</option><option value="approved">Подтверждены</option><option value="rejected">Не учитывать</option></select></label>
+     <label>Юрлицо<select id="fb-eu-legal"><option value="">Все</option><option value="ip">ИП Кирпиченко</option><option value="ooo">ООО Флексико</option></select></label></div>
+    <div class="fb-eu-list" id="fb-eu-list"></div><div class="fb-eu-pages" id="fb-eu-pages"></div>
+    <div class="fb-eu-review" id="fb-eu-review"></div>
+    </div>`;}
+  async function euRead(){
+    const info=await rpc('app_balance_eu_read',{p_token:TOKEN,p_limit:1500});
+    bankState.rows=Array.isArray(info.rows)?info.rows:[];
+    bankState.articles=Array.isArray(info.articles)?info.articles:[];
+    bankState.counts=info.counts||{};
+  }
+  const euRoot=()=>bankWindow?.querySelector('.fb-eu-modal')||null;
+  function euRenderQueue(){
+    const root=euRoot();if(!root)return;
+    const v=bankState;
+    root.querySelector('#fb-eu-counts').innerHTML=`<span>Ожидают: <b>${n(v.counts.pending)}</b></span><span>Подтверждены: <b>${n(v.counts.approved)}</b></span><span>Не учитывать: <b>${n(v.counts.rejected)}</b></span>`;
+    const q=v.query.toLocaleLowerCase('ru-RU');const filtered=v.rows.filter(x=>x.status===v.status&&(!v.legal||x.legal_entity===v.legal)&&
+      (!q||[x.counterparty,x.month,x.file_name].some(t=>String(t||'').toLocaleLowerCase('ru-RU').includes(q))));
+    const pageSize=16,pages=Math.max(1,Math.ceil(filtered.length/pageSize));v.page=Math.min(v.page,pages-1);
+    const chosen=filtered.slice(v.page*pageSize,(v.page+1)*pageSize);
+    root.querySelector('#fb-eu-list').innerHTML=chosen.length?chosen.map(x=>`<article class="fb-eu-item${v.selected===x.id?' selected':''}">
+      <div class="fb-eu-description"><b>${esc(x.counterparty)}</b><small>${esc(E[x.legal_entity]||x.legal_entity)} · ${esc(x.month)} · исходная строка ${n(x.file_row)}</small></div>
+      <strong>${money(x.amount)}</strong><div class="fb-eu-item-actions">${x.status==='pending'?`<button class="fb-action primary" type="button" data-eu-review="${esc(x.id)}">Проверить</button><button class="fb-action" type="button" data-eu-reject="${esc(x.id)}">Не учитывать</button>`:
+      x.status==='rejected'?`<button class="fb-action" type="button" data-eu-reopen="${esc(x.id)}">Вернуть на проверку</button>`:
+      '<span class="fb-em-pill ok">Добавлено в расходы</span>'}</div></article>`).join(''):'<p class="fb-eu-empty">По выбранным условиям строк нет.</p>';
+    root.querySelector('#fb-eu-pages').innerHTML=pages>1?`<button type="button" class="fb-action" data-eu-page="-1" ${v.page<=0?'disabled':''}>Назад</button><span>${v.page+1} / ${pages} · всего ${filtered.length}</span><button type="button" class="fb-action" data-eu-page="1" ${v.page>=pages-1?'disabled':''}>Далее</button>`:`<span>Найдено: ${filtered.length}</span>`;
+    if(!v.selected||!filtered.some(x=>x.id===v.selected))root.querySelector('#fb-eu-review').innerHTML='';
+  }
+  function euExistingSuggested(row){
+    const same=bankState.rows.find(x=>x.id!==row.id&&x.status==='approved'&&bankKey(x.legal_entity,x.counterparty)===bankKey(row.legal_entity,row.counterparty));
+    return same?.article_id||null;
+  }
+  function euSelectReview(id){
+    const row=bankState.rows.find(x=>x.id===id&&x.status==='pending');if(!row)return;
+    bankState.selected=id;euRenderQueue();
+    const root=euRoot();if(!root)return;
+    const possible=bankState.articles.filter(x=>x.legal_entity===row.legal_entity&&x.start_month<=row.month&&(!x.end_from||x.end_from>row.month));
+    const preferred=euExistingSuggested(row);
+    const choice=possible.some(x=>x.id===preferred)?preferred:'';
+    const current=possible.find(x=>x.id===choice)||null;
+    const label=current?.name||row.counterparty.slice(0,160);
+    const description=`${row.month} · ${money(row.amount)} · ${E[row.legal_entity]}`;
+    root.querySelector('#fb-eu-review').innerHTML=`<form id="fb-eu-form">
+      <h4>Подтвердить расход</h4><p>${esc(description)}</p>
+      <label>Статья в FAD<select id="fb-eu-target">${euOpts([['','Создать новую статью'],...possible.map(a=>[a.id,a.name+' · '+(U[a.unit]||'Все филиалы')])],choice)}</select></label>
+      <div class="fb-eu-form-grid">
+       <label class="fb-eu-wide">Название статьи<input id="fb-eu-name" maxlength="160" required value="${esc(label)}"></label>
+       <label>Категория<select id="fb-eu-category" required>${euOpts([['','Выберите категорию'],...BANK_CATEGORIES.map(x=>[x,x])],current?.category||'')}</select></label>
+       <label>Тип<select id="fb-eu-kind" required>${euOpts([['','Выберите тип'],['fixed','Постоянный'],['var','Переменный']],current?.kind||'')}</select></label>
+       <label>Число оплаты<select id="fb-eu-day" required>${euOpts([['','Укажите число'],...Array.from({length:31},(_,i)=>[String(i+1),String(i+1)])],current?.due_day||'')}</select></label>
+       <label>Юрлицо<select id="fb-eu-entity" required>${euOpts([['','Выберите юрлицо'],['ip','ИП Кирпиченко'],['ooo','ООО Флексико']],row.legal_entity)}</select></label>
+       <label>Филиал<select id="fb-eu-unit" required>${euOpts([['','Выберите филиал'],['all','Все филиалы'],...Object.entries(U)],current?.unit||'')}</select></label>
+       <label class="fb-eu-wide fb-eu-paid"><input id="fb-eu-paid" type="checkbox"> Подтвердить фактическую оплату (не обязательно)</label>
+       <label id="fb-eu-date-wrap" class="fb-eu-wide" hidden>Точная дата оплаты<input id="fb-eu-date" type="date" value=""></label>
+       <label class="fb-eu-wide fb-eu-check"><input id="fb-eu-checked" type="checkbox" required> Я проверил(а), что этот расход ещё не учтён в ImpulseCRM, зарплатах FAD или другой статье.</label>
+      </div><div class="fb-eu-warning">Внимание: постоянная статья будет перенесена в следующие месяцы. Для повторяющихся платежей выбирайте существующую статью. Без указанной точной даты не отмечаем банковскую операцию как «Оплачено».</div>
+      <div class="fb-eu-form-actions"><button type="button" class="fb-action" data-eu-cancel>Отмена</button><button class="fb-action primary" type="submit">Добавить в расходы FAD</button></div>
+    </form>`;
+    const form=root.querySelector('#fb-eu-form');
+    form.querySelector('#fb-eu-target').addEventListener('change',e=>{
+      const x=possible.find(a=>a.id===e.target.value);
+      if(!x)return;
+      form.querySelector('#fb-eu-name').value=x.name;
+      form.querySelector('#fb-eu-category').value=x.category||'';
+      form.querySelector('#fb-eu-kind').value=x.kind;
+      form.querySelector('#fb-eu-day').value=x.due_day||'';
+      form.querySelector('#fb-eu-unit').value=x.unit||'all';
+      form.querySelector('#fb-eu-entity').value=x.legal_entity;
+    });
+    form.querySelector('#fb-eu-paid').onchange=e=>{form.querySelector('#fb-eu-date-wrap').hidden=!e.target.checked;};
+    form.onsubmit=async e=>{
+      e.preventDefault();if(bankState.busy)return;
+      const f=form.elements;
+      const item={article_id:f['fb-eu-target'].value||null,name:f['fb-eu-name'].value.trim(),
+        category:f['fb-eu-category'].value,kind:f['fb-eu-kind'].value,day:f['fb-eu-day'].value,
+        legal:f['fb-eu-entity'].value,unit:f['fb-eu-unit'].value==='all'?'':f['fb-eu-unit'].value,
+        paid:f['fb-eu-paid'].checked,date:f['fb-eu-paid'].checked?f['fb-eu-date'].value:null};
+      if(!f['fb-eu-checked'].checked||!item.category||!item.kind||!item.day||!item.legal||!f['fb-eu-unit'].value){euToast('Заполните все поля и подтвердите проверку на дубли',true);return;}
+      if(item.legal!==row.legal_entity){euToast('Юрлицо должно совпадать с исходной выпиской. Если там ошибка — отклоните строку.',true);return;}
+      if(item.paid&&!/^20\d{2}-\d{2}-\d{2}$/.test(item.date||'')){euToast('Введите точную дату оплаты',true);return;}
+      bankState.busy=true;const save=form.querySelector('button[type="submit"]');save.disabled=true;
+      try{
+        await rpc('app_balance_eu_decide',{p_token:TOKEN,p_row_id:row.id,p_action:'approve',p_item:item});
+        bankState.selected=null;await euRead();euRenderQueue();await load();euToast('Расход добавлен после подтверждения');
+      }catch(err){euToast('Не сохранено: '+String(err.message||err),true);}finally{bankState.busy=false;if(save.isConnected)save.disabled=false;}
+    };
+    requestAnimationFrame(()=>root.querySelector('#fb-eu-review')?.scrollIntoView({behavior:'smooth',block:'nearest'}));
+  }
+  async function euUpload(){
+    const root=euRoot(),file=root?.querySelector('#fb-eu-file')?.files?.[0];if(!file){euToast('Выберите Excel или CSV',true);return;}
+    if(bankState.busy)return;
+    bankState.busy=true;const btn=root.querySelector('#fb-eu-upload');btn.disabled=true;
+    try{
+      const parsed=await euParseFile(file),rows=parsed.rows;let inserted=0,duplicates=0;
+      if(rows.length>10000)throw Error('Выписка слишком большая для одного импорта. Разделите файл по месяцам.');
+      for(let start=0;start<rows.length;start+=100){
+        root.querySelector('#fb-eu-progress').textContent=`Загрузка в очередь: ${Math.min(start+100,rows.length)} из ${rows.length} строк...`;
+        const result=await rpc('app_balance_eu_stage',{p_token:TOKEN,p_file_name:file.name,p_rows:rows.slice(start,start+100)});
+        inserted+=n(result?.added);duplicates+=n(result?.duplicates);
+      }
+      root.querySelector('#fb-eu-progress').textContent=`В очереди новых: ${inserted} · уже загружены: ${duplicates} · положительные поступления пропущены: ${parsed.positive||0}. В Баланс ничего не начислено.`;
+      bankState.status='pending';bankState.page=0;root.querySelector('#fb-eu-status').value='pending';
+      await euRead();euRenderQueue();euToast('Загрузка завершена. Проверьте операции по одной.');
+    }catch(e){euToast('Ошибка загрузки: '+String(e.message||e),true);root.querySelector('#fb-eu-progress').textContent='Операции не подтверждены. Ошибка: '+String(e.message||e);}
+    finally{bankState.busy=false;if(btn.isConnected)btn.disabled=false;}
+  }
+  async function openBankImport(){
+    if(!isOwner)return;
+    if(bankWindow?.isConnected)return;
+    bankWindow=modal(euPanelHtml());
+    try{await euRead();if(euRoot())euRenderQueue();}catch(e){const info=euRoot()?.querySelector('#fb-eu-progress');if(info)info.textContent='Не удалось получить очередь: '+String(e.message||e);}
+    const root=euRoot();if(!root)return;
+    bankWindow.addEventListener('click',async e=>{
+      const b=e.target.closest('button');if(!b||!bankWindow?.isConnected)return;
+      if(b.matches('[data-eu-close]')){closeModal(bankWindow);bankWindow=null;return;}
+      if(b.id==='fb-eu-upload'){await euUpload();return;}
+      if(b.dataset.euPage){bankState.page=Math.max(0,bankState.page+Number(b.dataset.euPage));euRenderQueue();return;}
+      if(b.dataset.euReview){euSelectReview(b.dataset.euReview);return;}
+      if(b.dataset.euCancel){bankState.selected=null;euRenderQueue();return;}
+      if(b.dataset.euReject||b.dataset.euReopen){
+        const id=b.dataset.euReject||b.dataset.euReopen,action=b.dataset.euReject?'reject':'reopen';
+        if(bankState.busy)return;bankState.busy=true;b.disabled=true;
+        try{await rpc('app_balance_eu_decide',{p_token:TOKEN,p_row_id:id,p_action:action,p_item:{}});
+          bankState.selected=null;await euRead();euRenderQueue();euToast(action==='reject'?'Строка исключена без начисления':'Строка снова ожидает проверки');}
+        catch(err){euToast(String(err.message||err),true);}finally{bankState.busy=false;if(b.isConnected)b.disabled=false;}
+      }
+    });
+    root.querySelector('#fb-eu-query').oninput=e=>{bankState.query=e.target.value;bankState.page=0;euRenderQueue();};
+    root.querySelector('#fb-eu-status').onchange=e=>{bankState.status=e.target.value;bankState.selected=null;bankState.page=0;euRenderQueue();};
+    root.querySelector('#fb-eu-legal').onchange=e=>{bankState.legal=e.target.value;bankState.page=0;euRenderQueue();};
+  }
+
   function undoArticle(x,period){dlg('Отменить оплату',`Подтверждение оплаты «${x.name}» за ${monthTitle(period)} будет снято. Статья снова ожидает оплаты.`,
     `<div class="fb-em-muted" style="padding:12px 0">Начисление и история ставок сохранятся.</div>`,'Отменить оплату',async()=>{
       await saveAction('undo',{id:x.id,period});toast('Подтверждение оплаты отменено');
@@ -6498,6 +6818,7 @@ async function renderBalance(body){
     if(d.enMobileFilters){v.sheetOpen=d.enMobileFilters==='open';rerenderExpenseList();
       if(v.sheetOpen)requestAnimationFrame(()=>el('fb-en-expenses')?.querySelector('.fb-m-sheet-head button')?.focus());
       else requestAnimationFrame(()=>el('fb-en-expenses')?.querySelector('.fb-m-filters-trigger')?.focus());return;}
+    if(d.euImport){if(isOwner)void openBankImport();return;}
     if(d.enMobileAdd){if(isOwner)newArticle();return;}
     if(d.enChip){v.chip=d.enChip;v.collapse={};rerenderExpenseList();return;}
     if(d.enDay){const day=Number(d.enDay);v.day=v.day===day?null:day;v.collapse={};rerenderExpenseList();return;}
