@@ -4272,6 +4272,218 @@ input[type="time"]::-webkit-calendar-picker-indicator{position:absolute;right:8p
 }
 
 
+
+/* FAD ER — единственная светлая мобильная схема; общие токены FAD остаются главным источником. */
+:root{--fad-mobile-bg:#EEF2EE;--fad-mobile-card:#FFFFFF;--fad-mobile-ink:#16241D;--fad-mobile-muted:#566A5F;--fad-mobile-green:#1F6B4A;--fad-mobile-deep:#1A4531;--fad-mobile-bad:#B3322B;--fad-mobile-bad-bg:#FBE5E3;--fad-mobile-warn:#6E4A00;--fad-mobile-warn-bg:#FDF0D0;--fad-mobile-ok-bg:#DCEBE2}
+.fad-mobile-nav,.fad-mobile-more-overlay{display:none}
+.sch-mobile-menu-trigger{display:none}
+.fb-m-tabs,.fb-m-period,.fb-m-content,.fb-m-subtitle,.fb-m-filters-trigger,.fb-m-filter-shade,.fb-m-filter-sheet,.fb-m-fab{display:none}
+@media (max-width:767px){
+ html,body{width:100%;max-width:100%;overflow-x:clip;background:var(--fad-mobile-bg);color:var(--fad-mobile-ink);font-family:var(--fad-font);color-scheme:only light}
+ #root,.fad-app-shell,.fad-main,#tabbody,#tabbody.page,.fad-main .wrap{min-width:0!important;max-width:100%!important;box-sizing:border-box}
+ #root{padding:0}
+ .fad-main{padding:0!important;margin:0!important;width:100%!important;overflow:visible!important}
+ .fad-main .wrap{padding:16px!important;margin:0!important;width:100%!important;overflow:visible!important}
+ .fad-main-topline{position:sticky!important;top:0;z-index:120;background:#fff;min-height:72px!important;padding:11px 16px!important;box-shadow:0 1px 0 #d6ded6;gap:11px!important;align-items:center}
+ .fad-main-heading{min-width:0}.fad-main-eyebrow{font-size:10px!important;line-height:1.4!important;letter-spacing:.08em!important}
+ .fad-main-heading #fadCurrentTitle{font-family:Manrope,system-ui,sans-serif!important;font-size:26px!important;line-height:1.15!important;font-weight:800!important;margin:2px 0 0!important;overflow-wrap:anywhere}
+ .fad-main-version{display:none!important}.fad-sidebar-hamburger{width:44px!important;height:44px!important;min-width:44px;flex:0 0 44px}
+ #tabbody{padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))!important}
+ .fad-mobile-nav{display:flex;align-items:stretch;position:fixed;z-index:155;left:0;right:0;bottom:0;min-height:calc(64px + env(safe-area-inset-bottom,0px));padding:5px 7px calc(5px + env(safe-area-inset-bottom,0px));background:#fff;border-top:1px solid #d8e2d9;box-shadow:0 -8px 24px #16241d14;justify-content:space-around;gap:1px}
+ .fad-mobile-nav-item{min-width:0;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:0;background:transparent;color:#697b70;font-size:10px;font-weight:700;border-radius:12px;min-height:48px;padding:4px 2px;cursor:pointer}
+ .fad-mobile-nav-item.active{color:var(--fad-mobile-deep)}.fad-mobile-nav-item.active .fad-mobile-nav-icon{background:var(--fad-mobile-ok-bg)}
+ .fad-mobile-nav-icon{font-size:19px;line-height:1;min-width:34px;min-height:25px;display:grid;place-items:center;border-radius:9px}
+ .fad-mobile-more-overlay:not([hidden]){display:block;position:fixed;inset:0;z-index:230}
+ .fad-mobile-more-backdrop{position:absolute;inset:0;border:0;background:#10201988}
+ .fad-mobile-more-sheet{position:absolute;bottom:0;left:0;right:0;max-height:80dvh;overflow-y:auto;overscroll-behavior:contain;background:#fff;border-radius:24px 24px 0 0;padding:17px 16px calc(25px + env(safe-area-inset-bottom,0px));box-shadow:0 -15px 55px #001b0c45}
+ .fad-mobile-more-header{display:flex;align-items:center;justify-content:space-between;font-size:18px;margin-bottom:12px}
+ .fad-mobile-more-header button{min-width:44px;min-height:44px;border:0;background:#eef2ee;border-radius:12px;font-size:20px}
+ .fad-mobile-more-list{display:flex;flex-direction:column;gap:6px}
+ .fad-mobile-more-list button{border:1px solid #dde6df;border-radius:14px;background:#fff;text-align:left;display:flex;justify-content:space-between;align-items:center;min-height:50px;padding:10px 14px;color:#16241d;font-weight:700;font-size:15px}
+ :is(.fad-mobile-nav-item,.fad-mobile-more-sheet button,#tabbody button):focus-visible{outline:3px solid #4aa87f!important;outline-offset:2px!important}
+ #tabbody button,#tabbody a,#tabbody select,#tabbody input{touch-action:manipulation}
+ #tabbody .fb-m-amount,#tabbody .fb-m-hero strong,#tabbody .fb-m-metrics b,#tabbody .fb-en-money,#tabbody .dl-kpi strong{font-variant-numeric:tabular-nums}
+ /* Balance: source formulas remain in calc() + branchTable(). */
+ #tabbody .fad-balance.fb-mobile-view{--eo-surface:#fff;--eo-ink:#16241d;max-width:100%!important;overflow:visible!important;display:block}
+ .fb-mobile-view .fb-m-tabs,.fb-mobile-view .fb-m-period,.fb-mobile-view .fb-m-content,.fb-mobile-view .fb-m-subtitle{display:flex}
+ .fb-mobile-view .fb-m-tabs{gap:8px;overflow-x:auto;scrollbar-width:none;scroll-snap-type:x mandatory;padding-bottom:4px;margin-bottom:12px}
+ .fb-mobile-view .fb-m-tabs button{flex:0 0 auto;min-height:44px;border:1px solid #dde7df;border-radius:999px;padding:9px 16px;background:#fff;color:#16241d;font-size:13px;font-weight:800;scroll-snap-align:start}
+ .fb-mobile-view .fb-m-tabs button.on{background:#1a4531;border-color:#1a4531;color:white}
+ .fb-mobile-view .fb-m-period{justify-content:space-between;align-items:center;gap:7px;margin-bottom:6px}
+ .fb-mobile-view .fb-m-period button{min-width:44px;min-height:44px;border:1px solid #e0e7e0;border-radius:12px;background:#fff;color:#16241d;font-size:26px}
+ .fb-mobile-view .fb-m-period b{font-size:15px;font-weight:800;text-align:center}
+ .fb-mobile-view .fb-m-subtitle{display:block;color:#566a5f;font-size:12px;margin:0 0 12px;overflow-wrap:anywhere}
+ .fb-mobile-view .fb-em-status{font-size:12px;line-height:1.5;flex-wrap:wrap;margin:0 0 13px;white-space:normal}
+ .fb-mobile-view .fb-m-content{flex-direction:column;gap:13px;max-width:100%;min-width:0}
+ .fb-mobile-view .fb-panel{background:#fff;border:1px solid #dfe8df;border-radius:24px!important;padding:16px!important;min-width:0;box-shadow:none}
+ .fb-mobile-view .fb-m-hero{background:#1a4531;border-radius:24px;padding:23px 20px;color:#fff;display:flex;flex-direction:column;gap:10px;min-width:0}
+ .fb-mobile-view .fb-m-hero>small{font-size:11px;letter-spacing:.05em;color:#bad4c3;font-weight:800}
+ .fb-mobile-view .fb-m-hero>strong{font-size:30px;line-height:1.12;font-weight:850;overflow-wrap:anywhere;color:#fff}
+ .fb-mobile-view .fb-m-rent{padding:5px 9px;border-radius:8px;background:#ffffff27;font-size:12px;align-self:flex-start}
+ .fb-mobile-view .fb-m-split,.fb-mobile-view .fb-m-three{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;border-top:1px solid #ffffff30;padding-top:14px;margin-top:5px}
+ .fb-mobile-view .fb-m-three{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .fb-mobile-view .fb-m-split span,.fb-mobile-view .fb-m-three span{display:flex;flex-direction:column;gap:4px;color:#c4d6ca;font-size:12px;min-width:0}
+ .fb-mobile-view .fb-m-split b,.fb-mobile-view .fb-m-three b{font-size:15px;color:#fff;overflow-wrap:anywhere}
+ .fb-mobile-view .fb-m-alert{border-radius:20px;background:#fbe5e3;color:#9f2d26;padding:16px;display:flex;flex-direction:column;gap:9px}
+ .fb-mobile-view .fb-m-alert span{font-size:13px;line-height:1.5}
+ .fb-mobile-view .fb-m-alert button{background:#b3322b;color:white;border:0;border-radius:12px;min-height:48px;font-weight:750}
+ .fb-mobile-view .fb-m-chart h2{font-size:17px;margin:0 0 3px}.fb-mobile-view .fb-m-chart p{font-size:12px;color:#657b6c}
+ .fb-mobile-view .fb-m-chart svg{display:block;width:100%;max-width:100%;height:auto;margin:8px 0}
+ .fb-mobile-view .fb-em-legend{display:flex;gap:8px 12px;flex-wrap:wrap;font-size:11px}
+ .fb-mobile-view .fb-m-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .fb-mobile-view .fb-m-metrics>div{background:#f2f5f2;border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:5px;min-width:0}
+ .fb-mobile-view .fb-m-metrics small{font-size:12px;color:#566a5f;line-height:1.3}.fb-mobile-view .fb-m-metrics b{font-size:15px;line-height:1.35;overflow-wrap:anywhere}
+ .fb-mobile-view .fb-m-link-card{min-height:54px;border-radius:16px;border:1px solid #dae5db;background:#fff;display:flex;justify-content:space-between;align-items:center;padding:15px;font-size:15px;font-weight:800;color:#1a4531}
+ .fb-mobile-view .fb-m-link-card span{font-size:22px}
+ .fb-mobile-view .fb-m-sort{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none}
+ .fb-mobile-view .fb-m-sort button{border:1px solid #d6e1d7;border-radius:999px;background:white;padding:9px 13px;min-height:44px;flex:0 0 auto;font-size:12px;font-weight:750}
+ .fb-mobile-view .fb-m-sort button.on{background:#1a4531;color:white}
+ .fb-mobile-view .fb-m-branch-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+ .fb-mobile-view .fb-m-branch-head b{font-size:16px;line-height:1.4}
+ .fb-mobile-view .fb-m-branch>small{font-size:12px;color:#566a5f}.fb-mobile-view .fb-m-branch .fb-m-amount{display:block;font-size:26px;overflow-wrap:anywhere;margin:3px 0 10px}
+ .fb-mobile-view .fb-m-track{height:8px;background:#e7eee8;border-radius:999px;overflow:hidden;margin-bottom:13px}
+ .fb-mobile-view .fb-m-track span{display:block;height:100%;border-radius:999px}.fb-mobile-view .fb-m-track .good{background:#1f6b4a}.fb-mobile-view .fb-m-track .warn{background:#c08319}.fb-mobile-view .fb-m-track .bad{background:#b3322b}
+ .fb-mobile-view .fb-m-reconcile{display:flex;flex-direction:column;gap:6px;font-size:13px}.fb-mobile-view .fb-m-reconcile span{font-size:18px;font-weight:800}.fb-mobile-view .fb-m-reconcile small{color:#566a5f}
+ /* Expenses list: table rows become cards, no page or table horizontal scroll. */
+ .fb-mobile-view #fb-en-expenses{padding:16px 0!important;border:none!important;background:transparent!important;overflow:visible!important}
+ .fb-mobile-view #fb-en-expenses>.fb-em-head{padding:0 2px}.fb-mobile-view #fb-en-expenses>.fb-em-head>button#fb-add{display:none}
+ .fb-mobile-view #fb-en-expenses .fb-en-summary{display:flex;flex-direction:column;gap:10px;background:white;border-radius:20px;padding:15px}
+ .fb-mobile-view #fb-en-expenses .fb-en-summary>div:first-child{font-size:14px;line-height:1.65;overflow-wrap:anywhere}
+ .fb-mobile-view #fb-en-expenses .fb-en-pills{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:8px;scrollbar-width:none;margin:0;padding:8px 0}
+ .fb-mobile-view #fb-en-expenses .fb-en-pills>.fb-em-pill{flex:0 0 auto;min-height:32px;display:flex;align-items:center;font-size:12px}
+ .fb-mobile-view #fb-en-expenses .fb-en-strip{display:flex!important;gap:6px!important;overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:none;max-width:100%;margin:0 0 13px!important;padding:4px 0 10px;scroll-snap-type:x proximity}
+ .fb-mobile-view #fb-en-expenses .fb-en-day{width:43px!important;flex:0 0 43px!important;min-width:43px!important;min-height:48px!important;height:48px!important;max-height:none!important;border-radius:10px!important;font-size:13px!important;scroll-snap-align:center}
+ .fb-mobile-view #fb-en-expenses .fb-en-date-number{font-size:13px!important}.fb-mobile-view #fb-en-expenses .fb-en-marker{width:6px!important;height:6px!important}
+ .fb-mobile-view #fb-en-expenses .fb-en-strip-title{line-height:1.5;font-size:12px!important;gap:6px;align-items:start}
+ .fb-mobile-view #fb-en-expenses .fb-en-strip-title>span:last-child{font-size:10px!important}
+ .fb-mobile-view #fb-en-expenses .fb-en-chips{display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:6px;max-width:100%;padding:0 0 11px}
+ .fb-mobile-view #fb-en-expenses .fb-en-chips .fb-chip{flex:0 0 auto;min-height:44px;padding:9px 13px;font-size:12px;border-radius:999px}
+ .fb-mobile-view #fb-en-expenses .fb-en-tools{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:8px;position:relative}
+ .fb-mobile-view #fb-en-expenses .fb-en-query{grid-column:1!important;min-width:0}.fb-mobile-view #fb-en-expenses .fb-en-query>span{display:none}
+ .fb-mobile-view #fb-en-expenses .fb-en-query input{height:48px!important;min-height:48px!important;font-size:14px!important;background:#fff!important;border-radius:12px!important}
+ .fb-mobile-view #fb-en-expenses .fb-m-filters-trigger{display:block;min-height:48px;border:1px solid #d9e4dc;border-radius:12px;background:#fff;padding:0 12px;font-size:13px;font-weight:750;color:#16241d}
+ .fb-mobile-view #fb-en-expenses .fb-m-filter-shade.open{display:block;position:fixed;inset:0;background:#10231988;z-index:310}
+ .fb-mobile-view #fb-en-expenses .fb-m-filter-sheet{display:flex;flex-direction:column;gap:11px;position:fixed;z-index:311;bottom:0;left:0;right:0;max-height:80dvh;overflow:auto;background:#fff;border-radius:24px 24px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 50px #10231933;transform:translateY(110%);visibility:hidden;transition:transform .2s,visibility .2s}
+ .fb-mobile-view #fb-en-expenses .fb-m-filter-sheet.open{visibility:visible;transform:translateY(0)}
+ .fb-mobile-view #fb-en-expenses .fb-m-sheet-head{display:flex;justify-content:space-between;align-items:center;font-size:18px}
+ .fb-mobile-view #fb-en-expenses .fb-m-sheet-head button{min-width:44px;min-height:44px;border:0;border-radius:12px;font-size:18px}
+ .fb-mobile-view #fb-en-expenses .fb-m-filter-sheet label{display:flex;flex-direction:column;gap:5px;width:100%}
+ .fb-mobile-view #fb-en-expenses .fb-m-filter-sheet :is(select,input){font-size:15px!important;min-height:48px!important;border-radius:12px!important}
+ .fb-mobile-view #fb-en-expenses .fb-m-show{display:block;min-height:48px;border:0;background:#1f6b4a;color:white;border-radius:12px;font-weight:800;font-size:14px}
+ .fb-mobile-view #fb-en-expenses .fb-en-reset{min-height:44px;align-self:flex-start}
+ .fb-mobile-view #fb-en-expenses .fb-en-scroll{overflow:visible!important;max-width:100%;border:0}
+ .fb-mobile-view #fb-en-expenses .fb-en-table{display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;border:0;font-size:14px!important}
+ .fb-mobile-view #fb-en-expenses .fb-en-table colgroup,.fb-mobile-view #fb-en-expenses .fb-en-table thead{display:none!important}
+ .fb-mobile-view #fb-en-expenses .fb-en-table :is(tbody,tfoot){display:flex;flex-direction:column;gap:8px;width:100%;min-width:0}
+ .fb-mobile-view #fb-en-expenses .fb-en-table tr.fb-en-line{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:14px;background:#fff;border-radius:20px;border:1px solid #e0e8e0;width:100%;min-width:0;box-shadow:none}
+ .fb-mobile-view #fb-en-expenses .fb-en-table tr.fb-en-line>td{box-sizing:border-box;display:block!important;padding:0!important;border:0!important;text-align:left!important;min-width:0;width:auto!important;white-space:normal!important;font-size:13px;overflow-wrap:anywhere}
+ .fb-mobile-view #fb-en-expenses .fb-en-table tr.fb-en-line>td:first-child{grid-column:1;grid-row:1;align-self:center;display:flex!important;align-items:center;width:44px!important;min-width:44px!important;height:44px}
+ .fb-mobile-view #fb-en-expenses .fb-en-table tr.fb-en-line>td:first-child:empty{display:none!important}
+ .fb-mobile-view #fb-en-expenses .fb-en-table tr.fb-en-line>td:nth-child(2){grid-column:1/-1;grid-row:2}
+ .fb-mobile-view #fb-en-expenses .fb-en-table tr.fb-en-line>td:nth-child(2)>b{font-size:15px!important;line-height:1.4;white-space:normal!important}
+ .fb-mobile-view #fb-en-expenses .fb-en-table tr.fb-en-line>td:nth-child(2) .fb-em-small{font-size:12px!important;color:#566a5f;line-height:1.45}
+ .fb-mobile-view #fb-en-expenses .fb-en-table tr.fb-en-line>td:nth-child(3),.fb-mobile-view #fb-en-expenses .fb-en-table tr.fb-en-line>td:nth-child(4){background:#f1f5f2;padding:10px!important;border-radius:12px}
+ .fb-mobile-view #fb-en-expenses .fb-en-table tr.fb-en-line>td:nth-child(3)::before,.fb-mobile-view #fb-en-expenses .fb-en-table tr.fb-en-line>td:nth-child(4)::before{content:attr(data-label);font-size:11px;color:#566a5f;display:block;margin-bottom:5px}
+ .fb-mobile-view #fb-en-expenses .fb-en-table tr.fb-en-line>td:nth-child(5){grid-column:1/-1}
+ .fb-mobile-view #fb-en-expenses .fb-en-table tr.fb-en-line>td:nth-child(6){grid-column:1/-1}
+ .fb-mobile-view #fb-en-expenses .fb-en-table tr.fb-en-line .fb-em-pill{font-size:12px;white-space:normal}
+ .fb-mobile-view #fb-en-expenses .fb-en-table tr.fb-en-line .fb-em-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;flex-wrap:wrap}
+ .fb-mobile-view #fb-en-expenses .fb-en-table tr.fb-en-line .fb-action{min-height:48px!important;height:auto!important;font-size:13px!important;white-space:normal!important;padding:9px 7px;border-radius:12px!important}
+ .fb-mobile-view #fb-en-expenses .fb-en-table tr.fb-en-line .fb-em-link{min-height:44px;display:inline-flex;align-items:center}
+ .fb-mobile-view #fb-en-expenses .fb-m-partial{display:block;height:6px;border-radius:999px;background:#e3ebe4;margin:6px 0 4px;overflow:hidden}
+ .fb-mobile-view #fb-en-expenses .fb-m-partial span{display:block;height:100%;border-radius:999px;background:#1f6b4a}
+ .fb-mobile-view #fb-en-expenses .fb-en-table tr.fb-en-group{display:block;width:100%;border:0;margin-top:2px}
+ .fb-mobile-view #fb-en-expenses .fb-en-table tr.fb-en-group>td{display:block!important;width:100%!important;min-width:0;padding:9px 12px!important;border:0!important;border-radius:12px;background:#e8efe9!important}
+ .fb-mobile-view #fb-en-expenses .fb-en-group-head{display:flex;gap:5px;justify-content:space-between;flex-wrap:wrap;min-width:0}
+ .fb-mobile-view #fb-en-expenses .fb-en-group-toggle{min-height:44px;flex:1;min-width:0;text-align:left;font-size:13px!important}
+ .fb-mobile-view #fb-en-expenses .fb-en-group-meta{font-size:11px!important;max-width:100%;flex-wrap:wrap;justify-content:flex-end}
+ .fb-mobile-view #fb-en-expenses .fb-en-group-meta>.fb-progress{max-width:65px;min-width:50px}
+ .fb-mobile-view #fb-en-expenses .fb-en-table .fb-en-more{display:block}.fb-mobile-view #fb-en-expenses .fb-en-table .fb-en-more td{display:block;padding:5px}
+ .fb-mobile-view #fb-en-expenses .fb-en-table tfoot{margin-top:9px}.fb-mobile-view #fb-en-expenses .fb-en-table tfoot tr{display:flex;flex-direction:column;background:white;border-radius:16px;padding:15px;gap:6px}
+ .fb-mobile-view #fb-en-expenses .fb-en-table tfoot td{display:none!important}.fb-mobile-view #fb-en-expenses .fb-en-table tfoot td:nth-child(2),.fb-mobile-view #fb-en-expenses .fb-en-table tfoot td:nth-child(4),.fb-mobile-view #fb-en-expenses .fb-en-table tfoot td:nth-child(5){display:block!important;border:0!important;padding:0!important;text-align:left!important;width:100%!important;font-size:13px}
+ .fb-mobile-view #fb-en-expenses .fb-m-fab{display:block;position:fixed;right:16px;bottom:calc(82px + env(safe-area-inset-bottom,0px));z-index:145;background:#1f6b4a;color:#fff;font-size:14px;font-weight:800;min-height:48px;padding:0 18px;border:0;border-radius:999px;box-shadow:0 5px 18px #123b2670}
+ .fb-mobile-view #fb-en-expenses:has(.fb-en-bulk) .fb-m-fab{display:none}
+ .fb-mobile-view #fb-en-expenses .fb-en-bulk{position:fixed;z-index:148;bottom:calc(72px + env(safe-area-inset-bottom,0px))!important;left:9px;right:9px;width:auto!important;max-width:none;padding:12px;border-radius:17px;background:white;box-shadow:0 4px 22px #10201950}
+ .fb-mobile-view #fb-en-expenses .fb-en-bulk button{min-height:44px}
+ .fb-mobile-view #fb-en-expenses .fb-em-hint{padding:12px 2px;font-size:12px!important;color:#566a5f}
+ .overlay .fb-em-modal{width:100%;max-height:88dvh;border-radius:24px 24px 0 0!important;padding:18px 16px calc(22px + env(safe-area-inset-bottom,0px))!important;overflow:auto}
+ .overlay:has(.fb-em-modal){align-items:flex-end!important;padding:0!important}
+ .overlay .fb-em-modal :is(input,select,button){min-height:48px;font-size:16px}
+ /* Coffee: manager view and existing bonus table in responsive cards. */
+ #schedRoot{min-width:0;max-width:100%}
+ #schedRoot .sch-bar{display:flex;gap:7px;flex-wrap:wrap;align-items:center;position:relative;padding:8px 0 10px}
+ #schedRoot .sch-month{flex:1 1 auto;min-width:0;justify-content:flex-start;display:flex;align-items:center;gap:7px}
+ #schedRoot .sch-month button{min-height:44px;min-width:44px}
+ #schedRoot .sch-status{order:3;flex:0 0 auto;font-size:12px;white-space:normal}
+ #schedRoot .sch-mobile-menu-trigger{display:block;order:2;min-height:44px;min-width:44px;border:1px solid #dde6df;border-radius:11px;background:white;font-size:22px;cursor:pointer}
+ #schedRoot .sch-bar .grow{display:none}
+ #schedRoot .sch-month-actions{display:none;position:absolute;right:0;top:54px;z-index:65;background:#fff;padding:9px;border:1px solid #dce6dd;border-radius:16px;box-shadow:0 9px 28px #1020192a;max-width:min(300px,calc(100vw - 32px));width:260px;gap:7px}
+ #schedRoot.sch-mobile-actions-open .sch-month-actions{display:flex;flex-direction:column}
+ #schedRoot .sch-month-actions button{min-height:44px;width:100%;white-space:normal;text-align:left;justify-content:flex-start}
+ #schedRoot .sch-subtabs{display:flex!important;flex-flow:row nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;gap:8px;scrollbar-width:none;max-width:100%;width:100%;padding:4px 0 12px;border:0!important;background:transparent!important;box-shadow:none!important}
+ #schedRoot .sch-subtab{min-height:44px;flex:0 0 auto!important;white-space:nowrap;border-radius:999px;padding:10px 14px;font-size:13px}
+ #schedRoot .sch-subtab.on{background:#1a4531;color:white}
+ #schSub,.eq-m-manager,.eq-m-surface{min-width:0;max-width:100%}
+ #schSub .section-title{font-family:var(--fad-font)!important;font-weight:800;font-size:18px;line-height:1.45;overflow-wrap:anywhere}
+ #schSub .eq-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));background:#e5ece6;border-radius:14px;padding:4px;gap:3px;margin:10px 0 14px}
+ #schSub .eq-tab{min-width:0;min-height:44px;border:0;border-radius:11px;font-size:14px}
+ #schSub .eq-tab.on{background:#1a4531;color:white}
+ .eq-m-manager{display:flex;flex-direction:column;gap:13px}
+ .eq-m-rate{font-size:12px;color:#566a5f;line-height:1.5}
+ .eq-m-surface{border-radius:24px;background:#fff;border:1px solid #e1e9e1;padding:15px;display:flex;flex-direction:column;gap:12px}
+ .eq-m-surface>b{font-size:15px}
+ .eq-m-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
+ .eq-m-day{border:1px solid #dce6df;border-radius:10px;background:#f8faf8;padding:4px 0;display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0;min-height:62px;font-size:11px;color:#566a5f}
+ .eq-m-day b{font-size:14px;color:#16241d}.eq-m-day.on{background:#1a4531;border-color:#1a4531;color:white}.eq-m-day.on b{color:white}
+ .eq-m-day i{width:70%;height:3px;border-radius:99px;background:#d5dfd6}.eq-m-day i.done{background:#1f6b4a}.eq-m-day i.assigned{background:#ce8c23}
+ .eq-m-day-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}.eq-m-day-heading>b{font-size:15px;text-transform:capitalize}.eq-m-day-heading>span{background:#dcebe2;border-radius:100px;padding:4px 8px;font-size:11px;color:#1a4531}
+ .eq-m-people{display:flex;flex-direction:column;gap:7px}
+ .eq-m-person{display:grid;grid-template-columns:42px minmax(0,1fr);gap:8px;align-items:center;border-radius:13px;padding:9px;background:#f3f6f3;min-width:0}
+ .eq-m-avatar{display:grid;place-items:center;background:#dfebe3;color:#1a4531;border-radius:50%;width:42px;height:42px;font-weight:800}
+ .eq-m-name{display:flex;flex-direction:column;gap:4px;min-width:0}.eq-m-name b{font-size:14px;line-height:1.4;overflow-wrap:anywhere}.eq-m-name span{font-size:12px;color:#566a5f;line-height:1.4}
+ .eq-m-person-action{grid-column:2;min-height:44px;border-radius:11px;border:1px solid #d9e4db;background:#fff;color:#16241d;font-weight:750}
+ .eq-m-person-action.primary{color:white;background:#1f6b4a;border-color:#1f6b4a}
+ .eq-m-matrix{display:flex;flex-direction:column;gap:4px}
+ .eq-m-matrix-row{display:grid;grid-template-columns:67px repeat(7,minmax(0,1fr));gap:2px;align-items:center}
+ .eq-m-matrix-row>span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:10px;color:#566a5f}
+ .eq-m-matrix-row>button{width:100%;height:44px;min-height:44px;min-width:0;border:1px solid #e3e9e3;border-radius:6px;background:#f4f7f4;padding:0;font-size:13px}
+ .eq-m-matrix-row>button.done{background:#dcebe2;color:#1a4531}.eq-m-matrix-row>button.assigned{background:#fdf0d0;color:#6e4a00}.eq-m-matrix-row>button.late{border:2px solid #b3322b}.eq-m-matrix-row>button.today{outline:1px solid #1f6b4a}
+ .eq-m-matrix-head>span{text-align:center;font-size:11px;color:#566a5f}.eq-m-key{font-size:11px;color:#566a5f}
+ .eq-m-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.eq-m-actions button,.eq-m-day-heading button{min-height:44px;border:1px solid #dce6df;border-radius:11px;background:white;font-size:12px;font-weight:750;padding:7px}
+ .eq-m-who{font-size:13px;padding:8px 0;border-top:1px solid #e9eee9}
+ /* Coffee bonuses: preserve original table data; make each row a readable card. */
+ #eqHost .dl-kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ #eqHost .dl-kpi{min-width:0;border-radius:16px;overflow-wrap:anywhere}
+ #eqHost .dl-kpi:first-child{grid-column:1/-1;background:#1a4531;color:white;padding:19px}
+ #eqHost .dl-kpi:first-child :is(small,strong){color:white}
+ #eqHost .dl-kpi strong{font-size:23px;overflow-wrap:anywhere}
+ #eqHost .dl-section{border-radius:20px;min-width:0;max-width:100%}
+ #eqHost .dl-table-wrap{overflow:visible!important;max-width:100%}
+ #eqHost .dl-table{display:block!important;min-width:0!important;width:100%!important}
+ #eqHost .dl-table thead{display:none!important}
+ #eqHost .dl-table tbody{display:flex;flex-direction:column;gap:9px}
+ #eqHost .dl-table tbody tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:11px;border:1px solid #e2e9e2;background:#fff;border-radius:13px;min-width:0}
+ #eqHost .dl-table tbody tr td{display:block!important;width:auto!important;min-width:0;border:0!important;padding:2px!important;text-align:left!important;font-size:12px!important;overflow-wrap:anywhere;white-space:normal}
+ #eqHost .dl-table tbody tr td:first-child{grid-column:1/-1;font-size:14px!important;font-weight:800}
+ #eqHost .dl-table tbody tr td:last-child{grid-column:1/-1;font-weight:750}
+ #eqHost .dl-total{background:#eaf2eb!important}
+ #eqHost .dl-journal .dl-table tbody tr td:nth-child(2)::before{content:'Исполнитель: ';color:#566a5f;font-weight:500}
+ #eqHost .dl-journal .dl-table tbody tr td:nth-child(3)::before{content:'Ставка: ';color:#566a5f;font-weight:500}
+ #eqHost .dl-journal .dl-table tbody tr td:nth-child(4)::before{content:'Отметил: ';color:#566a5f;font-weight:500}
+ #eqHost .dl-staff-bonuses .dl-table tbody tr td:nth-child(2)::before{content:'Выполнено: ';color:#566a5f;font-weight:500}
+ #eqHost .dl-staff-bonuses .dl-table tbody tr td:nth-child(3)::before{content:'Ставка: ';color:#566a5f;font-weight:500}
+ #eqHost .dl-staff-bonuses .dl-table tbody tr td:nth-child(4)::before{content:'Начислено: ';color:#566a5f;font-weight:500}
+ #eqHost .dl-panel-cols{display:flex;flex-direction:column;gap:12px}
+ #eqHost .dl-flex-head{align-items:flex-start;gap:9px;flex-wrap:wrap}
+ #eqHost .dl-flex-head button{min-height:44px}
+ #eqHost .eq-rate-row input{min-height:44px}
+ /* Other tabs: no clipped page; sections progressively adapted in stage 2. */
+ #tabbody :is(.fb-table-scroll,.payroll-table-wrap,.adpay-table-scroll,.bp-table-wrap,.sch-scroll){max-width:100%;min-width:0}
+ #tabbody :is(.kb-root,.ct-root,.bonus-page,.payroll,.adpay,.replacements,.mk-page,.tev-root){max-width:100%;min-width:0}
+ #tabbody :is(.fb-panel,.ct-card,.kb-item,.tev-card){overflow-wrap:anywhere}
+}
+@media (min-width:768px){.fad-mobile-nav,.fad-mobile-more-overlay{display:none!important}#schedRoot .sch-month-actions{display:contents}}
+
 </style>
 
 <div id="root"></div>
@@ -4292,7 +4504,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '23.11.2026-eq'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '23.11.2026-er'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -5497,6 +5709,14 @@ function renderRoleUI(tabs){
       </div>
       <div class="wrap"><div id="tabbody" role="region" aria-label="Содержимое выбранной вкладки"></div></div>
     </main>
+    <nav class="fad-mobile-nav" id="fadMobileNav" aria-label="Быстрая навигация"></nav>
+    <div class="fad-mobile-more-overlay" id="fadMobileMoreOverlay" hidden>
+      <button type="button" class="fad-mobile-more-backdrop" data-fad-close-more aria-label="Закрыть список разделов"></button>
+      <section class="fad-mobile-more-sheet" role="dialog" aria-modal="true" aria-label="Все доступные разделы">
+        <div class="fad-mobile-more-header"><b>Все разделы</b><button type="button" data-fad-close-more aria-label="Закрыть разделы">✕</button></div>
+        <div class="fad-mobile-more-list" id="fadMobileMoreList"></div>
+      </section>
+    </div>
   </div>`;
   const shell=root.querySelector('#fadAppShell');
   const sidebar=root.querySelector('#fadSidebar');
@@ -5570,6 +5790,7 @@ function renderRoleUI(tabs){
       const isActive=+b.dataset.i===i;b.classList.toggle('on',isActive);
       if(isActive)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');
     });
+    if(typeof drawMobileNav==='function')drawMobileNav();
     if(shell.classList.contains('fad-sidebar-drawer-open'))setDrawer(false);
     tabs[i].render(body);
     // Записываем только реально открытый раздел; право доступа проверено через tabs.
@@ -5577,6 +5798,37 @@ function renderRoleUI(tabs){
     return true;
   }
   renderNav(tabs,nav,show);
+  /* Mobile route surfaces are presentation-only. Real permissions remain in tabs/show(). */
+  const mobileNav=root.querySelector('#fadMobileNav');
+  const mobileMore=root.querySelector('#fadMobileMoreOverlay');
+  const mobileMoreList=root.querySelector('#fadMobileMoreList');
+  const primaryKeys=['reports','plan','schedule','balance'];
+  const allowedByKey=new Map(tabs.map((tab,index)=>[tab.key,{tab,index}]));
+  const mobileIcon=k=>({reports:'▥',plan:'◎',schedule:'▦',balance:'▤',more:'⋯'})[k]||'•';
+  function closeMobileMore(){mobileMore.hidden=true;mobileNav.querySelector('[data-mobile-more]')?.setAttribute('aria-expanded','false');}
+  function drawMobileNav(){
+    const primary=primaryKeys.filter(k=>allowedByKey.has(k));
+    mobileNav.innerHTML=primary.map(k=>{const entry=allowedByKey.get(k),label=NAV_ITEMS.find(x=>x.id===k)?.label||entry.tab.label;
+      return `<button type="button" class="fad-mobile-nav-item${tabs[currentTab]?.key===k?' active':''}" data-mobile-tab="${k}" aria-current="${tabs[currentTab]?.key===k?'page':'false'}"><span class="fad-mobile-nav-icon" aria-hidden="true">${mobileIcon(k)}</span><span>${escapeHtml(label)}</span></button>`;
+    }).join('')+`<button type="button" class="fad-mobile-nav-item${!primary.includes(tabs[currentTab]?.key)?' active':''}" data-mobile-more aria-expanded="false" aria-controls="fadMobileMoreOverlay"><span class="fad-mobile-nav-icon" aria-hidden="true">⋯</span><span>Ещё</span></button>`;
+    mobileMoreList.innerHTML=tabs.filter(tab=>!primary.includes(tab.key)).map(tab=>`<button type="button" data-mobile-tab="${escapeHtml(tab.key)}"><span>${escapeHtml(NAV_ITEMS.find(x=>x.id===tab.key)?.label||tab.label)}</span><span aria-hidden="true">›</span></button>`).join('')||'<p>Другие разделы недоступны для этой роли.</p>';
+  }
+  mobileNav.addEventListener('click',ev=>{
+    const more=ev.target.closest('[data-mobile-more]');
+    if(more){mobileMore.hidden=false;more.setAttribute('aria-expanded','true');mobileMore.querySelector('[data-fad-close-more]')?.focus();return;}
+    const link=ev.target.closest('[data-mobile-tab]');if(!link)return;
+    const entry=allowedByKey.get(link.dataset.mobileTab);if(entry&&show(entry.index)){closeMobileMore();window.scrollTo({top:0,behavior:'instant'});}
+  });
+  mobileMore.addEventListener('click',ev=>{
+    if(ev.target.closest('[data-fad-close-more]')){closeMobileMore();return;}
+    const link=ev.target.closest('[data-mobile-tab]');if(!link)return;
+    const entry=allowedByKey.get(link.dataset.mobileTab);if(entry&&show(entry.index)){closeMobileMore();window.scrollTo({top:0,behavior:'instant'});}
+  });
+  const mobileEscape=e=>{if(e.key==='Escape'&&!mobileMore.hidden)closeMobileMore();};
+  document.addEventListener('keydown',mobileEscape);
+  const originalSidebarCleanup=fadSidebarCleanup;
+  fadSidebarCleanup=()=>{document.removeEventListener('keydown',mobileEscape);originalSidebarCleanup?.();};
+  drawMobileNav();
   const visibleKeys=new Set(NAV_ITEMS.map(item=>item.id));
   const restored=tabs.findIndex(tab=>tab.key===rememberedTab&&visibleKeys.has(tab.key));
   const initial=restored>=0?restored:NAV_ITEMS.map(item=>tabs.findIndex(t=>t.key===item.id)).find(i=>i>=0);
@@ -5719,7 +5971,7 @@ async function renderBalance(body){
   }
   /* EN: expense navigation only. Monetary totals, source values and paid-month rules stay in EM. */
   const EXP_CATEGORIES=['Аренда','Налоги и бухгалтерия','Коммунальные','Связь и сервис','Реклама','Персонал','Прочее'];
-  const expView={chip:'all',query:'',group:'due',category:'',unit:'',legal:'',kind:'',day:null,
+  const expView={chip:'all',query:'',group:'due',category:'',unit:'',legal:'',kind:'',day:null,sheetOpen:false,
     sort:'due',direction:1,collapse:{},expanded:{},selected:new Set()};
   const tagCategory=x=>String(x.category||(x.source==='fad'?'Персонал':'Прочее'));
   const branchName=x=>U[x.unit]||'Все филиалы';
@@ -5781,7 +6033,7 @@ async function renderBalance(body){
   const expOpened=g=>expView.collapse[g.id]!=null?!expView.collapse[g.id]:(expHasFilters()?true:!(g.id==='paid'||g.id==='auto'));
   function expLine(r){const x=r.x,auto=r.auto;const amount=r.amount;
     const newRate=!auto&&x.kind==='fixed'&&x.rate_from===state.period&&x.rate_from!==String(x.start_month).slice(0,7);
-    const paidNote=!auto&&!x.paid&&n(x.paid_amount)>0?`<div class="fb-em-small">Ранее подтверждено ${money(x.paid_amount)} · дата не указана</div>`:'';
+    const paidNote=!auto&&!x.paid&&n(x.paid_amount)>0?`<div class="fb-em-small">Выплачено ${money(x.paid_amount)} из ${money(amount)} · дата не указана</div>${amount>0?`<div class="fb-m-partial"><span style="width:${Math.min(100,100*n(x.paid_amount)/amount)}%"></span></div>`:''}`:'';
     const date=x.due_date?`${x.due_date.slice(8)}.${x.due_date.slice(5,7)}.${x.due_date.slice(0,4)}`:'Не установлен';
     const rel=r.diff==null?'':r.paid?'каждый месяц':r.diff<0?(-r.diff)+' дн. назад':r.diff===0?'сегодня':'через '+r.diff+' дн.';
     let actions='—';
@@ -5792,10 +6044,10 @@ async function renderBalance(body){
       <button class="fb-action" type="button" data-em="edit" data-id="${esc(x.id)}">Изменить</button></div>`;}
     const checkbox=expSelectAllowed(r)?`<input type="checkbox" data-en-select="${esc(x.id)}" ${expView.selected.has(r.id)?'checked':''} aria-label="Выбрать ${esc(r.title)}">`:'';
     return `<tr class="fb-en-line${expView.selected.has(r.id)?' fb-en-selected':''}"><td class="fb-en-check">${checkbox}</td>
-      <td class="fb-left"><b>${esc(r.title)}</b>${newRate?'<span class="fb-em-new">новая сумма</span>':''}
+      <td class="fb-left" data-label="Статья"><b>${esc(r.title)}</b>${newRate?'<span class="fb-em-new">новая сумма</span>':''}
         <div class="fb-em-small">${esc(r.category)} · ${esc(E[x.legal_entity]||'Юрлицо не указано')} · ${auto?'авто · '+(x.source==='fad'?'FAD':'ImpulseCRM'):esc(K[x.kind]||'Переменная')+' · вручную'}</div></td>
-      <td>${auto?'—':`<span>${esc(date)}</span>${rel?`<div class="fb-em-small">${esc(rel)}</div>`:''}`}</td>
-      <td class="fb-en-money"><b>${money(amount)}</b></td><td>${r.status}${paidNote}</td><td>${actions}</td></tr>`;
+      <td data-label="Срок оплаты">${auto?'—':`<span>${esc(date)}</span>${rel?`<div class="fb-em-small">${esc(rel)}</div>`:''}`}</td>
+      <td class="fb-en-money" data-label="Сумма"><b>${money(amount)}</b></td><td data-label="Статус">${r.status}${paidNote}</td><td class="fb-m-card-actions" data-label="Действия">${actions}</td></tr>`;
   }
   function table(c){
     const all=expRows(c),v=expView;
@@ -5828,13 +6080,18 @@ async function renderBalance(body){
     const groupOpts=[['due','Группировка: по срокам'],['category','Группировка: по категориям'],['branch','Группировка: по филиалам'],['legal','Группировка: по юрлицам'],['none','Без группировки']];
     const dropdown=(id,label,pairs,current)=>`<label class="fb-en-filter"><span>${label}</span><select id="${id}" class="fb-select">${opts(pairs,current)}</select></label>`;
     const categories=[...new Set([...EXP_CATEGORIES,...all.map(r=>r.category)])];
-    const tools=`<div class="fb-en-tools"><label class="fb-en-filter fb-en-query"><span>Поиск</span><input id="fb-en-q" type="search" placeholder="Название, филиал, категория, юрлицо…" value="${esc(v.query)}" autocomplete="off"></label>
+    const activeFilters=[v.category,v.unit,v.legal,v.kind,v.group!=='due'?v.group:''].filter(Boolean).length;
+    const tools=`<div class="fb-en-tools"><label class="fb-en-filter fb-en-query"><span>Поиск</span><input id="fb-en-q" type="search" placeholder="Поиск по статьям" value="${esc(v.query)}" autocomplete="off"></label>
+      <button type="button" class="fb-m-filters-trigger" data-en-mobile-filters="open">⚑ Фильтры${activeFilters?' · '+activeFilters:''}</button>
+      <div class="fb-m-filter-shade${v.sheetOpen?' open':''}" data-en-mobile-filters="close" aria-hidden="true"></div>
+      <div class="fb-m-filter-sheet${v.sheetOpen?' open':''}" role="dialog" aria-label="Фильтры расходов" aria-modal="false" aria-hidden="${!v.sheetOpen}"><div class="fb-m-sheet-head"><b>Фильтры</b><button type="button" data-en-mobile-filters="close" aria-label="Закрыть фильтры">✕</button></div>
       ${dropdown('fb-en-group','Группировка',groupOpts,v.group)}
       ${dropdown('fb-en-cat','Категория',[['','Все категории'],...categories.map(x=>[x,x])],v.category)}
       ${dropdown('fb-en-unit','Филиал',[['','Все филиалы'],['all','Общие статьи'],...Object.entries(U)],v.unit)}
       ${dropdown('fb-en-legal','Юрлицо',[['','Все юрлица'],...Object.entries(E)],v.legal)}
       ${dropdown('fb-en-kind','Тип',[['','Любой тип'],['fixed','Постоянные'],['var','Переменные']],v.kind)}
-      ${expHasFilters()?'<button class="fb-em-link fb-en-reset" type="button" data-en-reset>Сбросить</button>':''}</div>`;
+      ${expHasFilters()?'<button class="fb-em-link fb-en-reset" type="button" data-en-reset>Сбросить</button>':''}
+      <button type="button" class="fb-m-show" data-en-mobile-filters="close">Показать статьи</button></div></div>`;
     const headings=[['name','Статья'],['due','Срок'],['amount','Сумма'],['status','Статус']];
     const th=(k,label)=>`<button type="button" class="fb-en-sort" data-en-sort="${k}">${label}${v.sort===k?(v.direction===1?' ▲':' ▼'):''}</button>`;
     const filtered=all.filter(expMatch).sort(expSort), groups=expGroups(filtered);let body='';
@@ -5860,15 +6117,22 @@ async function renderBalance(body){
     return `<section class="fb-panel fb-en-expenses" id="fb-en-expenses"><div class="fb-em-head"><h2>Расходы и платежи</h2>
       ${isOwner?'<button type="button" class="fb-action primary" id="fb-add">+ Добавить статью</button>':''}</div>
       ${summary}${timeline}${chips}${tools}
+      ${isOwner?'<button class="fb-m-fab" type="button" data-en-mobile-add>+ Статья</button>':''}
       <div class="fb-table-scroll fb-en-scroll"><table class="fb-table fb-em-table fb-en-table"><colgroup><col style="width:3.8%"><col style="width:36%"><col style="width:13.5%"><col style="width:14.5%"><col style="width:16.2%"><col style="width:16%"></colgroup><thead><tr>
         <th class="fb-en-check"></th><th class="fb-left">${th('name','Статья')}</th><th>${th('due','Срок')}</th><th>${th('amount','Сумма')}</th><th>${th('status','Статус')}</th><th>Действия</th></tr></thead>
         <tbody>${body}</tbody><tfoot>${footer}</tfoot></table></div>${bulk}
       <div class="fb-em-hint">Постоянные суммы переходят на следующий месяц. Переменные вносятся отдельно. Факт оплаты не изменяет начисление и прибыль.</div></section>`;
   }
+  let vDayScrolled=false;
+  function fadCenterBalanceDay(context){const strip=context.querySelector('.fb-en-strip');if(!strip)return;
+    const mark=strip.querySelector('.fb-en-day.current')||strip.querySelector('.fb-en-day.picked');
+    if(mark){strip.scrollLeft=Math.max(0,mark.offsetLeft-strip.offsetLeft-strip.clientWidth/2+mark.offsetWidth/2);vDayScrolled=true;}
+  }
   function rerenderExpenseList(keepQuery=false){const old=el('fb-en-expenses');if(!old)return;
     const scroll=old.querySelector('.fb-en-scroll')?.scrollLeft||0;const caret=keepQuery?old.querySelector('#fb-en-q')?.selectionStart:null;
     old.outerHTML=table(calc());const next=el('fb-en-expenses');if(next){const view=next.querySelector('.fb-en-scroll');if(view)view.scrollLeft=scroll;
       next.querySelector('#fb-add')?.addEventListener('click',()=>newArticle());
+      if(mobileBalance()&&!vDayScrolled){fadCenterBalanceDay(next);}
       if(keepQuery){const input=next.querySelector('#fb-en-q');if(input){input.focus();try{input.setSelectionRange(caret,caret)}catch(_){}}}}
   }
   async function bulkPayArticles(){if(!isOwner)return;
@@ -5896,7 +6160,9 @@ async function renderBalance(body){
     const ticks=Array.from({length:5},(_,i)=>{const v=max*i/4,y=ypos(v);return `<line x1="${L}" y1="${y}" x2="${W-R}" y2="${y}" stroke="var(--line)"/><text x="${L-7}" y="${y+4}" font-size="11" fill="var(--ink-faint)" text-anchor="end">${num(v/1000,0)} тыс.</text>`;}).join('');
     const threshold=c.be==null?'':`<line x1="${L}" x2="${W-R}" y1="${ypos(c.be)}" y2="${ypos(c.be)}" stroke="#b13a30" stroke-width="1.8" stroke-dasharray="6 4"/><text x="${W-R}" y="${ypos(c.be)-7}" fill="#b13a30" text-anchor="end" font-size="11">Безубыточность · ${num(c.be,0)}</text>`;
     const labels=[1,5,10,15,20,25,daily.length].filter((x,i,a)=>x<=daily.length&&a.indexOf(x)===i).map(d=>`<text x="${xpos(d-1)}" y="${H-9}" text-anchor="middle" fill="var(--ink-faint)" font-size="11">${d}</text>`).join('');
-    return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Нарастающая выручка: факт, прогноз и безубыточность">${ticks}${threshold}
+    const todayLine=mobileBalance()&&state.period===monthToday()&&c.elapsed>0?
+      `<line x1="${xpos(Math.min(daily.length-1,c.elapsed-1))}" x2="${xpos(Math.min(daily.length-1,c.elapsed-1))}" y1="${T}" y2="${H-B}" stroke="#678e76" stroke-width="1.5" stroke-dasharray="3 4"/><text x="${xpos(Math.min(daily.length-1,c.elapsed-1))-5}" y="${T-5}" fill="#315e41" font-size="11" text-anchor="end">сегодня</text>`:'';
+    return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Нарастающая выручка: факт, прогноз и безубыточность">${ticks}${threshold}${todayLine}
       ${line(done,'fb-em-line-fact')}${line(next,'fb-em-line-future')}${labels}</svg>`;
   }
   function prediction(c){if(!c.hasIncome)return '';
@@ -5932,10 +6198,54 @@ async function renderBalance(body){
     return `<section class="fb-panel"><div class="fb-em-head"><h2>Филиалы</h2></div><div class="fb-table-scroll"><table class="fb-table"><thead><tr><th class="fb-left">Филиал</th><th>Выручка</th><th>Прибыль</th><th>Рентаб.</th><th>Безубыточность</th><th>Запас</th></tr></thead><tbody>${branchKeys.map(row).join('')}</tbody>
       <tfoot><tr><td class="fb-left"><b>Итого</b></td><td>${money(c.revenue)}</td><td>${money(c.profit)}</td><td>${perc(c.revenue>0?c.profit/c.revenue:null)}</td><td>${money(c.be)}</td><td>${perc(c.safety)}</td></tr></tfoot></table></div></section>`;
   }
+  /* Mobile presentation derives values from calc(), chart() and branchTable() — no new financial arithmetic. */
+  const mobileBalance=()=>window.matchMedia('(max-width: 767px)').matches;
+  let mobileSection='overview',mobileBranchSort='profit';
+  function mobileBranchCards(c){
+    if(!c.hasIncome)return '<div class="fb-panel">Нет фактической выручки за выбранный месяц.</div>';
+    const source=document.createElement('div');source.innerHTML=branchTable(c);
+    const trs=[...source.querySelectorAll('tbody tr')],tot=source.querySelector('tfoot tr');
+    const getCells=tr=>[...tr?.querySelectorAll('td')||[]].map(td=>td.textContent.trim());
+    const parseMoney=x=>Number(String(x||'').replace(/[^0-9,−-]/g,'').replace(',','.').replace('−','-'))||0;
+    const cards=trs.map(tr=>{const cols=getCells(tr);return {name:cols[0],revenue:cols[1],profit:cols[2],rate:cols[3],be:cols[4],safety:cols[5],profitNum:parseMoney(cols[2]),safetyNum:parseMoney(cols[5]),rateNum:parseMoney(cols[3])};});
+    cards.sort((a,b)=>(mobileBranchSort==='safety'?b.safetyNum-a.safetyNum:mobileBranchSort==='margin'?b.rateNum-a.rateNum:b.profitNum-a.profitNum));
+    const all=getCells(tot);
+    const difference=Math.round((parseMoney(all[2])-cards.reduce((sum,x)=>sum+x.profitNum,0))*100)/100;
+    const total=`<article class="fb-m-hero"><small>ИТОГО ПО ФИЛИАЛАМ</small><strong>${all[2]||money(c.profit)}</strong><div class="fb-m-three"><span>Выручка<b>${all[1]||money(c.revenue)}</b></span><span>Рентабельность<b>${all[3]||'—'}</b></span><span>Безубыточность<b>${all[4]||'—'}</b></span></div></article>`;
+    const controls=`<div class="fb-m-sort">${[['profit','По прибыли'],['safety','По запасу'],['margin','По рентабельности']].map(([k,name])=>`<button type="button" data-fb-branch-sort="${k}" class="${mobileBranchSort===k?'on':''}" aria-pressed="${mobileBranchSort===k}">${name}</button>`).join('')}</div>`;
+    return total+controls+cards.map(x=>{const tone=x.safetyNum<40?'bad':x.safetyNum<60?'warn':'good';const p=Math.max(0,Math.min(100,x.safetyNum));
+      return `<article class="fb-m-branch fb-panel"><div class="fb-m-branch-head"><b>${esc(x.name)}</b>${pill('Запас '+x.safety,tone==='good'?'ok':tone==='bad'?'bad':'warn')}</div><small>Прибыль</small><strong class="fb-m-amount">${esc(x.profit)}</strong><div class="fb-m-track"><span class="${tone}" style="width:${p}%"></span></div><div class="fb-m-metrics"><div><small>Выручка</small><b>${esc(x.revenue)}</b></div><div><small>Рентабельность</small><b>${esc(x.rate)}</b></div><div><small>Безубыточность</small><b>${esc(x.be)}</b></div><div><small>Запас прочности</small><b>${esc(x.safety)}</b></div></div></article>`;
+    }).join('')+(Math.abs(difference)>=.01?`<div class="fb-panel fb-m-reconcile"><b>Общие статьи и округления</b><span>${money(difference)}</span><small>Разница между итогом «Баланса» и суммой результатов филиалов. Суммы филиалов рассчитаны действующей формулой распределения расходов FAD.</small></div>`:'');
+  }
+  function mobileBalanceOverview(c){
+    const projected=c.hasIncome?(c.forecastProfit!=null?c.forecastProfit:c.profit):null;
+    const revenue=c.hasIncome?(c.forecast!=null?c.forecast:c.revenue):null;
+    const costs=c.forecastCosts!=null?c.forecastCosts:c.total;
+    const actions=Array.isArray(state.bill?.actions)?state.bill.actions:[];
+    const overdue=actions.filter(x=>x.due_date&&x.due_date<curDate());
+    const first=overdue[0],cmd=first?.action==='enter'?'enter':'pay';
+    const actionButton=first&&isOwner?`<button type="button" data-em="${cmd}" data-id="${esc(first.id)}" data-month="${esc(first.period||state.period)}">${cmd==='enter'?'Внести сумму':'Подтвердить оплату'}</button>`:'<button type="button" data-fb-mobile-section="expenses">Открыть расходы</button>';
+    const note=overdue.length?`<article class="fb-m-alert"><b>Просрочено платежей: ${overdue.length}</b><span>${esc(first.name)} · срок ${esc(first.due_date.slice(8)+'.'+first.due_date.slice(5,7))}</span>${actionButton}</article>`:'';
+    const chartMarkup=c.hasIncome?chart(c):'<p class="fb-em-muted">Нет фактических данных для прогноза.</p>';
+    return `<article class="fb-m-hero"><small>${!c.hasIncome?'ПРИБЫЛЬ · НЕТ ДАННЫХ':c.forecastProfit!=null?'ПРИБЫЛЬ · ПРОГНОЗ НА МЕСЯЦ':'ПРИБЫЛЬ · НА СЕГОДНЯ'}</small><strong>${projected==null?'—':money(projected)}</strong><div class="fb-m-rent">Рентабельность ${perc(revenue>0&&projected!=null?projected/revenue:null)}</div><div class="fb-m-split"><span>Выручка<b>${c.hasIncome?money(revenue):'—'}</b></span><span>Расходы<b>${money(costs)}</b></span></div></article>
+     ${note}<article class="fb-panel fb-m-chart"><h2>Безубыточность и прогноз</h2><p>Нарастающая выручка · BYN</p>${chartMarkup}<div class="fb-em-legend"><span>● Факт</span><span>┄ Прогноз</span><span>┄ Безубыточность</span></div></article>
+     <div class="fb-m-metrics"><div><small>Безубыточность в месяц</small><b>${money(c.be)}</b></div><div><small>Безубыточность в день</small><b>${c.be==null?'—':money(c.be/30)}</b></div><div><small>Маржинальность</small><b>${perc(c.margin)}</b></div><div><small>Запас прочности</small><b>${perc(c.safety)}</b></div></div>
+     <button type="button" class="fb-m-link-card" data-fb-mobile-section="branches">По филиалам <span>›</span></button>`;
+  }
+  function renderMobileBalance(c){
+    const tabs=[['overview','Обзор'],['expenses','Расходы'],['branches','Филиалы'],['forecast','Прогноз']];
+    const idx=months.indexOf(state.period);
+    const monthsNav=`<div class="fb-m-period"><button type="button" data-fb-month="-1" ${idx<=0?'disabled':''} aria-label="Предыдущий месяц">‹</button><b>${esc(monthTitle(state.period))}</b><button type="button" data-fb-month="1" ${idx>=months.length-1?'disabled':''} aria-label="Следующий месяц">›</button></div>`;
+    const tabbar=`<div class="fb-m-tabs" role="tablist" aria-label="Разделы баланса">${tabs.map(([key,name])=>`<button type="button" role="tab" data-fb-mobile-section="${key}" aria-selected="${mobileSection===key}" class="${mobileSection===key?'on':''}">${name}</button>`).join('')}</div>`;
+    const content=mobileSection==='expenses'?table(c):mobileSection==='branches'?mobileBranchCards(c):mobileSection==='forecast'?prediction(c):mobileBalanceOverview(c);
+    return `${tabbar}${monthsNav}<div class="fb-m-subtitle">Студии Flexico · Толбухина, Машерова, Куйбышева</div>${status()}<div class="fb-m-content">${content}</div>`;
+  }
   function render(){if(!live())return;const c=calc();
-    shell.innerHTML=toolbar()+status()+`<div class="fb-em-stack">${attention()}${kpis(c)}${revenues(c)}${table(c)}${prediction(c)}${branchTable(c)}</div>`;
+    shell.classList.toggle('fb-mobile-view',mobileBalance());
+    shell.innerHTML=mobileBalance()?renderMobileBalance(c):toolbar()+status()+`<div class="fb-em-stack">${attention()}${kpis(c)}${revenues(c)}${table(c)}${prediction(c)}${branchTable(c)}</div>`;
     const period=el('fb-period');if(period)period.onchange=()=>{state.period=period.value;expView.selected.clear();expView.day=null;expView.expanded={};load();};
     const update=el('fb-reload');if(update)update.onclick=refreshExternal;
+    if(mobileBalance()&&mobileSection==='expenses'&&!vDayScrolled)requestAnimationFrame(()=>fadCenterBalanceDay(shell));
     const audit=el('fb-audit');if(audit)audit.onclick=auditImpulse;
     const add=el('fb-add');if(add)add.onclick=()=>newArticle();
     // EN click/change handlers are delegated below; expense filters never write to DB.
@@ -6078,6 +6388,8 @@ async function renderBalance(body){
   }
   /* Delegated events survive table re-render; no database writes for UI-only filters. */
   shell.addEventListener('click',ev=>{
+    const shade=ev.target.closest('.fb-m-filter-shade');
+    if(shade){expView.sheetOpen=false;rerenderExpenseList();return;}
     const groupRow=ev.target.closest('[data-en-row-toggle]');
     if(groupRow&&shell.contains(groupRow)&&!ev.target.closest('button,a,input,select')){
       const id=groupRow.dataset.enRowToggle;
@@ -6085,6 +6397,13 @@ async function renderBalance(body){
     }
     const button=ev.target.closest('button');if(!button||!shell.contains(button))return;
     const d=button.dataset,v=expView;
+    if(d.fbMobileSection){mobileSection=d.fbMobileSection;render();return;}
+    if(d.fbBranchSort){mobileBranchSort=d.fbBranchSort;render();return;}
+    if(d.fbMonth){const index=months.indexOf(state.period)+Number(d.fbMonth);if(index>=0&&index<months.length){state.period=months[index];expView.selected.clear();expView.day=null;expView.expanded={};vDayScrolled=false;void load();}return;}
+    if(d.enMobileFilters){v.sheetOpen=d.enMobileFilters==='open';rerenderExpenseList();
+      if(v.sheetOpen)requestAnimationFrame(()=>el('fb-en-expenses')?.querySelector('.fb-m-sheet-head button')?.focus());
+      else requestAnimationFrame(()=>el('fb-en-expenses')?.querySelector('.fb-m-filters-trigger')?.focus());return;}
+    if(d.enMobileAdd){if(isOwner)newArticle();return;}
     if(d.enChip){v.chip=d.enChip;v.collapse={};rerenderExpenseList();return;}
     if(d.enDay){const day=Number(d.enDay);v.day=v.day===day?null:day;v.collapse={};rerenderExpenseList();return;}
     if(d.enToggle){v.collapse[d.enToggle]=expOpened({id:d.enToggle});rerenderExpenseList();return;}
@@ -11499,9 +11818,12 @@ function drawSchedule(body, editor){
       <div class="sch-month"><button class="btn btn-sm" data-mv="-1">‹</button><b>${MON2[SCH.m]} ${SCH.y}</b><button class="btn btn-sm" data-mv="1">›</button></div>
       <span class="sch-status ${SCHDATA.approved?'ap':'dr'}">${SCHDATA.approved?'✓ утверждён':'черновик'}</span>
       <div class="grow"></div>
+      <button type="button" class="sch-mobile-menu-trigger" data-sch-more aria-expanded="false" aria-controls="sch-mobile-actions" aria-label="Действия месяца">⋮</button>
+      <div class="sch-month-actions" id="sch-mobile-actions">
       ${canEdit?`<button class="btn btn-sm" data-sact="seed" ${SCHDATA.approved?'disabled title="Снимите утверждение, чтобы менять"':''}>Заполнить черновик</button><button class="btn btn-sm" data-sact="clear" ${SCHDATA.approved?'disabled':''}>Очистить</button>`:''}
       ${canAbsence?'<button class="btn btn-sm" data-sact="absence">Отпуска / больничные</button>':''}
       ${canApprove?`<button class="btn btn-sm ${SCHDATA.approved?'':'btn-primary'}" data-sact="approve">${SCHDATA.approved?'Снять утверждение':'Утвердить месяц'}</button>`:''}
+      </div>
     </div>
     <div class="sch-subtabs">${sub.map(x=>`<button class="sch-subtab${x[0]===SCH.view?' on':''}" data-sview="${x[0]}">${x[1]}</button>`).join('')}</div>
     <div id="schSub"></div>
@@ -11512,6 +11834,9 @@ function drawSchedule(body, editor){
     try{ SCHDATA=await loadMonth(y,m); }catch(e){ return handleErr(e); } drawSchedule(body,can('schedule.edit'));
   });
   root.querySelectorAll('[data-sview]').forEach(b=>b.onclick=()=>{ SCH.view=b.dataset.sview; root.querySelectorAll('[data-sview]').forEach(x=>x.classList.toggle('on',x.dataset.sview===SCH.view)); drawSub(root); });
+  const more=root.querySelector('[data-sch-more]');if(more)more.onclick=()=>{
+    const open=root.classList.toggle('sch-mobile-actions-open');more.setAttribute('aria-expanded',String(open));
+  };
   const seed=root.querySelector('[data-sact="seed"]'); if(seed) seed.onclick=()=>openSeedModal();
   const clear=root.querySelector('[data-sact="clear"]'); if(clear) clear.onclick=()=>clearDraft();
   const absence=root.querySelector('[data-sact="absence"]'); if(absence) absence.onclick=()=>openAbsenceModal();
@@ -11576,6 +11901,10 @@ async function equipReload(el){
 function equipDraw(el){const host=el.querySelector('#eqHost');if(!host)return;
  if(EQUIPMENT_DATA?.error){host.innerHTML=`<div class="eq-warning" role="alert">Не удалось загрузить единый график: ${escapeHtml(EQUIPMENT_DATA.error)}. Проверьте миграцию DO и единый тариф; старые начисления не затронуты.</div>`;return;}
  if(!equipFullView()){if(EQUIPMENT_VIEW==='bonus')equipDrawMyBonus(el,host);else equipDrawMobile(el,host);return;}
+ if(window.matchMedia('(max-width: 767px)').matches){
+    if(EQUIPMENT_VIEW==='bonus')equipDrawBonus(el,host);else equipDrawManagerMobile(el,host);
+    return;
+ }
  if(EQUIPMENT_VIEW==='bonus')equipDrawBonus(el,host);else equipDrawGraph(el,host);
 }
 function equipGrid(roster,n,today){
@@ -11617,6 +11946,43 @@ function equipDrawGraph(el,host){
  host.querySelectorAll('[data-do-remove]').forEach(b=>b.onclick=()=>equipParticipant(el,b.dataset.doRemove,false));
  const complete=host.querySelector('[data-do-complete]');if(complete)complete.onclick=()=>void equipComplete(el,today);
  if(EQUIPMENT_PICK){host.querySelector('[data-eq-day].chosen')?.scrollIntoView({block:'nearest',inline:'nearest'});}
+}
+/* Mobile coffee view is only an alternative renderer over the same RPC operations. */
+let EQUIPMENT_MOBILE_DAY='';
+function equipDrawManagerMobile(el,host){
+ const today=equipToday(),period=monthKey(SCH.y,SCH.m),monthDays=schDaysIn(SCH.y,SCH.m),roster=equipMonthRoster();
+ if(!EQUIPMENT_MOBILE_DAY.startsWith(period)||Number(EQUIPMENT_MOBILE_DAY.slice(8))>monthDays)
+   EQUIPMENT_MOBILE_DAY=period===today.slice(0,7)?today:schIso(SCH.y,SCH.m,1);
+ const selected=EQUIPMENT_MOBILE_DAY,dayNum=Number(selected.slice(8)),task=equipTask(selected),rate=equipRate();
+ const weekday=(new Date(selected+'T12:00:00Z').getUTCDay()+6)%7;
+ const monday=dayNum-weekday;
+ const weekDays=Array.from({length:7},(_,i)=>monday+i).filter(d=>d>=1&&d<=monthDays);
+ const shortDow=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+ const strip=weekDays.map(d=>{const date=schIso(SCH.y,SCH.m,d),w=(new Date(date+'T12:00:00Z').getUTCDay()+6)%7,t=equipTask(date);
+  const tone=t?.done?'done':t?'assigned':'none';
+  return `<button type="button" class="eq-m-day ${selected===date?'on':''}" data-eq-m-date="${date}" aria-pressed="${selected===date}"><span>${shortDow[w]}</span><b>${d}</b><i class="${tone}" aria-hidden="true"></i></button>`;}).join('');
+ const employee=roster.map(p=>{const chosen=task?.login===p.login,allowed=equipCanAssign(p.login,selected),owner=equipIsOwnerPerson(p.login),canChange=equipOwner()&&(allowed||chosen),canComplete=chosen&&!task.done&&(equipOwner()||task.login===session?.login);
+  const status=chosen?(task.done?'✓ Выполнено':'Назначено'):allowed?'Свободен':'Нет смены';
+  const action=canChange?`<button type="button" class="eq-m-person-action${chosen&&!task.done?' primary':''}" data-eq-m-action="${escapeHtml(p.login)}">${chosen?(task.done?'Снять':'Выполнено'):'Назначить'}</button>`:'';
+  const initial=escapeHtml((p.name||'С').split(' ').map(v=>v[0]||'').slice(0,2).join('').toUpperCase());
+  return `<article class="eq-m-person"><span class="eq-m-avatar">${initial}</span><div class="eq-m-name"><b>${escapeHtml(p.name)}</b><span>${status}${owner?' · руководитель, без доплаты':''}</span></div>${action}</article>`;}).join('');
+ const dates=weekDays.map(d=>schIso(SCH.y,SCH.m,d));
+ const heads=dates.map(date=>`<span class="${date===today?'today':''}">${Number(date.slice(8))}</span>`).join('');
+ const matRows=roster.map(p=>`<div class="eq-m-matrix-row"><span title="${escapeHtml(p.name)}">${escapeHtml(fadPersonName(p.login,p.name,true))}</span>${dates.map(date=>{const t=equipTask(date),own=t?.login===p.login,shift=equipCanAssign(p.login,date),tone=own?(t.done?'done':date<today?'late':'assigned'):shift?'shift':'none';return `<button type="button" class="${tone} ${date===today?'today':''}" data-eq-m-date="${date}" data-eq-m-login="${escapeHtml(p.login)}" aria-label="${escapeHtml(p.name)} · ${date} · ${own?(t.done?'выполнено':'назначено'):'без назначения'}">${own?(t.done?'✓':'·'):''}</button>`;}).join('')}</div>`).join('');
+ host.innerHTML=`<section class="eq-m-manager"><div class="eq-m-rate">График обслуживания · ставка <b>${equipPrice(rate)}</b> за выполненное</div>
+   <section class="eq-m-surface"><b>Выберите день</b><div class="eq-m-week">${strip}</div></section>
+   <section class="eq-m-surface"><div class="eq-m-day-heading"><b>${new Date(selected+'T12:00:00Z').toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long',timeZone:'UTC'})}</b>${selected===today?'<span>Сегодня</span>':''}</div>
+   <div class="eq-m-people">${employee||'<p>Нет исполнителей на этот месяц.</p>'}</div><p class="eq-hint">Выполненное задание нельзя передать другому сотруднику. Изменения сохраняются сразу.</p></section>
+   <section class="eq-m-surface"><b>Неделя · ${weekDays[0]}–${weekDays[weekDays.length-1]} ${MON2[SCH.m].toLowerCase()}</b><div class="eq-m-matrix"><div class="eq-m-matrix-row eq-m-matrix-head"><span>Исполнитель</span>${heads}</div>${matRows}</div><div class="eq-m-key">🟩 выполнено · 🟨 назначено · ⬜ смена</div></section>
+   ${equipOwner()?`<section class="eq-m-surface"><b>Автозаполнение</b><div class="eq-m-actions"><button type="button" data-eq-m-auto>Заполнить по очереди</button><button type="button" data-eq-m-clear>Снять будущие</button></div></section>`:''}
+   <section class="eq-m-surface"><div class="eq-m-day-heading"><b>Кто выполняет</b>${equipOwner()?'<button type="button" data-eq-m-add>+ Сотрудник</button>':''}</div>${roster.map(p=>`<div class="eq-m-who">${escapeHtml(p.name)}${equipIsOwnerPerson(p.login)?' · без доплаты':''}</div>`).join('')||'<p>Сотрудники ещё не добавлены.</p>'}</section>
+   <div class="do-status" role="status">${escapeHtml(EQUIPMENT_STATUS)}</div></section>`;
+ host.querySelectorAll('[data-eq-m-date]').forEach(b=>b.onclick=()=>{EQUIPMENT_MOBILE_DAY=b.dataset.eqMDate;
+    if(b.dataset.eqMLogin)EQUIPMENT_PICK={date:b.dataset.eqMDate,login:b.dataset.eqMLogin};equipDraw(el);});
+ host.querySelectorAll('[data-eq-m-action]').forEach(b=>b.onclick=()=>void equipQuickClick(el,selected,b.dataset.eqMAction));
+ host.querySelector('[data-eq-m-auto]')?.addEventListener('click',()=>equipAutofill(el));
+ host.querySelector('[data-eq-m-clear]')?.addEventListener('click',()=>equipClearFuture(el));
+ host.querySelector('[data-eq-m-add]')?.addEventListener('click',()=>equipAddModal(el,roster));
 }
 function equipActionLabel(action){return ({assign:'назначено',replace:'исполнитель изменён',complete:'выполнено',undo_and_remove:'снято',unassign:'снято'})[action]||'изменено';}
 async function equipQuickClick(el,date,login){
@@ -11703,8 +12069,8 @@ function equipDrawBonus(el,host){
  ${overdue.length?`<div class="dl-alert" role="alert"><b>Задание без отметки:</b> ${overdue.slice(0,4).map(t=>`${t.date.slice(8)}.${t.date.slice(5,7)} · ${equipShort(t.login)}`).join(' · ')}${overdue.length>4?' и ещё '+(overdue.length-4):''}<button type="button" class="btn btn-sm" data-do-overdue>Открыть в графике</button></div>`:''}
  <div class="dl-panel-cols"><div class="dl-section"><div class="dl-flex-head"><div><b>Ставка · Обслуживание оборудования</b><p class="eq-hint">Одно задание: кофемашина и торговый автомат. Ставка на дату выполнения сохраняется.</p></div>${equipOwner()?'<button type="button" class="btn btn-primary btn-sm" data-do-save-rate>Сохранить ставку</button>':''}</div><div class="eq-rate-row"><label>Обслуживание оборудования<span><input type="number" min="0" max="1000" step="0.01" data-do-rate value="${rate.toFixed(2)}" ${equipOwner()?'':'disabled title="Только просмотр"'}/> BYN</span></label></div><p class="eq-hint">Ставка 0 BYN запрещает подтверждать выполнение. Ранее начисленные суммы не меняются.</p></div>
  <div class="dl-section"><b>История ставки</b><div class="dl-hist">${hist.length?hist.slice(0,20).map(h=>`<div><small>с ${new Date(h.from).toLocaleDateString('ru-RU',{timeZone:'Europe/Minsk'})}</small><b>${equipPrice(h.amount)}</b></div>`).join(''):'<p class="eq-hint">История появится после установки ставки.</p>'}</div></div></div>
- <div class="dl-section"><b>Начислено по администраторам</b><p class="eq-hint">Доплата автоматически включается в зарплату администраторов отдельно от бонусов.</p><div class="dl-table-wrap"><table class="dl-table"><thead><tr><th>Администратор</th><th>Выполнено заданий</th><th>Ставка</th><th>Доплата, BYN</th></tr></thead><tbody>${roster.map(p=>{const t=totals.find(x=>x.login===p.login)||{},owner=equipIsOwnerPerson(p.login);return `<tr><td>${escapeHtml(p.name)}${owner?' <small>· руководитель</small>':''}</td><td>${owner?'—':Number(t.count||0)}</td><td>${owner?'—':equipPrice(rate)}</td><td><b>${owner?'без доплаты':equipPrice(t.amount||0)}</b></td></tr>`;}).join('')||'<tr><td colspan="4">Нет сотрудников</td></tr>'}<tr class="dl-total"><td>Итого</td><td>${totals.reduce((s,x)=>s+Number(x.count||0),0)}</td><td>—</td><td><b>${equipPrice(allSum)}</b></td></tr></tbody></table></div></div>
- <div class="dl-section"><b>Журнал работ</b><p class="eq-hint">Дата, исполнитель, сохранённая ставка, кто отметил; пропуски и отметки задним числом.</p><div class="dl-table-wrap"><table class="dl-table"><thead><tr><th>Дата</th><th>Исполнитель</th><th>Ставка, BYN</th><th>Отметил(а)</th></tr></thead><tbody>${journal.map(t=>`<tr><td>${t.date.slice(8)}.${t.date.slice(5,7)}</td><td>${equipShort(t.login)}</td><td>${t.done?equipPrice(t.amount):'—'}</td><td>${t.done?equipShort(t.completed_by)+(t.backdated?' <span class="dl-badge">задним числом</span>':''):'<span class="dl-status missing">не отмечено</span>'}</td></tr>`).join('')||'<tr><td colspan="4">Заданий нет</td></tr>'}</tbody></table></div></div>
+ <div class="dl-section dl-staff-bonuses"><b>Начислено по администраторам</b><p class="eq-hint">Доплата автоматически включается в зарплату администраторов отдельно от бонусов.</p><div class="dl-table-wrap"><table class="dl-table"><thead><tr><th>Администратор</th><th>Выполнено заданий</th><th>Ставка</th><th>Доплата, BYN</th></tr></thead><tbody>${roster.map(p=>{const t=totals.find(x=>x.login===p.login)||{},owner=equipIsOwnerPerson(p.login);return `<tr><td>${escapeHtml(p.name)}${owner?' <small>· руководитель</small>':''}</td><td>${owner?'—':Number(t.count||0)}</td><td>${owner?'—':equipPrice(rate)}</td><td><b>${owner?'без доплаты':equipPrice(t.amount||0)}</b></td></tr>`;}).join('')||'<tr><td colspan="4">Нет сотрудников</td></tr>'}<tr class="dl-total"><td>Итого</td><td>${totals.reduce((s,x)=>s+Number(x.count||0),0)}</td><td>—</td><td><b>${equipPrice(allSum)}</b></td></tr></tbody></table></div></div>
+ <div class="dl-section dl-journal"><b>Журнал работ</b><p class="eq-hint">Дата, исполнитель, сохранённая ставка, кто отметил; пропуски и отметки задним числом.</p><div class="dl-table-wrap"><table class="dl-table"><thead><tr><th>Дата</th><th>Исполнитель</th><th>Ставка, BYN</th><th>Отметил(а)</th></tr></thead><tbody>${journal.map(t=>`<tr><td>${t.date.slice(8)}.${t.date.slice(5,7)}</td><td>${equipShort(t.login)}</td><td>${t.done?equipPrice(t.amount):'—'}</td><td>${t.done?equipShort(t.completed_by)+(t.backdated?' <span class="dl-badge">задним числом</span>':''):'<span class="dl-status missing">не отмечено</span>'}</td></tr>`).join('')||'<tr><td colspan="4">Заданий нет</td></tr>'}</tbody></table></div></div>
  ${old.length?`<div class="dl-section"><b>Исторические начисления до объединения</b><p class="eq-hint">Сохранены по исходным сотрудникам и суммам, без пересчёта и без удвоения в зарплате.</p><div class="dl-table-wrap"><table class="dl-table"><thead><tr><th>Дата</th><th>Исполнитель</th><th>Старый тип</th><th>Начислено</th></tr></thead><tbody>${old.map(t=>`<tr><td>${t.date.slice(8)}.${t.date.slice(5,7)}</td><td>${equipShort(t.login)}</td><td>${escapeHtml(({coffee_refill:'Кофемашина · пополнение',coffee_service:'Кофемашина · обслуживание',vending_refill:'Автомат · пополнение'})[t.type]||t.type)}</td><td>${equipPrice(t.amount)}</td></tr>`).join('')}</tbody></table></div></div>`:''}
  ${merges.length?`<details class="dl-section"><summary><b>Журнал объединения старых назначений</b></summary><p class="eq-hint">Старые задания не удалены. Для каждой даты выбрана одна строка: сначала выполненная, затем с большей суммой.</p><div class="dl-hist">${merges.map(m=>`<div><small>${escapeHtml(String(m.date))} · ${escapeHtml(m.old_type||'')} · ${escapeHtml(fadPersonName(m.login))}</small><b>${m.kept?'оставлено':'в архиве'}</b></div>`).join('')}</div></details>`:''}
  <p class="eq-hint">Доплата не влияет на бонус филиала, качество и расчёт премии старшего администратора.</p>`;
