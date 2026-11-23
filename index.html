@@ -4113,6 +4113,140 @@ html[data-theme=dark] #schedRoot .do-grid-cell.late{background:#522d2e;border-co
  .fb-en-bulk{bottom:calc(8px + env(safe-area-inset-bottom,0px));width:calc(100vw - 20px);padding:10px 12px;gap:8px;justify-content:center;font-size:11px}
  .fb-en-bulk .fb-action{min-height:36px}.fb-en-expenses:has(.fb-en-bulk){padding-bottom:100px}}
 
+
+/* FAD EO — density, hierarchy and interaction corrections to expenses only. */
+.fad-balance-em #fb-en-expenses{
+  --eo-green:#196b4b;--eo-line:var(--line,#dde6df);--eo-muted:var(--ink-faint,#748378);
+  background:var(--surface,#fff);padding:18px 20px 20px;border:1px solid var(--eo-line);
+  border-radius:16px;box-shadow:0 1px 2px rgba(28,57,42,.035);isolation:isolate
+}
+.fad-balance-em #fb-en-expenses .fb-em-head{margin-bottom:14px;align-items:center}
+.fad-balance-em #fb-en-expenses .fb-em-head h2{font-size:16px;letter-spacing:-.018em;font-weight:850}
+.fad-balance-em #fb-en-expenses .fb-action.primary{background:var(--eo-green);border-color:var(--eo-green);color:#fff}
+.fad-balance-em #fb-en-expenses .fb-em-head .fb-action{font-size:12px;min-height:36px;padding:8px 12px;border-radius:9px}
+.fad-balance-em #fb-en-expenses .fb-en-summary{display:grid;grid-template-columns:minmax(270px,auto) minmax(150px,1fr);align-items:center;gap:10px 16px;font-size:12px;margin-bottom:12px}
+.fad-balance-em #fb-en-expenses .fb-en-summary>div:first-child{flex:none;min-width:0;line-height:1.6}
+.fad-balance-em #fb-en-expenses .fb-en-summary .fb-progress{max-width:none;width:100%;height:8px;align-self:center;margin:0}
+.fad-balance-em #fb-en-expenses .fb-en-pills{grid-column:1/-1;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.fad-balance-em #fb-en-expenses .fb-en-pills .fb-em-pill{font-size:10px;line-height:1.25;padding:4px 9px}
+.fad-balance-em #fb-en-expenses .fb-en-strip-title{font-size:10.5px;line-height:1.4;display:flex;align-items:center;gap:5px 12px;margin:0 0 7px}
+.fad-balance-em #fb-en-expenses .fb-en-strip-title>span:last-child{font-size:10px;white-space:nowrap}
+.fad-balance-em #fb-en-expenses .fb-en-strip{display:grid;grid-template-columns:repeat(var(--fb-en-days,30),minmax(0,1fr));gap:4px;min-width:0;width:100%;margin:0 0 14px}
+.fad-balance-em #fb-en-expenses .fb-en-day{
+  box-sizing:border-box!important;width:100%;height:43px;max-height:43px;min-height:43px!important;min-width:0!important;
+  display:flex!important;flex-direction:column!important;justify-content:center;align-items:center;
+  background:var(--surface,#fff);color:var(--ink,#233d2a);
+  border:1px solid var(--eo-line);border-radius:8px;padding:3px 0 4px!important;
+  gap:5px!important;font:750 11px/1 Manrope,system-ui,sans-serif!important;box-shadow:none!important;overflow:hidden;position:relative;
+}
+.fad-balance-em #fb-en-expenses .fb-en-day:disabled{opacity:.58;cursor:default}
+.fad-balance-em #fb-en-expenses .fb-en-day:disabled .fb-en-marker{opacity:.35}
+.fad-balance-em #fb-en-expenses .fb-en-day:hover:not(:disabled):not(.picked){border-color:#9cbca8;background:#f8fbf8}
+.fad-balance-em #fb-en-expenses .fb-en-day.current{outline:2px solid #88b69a;outline-offset:-2px}
+.fad-balance-em #fb-en-expenses .fb-en-day.picked{border-color:var(--eo-green);background:var(--eo-green);color:#fff}
+.fad-balance-em #fb-en-expenses .fb-en-day .fb-en-date-number{display:block;line-height:1;flex:none;min-height:0}
+.fad-balance-em #fb-en-expenses .fb-en-day .fb-en-marker{display:block;flex:none;width:6px;height:6px;border-radius:50%;background:#a9b6af;opacity:.9}
+.fad-balance-em #fb-en-expenses .fb-en-day .fb-en-marker.bad{background:#b94438}
+.fad-balance-em #fb-en-expenses .fb-en-day .fb-en-marker.warn{background:#ba7c18}
+.fad-balance-em #fb-en-expenses .fb-en-day .fb-en-marker.ok{background:#247850}
+.fad-balance-em #fb-en-expenses .fb-en-day.picked .fb-en-marker{background:#fff;opacity:1}
+.fad-balance-em #fb-en-expenses .fb-en-day::before,.fad-balance-em #fb-en-expenses .fb-en-day::after{content:none!important;display:none!important}
+.fad-balance-em #fb-en-expenses .fb-en-chips{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:0 0 13px}
+.fad-balance-em #fb-en-expenses .fb-en-chips .fb-chip{
+  min-height:34px;padding:7px 12px;font-size:11.5px;border-radius:99px;background:var(--surface,#fff);
+  border:1px solid var(--eo-line);font-weight:750;box-shadow:none
+}
+.fad-balance-em #fb-en-expenses .fb-en-chips .fb-chip[aria-pressed="true"]{background:var(--eo-green);color:#fff;border-color:var(--eo-green)}
+.fad-balance-em #fb-en-expenses .fb-en-tools{
+  display:grid;grid-template-columns:minmax(180px,1.8fr) minmax(140px,1.15fr) repeat(4,minmax(110px,1fr));
+  gap:8px;align-items:stretch;margin:0 0 14px
+}
+.fad-balance-em #fb-en-expenses .fb-en-filter{min-width:0;display:flex;flex-direction:column;gap:0}
+.fad-balance-em #fb-en-expenses .fb-en-filter>span{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0
+}
+.fad-balance-em #fb-en-expenses .fb-en-filter :is(.fb-select,input){
+  box-sizing:border-box;width:100%;max-width:100%;height:40px!important;min-height:40px!important;
+  padding:0 11px;border:1px solid var(--eo-line);border-radius:9px;background:var(--surface,#fff);
+  font-size:11.5px;font-weight:650;line-height:1.2;color:var(--ink,#23372b);box-shadow:none
+}
+.fad-balance-em #fb-en-expenses .fb-en-query input{background:var(--surface-2,#f4f7f4);font-weight:500}
+.fad-balance-em #fb-en-expenses .fb-en-reset{grid-column:1/-1;justify-self:start;align-self:center;margin:0;padding:0;font-size:11px}
+.fad-balance-em #fb-en-expenses .fb-en-scroll{overflow-x:auto;overflow-y:hidden;max-width:100%;border-radius:0;-webkit-overflow-scrolling:touch}
+.fad-balance-em #fb-en-expenses .fb-en-table{table-layout:fixed;min-width:900px;width:100%;font-size:11.5px;border-collapse:collapse}
+.fad-balance-em #fb-en-expenses .fb-en-table th{
+  padding:10px 9px;font:800 10px/1.3 Manrope,system-ui,sans-serif;color:var(--eo-muted);
+  text-transform:uppercase;letter-spacing:.05em;background:transparent;border-bottom:1px solid var(--eo-line)
+}
+.fad-balance-em #fb-en-expenses .fb-en-table th:nth-child(2),
+.fad-balance-em #fb-en-expenses .fb-en-table th:nth-child(3),
+.fad-balance-em #fb-en-expenses .fb-en-table th:nth-child(5),
+.fad-balance-em #fb-en-expenses .fb-en-table td:nth-child(2),
+.fad-balance-em #fb-en-expenses .fb-en-table td:nth-child(3),
+.fad-balance-em #fb-en-expenses .fb-en-table td:nth-child(5){text-align:left!important}
+.fad-balance-em #fb-en-expenses .fb-en-table th:nth-child(4),
+.fad-balance-em #fb-en-expenses .fb-en-table th:nth-child(6),
+.fad-balance-em #fb-en-expenses .fb-en-table td:nth-child(4),
+.fad-balance-em #fb-en-expenses .fb-en-table td:nth-child(6){text-align:right!important}
+.fad-balance-em #fb-en-expenses .fb-en-table td{padding:12px 9px;vertical-align:middle;white-space:normal;line-height:1.45;border-bottom:1px solid var(--eo-line)}
+.fad-balance-em #fb-en-expenses .fb-en-table td:nth-child(2){overflow-wrap:anywhere}
+.fad-balance-em #fb-en-expenses .fb-en-table td:nth-child(2) b{font-size:11.5px;font-weight:800}
+.fad-balance-em #fb-en-expenses .fb-en-table td:nth-child(2) .fb-em-small{margin-top:3px;color:var(--eo-muted);font-size:10.5px;line-height:1.4}
+.fad-balance-em #fb-en-expenses .fb-en-table th:first-child,
+.fad-balance-em #fb-en-expenses .fb-en-table td:first-child{width:38px;min-width:38px;text-align:center;padding-inline:5px}
+.fad-balance-em #fb-en-expenses .fb-en-table td:nth-child(4){white-space:nowrap;font-weight:750}
+.fad-balance-em #fb-en-expenses .fb-en-table .fb-em-pill{font-size:10px;padding:5px 9px;white-space:nowrap}
+.fad-balance-em #fb-en-expenses .fb-en-table .fb-en-group>td{
+  padding:10px 12px!important;background:#f3f7f4!important;text-align:left!important;border-top:1px solid var(--eo-line);border-bottom:1px solid var(--eo-line)
+}
+.fad-balance-em #fb-en-expenses .fb-en-group{cursor:pointer}
+.fad-balance-em #fb-en-expenses .fb-en-group:hover>td{background:#edf4ef!important}
+.fad-balance-em #fb-en-expenses .fb-en-group-head{gap:8px 14px;justify-content:space-between}
+.fad-balance-em #fb-en-expenses .fb-en-group-toggle{gap:8px;font-size:12px;padding:1px 0;flex-wrap:wrap}
+.fad-balance-em #fb-en-expenses .fb-en-chevron{display:inline-block;width:10px;text-align:center;font-size:13px;color:#496e59}
+.fad-balance-em #fb-en-expenses .fb-en-group-label{font-weight:850}
+.fad-balance-em #fb-en-expenses .fb-en-group-toggle .fb-em-pill{padding:2px 7px;font-size:10px}
+.fad-balance-em #fb-en-expenses .fb-en-group-meta{font-size:11px;display:inline-flex;gap:9px;justify-content:flex-end;align-items:center}
+.fad-balance-em #fb-en-expenses .fb-en-group-meta .fb-progress{height:6px;min-width:90px;width:90px}
+.fad-balance-em #fb-en-expenses .fb-en-actions .fb-action,
+.fad-balance-em #fb-en-expenses .fb-em-actions .fb-action{min-height:32px;height:auto;font-size:10.5px;border-radius:8px;padding:7px 9px;white-space:nowrap}
+.fad-balance-em #fb-en-expenses .fb-em-actions{gap:6px;flex-wrap:nowrap;align-items:center}
+.fad-balance-em #fb-en-expenses .fb-en-line:hover td{background:#fbfdfb}
+.fad-balance-em #fb-en-expenses .fb-en-more td{padding:8px}
+.fad-balance-em #fb-en-expenses .fb-en-more .fb-action{min-height:32px;padding:6px 12px}
+.fad-balance-em #fb-en-expenses .fb-en-bulk{max-width:calc(100vw - 24px);padding:11px 15px;gap:9px;justify-content:center;flex-wrap:wrap}
+.fad-balance-em #fb-en-expenses .fb-em-hint{font-size:10.5px;margin-top:11px;color:var(--eo-muted)}
+@media(max-width:1320px){
+ .fad-balance-em #fb-en-expenses .fb-en-tools{grid-template-columns:minmax(180px,1.6fr) repeat(5,minmax(100px,1fr))}
+}
+@media(max-width:1000px){
+ .fad-balance-em #fb-en-expenses .fb-en-tools{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .fad-balance-em #fb-en-expenses .fb-en-query{grid-column:span 2}
+}
+@media(max-width:720px){
+ .fad-balance-em #fb-en-expenses{padding:14px 12px;overflow:hidden}
+ .fad-balance-em #fb-en-expenses .fb-en-summary{grid-template-columns:1fr;gap:7px;margin-bottom:11px}
+ .fad-balance-em #fb-en-expenses .fb-en-summary>div:first-child{font-size:11px}
+ .fad-balance-em #fb-en-expenses .fb-en-pills{grid-column:auto}
+ .fad-balance-em #fb-en-expenses .fb-en-strip-title{font-size:10px}
+ .fad-balance-em #fb-en-expenses .fb-en-strip-title>span:last-child{font-size:9px;white-space:normal}
+ .fad-balance-em #fb-en-expenses .fb-en-strip{gap:1px}
+ .fad-balance-em #fb-en-expenses .fb-en-day{height:33px!important;max-height:33px;min-height:33px!important;font-size:8px!important;gap:4px!important;border-radius:3px;padding:2px 0!important}
+ .fad-balance-em #fb-en-expenses .fb-en-day .fb-en-marker{width:4px;height:4px}
+ .fad-balance-em #fb-en-expenses .fb-en-chips{gap:5px}
+ .fad-balance-em #fb-en-expenses .fb-en-chips .fb-chip{min-height:32px;padding:7px 9px;font-size:10px}
+ .fad-balance-em #fb-en-expenses .fb-en-tools{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+ .fad-balance-em #fb-en-expenses .fb-en-query{grid-column:1/-1}
+ .fad-balance-em #fb-en-expenses .fb-en-filter :is(.fb-select,input){height:38px!important;min-height:38px!important;font-size:11px}
+ .fad-balance-em #fb-en-expenses .fb-en-reset{grid-column:1/-1}
+ .fad-balance-em #fb-en-expenses .fb-en-bulk{width:calc(100vw - 18px);bottom:calc(9px + env(safe-area-inset-bottom,0px))}
+ .fad-balance-em #fb-en-expenses:has(.fb-en-bulk){padding-bottom:110px}
+}
+@media(prefers-color-scheme:dark){
+ .fad-balance-em #fb-en-expenses .fb-en-table .fb-en-group>td{background:var(--surface-2,#1c2a23)!important}
+ .fad-balance-em #fb-en-expenses .fb-en-group:hover>td{background:var(--surface-2,#1c2a23)!important}
+}
+
 </style>
 
 <div id="root"></div>
@@ -4133,7 +4267,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '22.11.2026-en'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '22.11.2026-eo'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -5619,7 +5753,7 @@ async function renderBalance(body){
       ((EXP_CATEGORIES.indexOf(a)<0?100:EXP_CATEGORIES.indexOf(a))-(EXP_CATEGORIES.indexOf(b)<0?100:EXP_CATEGORIES.indexOf(b))||a.localeCompare(b,'ru')):a.localeCompare(b,'ru'));
     return labels.map(label=>({id:v.group+':'+label,label,tone:'neutral',progress:true,rows:groups.get(label)}));
   }
-  const expOpened=g=>expHasFilters()?true:expView.collapse[g.id]!=null?!expView.collapse[g.id]:!(g.id==='paid'||g.id==='auto');
+  const expOpened=g=>expView.collapse[g.id]!=null?!expView.collapse[g.id]:(expHasFilters()?true:!(g.id==='paid'||g.id==='auto'));
   function expLine(r){const x=r.x,auto=r.auto;const amount=r.amount;
     const newRate=!auto&&x.kind==='fixed'&&x.rate_from===state.period&&x.rate_from!==String(x.start_month).slice(0,7);
     const paidNote=!auto&&!x.paid&&n(x.paid_amount)>0?`<div class="fb-em-small">Ранее подтверждено ${money(x.paid_amount)} · дата не указана</div>`:'';
@@ -5659,14 +5793,14 @@ async function renderBalance(body){
       else if(rs.some(r=>!r.paid&&r.diff!=null&&r.diff<=7))tone='warn';
       else if(rs.length&&rs.every(r=>r.paid))tone='ok';
       const active=rs.length>0;const todayDay=todayMonth===state.period&&day===Number(today.slice(8));
-      cells+=`<button type="button" class="fb-en-day${active?'':' empty'}${v.day===day?' picked':''}${todayDay?' current':''}" ${active?'data-en-day="'+day+'"':''} ${active?'':'disabled'} aria-pressed="${v.day===day}" title="${active?rs.length+' платежей':'Нет платежей'}"><span>${day}</span><i class="${tone}"></i></button>`;
+      cells+=`<button type="button" class="fb-en-day${active?'':' empty'}${v.day===day?' picked':''}${todayDay?' current':''}" ${active?'data-en-day="'+day+'"':''} ${active?'':'disabled'} aria-pressed="${v.day===day}" title="${active?rs.length+' платежей':'Нет платежей'}"><span class="fb-en-date-number">${day}</span><span class="fb-en-marker ${tone}" aria-hidden="true"></span></button>`;
     }
     const timeline=`<div class="fb-en-strip-title"><span>Сроки оплат по дням</span><span>● Просрочено · ● Скоро · ● Оплачено</span></div>
       <div class="fb-en-strip" style="--fb-en-days:${days}">${cells}</div>`;
     const chipNames={attn:'Требуют действий',pending:'Ждут оплаты',paid:'Оплачено',auto:'Авто',all:'Все'};
     const chips=`<div class="fb-em-chips fb-en-chips">${Object.entries(chipNames).map(([key,name])=>
       `<button type="button" class="fb-chip" data-en-chip="${key}" aria-pressed="${v.chip===key}">${name} ${counts[key]}</button>`).join('')}</div>`;
-    const groupOpts=[['due','По срокам'],['category','По категориям'],['branch','По филиалам'],['legal','По юрлицам'],['none','Без группировки']];
+    const groupOpts=[['due','Группировка: по срокам'],['category','Группировка: по категориям'],['branch','Группировка: по филиалам'],['legal','Группировка: по юрлицам'],['none','Без группировки']];
     const dropdown=(id,label,pairs,current)=>`<label class="fb-en-filter"><span>${label}</span><select id="${id}" class="fb-select">${opts(pairs,current)}</select></label>`;
     const categories=[...new Set([...EXP_CATEGORIES,...all.map(r=>r.category)])];
     const tools=`<div class="fb-en-tools"><label class="fb-en-filter fb-en-query"><span>Поиск</span><input id="fb-en-q" type="search" placeholder="Название, филиал, категория, юрлицо…" value="${esc(v.query)}" autocomplete="off"></label>
@@ -5684,8 +5818,8 @@ async function renderBalance(body){
       let right=g.progress?`<div class="fb-progress"><span style="width:${amt?Math.min(100,100*groupPaid/amt):0}%"></span></div>Оплачено ${money(groupPaid)} из ${money(amt)}`:
         g.id==='paid'?money(amt):g.id==='auto'?`${money(amt)} · выплачено ${money(groupPaid)}`:`Осталось ${money(left)}`;
       const canChoose=isOwner&&g.rows.some(expSelectAllowed);
-      if(!g.flat)body+=`<tr class="fb-en-group"><td colspan="6"><div class="fb-en-group-head">
-        <button type="button" class="fb-en-group-toggle" data-en-toggle="${esc(g.id)}" aria-expanded="${open}">${open?'▾':'▸'} ${esc(g.label)} <span class="fb-em-pill ${g.tone||'neutral'}">${g.rows.length}</span></button>
+      if(!g.flat)body+=`<tr class="fb-en-group" data-en-row-toggle="${esc(g.id)}"><td colspan="6"><div class="fb-en-group-head">
+        <button type="button" class="fb-en-group-toggle" data-en-toggle="${esc(g.id)}" aria-expanded="${open}"><span class="fb-en-chevron" aria-hidden="true">${open?'▾':'▸'}</span><span class="fb-en-group-label">${esc(g.label)}</span><span class="fb-em-pill ${g.tone||'neutral'}">${g.rows.length}</span></button>
         <span class="fb-en-group-meta">${open&&canChoose?`<button type="button" class="fb-em-link" data-en-selectgroup="${esc(g.id)}">Выбрать все</button>`:''}${right}</span></div></td></tr>`;
       if(!open)continue;
       const limit=v.query||v.day!=null||v.expanded[g.id]?Infinity:8;
@@ -5701,7 +5835,7 @@ async function renderBalance(body){
     return `<section class="fb-panel fb-en-expenses" id="fb-en-expenses"><div class="fb-em-head"><h2>Расходы и платежи</h2>
       ${isOwner?'<button type="button" class="fb-action primary" id="fb-add">+ Добавить статью</button>':''}</div>
       ${summary}${timeline}${chips}${tools}
-      <div class="fb-table-scroll fb-en-scroll"><table class="fb-table fb-em-table fb-en-table"><thead><tr>
+      <div class="fb-table-scroll fb-en-scroll"><table class="fb-table fb-em-table fb-en-table"><colgroup><col style="width:3.8%"><col style="width:36%"><col style="width:13.5%"><col style="width:14.5%"><col style="width:16.2%"><col style="width:16%"></colgroup><thead><tr>
         <th class="fb-en-check"></th><th class="fb-left">${th('name','Статья')}</th><th>${th('due','Срок')}</th><th>${th('amount','Сумма')}</th><th>${th('status','Статус')}</th><th>Действия</th></tr></thead>
         <tbody>${body}</tbody><tfoot>${footer}</tfoot></table></div>${bulk}
       <div class="fb-em-hint">Постоянные суммы переходят на следующий месяц. Переменные вносятся отдельно. Факт оплаты не изменяет начисление и прибыль.</div></section>`;
@@ -5919,10 +6053,15 @@ async function renderBalance(body){
   }
   /* Delegated events survive table re-render; no database writes for UI-only filters. */
   shell.addEventListener('click',ev=>{
+    const groupRow=ev.target.closest('[data-en-row-toggle]');
+    if(groupRow&&shell.contains(groupRow)&&!ev.target.closest('button,a,input,select')){
+      const id=groupRow.dataset.enRowToggle;
+      expView.collapse[id]=expOpened({id});rerenderExpenseList();return;
+    }
     const button=ev.target.closest('button');if(!button||!shell.contains(button))return;
     const d=button.dataset,v=expView;
-    if(d.enChip){v.chip=d.enChip;rerenderExpenseList();return;}
-    if(d.enDay){const day=Number(d.enDay);v.day=v.day===day?null:day;rerenderExpenseList();return;}
+    if(d.enChip){v.chip=d.enChip;v.collapse={};rerenderExpenseList();return;}
+    if(d.enDay){const day=Number(d.enDay);v.day=v.day===day?null:day;v.collapse={};rerenderExpenseList();return;}
     if(d.enToggle){v.collapse[d.enToggle]=expOpened({id:d.enToggle});rerenderExpenseList();return;}
     if(d.enMore){v.expanded[d.enMore]=true;rerenderExpenseList();return;}
     if(d.enSort){if(v.sort===d.enSort)v.direction*=-1;else{v.sort=d.enSort;v.direction=1;}rerenderExpenseList();return;}
@@ -5945,7 +6084,7 @@ async function renderBalance(body){
     }
   });
   shell.addEventListener('input',ev=>{if(ev.target.id!=='fb-en-q')return;
-    expView.query=ev.target.value.trim();rerenderExpenseList(true);
+    expView.query=ev.target.value.trim();expView.collapse={};rerenderExpenseList(true);
   });
   shell.addEventListener('change',ev=>{
     const t=ev.target,v=expView;
@@ -5953,7 +6092,7 @@ async function renderBalance(body){
       if(t.checked)v.selected.add(t.dataset.enSelect);else v.selected.delete(t.dataset.enSelect);
       rerenderExpenseList();return;}
     const key={'fb-en-group':'group','fb-en-cat':'category','fb-en-unit':'unit','fb-en-legal':'legal','fb-en-kind':'kind'}[t.id];
-    if(key){v[key]=t.value;rerenderExpenseList();}
+    if(key){v[key]=t.value;v.collapse={};rerenderExpenseList();}
   });
 
   await load();
