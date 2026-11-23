@@ -53,6 +53,21 @@ html,body,button,input,select,textarea{color-scheme:only light}
   --fad-space-6: 24px;
   --fad-space-8: 32px;
   --fad-page-width: 1280px;
+  --fad-sch-page: #edf1ed;
+  --fad-sch-surface: #ffffff;
+  --fad-sch-border: #dbe2db;
+  --fad-sch-ink: #14231b;
+  --fad-sch-muted: #586a5f;
+  --fad-sch-green: #2d6a4a;
+  --fad-sch-soft-green: #e1eee5;
+  --fad-sch-ready: #98cb64;
+  --fad-sch-closed: #d6dad4;
+  --fad-sch-warning: #fcf3dc;
+  --fad-sch-warning-border: #ecd49a;
+  --fad-sch-warning-text: #7a4f00;
+  --fad-sch-masherova: #2c6cb8;
+  --fad-sch-kuibysheva: #e0a50f;
+  --fad-sch-tolbukhina: #e07422;
   --fad-font: 'Manrope', system-ui, -apple-system, sans-serif;
   --fad-text-page: 20px;
   --fad-text-section: 16px;
@@ -4663,6 +4678,157 @@ input[type="time"]::-webkit-calendar-picker-indicator{position:absolute;right:8p
 .eq-m-person:has([data-eq-m-skip]){grid-template-columns:42px minmax(0,1fr) auto}
 .eq-m-person [data-eq-m-skip]{grid-column:auto;background:#fff;border-color:#e2b7af;color:#9c2c22}
 @media(max-width:767px){.eq-m-person:has([data-eq-m-skip]){grid-template-columns:42px minmax(0,1fr)}.eq-m-person [data-eq-m-skip]{grid-column:2;min-height:44px}}
+
+/* FC · visual-only refresh for Schedule > Calendar / Overview / My schedule. */
+#schedRoot{font-family:var(--fad-font);color:var(--fad-sch-ink);min-width:0;max-width:100%;}
+#schedRoot .section-title{font-size:16px;font-weight:800;color:var(--fad-sch-ink);margin:19px 0 10px;}
+#schedRoot .sch-subtab.on{background:var(--fad-sch-green);color:#fff}
+#schedRoot .sch-scroll{border:1px solid var(--fad-sch-border);border-radius:14px;background:#fff;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;}
+#schedRoot :is(.sch-v2-calendar,.sch-v2-overview,.sch-v2-personal){min-width:0;max-width:100%;}
+#schedRoot :is(.sch-v2-cal-summary,.sch-v2-control,.sch-v2-calendar .sch-st,.sch-v2-personal .tile){border:1px solid var(--fad-sch-border);background:var(--fad-sch-surface);border-radius:14px;box-shadow:none;}
+#schedRoot :is(.abs-grid,.adm-sched-grid,.sch-v2-hours){font-variant-numeric:tabular-nums;}
+#schedRoot .sch-v2-dayhead{min-height:29px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.08;gap:3px;padding:2px;color:var(--fad-sch-muted);font-size:11px;font-weight:700;}
+#schedRoot .sch-v2-dayhead small{display:block;font-size:9px;font-weight:700;line-height:1;}
+#schedRoot .sch-v2-dayhead small.weekend{color:#a3483a;}
+#schedRoot .sch-v2-dayhead.sch-v2-today{background:var(--fad-sch-green);color:#fff!important;border-radius:5px;}
+#schedRoot .sch-v2-dayhead.sch-v2-today small{color:#fff!important;}
+#schedRoot .sch-v2-current-col{outline:2px solid var(--fad-sch-green)!important;outline-offset:-2px;position:relative;z-index:1;border-radius:4px;}
+#schedRoot .sch-v2-control{display:flex;align-items:stretch;min-width:0;margin:0 0 18px;overflow:hidden;}
+#schedRoot .sch-v2-control-kpis{display:grid;grid-template-columns:repeat(3,minmax(100px,1fr));flex:1;min-width:0;}
+#schedRoot .sch-v2-control-kpis>div{padding:14px 16px;border-right:1px solid var(--fad-sch-border);}
+#schedRoot .sch-v2-control-kpis span{display:block;color:var(--fad-sch-muted);font-size:11px;letter-spacing:.08em;font-weight:800;text-transform:uppercase;margin-bottom:4px;}
+#schedRoot .sch-v2-control-kpis b{font-size:22px;font-weight:800;white-space:nowrap;}
+#schedRoot .sch-v2-control-kpis small{font-size:12px;font-weight:600;color:var(--fad-sch-muted);}
+#schedRoot .sch-v2-control-warn{padding:11px 15px;background:var(--fad-sch-warning);color:var(--fad-sch-warning-text);border-left:1px solid var(--fad-sch-warning-border);flex:0 1 43%;min-width:0;}
+#schedRoot .sch-v2-control-warn>b{font-size:12px;display:block;margin-bottom:6px;}
+#schedRoot .sch-v2-control-warn>div{display:flex;gap:5px;flex-wrap:wrap;}
+#schedRoot .sch-v2-warn-chip,#schedRoot .sch-v2-streak{display:inline-flex;align-items:center;border:1px solid var(--fad-sch-warning-border);background:#fff9eb;color:var(--fad-sch-warning-text);padding:3px 8px;border-radius:999px;font-size:11px;font-weight:800;}
+#schedRoot .sch-v2-overview .abs-grid{min-width:980px;}
+#schedRoot .sch-v2-overview .adm-sched-grid{min-width:1060px;}
+#schedRoot .sch-v2-overview .abs-grid,#schedRoot .sch-v2-overview .adm-sched-grid{padding:12px;gap:3px;}
+#schedRoot .sch-v2-overview .abs-cell,#schedRoot .sch-v2-overview .adm-sched-cell{min-height:23px;min-width:23px;border-radius:4px;display:flex;align-items:center;justify-content:center;}
+#schedRoot .sch-v2-overview .abs-name{white-space:normal;overflow:visible;text-overflow:clip;}
+#schedRoot .sch-v2-overview .adm-sched-person{display:flex;flex-direction:column;line-height:1.25;}
+#schedRoot .sch-v2-overview .adm-sched-phone{color:var(--fad-sch-muted);font-size:10px;}
+#schedRoot .sch-v2-overview .adm-sched-total{font-size:12px;text-align:right;font-weight:800;white-space:nowrap;}
+#schedRoot .sch-v2-overview .adm-sched-legend{display:flex;flex-wrap:wrap;gap:9px 17px;align-items:center;font-size:12px;margin:8px 2px 14px;color:var(--fad-sch-muted);}
+#schedRoot .sch-v2-overview .adm-sched-legend>span{display:inline-flex;gap:6px;align-items:center;}
+#schedRoot .sch-v2-overview .adm-sched-legend>span>i{width:11px;height:11px;border-radius:3px;display:inline-block;}
+#schedRoot .sch-v2-today-outline{border:2px solid var(--fad-sch-green)!important;background:#fff!important;}
+#schedRoot .adm-sched-cell .coffee-scheduled-icon{position:static;z-index:auto;top:auto;right:auto;display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:transparent;border:0;border-radius:0;color:#fff;filter:drop-shadow(0 0 1px rgba(0,0,0,.25));}
+#schedRoot .coffee-scheduled-icon svg{width:14px;height:14px;stroke-width:2;}
+#schedRoot .sch-v2-coffee-legend{color:var(--fad-sch-muted);display:flex;}
+#schedRoot .sch-v2-coffee-legend svg{width:16px;height:16px;}
+#schedRoot .sch-v2-hours{min-width:690px;width:100%;}
+#schedRoot .sch-v2-hours th{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--fad-sch-muted);font-weight:800;background:#f8faf8;}
+#schedRoot .sch-v2-hours td{padding:9px 12px;font-size:12px;color:var(--fad-sch-ink);font-variant-numeric:tabular-nums;}
+#schedRoot .sch-v2-person{display:flex;align-items:center;gap:8px;white-space:nowrap;}
+#schedRoot .sch-v2-avatar{display:grid;place-items:center;min-width:28px;height:28px;border-radius:50%;background:var(--fad-sch-soft-green);color:var(--fad-sch-green);font-size:10px;font-weight:800;}
+#schedRoot .sch-v2-branches{display:flex;gap:5px;flex-wrap:wrap;}
+#schedRoot .sch-v2-branch{display:inline-flex;gap:5px;align-items:center;padding:3px 8px;border-radius:999px;background:#f5f7f5;border:1px solid #e8ece8;white-space:nowrap;font-size:11px;}
+#schedRoot .sch-v2-branch i,#schedRoot .sch-v2-shift-studio i{height:8px;width:8px;flex:0 0 8px;border-radius:50%;display:inline-block;}
+#schedRoot .sch-v2-hour-cell{display:flex;align-items:center;gap:9px;white-space:nowrap;min-width:145px;}
+#schedRoot .sch-v2-meter{width:100px;max-width:50%;background:#e7ece8;border-radius:99px;height:7px;overflow:hidden;}
+#schedRoot .sch-v2-meter span{display:block;height:100%;background:var(--fad-sch-green);border-radius:99px;}
+#schedRoot .sch-v2-hours-total td{background:#f3f7f3;font-weight:800;border-top:1px solid var(--fad-sch-border);}
+/* Calendar */
+#schedRoot .sch-v2-calendar .sch-studios{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px;}
+#schedRoot .sch-v2-calendar .sch-st{display:flex;align-items:center;gap:7px;padding:10px 13px;min-width:0;min-height:42px;text-align:left;}
+#schedRoot .sch-v2-calendar .sch-st>span{margin-left:auto;color:var(--fad-sch-muted);font-size:11px;white-space:nowrap;}
+#schedRoot .sch-v2-calendar .sch-st.on{border:2px solid var(--fad-sch-green);background:#fff;box-shadow:none;}
+#schedRoot .sch-v2-cal-summary{display:flex;gap:12px 18px;align-items:center;flex-wrap:wrap;padding:12px 15px;margin-bottom:12px;color:var(--fad-sch-muted);font-size:12px;}
+#schedRoot .sch-v2-cal-summary b{font-size:16px;font-weight:800;color:var(--fad-sch-ink);}
+#schedRoot .sch-v2-cal-summary span b{font-size:13px;}
+#schedRoot .sch-v2-cal-summary .sch-viewtoggle{margin:0 0 0 auto;background:transparent;}
+#schedRoot .sch-v2-cal-summary .sch-viewtoggle .vt.on{background:var(--fad-sch-soft-green);color:var(--fad-sch-green);box-shadow:none;}
+#schedRoot .sch-v2-missing{color:var(--fad-sch-warning-text);background:var(--fad-sch-warning);padding:4px 9px;border-radius:999px;}
+#schedRoot .sch-v2-calendar .sch-cal{width:100%;max-width:100%;overflow-x:auto;}
+#schedRoot .sch-v2-calendar .sch-grid{grid-auto-rows:minmax(90px,auto);align-items:stretch;}
+#schedRoot .sch-v2-calendar .sch-cell{min-height:90px;border:1px solid var(--fad-sch-border);background:#fff;padding:8px;border-radius:10px;opacity:1;overflow:hidden;}
+#schedRoot .sch-v2-calendar .sch-cell.past{background:#f6f8f5;}
+#schedRoot .sch-v2-calendar .sch-list-cal .sch-row{border-radius:14px;border-color:var(--fad-sch-border);box-shadow:none;}
+#schedRoot .sch-v2-calendar .sch-list-cal .sch-row.past{opacity:1;background:#f6f8f5;}
+#schedRoot .sch-v2-calendar .sch-list-cal .sch-row.today{border:2px solid var(--fad-sch-green);box-shadow:none;}
+#schedRoot .sch-v2-calendar .sch-cell.past .sch-strips{opacity:.7;}
+#schedRoot .sch-v2-calendar .sch-cell.sch-v2-adjacent{border:1px dashed var(--fad-sch-border);background:transparent;cursor:default;color:#a2ada5;}
+#schedRoot .sch-v2-calendar .sch-cell.sch-v2-adjacent .sch-d{color:#9ca9a0;}
+#schedRoot .sch-v2-calendar .sch-cell.sch-v2-day-today{border:2px solid var(--fad-sch-green);}
+#schedRoot .sch-v2-calendar .sch-d{display:flex;align-items:center;justify-content:space-between;font-weight:800;color:var(--fad-sch-ink);}
+#schedRoot .sch-v2-calendar .sch-d small{color:#fff;background:var(--fad-sch-green);border-radius:99px;padding:2px 6px;font-size:10px;}
+#schedRoot .sch-v2-calendar .sch-strip{border-radius:0;background:transparent;min-height:30px;}
+#schedRoot .sch-v2-calendar .sch-strip .sch-sh{font-weight:800;white-space:normal;overflow:visible;font-size:11px;}
+#schedRoot .sch-v2-calendar .sch-strip .sch-sh span{font-size:10px;color:var(--fad-sch-muted);}
+#schedRoot .sch-v2-calendar .sch-strip.fill{box-shadow:none!important;}
+#schedRoot .sch-v2-calendar .sch-strip.fill .sch-v2-add{opacity:0;display:grid;place-items:center;color:var(--fad-sch-green);border:1px solid var(--fad-sch-border);border-radius:8px;width:32px;height:32px;font-size:21px;margin:0 auto;}
+#schedRoot .sch-v2-calendar .sch-strip.fill:is(:hover,:focus-visible,:focus-within) .sch-v2-add{opacity:1;}
+#schedRoot .sch-v2-calendar .sch-strip:focus-visible{outline:2px solid var(--fad-sch-green);outline-offset:1px;}
+#schedRoot .sch-v2-export{display:flex;justify-content:flex-end;margin:10px 0;}
+#schedRoot .sch-v2-export button{min-height:32px;}
+/* My schedule */
+#schedRoot .sch-v2-personal .sch-tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:22px;}
+#schedRoot .sch-v2-personal .tile{min-width:0;min-height:102px;padding:13px 15px;}
+#schedRoot .sch-v2-personal .tile .tk{font-size:11px;font-weight:800;letter-spacing:.08em;color:var(--fad-sch-muted);}
+#schedRoot .sch-v2-personal .tile .tv{font-family:var(--fad-font);font-weight:800;color:var(--fad-sch-ink);font-size:25px;overflow-wrap:anywhere;}
+#schedRoot .sch-v2-personal .tile .tv.sm{font-size:17px;}
+#schedRoot .sch-v2-kpi-sub{font-size:11px;color:var(--fad-sch-muted);margin-top:5px;line-height:1.5;}
+#schedRoot .sch-v2-personal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+#schedRoot .sch-v2-personal-filter{display:flex;gap:3px;padding:3px;background:#fff;border:1px solid var(--fad-sch-border);border-radius:10px;}
+#schedRoot .sch-v2-personal-filter button{background:transparent;border:0;border-radius:7px;min-height:32px;padding:5px 10px;font-size:12px;color:var(--fad-sch-muted);font-weight:700;}
+#schedRoot .sch-v2-personal-filter button.on{background:var(--fad-sch-soft-green);color:var(--fad-sch-green);}
+#schedRoot .sch-v2-personal .adm-sched-legend{display:flex;gap:15px;flex-wrap:wrap;margin:0 0 15px;font-size:12px;color:var(--fad-sch-muted);}
+#schedRoot .sch-v2-personal .adm-sched-legend span{display:inline-flex;align-items:center;gap:6px;}
+#schedRoot .sch-v2-personal .adm-sched-legend i{width:9px;height:9px;border-radius:50%;display:inline-block;}
+#schedRoot .sch-v2-week{margin-bottom:18px;}
+#schedRoot .sch-v2-week-title{font-size:12px;font-weight:700;color:var(--fad-sch-muted);margin:0 0 7px;padding:0 3px;}
+#schedRoot .sch-v2-shift{display:grid;grid-template-columns:minmax(110px,1.1fr) minmax(170px,2.8fr) 74px 92px 80px;align-items:center;gap:9px;min-height:57px;background:#fff;border:1px solid var(--fad-sch-border);border-radius:10px;padding:8px 13px;margin-bottom:6px;}
+#schedRoot .sch-v2-shift.past{background:#f6f8f5;color:#6f7a72;}
+#schedRoot .sch-v2-shift.today{background:var(--fad-sch-soft-green);border-color:#bfdcc8;}
+#schedRoot .sch-v2-shift-date{display:flex;gap:8px;align-items:center;}
+#schedRoot .sch-v2-shift-date b{font-size:12px;white-space:nowrap;}
+#schedRoot .sch-v2-shift-date small{font-size:10px;color:var(--fad-sch-muted);}
+#schedRoot .sch-v2-shift-studio{display:flex;align-items:center;flex-wrap:wrap;gap:5px 8px;min-width:0;font-size:12px;}
+#schedRoot .sch-v2-shift-studio>span:first-child{display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap;}
+#schedRoot .sch-v2-shift-studio b{font-weight:750;}
+#schedRoot .sch-v2-shift-studio>span:first-child>span{color:var(--fad-sch-muted);}
+#schedRoot .sch-v2-coffee-chip{display:inline-flex;gap:4px;align-items:center;padding:3px 8px;border-radius:999px;background:var(--fad-sch-soft-green);color:var(--fad-sch-green);font-size:12px;font-weight:700;}
+#schedRoot .sch-v2-coffee-chip svg{width:16px;height:16px;}
+#schedRoot .sch-v2-shift-hours{font-variant-numeric:tabular-nums;font-size:12px;font-weight:800;text-align:right;white-space:nowrap;}
+#schedRoot .sch-v2-shift-state{text-align:center;}
+#schedRoot .sch-v2-shift-state span{border-radius:999px;padding:4px 8px;font-size:11px;font-weight:750;white-space:nowrap;}
+#schedRoot .sch-v2-shift-state .today{background:var(--fad-sch-green);color:#fff;}
+#schedRoot .sch-v2-shift-state .past{background:#edf0ec;color:#59675c;}
+#schedRoot .sch-v2-shift-state .future{background:#fff;border:1px solid var(--fad-sch-border);color:var(--fad-sch-ink);}
+#schedRoot .sch-v2-shift-action{text-align:right;}
+#schedRoot .sch-v2-replace-pending{display:inline-flex;align-items:center;border:1px dashed #a4bcad;color:var(--fad-sch-muted);border-radius:8px;padding:6px 8px;font-size:12px;white-space:nowrap;cursor:not-allowed;}
+#schedRoot button:focus-visible{outline:2px solid var(--fad-sch-green);outline-offset:2px;}
+@media(max-width:1050px){
+ #schedRoot .sch-v2-control{flex-direction:column;}
+ #schedRoot .sch-v2-control-warn{flex-basis:auto;border-left:0;border-top:1px solid var(--fad-sch-warning-border);}
+ #schedRoot .sch-v2-personal .sch-tiles{grid-template-columns:repeat(2,minmax(0,1fr));}
+ #schedRoot .sch-v2-shift{grid-template-columns:120px minmax(140px,1fr) 62px 80px;}
+ #schedRoot .sch-v2-shift-action{grid-column:2/-1;text-align:right;}
+}
+@media(max-width:767px){
+ #schedRoot .sch-v2-calendar .sch-studios{grid-template-columns:1fr;}
+ #schedRoot .sch-v2-cal-summary{padding:11px;}
+ #schedRoot .sch-v2-cal-summary .sch-viewtoggle{margin-left:0;width:100%;}
+ #schedRoot .sch-v2-calendar .sch-grid-head,#schedRoot .sch-v2-calendar .sch-grid{min-width:560px;}
+ #schedRoot .sch-v2-control-kpis{grid-template-columns:repeat(3,minmax(0,1fr));}
+ #schedRoot .sch-v2-control-kpis>div{padding:11px 8px;}
+ #schedRoot .sch-v2-control-kpis span{font-size:9px;}
+ #schedRoot .sch-v2-control-kpis b{font-size:18px;}
+ #schedRoot .sch-v2-personal .sch-tiles{grid-template-columns:1fr;}
+ #schedRoot .sch-v2-personal-head{align-items:stretch;flex-direction:column;}
+ #schedRoot .sch-v2-personal-filter{width:100%;justify-content:space-between;}
+ #schedRoot .sch-v2-personal-filter button{flex:1;}
+ #schedRoot .sch-v2-shift{grid-template-columns:minmax(0,1fr) auto;gap:7px 10px;}
+ #schedRoot .sch-v2-shift-date{grid-column:1;grid-row:1;}
+ #schedRoot .sch-v2-shift-hours{grid-column:2;grid-row:1;}
+ #schedRoot .sch-v2-shift-studio{grid-column:1/-1;grid-row:2;}
+ #schedRoot .sch-v2-shift-state{grid-column:1;grid-row:3;text-align:left;}
+ #schedRoot .sch-v2-shift-action{grid-column:2;grid-row:3;text-align:right;}
+}
+
 </style>
 
 <div id="root"></div>
@@ -4683,7 +4849,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '23.11.2026-fb'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '23.11.2026-fc'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -12303,6 +12469,8 @@ function confirmModal(msg,onYes){
 /* ================= Расписание (модуль) ================= */
 const MON2=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 const SCH_DOW=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+const FAD_SCH_COFFEE_ICON='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9h11v4a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V9zM16 10h1.5a2.5 2.5 0 0 1 0 5H16M8.5 3.5v2M12 3.5v2"/></svg>';
+
 let SCH=null, SCHDATA=null, TEAM=[], SCHsel=null, ABS_MODE='cal', COFFEE_ROSTER=[], ADMIN_PHONES={};
 let COFFEE_SCHEDULE_MARKERS=new Map();
 async function coffeeScheduleLoadMarkers(period){
@@ -12799,14 +12967,14 @@ function schStrip(d, iso, sid, editor, showLabel){
     const absHtml=TEAM.filter(a=>a.home===sid && !scheduled.has(a.login)).map(a=>({a,ab:absOn(a.login,iso)})).filter(x=>x.ab)
       .map(x=>`<div class="sch-abs">${escapeHtml(shortName(x.a.name))}<span style="color:${absClr(x.ab.type)}">${absName(x.ab.type)}</span></div>`).join('');
     if(shifts.length===0 && iso>=todayStr()) fill=true;
-    const fillHtml = fill ? '<div class="sch-fill">нужно заполнить!</div>' : '';
+    const fillHtml = fill ? (editor?'<div class="sch-fill sch-v2-add" aria-hidden="true">+</div>':'<div class="sch-fill">нужно заполнить</div>') : '';
     inner=(shHtml+needHtml+absHtml+fillHtml)||'<span class="sch-empty">—</span>';
   }
   const armed=(SCHsel&&editor)?' armed':'';
   const lbl=showLabel?`<span class="strip-lbl" style="color:${st.color}">${st.name[0]}</span>`:'';
   const coffeeItem=COFFEE_SCHEDULE_MARKERS.get(iso);
   const coffeeMark=sid==='masherova'&&coffeeItem?`<span class="coffee-mark" title="Кофе: ${escapeHtml(coffeeName(coffeeItem.login))}">☕</span>`:'';
-  return `<div class="sch-strip${closed?' closed':''}${need?' need':''}${fill?' fill':''}${armed}" data-day="${d}" data-sid="${sid}" style="border-left:3px solid ${st.color}">${lbl}${coffeeMark}${inner}</div>`;
+  return `<div class="sch-strip${closed?' closed':''}${need?' need':''}${fill?' fill':''}${armed}" data-day="${d}" data-sid="${sid}"${editor?` tabindex="0" role="button" aria-label="Редактировать ${st.name}, ${d} ${MON2[SCH.m]}"`:''} style="border-left:3px solid ${st.color}">${lbl}${coffeeMark}${inner}</div>`;
 }
 function renderSchCalendar(el){
   const editor=can('schedule.edit');
@@ -12824,6 +12992,7 @@ function renderSchCalendar(el){
       ${(!home.length&&!others.length)?'<div class="hintline">Нет администраторов. Добавьте их и укажите филиал во вкладке «Администраторы».</div>':''}
     </div>` : '';
   const n=schDaysIn(SCH.y,SCH.m), list=SCH.calView==='list';
+  const nowIso=todayStr(), monthly=monthKey(SCH.y,SCH.m);
   const strips=(d,iso)=>sids.map(sid=>schStrip(d,iso,sid,editor,multi)).join('');
   let body='';
   if(list){
@@ -12837,24 +13006,49 @@ function renderSchCalendar(el){
     body=`<div class="sch-list-cal">${rows}</div>`;
   } else {
     let fd=(schDow(SCH.y,SCH.m,1)+6)%7, cells='';
-    for(let i=0;i<fd;i++) cells+='<div class="sch-cell empty"></div>';
+    for(let i=0;i<fd;i++){
+      const dt=new Date(SCH.y,SCH.m,i-fd+1);
+      cells+=`<div class="sch-cell sch-v2-adjacent"><div class="sch-d">${dt.getDate()}</div></div>`;
+    }
     for(let d=1;d<=n;d++){
       const iso=schIso(SCH.y,SCH.m,d);
-      cells+=`<div class="sch-cell${iso<todayStr()?' past':''}"><div class="sch-d">${d}</div><div class="sch-strips">${strips(d,iso)}</div></div>`;
+      cells+=`<div class="sch-cell${iso<nowIso?' past':''}${iso===nowIso?' sch-v2-day-today':''}"><div class="sch-d">${d}${iso===nowIso?'<small>сегодня</small>':''}</div><div class="sch-strips">${strips(d,iso)}</div></div>`;
     }
+    const trailing=(7-((fd+n)%7))%7;
+    for(let i=1;i<=trailing;i++)cells+=`<div class="sch-cell sch-v2-adjacent"><div class="sch-d">${i}</div></div>`;
     body=`<div class="sch-cal"><div class="sch-grid-head">${SCH_DOW.map(x=>`<div>${x}</div>`).join('')}</div><div class="sch-grid">${cells}</div></div>`;
   }
+  const selectedDayCount=sids.length*n;
+  let coveredDays=0,closedDays=0,totalHours=0;
+  const byAdmin=new Map();
+  for(const sid of sids)for(let d=1;d<=n;d++){
+    const iso=schIso(SCH.y,SCH.m,d),rec=dayRec(iso,sid);
+    if(rec?.closed){closedDays++;continue;}
+    const present=(rec?.shifts||[]).filter(sh=>!absOn(sh.adminId,iso));
+    if(present.length)coveredDays++;
+    present.forEach(sh=>{const current=byAdmin.get(sh.adminId)||{count:0};current.count++;byAdmin.set(sh.adminId,current);totalHours+=shiftHours(sh.start,sh.end);});
+  }
+  const effectiveDays=selectedDayCount-closedDays;
   el.innerHTML=`
-    <div class="sch-studios">${STUDIOS.map(s=>`<button class="sch-st${sids.includes(s.id)?' on':''}" data-ssel="${s.id}" style="border-left:4px solid ${s.color}">${sdot(s.id)}${s.name}<span>${s.start}–${s.end}</span></button>`).join('')}</div>
-    <div class="sch-viewtoggle"><button class="vt${list?'':' on'}" data-cv="grid">▦ Сетка</button><button class="vt${list?' on':''}" data-cv="list">☰ Список</button></div>
+    <div class="sch-v2-calendar">
+    <div class="sch-studios">${STUDIOS.map(s=>`<button class="sch-st${sids.includes(s.id)?' on':''}" data-ssel="${s.id}" style="border-left:4px solid ${s.color}">${sdot(s.id)}<b>${s.name}</b><span>${s.start}–${s.end}</span></button>`).join('')}</div>
+    <div class="sch-v2-cal-summary"><b>${coveredDays} из ${effectiveDays}</b> дней закрыто
+      ${[...byAdmin.entries()].map(([login,v])=>`<span><b>${v.count}</b> смен · ${escapeHtml(shortName(adminName(login)))}</span>`).join('')}
+      <span><b>${fmtH(totalHours)} ч</b> за месяц</span>
+      ${effectiveDays-coveredDays>0?`<span class="sch-v2-missing">${effectiveDays-coveredDays} дней без администратора</span>`:''}
+      <div class="sch-viewtoggle"><button class="vt${list?'':' on'}" data-cv="grid">Сетка</button><button class="vt${list?' on':''}" data-cv="list">Список</button></div>
+    </div>
     ${roster}
-    ${body}`;
+    ${body}
+    ${session.role==='owner'?'<div class="sch-v2-export"><button type="button" class="btn btn-sm" id="admSchedExport" aria-label="Скачать расписание в Excel">⇩ Скачать в Excel</button></div>':''}
+    </div>`;
   el.querySelectorAll('[data-ssel]').forEach(b=>b.onclick=()=>{
     const id=b.dataset.ssel; let arr=(SCH.sids||[]).slice();
     if(arr.includes(id)){ if(arr.length>1) arr=arr.filter(x=>x!==id); } else arr.push(id);
     SCH.sids=arr; renderSchCalendar(el);
   });
   el.querySelectorAll('[data-cv]').forEach(b=>b.onclick=()=>{ SCH.calView=b.dataset.cv; renderSchCalendar(el); });
+  const admExp=el.querySelector('#admSchedExport');if(admExp)admExp.onclick=exportAdminScheduleOverview;
   if(editor){
     el.querySelectorAll('.rchip').forEach(c=>{
       c.onclick=()=>{ SCHsel=(SCHsel===c.dataset.adm)?null:c.dataset.adm; renderSchCalendar(el); };
@@ -12863,6 +13057,7 @@ function renderSchCalendar(el){
     el.querySelectorAll('.sch-strip[data-sid]').forEach(node=>{
       const day=+node.dataset.day, sid=node.dataset.sid;
       node.onclick=(ev)=>{ ev.stopPropagation(); if(SCHsel) schPlace(day, sid, SCHsel); else openDayModal(day, sid); };
+      node.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();node.click();}};
       node.addEventListener('dragover',e=>{ e.preventDefault(); node.classList.add('drop'); });
       node.addEventListener('dragleave',()=>node.classList.remove('drop'));
       node.addEventListener('drop',e=>{ e.preventDefault(); node.classList.remove('drop'); const dt=e.dataTransfer.getData('text/plain'); if(dt&&dt.indexOf('ADD:')===0) schPlace(day, sid, dt.slice(4)); });
@@ -13019,8 +13214,9 @@ function teamSortedByStudio(list=TEAM){
 }
 function adminScheduleOverviewGrid(){
   const y=SCH.y,m=SCH.m,n=schDaysIn(y,m);
-  let html=`<div class="adm-sched-grid" style="grid-template-columns:180px repeat(${n},1fr)"><div></div>`;
-  for(let d=1;d<=n;d++){ const we=[0,6].includes(schDow(y,m,d)); html+=`<div class="abs-dh${we?' we':''}">${d}</div>`; }
+  let html=`<div class="adm-sched-grid" style="grid-template-columns:180px repeat(${n},minmax(24px,1fr)) 68px"><div></div>`;
+  for(let d=1;d<=n;d++){ const we=[0,6].includes(schDow(y,m,d)); html+=`<div class="abs-dh sch-v2-dayhead${we?' we':''}${schIso(y,m,d)===todayStr()?' sch-v2-today':''}">${d}<small${we?' class="weekend"':''}>${'пвсчпсв'[(schDow(y,m,d)+6)%7]}</small></div>`; }
+  html+='<div class="abs-dh sch-v2-admin-total-head">итого</div>';
   teamSortedByStudio().forEach(a=>{
     const phone=(ADMIN_PHONES&&ADMIN_PHONES[a.login])||'';
     html+=`<div class="abs-name adm-sched-person"><span class="adm-sched-name">${escapeHtml(shortName(a.name))}</span>${phone?`<span class="adm-sched-phone">${escapeHtml(phone)}</span>`:''}</div>`;
@@ -13028,7 +13224,7 @@ function adminScheduleOverviewGrid(){
       const iso=schIso(y,m,d), we=[0,6].includes(schDow(y,m,d)), ab=absOn(a.login,iso);
       const sids=[];
       STUDIOS.forEach(st=>{ const r=dayRec(iso,st.id); if(r&&!r.closed&&(r.shifts||[]).some(sh=>sh.adminId===a.login)) sids.push(st.id); });
-      let cls='adm-sched-cell'+(we?' we':''); let style='', title='';
+      let cls='adm-sched-cell'+(we?' we':'')+(iso===todayStr()?' sch-v2-current-col':''); let style='', title='';
       if(ab){ cls+=' absent'; title=absName(ab.type); }
       else if(sids.length){
         cls+=' has';
@@ -13039,8 +13235,9 @@ function adminScheduleOverviewGrid(){
       }
       const coffee=COFFEE_SCHEDULE_MARKERS.get(iso);
       const coffeeAssigned=coffee?.login===a.login;
-      html+=`<div class="${cls}${coffeeAssigned?' coffee-scheduled':''}"${style?` style="${style}"`:''} title="${escapeHtml(title+(coffeeAssigned?' · Обслуживание кофе':''))}">${coffeeAssigned?'<span class="coffee-scheduled-icon" aria-label="Обслуживание кофе">☕</span>':''}</div>`;
+      html+=`<div class="${cls}${coffeeAssigned?' coffee-scheduled':''}"${style?` style="${style}"`:''} title="${escapeHtml(title+(coffeeAssigned?' · Обслуживание кофе':''))}">${coffeeAssigned?'<span class="coffee-scheduled-icon" role="img" aria-label="Обслуживает кофе">${FAD_SCH_COFFEE_ICON}</span>':''}</div>`;
     }
+    html+=`<div class="adm-sched-total">${fmtH(adminHours(a.login))} ч</div>`;
   });
   html+='</div>';
   return html;
@@ -13069,44 +13266,65 @@ function exportAdminScheduleOverview(){
 
 function renderSchOverview(el){
   const editor=can('schedule.edit');
-  const n=schDaysIn(SCH.y,SCH.m);
+  const n=schDaysIn(SCH.y,SCH.m), y=SCH.y,m=SCH.m, today=todayStr();
+  let coveredTotal=0, availableTotal=0, needReplace=0, needFill=0;
   function covGrid(){
-    const y=SCH.y,m=SCH.m;
-    let html=`<div class="abs-grid" style="grid-template-columns:132px repeat(${n},1fr) 52px"><div></div>`;
-    for(let d=1;d<=n;d++){const we=[0,6].includes(schDow(y,m,d));html+=`<div class="abs-dh${we?' we':''}">${d}</div>`;}
+    let html=`<div class="abs-grid" style="grid-template-columns:132px repeat(${n},minmax(23px,1fr)) 52px"><div></div>`;
+    for(let d=1;d<=n;d++){
+      const we=[0,6].includes(schDow(y,m,d)),iso=schIso(y,m,d);
+      html+=`<div class="abs-dh sch-v2-dayhead${we?' we':''}${iso===today?' sch-v2-today':''}">${d}<small${we?' class="weekend"':''}>${'пвсчпсв'[(schDow(y,m,d)+6)%7]}</small></div>`;
+    }
     html+='<div class="abs-dh">гот.</div>';
-    STUDIOS.forEach(s=>{
-      html+=`<div class="abs-name">${sdot(s.id)}${s.name}</div>`;
+    STUDIOS.forEach(st=>{
+      html+=`<div class="abs-name">${sdot(st.id)}${st.name}</div>`;
       let covered=0;
       for(let d=1;d<=n;d++){
-        const iso=schIso(y,m,d), r=dayRec(iso,s.id), we=[0,6].includes(schDow(y,m,d)), past=iso<todayStr();
-        let bg=null, title='', t='', split=false;
-        if(r&&r.closed){ bg='#D3D1C7'; title='закрыто'; t='×'; }
-        else { const shifts=(r&&r.shifts)?r.shifts:[]; const present=shifts.filter(sh=>!absOn(sh.adminId,iso)).sort((a,b)=>toMin(a.start)-toMin(b.start)); const absent=shifts.filter(sh=>absOn(sh.adminId,iso));
-          if(present.length){ bg='#97C459'; title=present.map(sh=>adminName(sh.adminId)+' '+sh.start+'–'+sh.end).join(', '); t=initials(adminName(present[0].adminId)); covered++; split=present.length>=2; }
-          else if(absent.length){ bg='#F09595'; title='нужна замена'; t='!'; }
-          else if(!past){ bg='#FAC775'; title='нужно заполнить'; } }
-        html+=`<div class="abs-cell covx${editor?' clk':''}${we?' we':''}${split?' split':''}"${editor?` data-day="${d}" data-sid="${s.id}"`:''} title="${escapeHtml(title)}"${bg?` style="background:${bg};border-color:${bg}"`:''}>${escapeHtml(t)}</div>`;
+        const iso=schIso(y,m,d),r=dayRec(iso,st.id),we=[0,6].includes(schDow(y,m,d)),past=iso<today;
+        let bg=null,title='',t='',split=false;
+        if(r&&r.closed){bg='#d6dad4';title='закрыто';t='×';}
+        else{
+          availableTotal++;
+          const shifts=(r&&r.shifts)?r.shifts:[];
+          const present=shifts.filter(sh=>!absOn(sh.adminId,iso)).sort((a,b)=>toMin(a.start)-toMin(b.start));
+          const absent=shifts.filter(sh=>absOn(sh.adminId,iso));
+          if(present.length){bg='#98cb64';title=present.map(sh=>adminName(sh.adminId)+' '+sh.start+'–'+sh.end).join(', ');t=initials(adminName(present[0].adminId));covered++;coveredTotal++;split=present.length>=2;}
+          else if(absent.length){bg='#f09595';title='нужна замена';t='!';needReplace++;}
+          else if(!past){bg='#fac775';title='нужно заполнить';needFill++;}
+        }
+        html+=`<div class="abs-cell covx${editor?' clk':''}${we?' we':''}${split?' split':''}${iso===today?' sch-v2-current-col':''}"${editor?` data-day="${d}" data-sid="${st.id}"`:''} title="${escapeHtml(title)}"${bg?` style="background:${bg};border-color:${bg}"`:''}>${escapeHtml(t)}</div>`;
       }
       html+=`<div class="abs-tot">${covered}</div>`;
     });
-    html+='</div>';
-    return html;
+    return html+'</div>';
   }
+  const coverHtml=covGrid();
   const overviewTeam=teamSortedByStudio();
   const warns=overviewTeam.filter(a=>consecutiveMax(a.login)>3);
-  const hrows=overviewTeam.map(a=>`<tr><td class="rowh">${escapeHtml(shortName(a.name))}</td><td>${fmtH(adminHours(a.login))} ч</td><td>${adminMonthShifts(a.login).length}</td><td>${consecutiveMax(a.login)>3?'<span class="warnpill">'+consecutiveMax(a.login)+' подряд</span>':'—'}</td></tr>`).join('');
-  el.innerHTML=`
-    ${warns.length?`<div class="banner" style="background:var(--gold-soft);border-color:#E7CF9F"><div class="bt" style="color:var(--gold)">⚠ Более 3 смен подряд (${warns.length})</div><div class="bi">${warns.map(a=>`<span class="bchip" style="cursor:default;border-color:#E7CF9F">${escapeHtml(shortName(a.name))} — ${consecutiveMax(a.login)}</span>`).join('')}</div></div>`:''}
+  const maxHours=Math.max(1,...overviewTeam.map(a=>adminHours(a.login)));
+  let totalShifts=0,totalHours=0;
+  const hrows=overviewTeam.map(a=>{
+    const shifts=adminMonthShifts(a.login),hours=adminHours(a.login),streak=consecutiveMax(a.login);
+    totalShifts+=shifts.length;totalHours+=hours;
+    const counts=STUDIOS.map(st=>({st,count:shifts.filter(x=>x.sid===st.id).length})).filter(x=>x.count);
+    return `<tr><td><div class="sch-v2-person"><span class="sch-v2-avatar">${escapeHtml(initials(shortName(a.name)))}</span><b>${escapeHtml(shortName(a.name))}</b></div></td>
+      <td><div class="sch-v2-branches">${counts.map(({st,count})=>`<span class="sch-v2-branch"><i style="background:${st.color}"></i>${escapeHtml(st.name)} · ${count}</span>`).join('')||'—'}</div></td>
+      <td>${shifts.length}</td><td><div class="sch-v2-hour-cell"><div class="sch-v2-meter"><span style="width:${Math.max(0,Math.min(100,hours/maxHours*100))}%"></span></div><b>${fmtH(hours)} ч</b></div></td>
+      <td>${streak>3?`<span class="sch-v2-streak">${streak} подряд</span>`:streak}</td></tr>`;
+  }).join('');
+  el.innerHTML=`<div class="sch-v2-overview">
+    <div class="sch-v2-control"><div class="sch-v2-control-kpis"><div><span>Смен закрыто</span><b>${coveredTotal} <small>из ${availableTotal}</small></b></div>
+      <div><span>Нужна замена</span><b>${needReplace}</b></div><div><span>Нужно заполнить</span><b>${needFill}</b></div></div>
+      ${warns.length?`<div class="sch-v2-control-warn"><b>⚠ Более 3 смен подряд · ${warns.length}</b><div>${warns.map(a=>`<span class="sch-v2-warn-chip">${escapeHtml(shortName(a.name))} — ${consecutiveMax(a.login)} подряд</span>`).join('')}</div></div>`:''}
+    </div>
     <div class="section-title">Статус смен по дням</div>
-    <div class="abs-legend"><span><i style="background:#97C459"></i>готово</span><span><i style="background:#97C459;position:relative;overflow:hidden"><b style="position:absolute;top:0;right:0;border:4px solid transparent;border-top-color:#27500A;border-right-color:#27500A"></b></i>2 админа (утро/вечер)</span><span><i style="background:#F09595"></i>нужна замена</span><span><i style="background:#FAC775"></i>нужно заполнить</span><span><i style="background:#D3D1C7"></i>закрыто</span></div>
-    <div class="sch-scroll" id="covWrap">${covGrid()}</div>${editor?'<div class="hintline" style="margin:4px 2px 0">Нажмите на клетку, чтобы назначить или заменить администратора.</div>':''}
+    <div class="abs-legend"><span><i style="background:#98cb64"></i>готово</span><span><i style="background:#98cb64;position:relative;overflow:hidden"><b style="position:absolute;top:0;right:0;border:4px solid transparent;border-top-color:#27500A;border-right-color:#27500A"></b></i>2 админа (утро/вечер)</span><span><i style="background:#F09595"></i>нужна замена</span><span><i style="background:#FAC775"></i>нужно заполнить</span><span><i style="background:#d6dad4"></i>закрыто</span></div>
+    <div class="sch-scroll" id="covWrap">${coverHtml}</div>${editor?'<div class="hintline" style="margin:4px 2px 0">Нажмите на клетку, чтобы назначить или заменить администратора.</div>':''}
     <div class="section-title">Расписание администраторов</div>
     <div class="sch-scroll" id="admSchedWrap">${adminScheduleOverviewGrid()}</div>
-    <div class="adm-sched-legend">${STUDIOS.map(s=>`<span><i style="background:${s.color}"></i>${s.name}</span>`).join('')}<span><i style="background:#D3D1C7"></i>выходной / отсутствие</span></div>
-    <div class="adm-sched-actions"><button class="btn btn-sm" id="admSchedExport">⇩ Скачать в Excel</button></div>
+    <div class="adm-sched-legend">${STUDIOS.map(st=>`<span><i style="background:${st.color}"></i>${st.name}</span>`).join('')}<span><i style="background:#d6dad4"></i>выходной / отсутствие</span><span><i class="sch-v2-today-outline"></i>сегодня</span><span><span class="sch-v2-coffee-legend" role="img" aria-label="Обслуживает кофе">${FAD_SCH_COFFEE_ICON}</span>обслуживает кофе</span></div>
     <div class="section-title">Часы за месяц</div>
-    <div class="sch-scroll"><table class="sch-hrs"><thead><tr><th>Администратор</th><th>Часы</th><th>Смен</th><th>Серии</th></tr></thead><tbody>${hrows||'<tr><td colspan="4" style="color:var(--ink-faint)">Нет администраторов. Добавьте их и укажите филиал.</td></tr>'}</tbody></table></div>
+    <div class="sch-scroll"><table class="sch-hrs sch-v2-hours"><thead><tr><th>Администратор</th><th>Филиалы</th><th>Смен</th><th>Часы</th><th>Макс. подряд</th></tr></thead><tbody>${hrows||'<tr><td colspan="5">Нет администраторов.</td></tr>'}
+      <tr class="sch-v2-hours-total"><td colspan="2">Всего</td><td>${totalShifts}</td><td>${fmtH(totalHours)} ч</td><td>—</td></tr></tbody></table></div>
     <div class="section-title">Отсутствия за месяц (дней)</div>
     <div class="sch-scroll"><table class="sch-hrs"><thead><tr><th>Администратор</th><th>Отпуск</th><th>Больн.</th><th>Отгул</th><th>Всего</th></tr></thead><tbody>${overviewTeam.map(a=>{const o=absDaysInMonth(a.login,'otpusk'),b=absDaysInMonth(a.login,'bol'),g=absDaysInMonth(a.login,'otgul'),t=o+b+g;return `<tr><td class="rowh">${escapeHtml(shortName(a.name))}</td><td>${o||'—'}</td><td>${b||'—'}</td><td>${g||'—'}</td><td><b>${t||'—'}</b></td></tr>`;}).join('')||'<tr><td colspan="5" style="color:var(--ink-faint)">Нет данных</td></tr>'}</tbody></table></div>
     <div class="section-title">Отсутствия за год (дней)</div>
@@ -13117,8 +13335,8 @@ function renderSchOverview(el){
     <div id="yearAbs" class="sch-scroll"><div class="hintline" style="padding:10px">Загрузка…</div></div>`;
   el.querySelectorAll('[data-am]').forEach(b=>b.onclick=()=>{ ABS_MODE=b.dataset.am; el.querySelectorAll('[data-am]').forEach(x=>x.classList.toggle('on',x.dataset.am===ABS_MODE)); fillYearAbsences(el.querySelector('#yearAbs')); });
   fillYearAbsences(el.querySelector('#yearAbs'));
-  const admExp=el.querySelector('#admSchedExport'); if(admExp) admExp.onclick=exportAdminScheduleOverview;
   if(editor){ const cw=el.querySelector('#covWrap'); if(cw) cw.onclick=(ev)=>{ const c=ev.target.closest('[data-day][data-sid]'); if(c) openDayModal(+c.dataset.day, c.dataset.sid); }; }
+
 }
 function dISO(dt){ return dt.getFullYear()+'-'+schPad(dt.getMonth()+1)+'-'+schPad(dt.getDate()); }
 function d2(iso){ const p=(iso||'').split('-'); return p.length===3?p[2]+'.'+p[1]+'.'+p[0]:iso; }
@@ -13154,20 +13372,59 @@ async function fillYearAbsences(box){
 
 function renderSchPersonal(el){
   const me=session.login;
-  const shifts=adminMonthShifts(me).sort((a,b)=>a.iso<b.iso?-1:1);
-  const today=todayStr(), next=shifts.find(x=>x.iso>=today);
+  const shifts=adminMonthShifts(me).sort((a,b)=>b.iso.localeCompare(a.iso));
+  const today=todayStr(),next=shifts.filter(x=>x.iso>=today).sort((a,b)=>a.iso.localeCompare(b.iso))[0];
   const myAbs=(SCHDATA.absences||[]).filter(a=>a.adminId===me);
   const cm=consecutiveMax(me);
-  el.innerHTML=`
+  const hours=adminHours(me),kuibHours=shifts.filter(x=>x.sid==='kuibysheva').reduce((h,x)=>h+shiftHours(x.shift.start,x.shift.end),0);
+  const passed=shifts.filter(x=>x.iso<today).length,todayCount=shifts.filter(x=>x.iso===today).length,upcoming=shifts.filter(x=>x.iso>today).length;
+  const dateLabel=(iso,capital=false)=>{
+    if(!iso)return '—';
+    const dt=new Date(iso+'T12:00:00');
+    let txt=new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'long'}).format(dt);
+    if(capital)txt=txt.charAt(0).toUpperCase()+txt.slice(1);
+    return txt;
+  };
+  const getWeek=(iso)=>{
+    const dt=new Date(iso+'T12:00:00');dt.setDate(dt.getDate()-(dt.getDay()+6)%7);
+    const from=dISO(dt);dt.setDate(dt.getDate()+6);
+    return {key:from,from,to:dISO(dt)};
+  };
+  const plural=n=>(n%10===1&&n%100!==11)?'смена':([2,3,4].includes(n%10)&&![12,13,14].includes(n%100))?'смены':'смен';
+  const filter=SCH._personalFilter||'all';
+  const visible=shifts.filter(x=>filter==='all'||(filter==='future'?x.iso>=today:x.iso<today));
+  const grouped=new Map();
+  visible.forEach(x=>{const w=getWeek(x.iso);if(!grouped.has(w.key))grouped.set(w.key,{w,items:[]});grouped.get(w.key).items.push(x);});
+  const weeks=[...grouped.values()].sort((a,b)=>b.w.key.localeCompare(a.w.key));
+  const prettyWeek=w=>w.from.slice(5,7)===w.to.slice(5,7)?`${Number(w.from.slice(8))}–${dateLabel(w.to)}`:`${dateLabel(w.from)} – ${dateLabel(w.to)}`;
+  const moreNext=next?shifts.filter(x=>x.iso>next.iso).sort((a,b)=>a.iso.localeCompare(b.iso))[0]:null;
+  el.innerHTML=`<div class="sch-v2-personal">
     <div class="sch-tiles">
-      <div class="tile"><div class="tk">Часов за месяц</div><div class="tv">${fmtH(adminHours(me))}</div></div>
-      <div class="tile"><div class="tk">Смен за месяц</div><div class="tv">${shifts.length}</div></div>
-      <div class="tile"><div class="tk">Ближайшая смена</div><div class="tv sm">${next?fmtLong(next.iso)+' · '+studioName(next.sid):'—'}</div></div>
-      <div class="tile ${cm>3?'warn':''}"><div class="tk">Макс. подряд</div><div class="tv">${cm}</div></div>
+      <div class="tile"><div class="tk">Часов за месяц</div><div class="tv">${fmtH(hours)}</div>${kuibHours?`<div class="sch-v2-kpi-sub">из них ${fmtH(kuibHours)} ч на Куйбышева</div>`:''}</div>
+      <div class="tile"><div class="tk">Смен за месяц</div><div class="tv">${shifts.length}</div><div class="sch-v2-kpi-sub">прошло ${passed}${todayCount?' · сегодня '+todayCount:''} · впереди ${upcoming}</div></div>
+      <div class="tile"><div class="tk">Ближайшая смена</div><div class="tv sm">${next?(next.iso===today?'Сегодня, ':'')+dateLabel(next.iso):'—'}</div>
+        <div class="sch-v2-kpi-sub">${next?`${escapeHtml(studioName(next.sid))} · ${next.shift.start}–${next.shift.end}${moreNext?' · дальше '+dateLabel(moreNext.iso):''}`:'Нет предстоящих смен'}</div></div>
+      <div class="tile ${cm>3?'warn':''}"><div class="tk">Макс. подряд</div><div class="tv">${cm}</div><div class="sch-v2-kpi-sub">допустимо не больше 3</div></div>
     </div>
-    <div class="section-title">Мои смены${SCHDATA.approved?'':' <small style="color:var(--gold);font-family:Golos Text;font-weight:600">(график ещё черновик)</small>'}</div>
-    ${shifts.length?`<div class="sch-list">${shifts.map(x=>`<div class="sch-li">${sdot(x.sid)}<b>${fmtLong(x.iso)}</b> · ${studioName(x.sid)} · ${x.shift.start}–${x.shift.end} <span>${fmtH(shiftHours(x.shift.start,x.shift.end))} ч</span></div>`).join('')}</div>`:'<div class="empty">Смен в этом месяце пока нет.</div>'}
-    ${myAbs.length?`<div class="section-title">Мои отсутствия</div><div class="sch-list">${myAbs.map(a=>`<div class="sch-li">${absName(a.type)} · ${fmtLong(a.start)} – ${fmtLong(a.end)}</div>`).join('')}</div>`:''}`;
+    <div class="sch-v2-personal-head"><div class="section-title">Мои смены${SCHDATA.approved?'':' <small style="color:var(--gold)">(график ещё черновик)</small>'}</div>
+      <div class="sch-v2-personal-filter" role="group" aria-label="Фильтр смен"><button type="button" class="${filter==='all'?'on':''}" data-my-filter="all">Все</button><button type="button" class="${filter==='future'?'on':''}" data-my-filter="future">Предстоящие</button><button type="button" class="${filter==='past'?'on':''}" data-my-filter="past">Прошедшие</button></div></div>
+    <div class="adm-sched-legend">${STUDIOS.map(st=>`<span><i style="background:${st.color}"></i>${st.name}</span>`).join('')}</div>
+    ${weeks.length?weeks.map(({w,items})=>`<div class="sch-v2-week"><div class="sch-v2-week-title">${prettyWeek(w)} · ${items.length} ${plural(items.length)} · ${fmtH(items.reduce((h,x)=>h+shiftHours(x.shift.start,x.shift.end),0))} ч</div>
+       ${items.map(x=>{
+         const past=x.iso<today,current=x.iso===today,st=SMAP[x.sid],coffee=COFFEE_SCHEDULE_MARKERS.get(x.iso)?.login===me;
+         const weekday=new Intl.DateTimeFormat('ru-RU',{weekday:'short'}).format(new Date(x.iso+'T12:00:00')).toUpperCase();
+         return `<div class="sch-v2-shift${past?' past':''}${current?' today':''}">
+           <div class="sch-v2-shift-date"><b>${dateLabel(x.iso)}</b><small>${weekday}</small></div>
+           <div class="sch-v2-shift-studio"><span><i style="background:${st?.color||'var(--fad-sch-green)'}"></i><b>${escapeHtml(studioName(x.sid))}</b> <span>${x.shift.start}–${x.shift.end}</span></span>
+             ${coffee?`<span class="sch-v2-coffee-chip">${FAD_SCH_COFFEE_ICON} кофе</span>`:''}</div>
+           <div class="sch-v2-shift-hours">${fmtH(shiftHours(x.shift.start,x.shift.end))} ч</div>
+           <div class="sch-v2-shift-state"><span class="${past?'past':current?'today':'future'}">${past?'прошла':current?'сегодня':'впереди'}</span></div>
+           <div class="sch-v2-shift-action">${!past&&!current?'<span class="sch-v2-replace-pending" title="Переход к конкретной смене во вкладке «Замены» пока не реализован">Заменить</span>':''}</div>
+         </div>`;
+       }).join('')}</div>`).join(''):'<div class="empty">Смен по выбранному фильтру нет.</div>'}
+    ${myAbs.length?`<div class="section-title">Мои отсутствия</div><div class="sch-list">${myAbs.map(a=>`<div class="sch-li">${absName(a.type)} · ${fmtLong(a.start)} – ${fmtLong(a.end)}</div>`).join('')}</div>`:''}
+  </div>`;
+  el.querySelectorAll('[data-my-filter]').forEach(b=>b.onclick=()=>{SCH._personalFilter=b.dataset.myFilter;renderSchPersonal(el);});
 }
 
 function openAbsenceModal(){
