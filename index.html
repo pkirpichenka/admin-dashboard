@@ -4651,6 +4651,18 @@ input[type="time"]::-webkit-calendar-picker-indicator{position:absolute;right:8p
  .fb-eu-form-grid :is(input,select){min-height:48px;font-size:16px}
 }
 
+
+/* EY · Coffee workflow, desktop + mobile; no dark theme. */
+#schedRoot .adm-sched-cell.coffee-scheduled{display:flex;justify-content:center;align-items:center;overflow:visible}
+#schedRoot .coffee-scheduled-icon{position:absolute;z-index:2;top:-6px;right:-4px;display:grid;place-items:center;width:17px;height:17px;background:#fff;border:1px solid #d0ded2;border-radius:50%;font-size:11px;line-height:1}
+#coffeeWrap .coffee-shift-check{padding:10px 12px;border:1px solid #d6e6d9;background:#f5faf6;border-radius:10px}
+#coffeeWrap .coffee-shift-hint{display:block;margin:6px 0 0 25px;color:#566a5f;font-size:12px;line-height:1.5}
+#coffeeWrap .coffee-shift-check input{min-width:17px;min-height:17px}
+.coffee-mobile-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:center}
+.coffee-mobile-actions>.btn{min-height:44px}
+.eq-m-person:has([data-eq-m-skip]){grid-template-columns:42px minmax(0,1fr) auto}
+.eq-m-person [data-eq-m-skip]{grid-column:auto;background:#fff;border-color:#e2b7af;color:#9c2c22}
+@media(max-width:767px){.eq-m-person:has([data-eq-m-skip]){grid-template-columns:42px minmax(0,1fr)}.eq-m-person [data-eq-m-skip]{grid-column:2;min-height:44px}}
 </style>
 
 <div id="root"></div>
@@ -4671,7 +4683,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '23.11.2026-ex'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '23.11.2026-ey'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -4984,6 +4996,7 @@ async function refreshPermissions(){
   if(!session) return;
   if(session.role==='trainer'){session.permissions=normalizePermissions({});session.permissionsLoaded=true;session.fadRolePermissions=null;session.clientsAccess={enabled:false};persistSession();return;}
   if(session.role==='owner'){
+    try{session.coffeeAllowed=(await rpc('app_coffee_ey_access',{p_token:TOKEN}))?.allowed===true;}catch(_){session.coffeeAllowed=false;}
     session.permissions=normalizePermissions(PERMISSION_PRESETS.full); session.permissionsLoaded=true; session.adminPayrollAccess=true;
     try{session.clientsAccess=await rpc('app_client_access',{p_token:TOKEN});}catch(_){session.clientsAccess={owner:true,own:true,team:true,manage:true,enabled:false};}
     persistSession(); return;
@@ -5020,6 +5033,7 @@ async function refreshPermissions(){
   }catch(_){session.fadRoleCode='';session.fadRoleName='';session.fadRolePermissions=null;session.fadRoleLoadFailed=true;}
   try{session.clientsAccess=await rpc('app_client_access',{p_token:TOKEN});}
   catch(_){session.clientsAccess={owner:false,own:false,team:false,manage:false,enabled:false};}
+  try{session.coffeeAllowed=(await rpc('app_coffee_ey_access',{p_token:TOKEN}))?.allowed===true;}catch(_){session.coffeeAllowed=false;}
   persistSession();
 }
 
@@ -5128,7 +5142,7 @@ function auditLegacyReportPairs(details){
   add('Причина расхождения между сменами',p.interNote);
   add('Комментарий к смене',p.comments);
   if(p.zReport!==undefined) add('Z-отчёт',p.zReport?'Да':'Нет');
-  if(p.coffeeDone!==undefined) add('Кофе+снеки',p.coffeeDone?'Выполнено':'Не выполнено');
+  if(p.coffeeDone!==undefined) add('Кофе',p.coffeeDone?'Выполнено':'Не выполнено');
   if(p.status) add('Статус смены',p.status==='closed'?'Закрыта':'Открыта');
   (p.changes||[]).forEach((c,i)=>{
     const type=c.type==='in'?'Внесение наличных':'Выдача наличных';
@@ -5556,6 +5570,7 @@ function roleLabel(){
 const NAV_GROUPS = { work:'Работа', people:'Люди и деньги', comms:'Коммуникации' };
 const NAV_ITEMS = [
   {id:'shift',label:'Смена',icon:'M8 3h8v3H8z M6 5H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1 M8 12h8 M8 16h5',group:'work'},
+  {id:'coffee',label:'Кофе',icon:'M4 8h12v7a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5V8z M16 9h2a3 3 0 0 1 0 6h-2 M3 22h15',group:'work'},
   {id:'reports',label:'Отчёты',icon:'M4 20V10 M10 20V4 M16 20v-7 M22 20H2',group:'work'},
   {id:'plan',label:'План',icon:'M12 2a10 10 0 1 0 0 20a10 10 0 1 0 0-20 M12 6a6 6 0 1 0 0 12a6 6 0 1 0 0-12 M12 10a2 2 0 1 0 0 4a2 2 0 1 0 0-4',group:'work'},
   {id:'clients',label:'Клиенты · Задачи',icon:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8a4 4 0 0 0 0 8 M18 8h4 M20 6v4',group:'work'},
@@ -5602,6 +5617,7 @@ function getNavigationTabs(){
   // Stable keys are for routing only. Original renderers and access checks are reused.
   const definitions={
     shift:{key:'shift',label:'Смена',render:renderShift},
+    coffee:{key:'coffee',label:'Кофе',render:renderCoffeeTop},
     plan:{key:'plan',label:'План',render:renderBonusDashboard},
     clients:{key:'clients',label:'Клиенты · Задачи',render:renderClients},
     reports:{key:'reports',label:'Отчёты',render:renderAllReports},
@@ -5619,12 +5635,13 @@ function getNavigationTabs(){
   };
   getNavigationTabs.registry=definitions; // только для проверки валидности NAV_ITEMS
   if(session?.role==='trainer')return [definitions.events];
-  const ownerOrder=['reports','plan','clients','schedule','knowledge','balance','salaries','replacements','employees','roles','marketing','calendar','messages','events'];
-  const gorovayaOrder=['shift','plan','clients','reports','schedule','knowledge','salaries','replacements','employees','marketing','calendar','messages','events'];
-  const adminOrder=['shift','plan','clients','schedule','knowledge','replacements','marketing','events'];
+  const ownerOrder=['coffee','reports','plan','clients','schedule','knowledge','balance','salaries','replacements','employees','roles','marketing','calendar','messages','events'];
+  const gorovayaOrder=['shift','coffee','plan','clients','reports','schedule','knowledge','salaries','replacements','employees','marketing','calendar','messages','events'];
+  const adminOrder=['shift','coffee','plan','clients','schedule','knowledge','replacements','marketing','events'];
   const order=isOwner?ownerOrder:(isGorovaya?gorovayaOrder:adminOrder);
   const canSee={
     shift:!isOwner,
+    coffee:session.coffeeAllowed===true,
     plan:true,
     clients:!!session.clientsAccess?.enabled&&(!!session.clientsAccess?.own||!!session.clientsAccess?.team),
     reports:isOwner||(isGorovaya&&can('reports.view_all')),
@@ -5643,10 +5660,11 @@ function getNavigationTabs(){
   if(!isOwner&&session.fadRolePermissions){
     // Для назначенных ролей сервер проверяет права действий; nav.* управляет только видимостью вкладок.
     const p=session.fadRolePermissions;
-    const roleOrder=['shift','plan','clients','reports','schedule','knowledge','salaries','replacements','employees','marketing','calendar','messages','events'];
+    const roleOrder=['shift','coffee','plan','clients','reports','schedule','knowledge','salaries','replacements','employees','marketing','calendar','messages','events'];
     return roleOrder.filter(key=>{
       // Два независимых права каждого модуля: nav.* = просмотр, *.edit/manage = изменение.
       // Роли тренеров проверяются отдельно выше; для администратора действуют галочки из «Роли».
+      if(key==='coffee')return session.coffeeAllowed===true;
       if(key==='balance')return false; // EV: only owner; assigned admin roles cannot open Balance
       if(key==='clients')return !!session.clientsAccess?.enabled&&(!!session.clientsAccess?.own||!!session.clientsAccess?.team);
       if(p['nav.'+key]!==true)return false;
@@ -6958,14 +6976,20 @@ async function renderShift(body){
 
 /* ================= The daily form ================= */
 async function fillCoffeeChk(container, date, data){
-  const box=container.querySelector('#coffeeWrap'); if(!box) return;
-  let sc=null; try{ sc=await apiGetSchedule(date.slice(0,7)); }catch(e){}
-  const who=(sc&&sc.coffee)?sc.coffee[date]:null;
-  if(!who) return;
-  const coffeeManager=can('schedule.coffee');
-  if(!coffeeManager && session.login!==who) return;
-  const note=(coffeeManager&&session.login!==who)?` <small style="color:var(--ink-faint)">(назначен: ${escapeHtml(coffeeName(who))})</small>`:'';
-  box.innerHTML=`<label class="chk zrep"><input type="checkbox" id="coffeeDone" ${data.coffeeDone?'checked':''}/> ☕ Кофе+снеки — выполнено${note}</label>`;
+  const box=container.querySelector('#coffeeWrap');if(!box)return null;
+  box.innerHTML='<div class="hintline">Проверяем назначение на кофе…</div>';
+  const res=await rpc('app_coffee_ey_shift_state',{p_token:TOKEN,p_date:date});
+  if(!box.isConnected)return null;
+  const task=res?.task||null;
+  if(!task){box.innerHTML='';return null;}
+  const status=task.done?'done':task.missed?'missed':'pending';
+  const responsible=res?.responsible===true;
+  const assigned=task.login||'';
+  box.innerHTML=`<div class="coffee-shift-check" role="group" aria-label="Обслуживание кофе">
+    <label class="chk zrep"><input type="checkbox" id="coffeeDone" ${status==='done'?'checked':''} ${responsible?'':'disabled'}/> ☕ Кофе — выполнено</label>
+    <small class="coffee-shift-hint">${escapeHtml(fadPersonName(assigned))} · ${status==='done'?'Выполнено':status==='missed'?'Пропуск отмечен':'Ожидает отметки'} · ${responsible?'при закрытии смены выберите «Да» или «Нет»':'обслуживание поручено другому сотруднику. Обратитесь к старшему администратору.'}.</small>
+  </div>`;
+  return {...task,origin:status,responsible};
 }
 function openChecklistModal(items, onOk){
   const el=modal(`<h3>Перед закрытием смены</h3><p>Отметьте, что всё сделано:</p>
@@ -7061,7 +7085,8 @@ function renderForm(container,studio,date,data,onSaved,opts){
         : `<button class="btn btn-primary" id="closeShift">Закрыть смену</button>`}
     </div>`;
 
-  if(studio==='masherova') fillCoffeeChk(container, date, data);
+  let coffeeTask=null,coffeeLoadError='';
+  const coffeeReady=studio==='masherova'?fillCoffeeChk(container,date,data).then(t=>{coffeeTask=t;return t;}).catch(e=>{coffeeLoadError=String(e?.message||e);const box=container.querySelector('#coffeeWrap');if(box)box.innerHTML='<div class="eq-warning" role="alert">Не удалось проверить назначение кофе. Закрытие смены временно заблокировано.</div>';return null;}):Promise.resolve(null);
   // сравнение утренних наличных с остатком на конец предыдущего дня (тот же филиал)
   const morningCmp=container.querySelector('#morningCmp');
   const interWrap=container.querySelector('#interWrap'), interAmt=container.querySelector('#interAmt');
@@ -7166,7 +7191,8 @@ function renderForm(container,studio,date,data,onSaved,opts){
       ended:valNum('ended'), renewed:valNum('renewed'),
       notRenewList:notRenewList.map(x=>({note:(x.note||'').trim()})),
       comments:valStr('comments'), interNote:valStr('interNote'), zReport:!!(container.querySelector('#zReport')&&container.querySelector('#zReport').checked),
-      coffeeDone:(container.querySelector('#coffeeDone')?container.querySelector('#coffeeDone').checked:!!data.coffeeDone), coffeeAssigned:(container.querySelector('#coffeeDone')?true:!!data.coffeeAssigned),
+      coffeeDone:(container.querySelector('#coffeeDone')?container.querySelector('#coffeeDone').checked:!!data.coffeeDone), coffeeAssigned:!!coffeeTask||!!data.coffeeAssigned,
+      coffeeStatus:container.querySelector('#coffeeDone')?(container.querySelector('#coffeeDone').checked?'done':coffeeTask?.missed?'missed':'pending'):(data.coffeeStatus||null),
       status:data.status||'open', closedBy:data.closedBy, closedByLogin:data.closedByLogin, closedAt:data.closedAt,
       cashStartEditedBy:data.cashStartEditedBy, cashStartEditedAt:data.cashStartEditedAt,
       filledBy:data.filledBy||session.name, filledByLogin:data.filledByLogin||session.login,
@@ -7221,7 +7247,7 @@ function renderForm(container,studio,date,data,onSaved,opts){
   // Закрыть смену — требует все финансовые поля + клиентов
   // поля, которые при пустом значении можно «считать нулём» одним нажатием
   const ZEROABLE=[['cashEnd','наличные на конец дня'],['cashless','картой'],['allsports','QR'],['epos','EPOS'],['newCame','пришло новых'],['ended','закончились абонементы'],['renewed','продлили']];
-  async function doClose(){
+  async function doClose(coffeeDecision=null){
     if(shiftTransition) return;
     shiftTransition=true;
     const oldStatus=data.status, oldClosedBy=data.closedBy, oldClosedByLogin=data.closedByLogin, oldClosedAt=data.closedAt;
@@ -7232,7 +7258,13 @@ function renderForm(container,studio,date,data,onSaved,opts){
     const rec=collectRec();
     rec.status='closed'; rec.closedBy=session.name; rec.closedByLogin=session.login; rec.closedAt=closedAt;
     try{
-      await apiSaveReport(studio,date,rec);
+      if(studio==='masherova'){
+        await REPORT_SAVE_QUEUES.get(studio+'|'+date)?.catch(()=>{});
+        await rpc('app_coffee_ey_close_shift',{p_token:TOKEN,p_studio:studio,p_date:date,p_payload:rec,p_decision:coffeeDecision});
+        if(coffeeDecision){rec.coffeeStatus=coffeeDecision;rec.coffeeDone=coffeeDecision==='done';rec.coffeeAssigned=true;}
+        if(Array.isArray(REPORTS)){const idx=REPORTS.findIndex(e=>e.studioId===studio&&e.date===date);if(idx>=0)REPORTS[idx]=rec;else REPORTS.unshift(rec);}
+        ALL_REPORTS=null;
+      }else await apiSaveReport(studio,date,rec);
       lastAutoSnap=stripVolatile(rec);
       toast('Смена закрыта');
       if(onSaved) await onSaved();
@@ -7244,15 +7276,44 @@ function renderForm(container,studio,date,data,onSaved,opts){
       shiftTransition=false;
     }
   }
-  function proceedClose(){
+  function proceedClose(coffeeDecision=null){
     const empties=ZEROABLE.filter(f=>valNum(f[0])==null);
     if(empties.length){
       const el=modal(`<h3>Закрыть смену</h3><p>Не заполнены поля: <b>${empties.map(f=>f[1]).join(', ')}</b>.<br>Если по ним данных нет — их можно считать нулём.</p>
         <div class="actions"><button class="btn" data-x>Заполнить вручную</button><button class="btn btn-primary" id="zc">Считать нулём и закрыть</button></div>`);
-      el.querySelector('#zc').onclick=async()=>{ empties.forEach(f=>{const inp=container.querySelector('#'+f[0]); if(inp) inp.value='0';}); closeModal(el); await doClose(); };
+      el.querySelector('#zc').onclick=async()=>{ empties.forEach(f=>{const inp=container.querySelector('#'+f[0]); if(inp) inp.value='0';}); closeModal(el); await doClose(coffeeDecision); };
       return;
     }
-    doClose();
+    doClose(coffeeDecision);
+  }
+  async function resolveCoffeeBeforeClosing(){
+    await coffeeReady;
+    if(coffeeLoadError){toast('Не удалось проверить кофе — обновите страницу',true);return;}
+    // Refresh just before closing: another responsible employee may have
+    // completed or missed the same assignment in the Coffee tab meanwhile.
+    if(studio==='masherova'){
+      try{
+        const latest=await rpc('app_coffee_ey_shift_state',{p_token:TOKEN,p_date:date});
+        if(latest?.task){
+          coffeeTask={...latest.task,responsible:latest.responsible===true};
+          if(latest.task.done&&container.querySelector('#coffeeDone'))container.querySelector('#coffeeDone').checked=true;
+        }else coffeeTask=null;
+      }catch(_){toast('Не удалось обновить статус кофе — повторите попытку',true);return;}
+    }
+    if(!coffeeTask){proceedClose(null);return;}
+    if(coffeeTask.responsible!==true){
+      if(coffeeTask.done){proceedClose('done');return;}
+      if(coffeeTask.missed){proceedClose('missed');return;}
+      toast('Кофе назначено другому сотруднику — обратитесь к старшему администратору',true);return;
+    }
+    const checked=!!container.querySelector('#coffeeDone')?.checked;
+    if(checked){proceedClose('done');return;}
+    const el=modal(`<h3>Обслуживание кофе</h3><p>Кофе сегодня выполнено? Ответ обязателен для закрытия смены.</p>
+      <div class="actions"><button type="button" class="btn" data-x>Отмена</button>
+      <button type="button" class="btn btn-primary" id="cfYes">Да, выполнено</button>
+      <button type="button" class="btn" id="cfNo">Нет, пропуск</button></div>`);
+    el.querySelector('#cfYes').onclick=()=>{closeModal(el);const cb=container.querySelector('#coffeeDone');if(cb)cb.checked=true;proceedClose('done');};
+    el.querySelector('#cfNo').onclick=()=>{closeModal(el);proceedClose('missed');};
   }
   const closeBtn=container.querySelector('#closeShift');
   if(closeBtn){
@@ -7271,8 +7332,8 @@ function renderForm(container,studio,date,data,onSaved,opts){
         return;
       }
       try{ await msgReady; }catch(e){}
-      if(FORM_CHECKLIST.length){ openChecklistModal(FORM_CHECKLIST, function(res){ pendingChecklist=res; proceedClose(); }); return; }
-      proceedClose();
+      if(FORM_CHECKLIST.length){ openChecklistModal(FORM_CHECKLIST, function(res){ pendingChecklist=res;void resolveCoffeeBeforeClosing(); }); return; }
+      await resolveCoffeeBeforeClosing();
     };
   }
   const reopenBtn=container.querySelector('#reopen');
@@ -7396,7 +7457,7 @@ function dayCard(e,open,source){
     <div class="day-head"><span class="chev">▸</span>
       <span class="day-date">${fmtLong(e.date)}<span class="dow"> · ${fmtDow(e.date)}</span></span>
       <span class="st-tag" style="border-color:${studioColor(e.studioId)}">${sdot(e.studioId)}${studioAddr(e.studioId)}</span>
-      <span class="stat ${e.status==='closed'?'stat-closed':'stat-open'}">${e.status==='closed'?'закрыта':'не закрыта'}</span>${e.status==='closed'?(e.zReport?'<span class="zbadge zok">Z-отчёт ✓</span>':'<span class="zbadge zno">Z-отчёт ✗</span>'):''}${e.coffeeAssigned?(e.coffeeDone?'<span class="zbadge zok">☕ выполнено</span>':'<span class="zbadge zno">☕ не выполнено</span>'):''}${(e.checklist&&e.checklist.length)?`<span class="zbadge zok" title="${escapeHtml(e.checklist.map(c=>c.text).join(', '))}">✅ чек-лист (${e.checklist.length})</span>`:''}
+      <span class="stat ${e.status==='closed'?'stat-closed':'stat-open'}">${e.status==='closed'?'закрыта':'не закрыта'}</span>${e.status==='closed'?(e.zReport?'<span class="zbadge zok">Z-отчёт ✓</span>':'<span class="zbadge zno">Z-отчёт ✗</span>'):''}${e.coffeeAssigned?(e.coffeeDone?'<span class="zbadge zok">☕ выполнено</span>':e.coffeeStatus==='missed'?'<span class="zbadge zno">☕ пропуск</span>':'<span class="zbadge zno">☕ не выполнено</span>'):''}${(e.checklist&&e.checklist.length)?`<span class="zbadge zok" title="${escapeHtml(e.checklist.map(c=>c.text).join(', '))}">✅ чек-лист (${e.checklist.length})</span>`:''}
       <span class="day-by">заполнил(а): <b>${escapeHtml(shortName(e.filledBy||'—'))}</b><br><span style="color:var(--ink-faint)">${fmtTime(e.submittedAt)}</span></span></div>
     <div class="day-body">
       <div class="kv">
@@ -7718,7 +7779,7 @@ function exportExcel(entries){
       'Наличными за день':(e.cashEnd==null?'':num(e.cashEnd)-num(e.cashStart)-inSum+outSum),'Движения нетто':inSum-outSum,'Движения (детально)':chgText,
       'Картой':e.cashless??'','QR':e.allsports??'','EPOS':e.epos??'',
       'Выручка за день':(e.cashEnd==null?'':(num(e.cashEnd)-num(e.cashStart)-inSum+outSum)+num(e.cashless)+num(e.allsports)+num(e.epos)),
-      'Между сменами':(function(){const p=lastCashEndBefore(e.studioId,e.date);return (p&&e.cashStart!=null)?num(e.cashStart)-p.cashEnd:'';})(),'Причина (между сменами)':e.interNote||'','Z-отчёт':e.zReport?'да':(e.status==='closed'?'нет':''),'Кофе+снеки':e.coffeeAssigned?(e.coffeeDone?'выполнено':'нет'):'',
+      'Между сменами':(function(){const p=lastCashEndBefore(e.studioId,e.date);return (p&&e.cashStart!=null)?num(e.cashStart)-p.cashEnd:'';})(),'Причина (между сменами)':e.interNote||'','Z-отчёт':e.zReport?'да':(e.status==='closed'?'нет':''),'Кофе':e.coffeeAssigned?(e.coffeeDone?'выполнено':'нет'):'',
       'Пришло новых':came,'Купили абонемент':bought,'Конверсия новых':pct(bought,came),'Абонементы закончились':endedC,'Продлили':renewC,'Не продлили':notRen,'Конверсия продлений':pct(renewC,endedC),
       'Новые клиенты (детально)':newDet,'Не продлили (детально)':nrDet,'Комментарии':e.comments||''
     };
@@ -12235,6 +12296,14 @@ function confirmModal(msg,onYes){
 const MON2=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 const SCH_DOW=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
 let SCH=null, SCHDATA=null, TEAM=[], SCHsel=null, ABS_MODE='cal', COFFEE_ROSTER=[], ADMIN_PHONES={};
+let COFFEE_SCHEDULE_MARKERS=new Map();
+async function coffeeScheduleLoadMarkers(period){
+  COFFEE_SCHEDULE_MARKERS=new Map();
+  // Only date + assignee for the roster; even staff without the Coffee tab can see ☕.
+  try{const resp=await rpc('app_coffee_ey_schedule_marks',{p_token:TOKEN,p_period:period});
+    COFFEE_SCHEDULE_MARKERS=new Map((resp||[]).map(t=>[t.date,t]));
+  }catch(_){/* No guessed markers when the server read fails. */}
+}
 
 function monthKey(y,m){return y+'-'+String(m+1).padStart(2,'0');}
 function schPad(n){return String(n).padStart(2,'0');}
@@ -12275,7 +12344,7 @@ async function saveMonth(){ await apiSaveSchedule(monthKey(SCH.y,SCH.m), SCHDATA
 async function renderSchedule(body){
   const editor = can('schedule.edit');
   if(!SCH){ const now=new Date(); const defSids = editor ? STUDIOS.map(s=>s.id) : (session.home?[session.home]:STUDIOS.map(s=>s.id)); SCH={y:now.getFullYear(), m:now.getMonth(), sids:defSids, view:'calendar', calView:(typeof window!=='undefined'&&window.innerWidth<640)?'list':'grid'}; }
-  try{ TEAM=await apiListTeam(); SCHDATA=await loadMonth(SCH.y,SCH.m); }
+  try{ TEAM=await apiListTeam(); SCHDATA=await loadMonth(SCH.y,SCH.m);await coffeeScheduleLoadMarkers(monthKey(SCH.y,SCH.m)); }
   catch(e){ return handleErr(e); }
   try{ const _s=await apiGetSettings(); ADMIN_PHONES=(_s&&_s.adminPhones)||{}; }
   catch(e){ ADMIN_PHONES={}; }
@@ -12290,7 +12359,7 @@ function drawSchedule(body, editor){
   const sub=[['calendar','Календарь'],['overview','Обзор']];
   if(canAbsence||can('schedule.leave_norms')) sub.push(['absences','Отсутствия']);
   if(session.role!=='owner') sub.push(['dashboard','Моё расписание']);
-  sub.push(['coffee','Кофе']);
+  // EY: «Кофе» is a dedicated left-hand navigation item; no duplicate subtab.
   if(!sub.some(x=>x[0]===SCH.view)) SCH.view=sub[0][0];
   body.innerHTML=`<div id="schedRoot">
     <div class="sch-bar">
@@ -12310,7 +12379,7 @@ function drawSchedule(body, editor){
   const root=body.querySelector('#schedRoot');
   root.querySelectorAll('[data-mv]').forEach(b=>b.onclick=async()=>{
     let m=SCH.m+(+b.dataset.mv), y=SCH.y; if(m<0){m=11;y--;} if(m>11){m=0;y++;} SCH.y=y; SCH.m=m;
-    try{ SCHDATA=await loadMonth(y,m); }catch(e){ return handleErr(e); } drawSchedule(body,can('schedule.edit'));
+    try{ SCHDATA=await loadMonth(y,m);await coffeeScheduleLoadMarkers(monthKey(y,m)); }catch(e){ return handleErr(e); } drawSchedule(body,can('schedule.edit'));
   });
   root.querySelectorAll('[data-sview]').forEach(b=>b.onclick=()=>{ SCH.view=b.dataset.sview; root.querySelectorAll('[data-sview]').forEach(x=>x.classList.toggle('on',x.dataset.sview===SCH.view)); drawSub(root); });
   const more=root.querySelector('[data-sch-more]');if(more)more.onclick=()=>{
@@ -12327,7 +12396,7 @@ function drawSub(root){
   if(SCH.view==='calendar') renderSchCalendar(el);
   else if(SCH.view==='overview') renderSchOverview(el);
   else if(SCH.view==='absences') renderSchAbsences(el);
-  else if(SCH.view==='coffee') renderSchCoffee(el);
+  // Coffee is rendered exclusively through the main tab and verified server access.
   else renderSchPersonal(el);
 }
 const ABS_CLR={otpusk:'#FAC775',bol:'#F09595',otgul:'#B4B2A9'};
@@ -12364,6 +12433,29 @@ function equipMonthRoster(){
  return [...set.values()].sort((a,b)=>String(a.name).localeCompare(String(b.name),'ru'));
 }
 const equipCanAssign=(login,iso)=>equipManual(login)||equipShift(login,iso);
+/* EY · Independent Coffee module. Uses the existing DO equipment renderer unchanged. */
+async function renderCoffeeTop(body){
+ if(!session?.coffeeAllowed){body.innerHTML='<div class="empty">Кофе доступно только назначенным исполнителям, старшему администратору и руководителю.</div>';return;}
+ const now=new Date();
+ if(!SCH)SCH={y:now.getFullYear(),m:now.getMonth(),view:'calendar',sids:STUDIOS.map(s=>s.id),calView:'list'};
+ try{TEAM=await apiListTeam();SCHDATA=await loadMonth(SCH.y,SCH.m);}
+ catch(e){handleErr(e);return;}
+ function draw(){
+  body.innerHTML=`<div id="schedRoot" class="fad-coffee-top"><div class="sch-bar"><div class="sch-month">
+    <button class="btn btn-sm" type="button" data-coffee-month="-1" aria-label="Предыдущий месяц">‹</button>
+    <b>${MON2[SCH.m]} ${SCH.y}</b>
+    <button class="btn btn-sm" type="button" data-coffee-month="1" aria-label="Следующий месяц">›</button></div>
+    <span class="sch-status ap">Обслуживание оборудования · Машерова, 11</span></div><div id="coffeeTopSlot"></div></div>`;
+  const slot=body.querySelector('#coffeeTopSlot');void renderSchCoffee(slot);
+  body.querySelectorAll('[data-coffee-month]').forEach(b=>b.onclick=async()=>{
+   const d=new Date(SCH.y,SCH.m+Number(b.dataset.coffeeMonth),1);
+   SCH.y=d.getFullYear();SCH.m=d.getMonth();
+   try{SCHDATA=await loadMonth(SCH.y,SCH.m);draw();}
+   catch(e){handleErr(e);}
+  });
+ }
+ draw();
+}
 async function renderSchCoffee(el){
  el.innerHTML=`<div class="section-title">Кофе · ${MON2[SCH.m]} ${SCH.y} <small style="font-weight:500;color:var(--ink-soft)">(Машерова, 11)</small></div>
  <div class="eq-tabs" role="tablist" aria-label="Кофе"><button class="eq-tab${EQUIPMENT_VIEW==='graph'?' on':''}" data-eq-view="graph" role="tab" aria-selected="${EQUIPMENT_VIEW==='graph'}">График</button><button class="eq-tab${EQUIPMENT_VIEW==='bonus'?' on':''}" data-eq-view="bonus" role="tab" aria-selected="${EQUIPMENT_VIEW==='bonus'}">Доплаты</button></div>
@@ -12373,7 +12465,11 @@ async function renderSchCoffee(el){
  await equipReload(el);
 }
 async function equipReload(el){
- try{EQUIPMENT_DATA=await rpc('app_equipment_u_snapshot',{p_token:TOKEN,p_period:monthKey(SCH.y,SCH.m)});}
+ try{EQUIPMENT_DATA=await rpc('app_equipment_u_snapshot',{p_token:TOKEN,p_period:monthKey(SCH.y,SCH.m)});
+   const statuses=await rpc('app_coffee_ey_state',{p_token:TOKEN,p_period:monthKey(SCH.y,SCH.m)});
+   const known=new Map((statuses?.tasks||[]).map(t=>[t.date,t]));
+   EQUIPMENT_DATA.tasks=(EQUIPMENT_DATA.tasks||[]).map(t=>({...t,missed:known.get(t.date)?.missed===true}));
+ }
  catch(e){EQUIPMENT_DATA={error:String(e?.message||e),tasks:[],totals:[],manual:[]};}
  if(el.isConnected)equipDraw(el);
 }
@@ -12395,10 +12491,10 @@ function equipGrid(roster,n,today){
   for(let d=1;d<=n;d++){
    const date=schIso(SCH.y,SCH.m,d),shift=equipShift(p.login,date),t=equipTask(date),mine=t?.login===p.login,
     enabled=shift||equipManual(p.login),locked=t?.done&&!mine,
-    status=mine?(t.done?'done':date<today?'late':'assigned'):t?('other'+(t.done?' do-locked':'')):enabled?'shift':'blocked',
-    title=mine?(t.done?'Выполнено':date<today?'Не отмечено':'Назначено'):t?('Назначено: '+(equipPerson(t.login)?.name||t.login)+(t.done?' · выполнено, нельзя заменить':'')):(enabled?'Свободно':'Нет смены на Машерова'),
+    status=mine?(t.done?'done':t.missed?'late':date<today?'late':'assigned'):t?('other'+(t.done?' do-locked':'')):enabled?'shift':'blocked',
+    title=mine?(t.done?'Выполнено':t.missed?'Пропуск':date<today?'Не отмечено':'Назначено'):t?('Назначено: '+(equipPerson(t.login)?.name||t.login)+(t.done?' · выполнено, нельзя заменить':'')):(enabled?'Свободно':'Нет смены на Машерова'),
     disabled=!equipOwner()||(!enabled&&!mine),
-    symbol=mine?(t.done?'✓':date<today?'!':'·'):t?'·':'';
+    symbol=mine?(t.done?'✓':t.missed?'×':date<today?'!':'·'):t?'·':'';
    html+=`<button type="button" class="do-grid-cell ${status}${date===today?' today':''}${EQUIPMENT_PICK?.date===date&&EQUIPMENT_PICK?.login===p.login?' chosen':''}"
      data-eq-day="${date}" data-eq-login="${escapeHtml(p.login)}" title="${escapeHtml(p.name+' · '+date+' · '+title)}"
      aria-label="${escapeHtml(p.name+' · '+date+' · '+title)}" ${disabled?'disabled':''}>${symbol}</button>`;
@@ -12419,6 +12515,10 @@ function equipDrawGraph(el,host){
  <div class="dl-section"><b>Сегодня · ${new Date(today+'T12:00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'long',timeZone:'Europe/Minsk'})}</b>${thisMonth?`<div class="dl-today-row"><span><b>Обслуживание оборудования</b><small>${current?equipShort(current.login):'Исполнителя назначает руководитель'}</small></span><span class="dl-status ${current?.done?'done':current?'assigned':'missing'}">${current?.done?'✓ Выполнено':current?'Назначено':'Нет исполнителя'}</span>${current&&!current.done&&(equipOwner()||current.login===session.login)?`<button type="button" class="btn btn-sm" data-do-complete ${rate<=0?'disabled title="Сначала установите ставку"':''}>Выполнено</button>`:''}</div>`:'<p class="eq-hint">Для текущих назначений откройте этот месяц.</p>'}</div></div>
  <div class="dl-section dl-rules"><b>Правила графика</b><p>Одно задание и один исполнитель на день. Назначает руководитель или сотрудник с правом управления. Администратору — только на смену Машерова; добавленному вручную — любой день. Исполнитель отмечает только своё сегодняшнее задание, управляющий может отметить прошедший день. Будущую дату выполнить нельзя. При ставке 0 отметка заблокирована. Руководителю доплата не начисляется. Ставка сохраняется при выполнении, прежние начисления не пересчитываются.</p></div>`;
  host.querySelectorAll('[data-eq-day]').forEach(b=>b.onclick=()=>void equipQuickClick(el,b.dataset.eqDay,b.dataset.eqLogin));
+ if(equipOwner()&&EQUIPMENT_PICK){const x=equipTask(EQUIPMENT_PICK.date);if(x?.login===EQUIPMENT_PICK.login&&!x.done){
+   const skip=document.createElement('button');skip.type='button';skip.className='btn btn-sm';skip.textContent='Пропуск · '+EQUIPMENT_PICK.date;
+   skip.onclick=()=>void equipSetMissed(el,EQUIPMENT_PICK.date);host.querySelector('#doStatus')?.append(' ',skip);
+ }}
  const fill=host.querySelector('[data-do-auto]');if(fill)fill.onclick=()=>equipAutofill(el);
  const clear=host.querySelector('[data-do-clear]');if(clear)clear.onclick=()=>equipClearFuture(el);
  const add=host.querySelector('[data-do-add]');if(add)add.onclick=()=>equipAddModal(el,roster);
@@ -12438,16 +12538,16 @@ function equipDrawManagerMobile(el,host){
  const weekDays=Array.from({length:7},(_,i)=>monday+i).filter(d=>d>=1&&d<=monthDays);
  const shortDow=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
  const strip=weekDays.map(d=>{const date=schIso(SCH.y,SCH.m,d),w=(new Date(date+'T12:00:00Z').getUTCDay()+6)%7,t=equipTask(date);
-  const tone=t?.done?'done':t?'assigned':'none';
+  const tone=t?.done?'done':t?.missed?'missed':t?'assigned':'none';
   return `<button type="button" class="eq-m-day ${selected===date?'on':''}" data-eq-m-date="${date}" aria-pressed="${selected===date}"><span>${shortDow[w]}</span><b>${d}</b><i class="${tone}" aria-hidden="true"></i></button>`;}).join('');
  const employee=roster.map(p=>{const chosen=task?.login===p.login,allowed=equipCanAssign(p.login,selected),owner=equipIsOwnerPerson(p.login),canChange=equipOwner()&&(allowed||chosen),canComplete=chosen&&!task.done&&(equipOwner()||task.login===session?.login);
-  const status=chosen?(task.done?'✓ Выполнено':'Назначено'):allowed?'Свободен':'Нет смены';
-  const action=canChange?`<button type="button" class="eq-m-person-action${chosen&&!task.done?' primary':''}" data-eq-m-action="${escapeHtml(p.login)}">${chosen?(task.done?'Снять':'Выполнено'):'Назначить'}</button>`:'';
+  const status=chosen?(task.done?'✓ Выполнено':task.missed?'Пропуск':'Назначено'):allowed?'Свободен':'Нет смены';
+  const action=canChange?`<button type="button" class="eq-m-person-action${chosen&&!task.done?' primary':''}" data-eq-m-action="${escapeHtml(p.login)}">${chosen?(task.done?'Снять':'Выполнено'):'Назначить'}</button>${chosen&&!task.done?`<button type="button" class="eq-m-person-action" data-eq-m-skip="${escapeHtml(p.login)}">Пропуск</button>`:''}`:chosen&&!task.done&&p.login===session?.login?`<button type="button" class="eq-m-person-action" data-eq-m-skip="${escapeHtml(p.login)}">Пропуск</button>`:'';
   const initial=escapeHtml((p.name||'С').split(' ').map(v=>v[0]||'').slice(0,2).join('').toUpperCase());
   return `<article class="eq-m-person"><span class="eq-m-avatar">${initial}</span><div class="eq-m-name"><b>${escapeHtml(p.name)}</b><span>${status}${owner?' · руководитель, без доплаты':''}</span></div>${action}</article>`;}).join('');
  const dates=weekDays.map(d=>schIso(SCH.y,SCH.m,d));
  const heads=dates.map(date=>`<span class="${date===today?'today':''}">${Number(date.slice(8))}</span>`).join('');
- const matRows=roster.map(p=>`<div class="eq-m-matrix-row"><span title="${escapeHtml(p.name)}">${escapeHtml(fadPersonName(p.login,p.name,true))}</span>${dates.map(date=>{const t=equipTask(date),own=t?.login===p.login,shift=equipCanAssign(p.login,date),tone=own?(t.done?'done':date<today?'late':'assigned'):shift?'shift':'none';return `<button type="button" class="${tone} ${date===today?'today':''}" data-eq-m-date="${date}" data-eq-m-login="${escapeHtml(p.login)}" aria-label="${escapeHtml(p.name)} · ${date} · ${own?(t.done?'выполнено':'назначено'):'без назначения'}">${own?(t.done?'✓':'·'):''}</button>`;}).join('')}</div>`).join('');
+ const matRows=roster.map(p=>`<div class="eq-m-matrix-row"><span title="${escapeHtml(p.name)}">${escapeHtml(fadPersonName(p.login,p.name,true))}</span>${dates.map(date=>{const t=equipTask(date),own=t?.login===p.login,shift=equipCanAssign(p.login,date),tone=own?(t.done?'done':t.missed?'late':date<today?'late':'assigned'):shift?'shift':'none';return `<button type="button" class="${tone} ${date===today?'today':''}" data-eq-m-date="${date}" data-eq-m-login="${escapeHtml(p.login)}" aria-label="${escapeHtml(p.name)} · ${date} · ${own?(t.done?'выполнено':t.missed?'пропуск':'назначено'):'без назначения'}">${own?(t.done?'✓':t.missed?'×':'·'):''}</button>`;}).join('')}</div>`).join('');
  host.innerHTML=`<section class="eq-m-manager"><div class="eq-m-rate">График обслуживания · ставка <b>${equipPrice(rate)}</b> за выполненное</div>
    <section class="eq-m-surface"><b>Выберите день</b><div class="eq-m-week">${strip}</div></section>
    <section class="eq-m-surface"><div class="eq-m-day-heading"><b>${new Date(selected+'T12:00:00Z').toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long',timeZone:'UTC'})}</b>${selected===today?'<span>Сегодня</span>':''}</div>
@@ -12459,11 +12559,22 @@ function equipDrawManagerMobile(el,host){
  host.querySelectorAll('[data-eq-m-date]').forEach(b=>b.onclick=()=>{EQUIPMENT_MOBILE_DAY=b.dataset.eqMDate;
     if(b.dataset.eqMLogin)EQUIPMENT_PICK={date:b.dataset.eqMDate,login:b.dataset.eqMLogin};equipDraw(el);});
  host.querySelectorAll('[data-eq-m-action]').forEach(b=>b.onclick=()=>void equipQuickClick(el,selected,b.dataset.eqMAction));
+ host.querySelectorAll('[data-eq-m-skip]').forEach(b=>b.onclick=()=>void equipSetMissed(el,selected));
  host.querySelector('[data-eq-m-auto]')?.addEventListener('click',()=>equipAutofill(el));
  host.querySelector('[data-eq-m-clear]')?.addEventListener('click',()=>equipClearFuture(el));
  host.querySelector('[data-eq-m-add]')?.addEventListener('click',()=>equipAddModal(el,roster));
 }
 function equipActionLabel(action){return ({assign:'назначено',replace:'исполнитель изменён',complete:'выполнено',undo_and_remove:'снято',unassign:'снято'})[action]||'изменено';}
+async function equipSetMissed(el,date){
+ if(EQUIPMENT_BUSY)return;
+ const task=equipTask(date);if(!task||task.done)return;
+ if(!equipOwner()&&task.login!==session?.login){toast('Только назначенный исполнитель может отметить пропуск',true);return;}
+ const m=modal(`<h3>Обслуживание кофе не выполнено?</h3><p>За ${escapeHtml(date)} будет отмечен «Пропуск». Доплата не начисляется.</p><div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" data-coffee-miss>Подтвердить пропуск</button></div>`);
+ m.querySelector('[data-coffee-miss]').onclick=async()=>{closeModal(m);EQUIPMENT_BUSY=true;
+  try{await rpc('app_coffee_ey_mark',{p_token:TOKEN,p_date:date,p_decision:'missed'});toast('Пропуск отмечен');await equipReload(el);}
+  catch(e){handleErr(e);}finally{EQUIPMENT_BUSY=false;}
+ };
+}
 async function equipQuickClick(el,date,login){
  if(EQUIPMENT_BUSY||!equipOwner())return;
  const current=equipTask(date),today=equipToday();
@@ -12527,19 +12638,20 @@ function equipDrawMobile(el,host){
  total=(EQUIPMENT_DATA?.totals||[]).find(t=>t.login===session.login)||{amount:0,count:0},dates=[];
  for(let i=1;i<=schDaysIn(SCH.y,SCH.m);i++){const d=schIso(SCH.y,SCH.m,i);if(d>today&&equipShift(session.login,d))dates.push(d);}
  host.innerHTML=`<div class="dl-mobile-head"><span>МАШЕРОВА, 11 · КОФЕ</span><h2>${isCurrent?'Сегодня, '+new Date(today+'T12:00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'long',timeZone:'Europe/Minsk'}):MON2[SCH.m]+' '+SCH.y}</h2><p>${escapeHtml(fadPersonName(session.login,session.name))} · ${isCurrent&&equipShift(session.login,today)?'смена на Машерова':'график оборудования'}</p></div>
- ${isCurrent?`<div class="dl-mobile-list"><div class="dl-mobile-card"><div class="dl-mobile-row"><b>Обслуживание оборудования</b><span class="dl-status ${task?.done?'done':task?'assigned':'missing'}">${task?.done?'✓ Выполнено':task?(mine?'Назначено':'Другой исполнитель'):'Нет исполнителя'}</span></div><p>Кофемашина и торговый автомат</p><p>${task?(mine?'Назначено на вас':'Исполнитель: '+equipShort(task.login)):'Исполнителя назначает руководитель.'}</p>${mine&&!task.done?`<button type="button" class="btn btn-primary dl-mobile-done" data-do-mobile-complete ${rate<=0?'disabled title="Руководитель должен задать ставку"':''}>Выполнено</button>`:''}</div></div>`:'<p class="eq-hint">Откройте текущий месяц, чтобы отметить задание.</p>'}
+ ${isCurrent?`<div class="dl-mobile-list"><div class="dl-mobile-card"><div class="dl-mobile-row"><b>Обслуживание оборудования</b><span class="dl-status ${task?.done?'done':task?'assigned':'missing'}">${task?.done?'✓ Выполнено':task?.missed?'Пропуск':task?(mine?'Назначено':'Другой исполнитель'):'Нет исполнителя'}</span></div><p>Кофемашина и торговый автомат</p><p>${task?(mine?'Назначено на вас':'Исполнитель: '+equipShort(task.login)):'Исполнителя назначает руководитель.'}</p>${mine&&!task.done?`<div class="coffee-mobile-actions"><button type="button" class="btn btn-primary dl-mobile-done" data-do-mobile-complete ${rate<=0?'disabled title="Руководитель должен задать ставку"':''}>Выполнено</button><button type="button" class="btn dl-mobile-done" data-do-mobile-missed>Пропуск</button></div>`:''}</div></div>`:'<p class="eq-hint">Откройте текущий месяц, чтобы отметить задание.</p>'}
  <div class="dl-mobile-card dl-mobile-summary"><div><b>Мои доплаты, ${MON2[SCH.m].toLowerCase()}</b><p>${Number(total.count||0)} заданий выполнено</p></div><strong>${equipPrice(total.amount)}</strong><p>Ближайшие смены на Машерова: ${dates.slice(0,3).length?dates.slice(0,3).map(d=>+d.slice(8)).join(', ')+' '+MON2[SCH.m].toLowerCase():'не назначены'}</p></div>`;
  const btn=host.querySelector('[data-do-mobile-complete]');if(btn)btn.onclick=()=>void equipComplete(el,today);
+ const miss=host.querySelector('[data-do-mobile-missed]');if(miss)miss.onclick=()=>void equipSetMissed(el,today);
 }
 function equipDrawMyBonus(el,host){
  const mine=equipTasks().filter(t=>t.login===session.login).sort((a,b)=>b.date.localeCompare(a.date)),
  total=(EQUIPMENT_DATA?.totals||[]).find(t=>t.login===session.login)||{amount:0,count:0};
  host.innerHTML=`<div class="dl-mobile-head"><span>МАШЕРОВА, 11 · КОФЕ</span><h2>Мои доплаты · ${MON2[SCH.m].toLowerCase()} ${SCH.y}</h2></div>
  <div class="dl-kpis"><div class="dl-kpi"><small>Начислено за месяц</small><strong>${equipPrice(total.amount)}</strong></div><div class="dl-kpi"><small>Выполнено</small><strong>${Number(total.count||0)}</strong></div></div>
- <div class="dl-section"><b>Мои задания</b>${mine.length?mine.map(t=>`<div class="dl-today-row"><span><b>Обслуживание оборудования</b><small>${t.date.split('-').reverse().join('.')}</small></span><span class="dl-status ${t.done?'done':'assigned'}">${t.done?'✓ '+equipPrice(t.amount):'Ожидает выполнения'}</span></div>`).join(''):'<p class="eq-hint">Назначений пока нет.</p>'}</div>`;
+ <div class="dl-section"><b>Мои задания</b>${mine.length?mine.map(t=>`<div class="dl-today-row"><span><b>Обслуживание оборудования</b><small>${t.date.split('-').reverse().join('.')}</small></span><span class="dl-status ${t.done?'done':'assigned'}">${t.done?'✓ '+equipPrice(t.amount):t.missed?'Пропуск':'Ожидает выполнения'}</span></div>`).join(''):'<p class="eq-hint">Назначений пока нет.</p>'}</div>`;
 }
 function equipDrawBonus(el,host){
- const today=equipToday(),tasks=equipTasks(),done=tasks.filter(t=>t.done),overdue=tasks.filter(t=>t.status==='assigned'&&t.date<today),
+ const today=equipToday(),tasks=equipTasks(),done=tasks.filter(t=>t.done),overdue=tasks.filter(t=>t.status==='assigned'&&!t.missed&&t.date<today),
  rate=equipRate(),totals=EQUIPMENT_DATA?.totals||[],allSum=totals.reduce((s,t)=>s+Number(t.amount||0),0),roster=equipMonthRoster(),
  hist=(EQUIPMENT_DATA?.rate_history||[]).slice().sort((a,b)=>String(b.from).localeCompare(String(a.from))),
  journal=tasks.filter(t=>t.done||t.status==='assigned'&&t.date<today).slice().sort((a,b)=>b.date.localeCompare(a.date)),
@@ -12549,7 +12661,7 @@ function equipDrawBonus(el,host){
  <div class="dl-panel-cols"><div class="dl-section"><div class="dl-flex-head"><div><b>Ставка · Обслуживание оборудования</b><p class="eq-hint">Одно задание: кофемашина и торговый автомат. Ставка на дату выполнения сохраняется.</p></div>${equipOwner()?'<button type="button" class="btn btn-primary btn-sm" data-do-save-rate>Сохранить ставку</button>':''}</div><div class="eq-rate-row"><label>Обслуживание оборудования<span><input type="number" min="0" max="1000" step="0.01" data-do-rate value="${rate.toFixed(2)}" ${equipOwner()?'':'disabled title="Только просмотр"'}/> BYN</span></label></div><p class="eq-hint">Ставка 0 BYN запрещает подтверждать выполнение. Ранее начисленные суммы не меняются.</p></div>
  <div class="dl-section"><b>История ставки</b><div class="dl-hist">${hist.length?hist.slice(0,20).map(h=>`<div><small>с ${new Date(h.from).toLocaleDateString('ru-RU',{timeZone:'Europe/Minsk'})}</small><b>${equipPrice(h.amount)}</b></div>`).join(''):'<p class="eq-hint">История появится после установки ставки.</p>'}</div></div></div>
  <div class="dl-section dl-staff-bonuses"><b>Начислено по администраторам</b><p class="eq-hint">Доплата автоматически включается в зарплату администраторов отдельно от бонусов.</p><div class="dl-table-wrap"><table class="dl-table"><thead><tr><th>Администратор</th><th>Выполнено заданий</th><th>Ставка</th><th>Доплата, BYN</th></tr></thead><tbody>${roster.map(p=>{const t=totals.find(x=>x.login===p.login)||{},owner=equipIsOwnerPerson(p.login);return `<tr><td>${escapeHtml(p.name)}${owner?' <small>· руководитель</small>':''}</td><td>${owner?'—':Number(t.count||0)}</td><td>${owner?'—':equipPrice(rate)}</td><td><b>${owner?'без доплаты':equipPrice(t.amount||0)}</b></td></tr>`;}).join('')||'<tr><td colspan="4">Нет сотрудников</td></tr>'}<tr class="dl-total"><td>Итого</td><td>${totals.reduce((s,x)=>s+Number(x.count||0),0)}</td><td>—</td><td><b>${equipPrice(allSum)}</b></td></tr></tbody></table></div></div>
- <div class="dl-section dl-journal"><b>Журнал работ</b><p class="eq-hint">Дата, исполнитель, сохранённая ставка, кто отметил; пропуски и отметки задним числом.</p><div class="dl-table-wrap"><table class="dl-table"><thead><tr><th>Дата</th><th>Исполнитель</th><th>Ставка, BYN</th><th>Отметил(а)</th></tr></thead><tbody>${journal.map(t=>`<tr><td>${t.date.slice(8)}.${t.date.slice(5,7)}</td><td>${equipShort(t.login)}</td><td>${t.done?equipPrice(t.amount):'—'}</td><td>${t.done?equipShort(t.completed_by)+(t.backdated?' <span class="dl-badge">задним числом</span>':''):'<span class="dl-status missing">не отмечено</span>'}</td></tr>`).join('')||'<tr><td colspan="4">Заданий нет</td></tr>'}</tbody></table></div></div>
+ <div class="dl-section dl-journal"><b>Журнал работ</b><p class="eq-hint">Дата, исполнитель, сохранённая ставка, кто отметил; пропуски и отметки задним числом.</p><div class="dl-table-wrap"><table class="dl-table"><thead><tr><th>Дата</th><th>Исполнитель</th><th>Ставка, BYN</th><th>Отметил(а)</th></tr></thead><tbody>${journal.map(t=>`<tr><td>${t.date.slice(8)}.${t.date.slice(5,7)}</td><td>${equipShort(t.login)}</td><td>${t.done?equipPrice(t.amount):'—'}</td><td>${t.done?equipShort(t.completed_by)+(t.backdated?' <span class="dl-badge">задним числом</span>':''):t.missed?'<span class="dl-status missing">Пропуск</span>':'<span class="dl-status missing">не отмечено</span>'}</td></tr>`).join('')||'<tr><td colspan="4">Заданий нет</td></tr>'}</tbody></table></div></div>
  ${old.length?`<div class="dl-section"><b>Исторические начисления до объединения</b><p class="eq-hint">Сохранены по исходным сотрудникам и суммам, без пересчёта и без удвоения в зарплате.</p><div class="dl-table-wrap"><table class="dl-table"><thead><tr><th>Дата</th><th>Исполнитель</th><th>Старый тип</th><th>Начислено</th></tr></thead><tbody>${old.map(t=>`<tr><td>${t.date.slice(8)}.${t.date.slice(5,7)}</td><td>${equipShort(t.login)}</td><td>${escapeHtml(({coffee_refill:'Кофемашина · пополнение',coffee_service:'Кофемашина · обслуживание',vending_refill:'Автомат · пополнение'})[t.type]||t.type)}</td><td>${equipPrice(t.amount)}</td></tr>`).join('')}</tbody></table></div></div>`:''}
  ${merges.length?`<details class="dl-section"><summary><b>Журнал объединения старых назначений</b></summary><p class="eq-hint">Старые задания не удалены. Для каждой даты выбрана одна строка: сначала выполненная, затем с большей суммой.</p><div class="dl-hist">${merges.map(m=>`<div><small>${escapeHtml(String(m.date))} · ${escapeHtml(m.old_type||'')} · ${escapeHtml(fadPersonName(m.login))}</small><b>${m.kept?'оставлено':'в архиве'}</b></div>`).join('')}</div></details>`:''}
  <p class="eq-hint">Доплата не влияет на бонус филиала, качество и расчёт премии старшего администратора.</p>`;
@@ -12684,7 +12796,8 @@ function schStrip(d, iso, sid, editor, showLabel){
   }
   const armed=(SCHsel&&editor)?' armed':'';
   const lbl=showLabel?`<span class="strip-lbl" style="color:${st.color}">${st.name[0]}</span>`:'';
-  const coffeeMark=(sid==='masherova' && SCHDATA.coffee && SCHDATA.coffee[iso])?`<span class="coffee-mark" title="Кофе+снеки: ${escapeHtml(coffeeName(SCHDATA.coffee[iso]))}">☕</span>`:'';
+  const coffeeItem=COFFEE_SCHEDULE_MARKERS.get(iso);
+  const coffeeMark=sid==='masherova'&&coffeeItem?`<span class="coffee-mark" title="Кофе: ${escapeHtml(coffeeName(coffeeItem.login))}">☕</span>`:'';
   return `<div class="sch-strip${closed?' closed':''}${need?' need':''}${fill?' fill':''}${armed}" data-day="${d}" data-sid="${sid}" style="border-left:3px solid ${st.color}">${lbl}${coffeeMark}${inner}</div>`;
 }
 function renderSchCalendar(el){
@@ -12916,7 +13029,9 @@ function adminScheduleOverviewGrid(){
         else { const stops=[]; cols.forEach((c,i)=>{ const a=Math.round(i*100/cols.length), b=Math.round((i+1)*100/cols.length); stops.push(`${c} ${a}%`,`${c} ${b}%`); }); style=`background:linear-gradient(90deg,${stops.join(',')});border-color:transparent`; }
         title=sids.map(id=>studioName(id)).join(' / ');
       }
-      html+=`<div class="${cls}"${style?` style="${style}"`:''}${title?` title="${escapeHtml(title)}"`:''}></div>`;
+      const coffee=COFFEE_SCHEDULE_MARKERS.get(iso);
+      const coffeeAssigned=coffee?.login===a.login;
+      html+=`<div class="${cls}${coffeeAssigned?' coffee-scheduled':''}"${style?` style="${style}"`:''} title="${escapeHtml(title+(coffeeAssigned?' · Обслуживание кофе':''))}">${coffeeAssigned?'<span class="coffee-scheduled-icon" aria-label="Обслуживание кофе">☕</span>':''}</div>`;
     }
   });
   html+='</div>';
