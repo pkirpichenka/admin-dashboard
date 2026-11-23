@@ -4912,7 +4912,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '23.11.2026-ff'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '23.11.2026-fg'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -6383,8 +6383,7 @@ async function renderBalance(body){
     a.href=href;a.download=`FAD_выручка_${start}_${end}.csv`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(href),2000);
   }
   function toolbar(){return `<div class="fb-em-toolbar"><div class="fb-em-caption">Студии Flexico <span>Толбухина, 2 · Машерова, 11 · Куйбышева, 22</span></div>
-    <div class="fb-em-tools"><label>Период <select id="fb-period" class="fb-select">${months.map(k=>`<option value="${k}"${k===state.period?' selected':''}>${esc(monthTitle(k))}</option>`).join('')}</select></label>
-    ${dateButton()}
+    <div class="fb-em-tools">${dateButton()}
     ${isOwner?`<button type="button" class="fb-action primary" id="fb-reload" ${state.busy?'disabled':''}>${state.busy?'Обновление…':'Обновить данные'}</button>`:''}</div></div>`;}
   function status(){const list=data().source_status||[];const imp=list.find(x=>x.source==='impulse')||{};
     const when=imp.last_success_at?new Date(imp.last_success_at).toLocaleString('ru-RU',{timeZone:'Europe/Minsk',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'нет загрузки';
@@ -15202,7 +15201,7 @@ function renderAdminPayroll(host){
 
   function draw(){if(!page.isConnected||!state.model)return;const {kpis,branches,selected,t}=renderCards();
     const warnings=adminTechNotices();const badAdvanceIds=new Set(warnings.filter(n=>n.kind==='advances').flatMap(n=>n.ids||[]));const badRateIds=new Set(warnings.filter(n=>n.kind==='rate').flatMap(n=>n.ids||[]));const receipt=state.model.receivedAt?` · снимок Impulse ${new Date(state.model.receivedAt).toLocaleString('ru-RU',{timeZone:'Europe/Minsk'})}`:'';
-    page.innerHTML=`<div class="adpay-head"><div><h1>Зарплата администраторов</h1><div class="adpay-muted">Часы по дням — Impulse · план и продажи — «План»</div></div><div class="adpay-controls"><label>Ставка, BYN/ч ${isPayrollOwner?`<input id="adpay-rate" type="number" step="0.5" min="0" value="${rate()}">`:`<strong class="adpay-readonly-rate">${fmt(rate())}</strong>`}</label>${calendarMarkup()}<button type="button" class="btn btn-primary" data-action="sync" ${state.busy?'disabled':''}>${state.busy?'Получаем данные…':'Обновить из Impulse'}</button>${isPayrollOwner?'<button type="button" class="btn btn-sm" data-action="settings">⚙ Настройки</button>':''}</div></div>
+    page.innerHTML=`<div class="adpay-head"><div><h1>Зарплата администраторов</h1><div class="adpay-muted">Часы по дням — Impulse · план и продажи — «План»</div></div><div class="adpay-controls"><label>Ставка, BYN/ч ${isPayrollOwner?`<input id="adpay-rate" type="number" step="0.5" min="0" value="${rate()}">`:`<strong class="adpay-readonly-rate">${fmt(rate())}</strong>`}</label>${calendarMarkup()}<button type="button" class="btn btn-primary" data-action="sync" ${state.busy?'disabled':''}>${state.busy?'Получаем данные…':'Обновить из Impulse'}</button>${isPayrollOwner?'<button type="button" class="icon-btn" data-action="settings" aria-label="Настройки зарплаты администраторов" title="Настройки"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 .6 1.65 1.65 0 0 0-.33 1V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82-.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-.6-1 1.65 1.65 0 0 0-1-.33H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.6-1 1.65 1.65 0 0 0-.33-1l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.6c.39-.18.67-.55.67-1V3a2 2 0 0 1 4 0v.09c0 .45.26.85.67 1 .4.17.86.1 1.15-.18l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06c-.28.29-.35.75-.18 1.15.15.41.55.67 1 .67H21a2 2 0 0 1 0 4h-.09c-.45 0-.85.26-1 .67-.17.4-.1.86.18 1.15Z"/></svg></button>':''}</div></div>
     ${state.equipmentError?`<div class="adpay-note error" role="alert">Доплаты за оборудование не загружены — итог показан без них. Не выдавайте зарплату до восстановления учёта. ${esc(state.equipmentError)}</div>`:''}
     ${canPayrollEdit()?'':'<div class="adpay-note" role="status">Режим просмотра: руководитель отключил редактирование зарплат. Все расчёты и расшифровки доступны.</div>'}
     ${state.syncStatusError?`<div class="adpay-note error" role="alert"><b>Ошибка обновления ImpulseCRM</b><div>${esc(state.syncStatus)}</div></div>`:''}
