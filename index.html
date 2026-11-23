@@ -4651,6 +4651,18 @@ input[type="time"]::-webkit-calendar-picker-indicator{position:absolute;right:8p
  .fb-eu-form-grid :is(input,select){min-height:48px;font-size:16px}
 }
 
+
+/* EY · Coffee workflow, desktop + mobile; no dark theme. */
+#schedRoot .adm-sched-cell.coffee-scheduled{display:flex;justify-content:center;align-items:center;overflow:visible}
+#schedRoot .coffee-scheduled-icon{position:absolute;z-index:2;top:-6px;right:-4px;display:grid;place-items:center;width:17px;height:17px;background:#fff;border:1px solid #d0ded2;border-radius:50%;font-size:11px;line-height:1}
+#coffeeWrap .coffee-shift-check{padding:10px 12px;border:1px solid #d6e6d9;background:#f5faf6;border-radius:10px}
+#coffeeWrap .coffee-shift-hint{display:block;margin:6px 0 0 25px;color:#566a5f;font-size:12px;line-height:1.5}
+#coffeeWrap .coffee-shift-check input{min-width:17px;min-height:17px}
+.coffee-mobile-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:center}
+.coffee-mobile-actions>.btn{min-height:44px}
+.eq-m-person:has([data-eq-m-skip]){grid-template-columns:42px minmax(0,1fr) auto}
+.eq-m-person [data-eq-m-skip]{grid-column:auto;background:#fff;border-color:#e2b7af;color:#9c2c22}
+@media(max-width:767px){.eq-m-person:has([data-eq-m-skip]){grid-template-columns:42px minmax(0,1fr)}.eq-m-person [data-eq-m-skip]{grid-column:2;min-height:44px}}
 </style>
 
 <div id="root"></div>
@@ -4671,7 +4683,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '23.11.2026-ez'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '23.11.2026-fb'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -4984,6 +4996,7 @@ async function refreshPermissions(){
   if(!session) return;
   if(session.role==='trainer'){session.permissions=normalizePermissions({});session.permissionsLoaded=true;session.fadRolePermissions=null;session.clientsAccess={enabled:false};persistSession();return;}
   if(session.role==='owner'){
+    try{session.coffeeAllowed=(await rpc('app_coffee_ey_access',{p_token:TOKEN}))?.allowed===true;}catch(_){session.coffeeAllowed=false;}
     session.permissions=normalizePermissions(PERMISSION_PRESETS.full); session.permissionsLoaded=true; session.adminPayrollAccess=true;
     try{session.clientsAccess=await rpc('app_client_access',{p_token:TOKEN});}catch(_){session.clientsAccess={owner:true,own:true,team:true,manage:true,enabled:false};}
     persistSession(); return;
@@ -5020,6 +5033,7 @@ async function refreshPermissions(){
   }catch(_){session.fadRoleCode='';session.fadRoleName='';session.fadRolePermissions=null;session.fadRoleLoadFailed=true;}
   try{session.clientsAccess=await rpc('app_client_access',{p_token:TOKEN});}
   catch(_){session.clientsAccess={owner:false,own:false,team:false,manage:false,enabled:false};}
+  try{session.coffeeAllowed=(await rpc('app_coffee_ey_access',{p_token:TOKEN}))?.allowed===true;}catch(_){session.coffeeAllowed=false;}
   persistSession();
 }
 
@@ -5128,7 +5142,7 @@ function auditLegacyReportPairs(details){
   add('Причина расхождения между сменами',p.interNote);
   add('Комментарий к смене',p.comments);
   if(p.zReport!==undefined) add('Z-отчёт',p.zReport?'Да':'Нет');
-  if(p.coffeeDone!==undefined) add('Кофе+снеки',p.coffeeDone?'Выполнено':'Не выполнено');
+  if(p.coffeeDone!==undefined) add('Кофе',p.coffeeDone?'Выполнено':'Не выполнено');
   if(p.status) add('Статус смены',p.status==='closed'?'Закрыта':'Открыта');
   (p.changes||[]).forEach((c,i)=>{
     const type=c.type==='in'?'Внесение наличных':'Выдача наличных';
@@ -5556,6 +5570,7 @@ function roleLabel(){
 const NAV_GROUPS = { work:'Работа', people:'Люди и деньги', comms:'Коммуникации' };
 const NAV_ITEMS = [
   {id:'shift',label:'Смена',icon:'M8 3h8v3H8z M6 5H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1 M8 12h8 M8 16h5',group:'work'},
+  {id:'coffee',label:'Кофе',icon:'M4 8h12v7a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5V8z M16 9h2a3 3 0 0 1 0 6h-2 M3 22h15',group:'work'},
   {id:'reports',label:'Отчёты',icon:'M4 20V10 M10 20V4 M16 20v-7 M22 20H2',group:'work'},
   {id:'plan',label:'План',icon:'M12 2a10 10 0 1 0 0 20a10 10 0 1 0 0-20 M12 6a6 6 0 1 0 0 12a6 6 0 1 0 0-12 M12 10a2 2 0 1 0 0 4a2 2 0 1 0 0-4',group:'work'},
   {id:'clients',label:'Клиенты · Задачи',icon:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8a4 4 0 0 0 0 8 M18 8h4 M20 6v4',group:'work'},
@@ -5602,6 +5617,7 @@ function getNavigationTabs(){
   // Stable keys are for routing only. Original renderers and access checks are reused.
   const definitions={
     shift:{key:'shift',label:'Смена',render:renderShift},
+    coffee:{key:'coffee',label:'Кофе',render:renderCoffeeTop},
     plan:{key:'plan',label:'План',render:renderBonusDashboard},
     clients:{key:'clients',label:'Клиенты · Задачи',render:renderClients},
     reports:{key:'reports',label:'Отчёты',render:renderAllReports},
@@ -5619,12 +5635,13 @@ function getNavigationTabs(){
   };
   getNavigationTabs.registry=definitions; // только для проверки валидности NAV_ITEMS
   if(session?.role==='trainer')return [definitions.events];
-  const ownerOrder=['reports','plan','clients','schedule','knowledge','balance','salaries','replacements','employees','roles','marketing','calendar','messages','events'];
-  const gorovayaOrder=['shift','plan','clients','reports','schedule','knowledge','salaries','replacements','employees','marketing','calendar','messages','events'];
-  const adminOrder=['shift','plan','clients','schedule','knowledge','replacements','marketing','events'];
+  const ownerOrder=['coffee','reports','plan','clients','schedule','knowledge','balance','salaries','replacements','employees','roles','marketing','calendar','messages','events'];
+  const gorovayaOrder=['shift','coffee','plan','clients','reports','schedule','knowledge','salaries','replacements','employees','marketing','calendar','messages','events'];
+  const adminOrder=['shift','coffee','plan','clients','schedule','knowledge','replacements','marketing','events'];
   const order=isOwner?ownerOrder:(isGorovaya?gorovayaOrder:adminOrder);
   const canSee={
     shift:!isOwner,
+    coffee:session.coffeeAllowed===true,
     plan:true,
     clients:!!session.clientsAccess?.enabled&&(!!session.clientsAccess?.own||!!session.clientsAccess?.team),
     reports:isOwner||(isGorovaya&&can('reports.view_all')),
@@ -5643,10 +5660,11 @@ function getNavigationTabs(){
   if(!isOwner&&session.fadRolePermissions){
     // Для назначенных ролей сервер проверяет права действий; nav.* управляет только видимостью вкладок.
     const p=session.fadRolePermissions;
-    const roleOrder=['shift','plan','clients','reports','schedule','knowledge','salaries','replacements','employees','marketing','calendar','messages','events'];
+    const roleOrder=['shift','coffee','plan','clients','reports','schedule','knowledge','salaries','replacements','employees','marketing','calendar','messages','events'];
     return roleOrder.filter(key=>{
       // Два независимых права каждого модуля: nav.* = просмотр, *.edit/manage = изменение.
       // Роли тренеров проверяются отдельно выше; для администратора действуют галочки из «Роли».
+      if(key==='coffee')return session.coffeeAllowed===true;
       if(key==='balance')return false; // EV: only owner; assigned admin roles cannot open Balance
       if(key==='clients')return !!session.clientsAccess?.enabled&&(!!session.clientsAccess?.own||!!session.clientsAccess?.team);
       if(p['nav.'+key]!==true)return false;
@@ -6207,7 +6225,7 @@ async function renderBalance(body){
     const newRate=!auto&&x.kind==='fixed'&&x.rate_from===state.period&&x.rate_from!==String(x.start_month).slice(0,7);
     const paidNote=!auto&&!x.paid&&n(x.paid_amount)>0?`<div class="fb-em-small">Выплачено ${money(x.paid_amount)} из ${money(amount)} · дата не указана</div>${amount>0?`<div class="fb-m-partial"><span style="width:${Math.min(100,100*n(x.paid_amount)/amount)}%"></span></div>`:''}`:'';
     const date=x.due_date?`${x.due_date.slice(8)}.${x.due_date.slice(5,7)}.${x.due_date.slice(0,4)}`:'Не установлен';
-    const rel=r.diff==null?'':r.paid?'каждый месяц':r.diff<0?(-r.diff)+' дн. назад':r.diff===0?'сегодня':'через '+r.diff+' дн.';
+    const rel=r.diff==null?'':r.paid?'':r.diff<0?(-r.diff)+' дн. назад':r.diff===0?'сегодня':'через '+r.diff+' дн.';
     let actions='—';
     if(auto){actions=x.source==='fad'?'<button class="fb-em-link" type="button" data-em="salary">Зарплаты →</button>':'—';}
     else if(isOwner){const cmd=dueInfo(x).action;actions=`<div class="fb-em-actions">${cmd==='undo'?
@@ -6217,7 +6235,7 @@ async function renderBalance(body){
     const checkbox=expSelectAllowed(r)?`<input type="checkbox" data-en-select="${esc(x.id)}" ${expView.selected.has(r.id)?'checked':''} aria-label="Выбрать ${esc(r.title)}">`:'';
     return `<tr class="fb-en-line${expView.selected.has(r.id)?' fb-en-selected':''}"><td class="fb-en-check">${checkbox}</td>
       <td class="fb-left" data-label="Статья"><b>${esc(r.title)}</b>${newRate?'<span class="fb-em-new">новая сумма</span>':''}
-        <div class="fb-em-small">${esc(r.category)} · ${esc(E[x.legal_entity]||'Юрлицо не указано')} · ${auto?'авто · '+(x.source==='fad'?'FAD':'ImpulseCRM'):esc(K[x.kind]||'Переменная')+' · вручную'}</div></td>
+        <div class="fb-em-small">${esc(r.category)} · ${esc(E[x.legal_entity]||'Юрлицо не указано')} · ${auto?'авто · '+(x.source==='fad'?'FAD':'ImpulseCRM'):esc(K[x.kind]||'Переменная')+' · '+esc(frequencyLabel(x.frequency))+' · вручную'}</div></td>
       <td data-label="Срок оплаты">${auto?'—':`<span>${esc(date)}</span>${rel?`<div class="fb-em-small">${esc(rel)}</div>`:''}`}</td>
       <td class="fb-en-money" data-label="Сумма"><b>${money(amount)}</b></td><td data-label="Статус">${r.status}${paidNote}</td><td class="fb-m-card-actions" data-label="Действия">${actions}</td></tr>`;
   }
@@ -6479,22 +6497,25 @@ async function renderBalance(body){
   const select=(label,id,v,values)=>`<label class="fb-em-field"><span>${esc(label)}</span><select id="${id}">${opts(values,v)}</select></label>`;
   const legalOpts=[['','Выберите юрлицо'],['ooo','ООО Флексико'],['ip','ИП Кирпиченко']];
   const unitOpts=[['','Все филиалы'],...Object.entries(U)];
-  const kindOpts=[['fixed','Постоянная — переносится'],['var','Переменная — вносится ежемесячно']];
+  const kindOpts=[['fixed','Постоянная — известная сумма'],['var','Переменная — сумма по расчёту']];
+  const frequencyOpts=[['monthly','Ежемесячно'],['quarterly','Раз в квартал (каждые 3 месяца)'],['yearly','Раз в год (каждые 12 месяцев)']];
+  const frequencyLabel=f=>frequencyOpts.find(x=>x[0]===f)?.[1]||'Ежемесячно';
+  function frequencyOfArticle(a,month){const hist=Array.isArray(a?.frequencies)?a.frequencies:[];const valid=hist.filter(x=>x.from<=month).sort((x,y)=>y.from.localeCompare(x.from));return valid[0]?.frequency||'monthly';}
   const catChoices=()=>[...new Set([...EXP_CATEGORIES,...rows().map(x=>x.category).filter(Boolean)])];
   const catSuggest=()=>'<datalist id="fb-en-cat-list">'+catChoices().map(x=>'<option value="'+esc(x)+'"></option>').join('')+'</datalist>';
   const value=v=>String(v||'').trim().replace(',','.');
   const goodAmount=v=>/^\d+(?:\.\d{1,2})?$/.test(v)&&Number.isFinite(Number(v))&&Number(v)<=100000000;
-  async function saveAction(action,item){return rpc('app_balance_en_write',{p_token:TOKEN,p_action:action,p_item:item});}
+  async function saveAction(action,item){return rpc('app_balance_fb_write',{p_token:TOKEN,p_action:action,p_item:item});}
   function newArticle(){const html=field('Название','fb-n','text','','required maxlength="160"')+
     field('Категория','fb-cat-new','text','Прочее','list="fb-en-cat-list" required maxlength="80"')+catSuggest()+
-    select('Тип статьи','fb-kind','fixed',kindOpts)+field('Сумма в месяц, BYN (для постоянной)','fb-s','text','','inputmode="decimal"')+
+    select('Тип статьи','fb-kind','fixed',kindOpts)+select('Периодичность','fb-frequency','monthly',frequencyOpts)+field('Сумма за один платёж, BYN (для постоянной)','fb-s','text','','inputmode="decimal"')+
     field('Число оплаты в месяце','fb-d','number',5,'required min="1" max="31"')+select('Юрлицо','fb-e','',legalOpts)+select('Филиал','fb-u','',unitOpts);
-    const overlay=dlg('Новая статья','Постоянная сумма переносится на следующие месяцы; переменная — нет.',html,'Добавить',async form=>{
-      const name=form.querySelector('#fb-n').value.trim(),kind=form.querySelector('#fb-kind').value,
+    const overlay=dlg('Новая статья','Квартальные и годовые расходы появляются только в месяцы очередной оплаты. Отсчёт начинается с выбранного месяца.',html,'Добавить',async form=>{
+      const name=form.querySelector('#fb-n').value.trim(),kind=form.querySelector('#fb-kind').value,frequency=form.querySelector('#fb-frequency').value,
         amount=value(form.querySelector('#fb-s').value),day=form.querySelector('#fb-d').value,legal=form.querySelector('#fb-e').value;
       const category=form.querySelector('#fb-cat-new').value.trim();
       if(!name||!legal||!category||category.length>80||!(+day>=1&&+day<=31)||(kind==='fixed'&&!goodAmount(amount))){toast('Проверьте название, сумму, день оплаты и юрлицо',true);return false;}
-      await saveAction('add',{name,kind,amount:kind==='fixed'?amount:null,day,legal_entity:legal,unit:form.querySelector('#fb-u').value,category,period:state.period});toast('Статья добавлена');
+      await saveAction('add',{name,kind,amount:kind==='fixed'?amount:null,day,legal_entity:legal,unit:form.querySelector('#fb-u').value,category,period:state.period,frequency});toast('Статья добавлена');
     });
     const f=overlay.querySelector('#fb-em-form'),kind=f.querySelector('#fb-kind'),moneyField=f.querySelector('#fb-s').closest('label');
     const update=()=>{moneyField.hidden=kind.value==='var';};kind.onchange=update;update();
@@ -6502,15 +6523,17 @@ async function renderBalance(body){
   function editArticle(x){const html=field('Название','fb-n','text',x.name,'required maxlength="160"')+
     field('Категория','fb-cat-edit','text',x.category||'Прочее','list="fb-en-cat-list" required maxlength="80"')+catSuggest()+
     field('Число оплаты в месяце','fb-d','number',x.due_day||5,'required min="1" max="31"')+
+    select('Периодичность','fb-frequency',x.frequency||'monthly',frequencyOpts)+
+    select('Применять периодичность с месяца','fb-frequency-from',state.period,months.filter(m=>m>=String(x.start_month).slice(0,7)).map(k=>[k,monthTitle(k)]))+
     select('Юрлицо','fb-e',x.legal_entity||'',legalOpts)+select('Филиал','fb-u',x.unit||'',unitOpts)+
     (x.kind==='fixed'?field('Сумма в месяц, BYN','fb-s','text',x.rate_amount==null?'':num(x.rate_amount,2).replace(/\s/g,'').replace(',','.'),'inputmode="decimal"')+
       select('Применить с месяца','fb-from',state.period,months.filter(m=>m>=String(x.start_month).slice(0,7)).map(k=>[k,monthTitle(k)]))+
       `<div class="fb-em-muted">История ставок: ${(x.hist||[]).map(h=>esc(h.from)+' — '+money(h.amount)).join(' · ')||'нет записей'}</div>`:'');
-    const overlay=dlg('Изменить статью','Изменение суммы постоянной статьи применяется с выбранного месяца. Подтверждённые оплаты остаются неизменными.',html,'Сохранить',async f=>{
+    const overlay=dlg('Изменить статью','Периодичность и сумма меняются с выбранного месяца. Прошлые и подтверждённые оплаты сохраняются.',html,'Сохранить',async f=>{
       const name=f.querySelector('#fb-n').value.trim(),legal=f.querySelector('#fb-e').value,day=f.querySelector('#fb-d').value;
       const category=f.querySelector('#fb-cat-edit').value.trim();
       if(!name||!legal||!category||category.length>80||!(+day>=1&&+day<=31)){toast('Укажите название, категорию, юрлицо и день оплаты',true);return false;}
-      const item={id:x.id,name,day,kind:x.kind,category,legal_entity:legal,unit:f.querySelector('#fb-u').value};
+      const item={id:x.id,name,day,kind:x.kind,category,legal_entity:legal,unit:f.querySelector('#fb-u').value,frequency:f.querySelector('#fb-frequency').value,frequency_from:f.querySelector('#fb-frequency-from').value};
       if(x.kind==='fixed'){const amount=value(f.querySelector('#fb-s').value);if(!goodAmount(amount)){toast('Введите корректную сумму',true);return false;}
         // Do not append a rate revision if only name/day/legal was updated.
         const from=f.querySelector('#fb-from').value;if(n(x.rate_amount)!==Number(amount)){
@@ -6557,7 +6580,7 @@ async function renderBalance(body){
      В данном компоненте НЕ происходит импорта в существующие финансовые источники.
      Неподтверждённые и отклонённые строки существуют только в карантинной таблице EU. */
   const BANK_CATEGORIES=['Аренда','Налоги и бухгалтерия','Коммунальные','Связь и сервис','Реклама','Персонал','Прочее'];
-  const EU_TEMPLATE_XLSX_BASE64='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IRu9HOfIfuulFrLRy3GO7LdeaiEbvRznyH7rpRay0ctxjuy3XmohG70c58S23keL2Nz7jHNkm5fc+4zzmV28tN5HC9nsZel9dut9tJDNXpbeZ7feRwvZ7GXpfXbrfbSQzV6W3me33kcL2exl6X126320kM1elt5nt95HC9nsZel9dut9tJDNXpbeZ7feR4vY3PuMc2Sbl9z7jPOZXby03kcL2exl6X126320kM1elt5nt95HC9nsZel9dut9tJDNXpbeZ7feRwvZ7GXpfXbrfbSQzV6W3me33kcL2exl6X126320kM1elt5nt95Hi9jc+4xzZJuX3PuM85ldvLTeRwvZ7GXpfXbrfbSQzV6W3me33kcL2exl6X126320kM1elt5nt95HC9nsZel9dut9tJDNXpbeZ7feRwvZ7GXpfXbrfbSQzV6W3me33keL2Nz7jHNkm5fc+4zzmV28tN5HC9nsZel9dut9tJDNXpbeZ7feRwvZ7GXpfXbrfbSQzV6W3me33kcL2exl6X126320kM1elt5nt95HC9nsZel9dut9tJDNXpbeZ7feR4vY3PuMc2Sbl9z7jPOZXby03kcL2exl6X126320kM1elt5nt95HC9nsZel9dut9tJDNXpbeZ7feRwvZ7GXpfXbrfbSQzV6W3me33kcL2exl6X126320kM1elt5nt95Hi9jc+4xzZJuX3PuM85ldvLTeRwvZ7GXpfXbrfbSQzV6W3me33kcL2exl6X126320kM1elt5nt95HC9nsZel9dut9tJDNXpbeZ7feRwvZ7GXpfXbrfbSQzV6W3me33keL2Nz7jHNkm5fc+4zzmV28tN5HC9nsZel9dut9tJDNXpbeZ7feRwvZ7GXpfXbrfbSQzV6W3me33kcL2exl6X126320kM1elt5nt95HC9nsZel9dut9tJDNXpbeZ7feR4vY3PuMc2Sbl9z7jPOZXby03kcL2exl6X126320kM1elt5nt95HC9nsZel9dut9tJDNXpbeZ7feRwvZ7GXpfXbrfbSQzV6W3me33kcL2exl6X126320kM1elt5nt95Hi9jc+4xzZJuX3PuM85ldvLTeRwvZ7GXpfXbrfbSQzV6W3me33kcL2exl6X126320kM1elt5nt95HC9nsZel9dut9tJDNXpbeZ7feRwvZ7GXpfXbrfbSQzV6W3uew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';
+  const EU_TEMPLATE_XLSX_BASE64='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';
   let bankWindow=null;
   const bankState={rows:[],articles:[],counts:{},status:'pending',legal:'',query:'',page:0,selected:null,busy:false};
   const bankKey=(legal,name)=>String(legal)+'|'+String(name||'').trim().toLocaleLowerCase('ru-RU');
@@ -6656,7 +6679,8 @@ async function renderBalance(body){
     if(!header||!parsed.length)throw Error('В Excel не найдены отрицательные суммы по контрагентам и месяцам');
     return {rows:parsed,positive:skippedPositive,empty:skippedBlank};
   }
-  // CSV template: Юрлицо;Контрагент;Месяц;Сумма;Строка исходника.
+  // CSV template: Юрлицо;Контрагент;Месяц;Списание BYN (4 columns).
+  // The old optional fifth column is accepted for backward compatibility.
   function euParseCsvText(text){
     text=String(text).replace(/^\uFEFF/,'');const first=text.split(/\r?\n/,1)[0];const sep=first.includes(';')?';':first.includes('\t')?'\t':',';
     const records=[],cells=[];let field='',quoted=false;
@@ -6704,7 +6728,7 @@ async function renderBalance(body){
       mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
       name='FAD_Шаблон_расходов.xlsx';
     } else {
-      bytes='\ufeffЮрлицо;Контрагент;Месяц;Списание BYN;Строка\r\n';
+      bytes='\ufeffЮрлицо;Контрагент;Месяц;Списание BYN\r\n';
       mime='text/csv;charset=utf-8';name='FAD_Шаблон_расходов.csv';
     }
     const url=URL.createObjectURL(new Blob([bytes],{type:mime}));
@@ -6716,7 +6740,7 @@ async function renderBalance(body){
     <div class="fb-eu-head"><div><h3>Импорт расходов · проверка</h3><p>Деньги попадут в Баланс только после вашего подтверждения каждой строки.</p></div><button class="fb-eu-close" type="button" data-eu-close aria-label="Закрыть">✕</button></div>
     <div class="fb-eu-alert">Выписка сгруппирована по контрагентам и месяцам. Даты отдельных платежей отсутствуют. <b>Зарплаты, переводы между своими счетами и уже учтённые расходы ImpulseCRM не подтверждайте повторно.</b></div>
     <div class="fb-eu-template-actions" aria-label="Скачать пример формата импорта"><button type="button" class="fb-action" data-eu-template="xlsx">Скачать шаблон Excel</button><button type="button" class="fb-action" data-eu-template="csv">Скачать шаблон CSV</button></div>
-    <p class="fb-eu-template-note"><b>Формат:</b> Юрлицо · Контрагент · Месяц (YYYY-MM) · Списание BYN (положительная сумма) · Строка (необязательно). В Excel заполняйте первый лист «Импорт»; примеры и памятка — на отдельных листах. Для Excel суммы введите числом, не датой (разделитель дробной части — запятая). CSV — UTF-8, разделитель «;», суммы с десятичной запятой. Рекомендуем XLSX. По одному месячному итогу на контрагента — одинаковые суммы одного контрагента за один месяц система считает дублем.</p>
+    <p class="fb-eu-template-note"><b>Формат:</b> Юрлицо · Контрагент · Месяц (YYYY-MM) · Списание BYN (положительная сумма). В Excel заполняйте первый лист «Импорт»; примеры и памятка — на отдельных листах. Для CSV используйте UTF-8 и разделитель «;». По одному месячному итогу на контрагента — одинаковые суммы одного контрагента за один месяц система считает дублем.</p>
     <div class="fb-eu-upload"><label><span>Выберите Excel или CSV</span><input id="fb-eu-file" type="file" accept=".xlsx,.csv" /></label><button type="button" class="fb-action primary" id="fb-eu-upload">Загрузить в очередь</button></div>
     <div class="fb-eu-notice" id="fb-eu-progress" role="status"></div>
     <div id="fb-eu-counts" class="fb-eu-counts"></div>
@@ -6770,13 +6794,14 @@ async function renderBalance(body){
        <label class="fb-eu-wide">Название статьи<input id="fb-eu-name" maxlength="160" required value="${esc(label)}"></label>
        <label>Категория<select id="fb-eu-category" required>${euOpts([['','Выберите категорию'],...BANK_CATEGORIES.map(x=>[x,x])],current?.category||'')}</select></label>
        <label>Тип<select id="fb-eu-kind" required>${euOpts([['','Выберите тип'],['fixed','Постоянный'],['var','Переменный']],current?.kind||'')}</select></label>
+       <label>Периодичность<select id="fb-eu-frequency" required>${euOpts([['','Выберите периодичность'],...frequencyOpts],current?frequencyOfArticle(current,row.month):'')}</select></label>
        <label>Число оплаты<select id="fb-eu-day" required>${euOpts([['','Укажите число'],...Array.from({length:31},(_,i)=>[String(i+1),String(i+1)])],current?.due_day||'')}</select></label>
        <label>Юрлицо<select id="fb-eu-entity" required>${euOpts([['','Выберите юрлицо'],['ip','ИП Кирпиченко'],['ooo','ООО Флексико']],row.legal_entity)}</select></label>
        <label>Филиал<select id="fb-eu-unit" required>${euOpts([['','Выберите филиал'],['all','Все филиалы'],...Object.entries(U)],current?.unit||'')}</select></label>
        <label class="fb-eu-wide fb-eu-paid"><input id="fb-eu-paid" type="checkbox"> Подтвердить фактическую оплату (не обязательно)</label>
        <label id="fb-eu-date-wrap" class="fb-eu-wide" hidden>Точная дата оплаты<input id="fb-eu-date" type="date" value=""></label>
        <label class="fb-eu-wide fb-eu-check"><input id="fb-eu-checked" type="checkbox" required> Я проверил(а), что этот расход ещё не учтён в ImpulseCRM, зарплатах FAD или другой статье.</label>
-      </div><div class="fb-eu-warning">Внимание: постоянная статья будет перенесена в следующие месяцы. Для повторяющихся платежей выбирайте существующую статью. Без указанной точной даты не отмечаем банковскую операцию как «Оплачено».</div>
+      </div><div class="fb-eu-warning">Постоянная сумма повторяется только в месяцы по выбранной периодичности. Для повторяющихся платежей выбирайте существующую статью. Без указанной точной даты не отмечаем банковскую операцию как «Оплачено».</div>
       <div class="fb-eu-form-actions"><button type="button" class="fb-action" data-eu-cancel>Отмена</button><button class="fb-action primary" type="submit">Добавить в расходы FAD</button></div>
     </form>`;
     const form=root.querySelector('#fb-eu-form');
@@ -6786,6 +6811,7 @@ async function renderBalance(body){
       form.querySelector('#fb-eu-name').value=x.name;
       form.querySelector('#fb-eu-category').value=x.category||'';
       form.querySelector('#fb-eu-kind').value=x.kind;
+      form.querySelector('#fb-eu-frequency').value=frequencyOfArticle(x,row.month);
       form.querySelector('#fb-eu-day').value=x.due_day||'';
       form.querySelector('#fb-eu-unit').value=x.unit||'all';
       form.querySelector('#fb-eu-entity').value=x.legal_entity;
@@ -6795,15 +6821,15 @@ async function renderBalance(body){
       e.preventDefault();if(bankState.busy)return;
       const f=form.elements;
       const item={article_id:f['fb-eu-target'].value||null,name:f['fb-eu-name'].value.trim(),
-        category:f['fb-eu-category'].value,kind:f['fb-eu-kind'].value,day:f['fb-eu-day'].value,
+        category:f['fb-eu-category'].value,kind:f['fb-eu-kind'].value,frequency:f['fb-eu-frequency'].value,day:f['fb-eu-day'].value,
         legal:f['fb-eu-entity'].value,unit:f['fb-eu-unit'].value==='all'?'':f['fb-eu-unit'].value,
         paid:f['fb-eu-paid'].checked,date:f['fb-eu-paid'].checked?f['fb-eu-date'].value:null};
-      if(!f['fb-eu-checked'].checked||!item.category||!item.kind||!item.day||!item.legal||!f['fb-eu-unit'].value){euToast('Заполните все поля и подтвердите проверку на дубли',true);return;}
+      if(!f['fb-eu-checked'].checked||!item.category||!item.kind||!item.frequency||!item.day||!item.legal||!f['fb-eu-unit'].value){euToast('Заполните все поля и подтвердите проверку на дубли',true);return;}
       if(item.legal!==row.legal_entity){euToast('Юрлицо должно совпадать с исходной выпиской. Если там ошибка — отклоните строку.',true);return;}
       if(item.paid&&!/^20\d{2}-\d{2}-\d{2}$/.test(item.date||'')){euToast('Введите точную дату оплаты',true);return;}
       bankState.busy=true;const save=form.querySelector('button[type="submit"]');save.disabled=true;
       try{
-        await rpc('app_balance_eu_decide',{p_token:TOKEN,p_row_id:row.id,p_action:'approve',p_item:item});
+        await rpc('app_balance_fb_decide',{p_token:TOKEN,p_row_id:row.id,p_action:'approve',p_item:item});
         bankState.selected=null;await euRead();euRenderQueue();await load();euToast('Расход добавлен после подтверждения');
       }catch(err){euToast('Не сохранено: '+String(err.message||err),true);}finally{bankState.busy=false;if(save.isConnected)save.disabled=false;}
     };
@@ -6844,7 +6870,7 @@ async function renderBalance(body){
       if(b.dataset.euReject||b.dataset.euReopen){
         const id=b.dataset.euReject||b.dataset.euReopen,action=b.dataset.euReject?'reject':'reopen';
         if(bankState.busy)return;bankState.busy=true;b.disabled=true;
-        try{await rpc('app_balance_eu_decide',{p_token:TOKEN,p_row_id:id,p_action:action,p_item:{}});
+        try{await rpc('app_balance_fb_decide',{p_token:TOKEN,p_row_id:id,p_action:action,p_item:{}});
           bankState.selected=null;await euRead();euRenderQueue();euToast(action==='reject'?'Строка исключена без начисления':'Строка снова ожидает проверки');}
         catch(err){euToast(String(err.message||err),true);}finally{bankState.busy=false;if(b.isConnected)b.disabled=false;}
       }
@@ -6958,14 +6984,20 @@ async function renderShift(body){
 
 /* ================= The daily form ================= */
 async function fillCoffeeChk(container, date, data){
-  const box=container.querySelector('#coffeeWrap'); if(!box) return;
-  let sc=null; try{ sc=await apiGetSchedule(date.slice(0,7)); }catch(e){}
-  const who=(sc&&sc.coffee)?sc.coffee[date]:null;
-  if(!who) return;
-  const coffeeManager=can('schedule.coffee');
-  if(!coffeeManager && session.login!==who) return;
-  const note=(coffeeManager&&session.login!==who)?` <small style="color:var(--ink-faint)">(назначен: ${escapeHtml(coffeeName(who))})</small>`:'';
-  box.innerHTML=`<label class="chk zrep"><input type="checkbox" id="coffeeDone" ${data.coffeeDone?'checked':''}/> ☕ Кофе+снеки — выполнено${note}</label>`;
+  const box=container.querySelector('#coffeeWrap');if(!box)return null;
+  box.innerHTML='<div class="hintline">Проверяем назначение на кофе…</div>';
+  const res=await rpc('app_coffee_ey_shift_state',{p_token:TOKEN,p_date:date});
+  if(!box.isConnected)return null;
+  const task=res?.task||null;
+  if(!task){box.innerHTML='';return null;}
+  const status=task.done?'done':task.missed?'missed':'pending';
+  const responsible=res?.responsible===true;
+  const assigned=task.login||'';
+  box.innerHTML=`<div class="coffee-shift-check" role="group" aria-label="Обслуживание кофе">
+    <label class="chk zrep"><input type="checkbox" id="coffeeDone" ${status==='done'?'checked':''} ${responsible?'':'disabled'}/> ☕ Кофе — выполнено</label>
+    <small class="coffee-shift-hint">${escapeHtml(fadPersonName(assigned))} · ${status==='done'?'Выполнено':status==='missed'?'Пропуск отмечен':'Ожидает отметки'} · ${responsible?'при закрытии смены выберите «Да» или «Нет»':'обслуживание поручено другому сотруднику. Обратитесь к старшему администратору.'}.</small>
+  </div>`;
+  return {...task,origin:status,responsible};
 }
 function openChecklistModal(items, onOk){
   const el=modal(`<h3>Перед закрытием смены</h3><p>Отметьте, что всё сделано:</p>
@@ -7061,7 +7093,8 @@ function renderForm(container,studio,date,data,onSaved,opts){
         : `<button class="btn btn-primary" id="closeShift">Закрыть смену</button>`}
     </div>`;
 
-  if(studio==='masherova') fillCoffeeChk(container, date, data);
+  let coffeeTask=null,coffeeLoadError='';
+  const coffeeReady=studio==='masherova'?fillCoffeeChk(container,date,data).then(t=>{coffeeTask=t;return t;}).catch(e=>{coffeeLoadError=String(e?.message||e);const box=container.querySelector('#coffeeWrap');if(box)box.innerHTML='<div class="eq-warning" role="alert">Не удалось проверить назначение кофе. Закрытие смены временно заблокировано.</div>';return null;}):Promise.resolve(null);
   // сравнение утренних наличных с остатком на конец предыдущего дня (тот же филиал)
   const morningCmp=container.querySelector('#morningCmp');
   const interWrap=container.querySelector('#interWrap'), interAmt=container.querySelector('#interAmt');
@@ -7166,7 +7199,8 @@ function renderForm(container,studio,date,data,onSaved,opts){
       ended:valNum('ended'), renewed:valNum('renewed'),
       notRenewList:notRenewList.map(x=>({note:(x.note||'').trim()})),
       comments:valStr('comments'), interNote:valStr('interNote'), zReport:!!(container.querySelector('#zReport')&&container.querySelector('#zReport').checked),
-      coffeeDone:(container.querySelector('#coffeeDone')?container.querySelector('#coffeeDone').checked:!!data.coffeeDone), coffeeAssigned:(container.querySelector('#coffeeDone')?true:!!data.coffeeAssigned),
+      coffeeDone:(container.querySelector('#coffeeDone')?container.querySelector('#coffeeDone').checked:!!data.coffeeDone), coffeeAssigned:!!coffeeTask||!!data.coffeeAssigned,
+      coffeeStatus:container.querySelector('#coffeeDone')?(container.querySelector('#coffeeDone').checked?'done':coffeeTask?.missed?'missed':'pending'):(data.coffeeStatus||null),
       status:data.status||'open', closedBy:data.closedBy, closedByLogin:data.closedByLogin, closedAt:data.closedAt,
       cashStartEditedBy:data.cashStartEditedBy, cashStartEditedAt:data.cashStartEditedAt,
       filledBy:data.filledBy||session.name, filledByLogin:data.filledByLogin||session.login,
@@ -7221,7 +7255,7 @@ function renderForm(container,studio,date,data,onSaved,opts){
   // Закрыть смену — требует все финансовые поля + клиентов
   // поля, которые при пустом значении можно «считать нулём» одним нажатием
   const ZEROABLE=[['cashEnd','наличные на конец дня'],['cashless','картой'],['allsports','QR'],['epos','EPOS'],['newCame','пришло новых'],['ended','закончились абонементы'],['renewed','продлили']];
-  async function doClose(){
+  async function doClose(coffeeDecision=null){
     if(shiftTransition) return;
     shiftTransition=true;
     const oldStatus=data.status, oldClosedBy=data.closedBy, oldClosedByLogin=data.closedByLogin, oldClosedAt=data.closedAt;
@@ -7232,7 +7266,13 @@ function renderForm(container,studio,date,data,onSaved,opts){
     const rec=collectRec();
     rec.status='closed'; rec.closedBy=session.name; rec.closedByLogin=session.login; rec.closedAt=closedAt;
     try{
-      await apiSaveReport(studio,date,rec);
+      if(studio==='masherova'){
+        await REPORT_SAVE_QUEUES.get(studio+'|'+date)?.catch(()=>{});
+        await rpc('app_coffee_ey_close_shift',{p_token:TOKEN,p_studio:studio,p_date:date,p_payload:rec,p_decision:coffeeDecision});
+        if(coffeeDecision){rec.coffeeStatus=coffeeDecision;rec.coffeeDone=coffeeDecision==='done';rec.coffeeAssigned=true;}
+        if(Array.isArray(REPORTS)){const idx=REPORTS.findIndex(e=>e.studioId===studio&&e.date===date);if(idx>=0)REPORTS[idx]=rec;else REPORTS.unshift(rec);}
+        ALL_REPORTS=null;
+      }else await apiSaveReport(studio,date,rec);
       lastAutoSnap=stripVolatile(rec);
       toast('Смена закрыта');
       if(onSaved) await onSaved();
@@ -7244,15 +7284,44 @@ function renderForm(container,studio,date,data,onSaved,opts){
       shiftTransition=false;
     }
   }
-  function proceedClose(){
+  function proceedClose(coffeeDecision=null){
     const empties=ZEROABLE.filter(f=>valNum(f[0])==null);
     if(empties.length){
       const el=modal(`<h3>Закрыть смену</h3><p>Не заполнены поля: <b>${empties.map(f=>f[1]).join(', ')}</b>.<br>Если по ним данных нет — их можно считать нулём.</p>
         <div class="actions"><button class="btn" data-x>Заполнить вручную</button><button class="btn btn-primary" id="zc">Считать нулём и закрыть</button></div>`);
-      el.querySelector('#zc').onclick=async()=>{ empties.forEach(f=>{const inp=container.querySelector('#'+f[0]); if(inp) inp.value='0';}); closeModal(el); await doClose(); };
+      el.querySelector('#zc').onclick=async()=>{ empties.forEach(f=>{const inp=container.querySelector('#'+f[0]); if(inp) inp.value='0';}); closeModal(el); await doClose(coffeeDecision); };
       return;
     }
-    doClose();
+    doClose(coffeeDecision);
+  }
+  async function resolveCoffeeBeforeClosing(){
+    await coffeeReady;
+    if(coffeeLoadError){toast('Не удалось проверить кофе — обновите страницу',true);return;}
+    // Refresh just before closing: another responsible employee may have
+    // completed or missed the same assignment in the Coffee tab meanwhile.
+    if(studio==='masherova'){
+      try{
+        const latest=await rpc('app_coffee_ey_shift_state',{p_token:TOKEN,p_date:date});
+        if(latest?.task){
+          coffeeTask={...latest.task,responsible:latest.responsible===true};
+          if(latest.task.done&&container.querySelector('#coffeeDone'))container.querySelector('#coffeeDone').checked=true;
+        }else coffeeTask=null;
+      }catch(_){toast('Не удалось обновить статус кофе — повторите попытку',true);return;}
+    }
+    if(!coffeeTask){proceedClose(null);return;}
+    if(coffeeTask.responsible!==true){
+      if(coffeeTask.done){proceedClose('done');return;}
+      if(coffeeTask.missed){proceedClose('missed');return;}
+      toast('Кофе назначено другому сотруднику — обратитесь к старшему администратору',true);return;
+    }
+    const checked=!!container.querySelector('#coffeeDone')?.checked;
+    if(checked){proceedClose('done');return;}
+    const el=modal(`<h3>Обслуживание кофе</h3><p>Кофе сегодня выполнено? Ответ обязателен для закрытия смены.</p>
+      <div class="actions"><button type="button" class="btn" data-x>Отмена</button>
+      <button type="button" class="btn btn-primary" id="cfYes">Да, выполнено</button>
+      <button type="button" class="btn" id="cfNo">Нет, пропуск</button></div>`);
+    el.querySelector('#cfYes').onclick=()=>{closeModal(el);const cb=container.querySelector('#coffeeDone');if(cb)cb.checked=true;proceedClose('done');};
+    el.querySelector('#cfNo').onclick=()=>{closeModal(el);proceedClose('missed');};
   }
   const closeBtn=container.querySelector('#closeShift');
   if(closeBtn){
@@ -7271,8 +7340,8 @@ function renderForm(container,studio,date,data,onSaved,opts){
         return;
       }
       try{ await msgReady; }catch(e){}
-      if(FORM_CHECKLIST.length){ openChecklistModal(FORM_CHECKLIST, function(res){ pendingChecklist=res; proceedClose(); }); return; }
-      proceedClose();
+      if(FORM_CHECKLIST.length){ openChecklistModal(FORM_CHECKLIST, function(res){ pendingChecklist=res;void resolveCoffeeBeforeClosing(); }); return; }
+      await resolveCoffeeBeforeClosing();
     };
   }
   const reopenBtn=container.querySelector('#reopen');
@@ -7396,7 +7465,7 @@ function dayCard(e,open,source){
     <div class="day-head"><span class="chev">▸</span>
       <span class="day-date">${fmtLong(e.date)}<span class="dow"> · ${fmtDow(e.date)}</span></span>
       <span class="st-tag" style="border-color:${studioColor(e.studioId)}">${sdot(e.studioId)}${studioAddr(e.studioId)}</span>
-      <span class="stat ${e.status==='closed'?'stat-closed':'stat-open'}">${e.status==='closed'?'закрыта':'не закрыта'}</span>${e.status==='closed'?(e.zReport?'<span class="zbadge zok">Z-отчёт ✓</span>':'<span class="zbadge zno">Z-отчёт ✗</span>'):''}${e.coffeeAssigned?(e.coffeeDone?'<span class="zbadge zok">☕ выполнено</span>':'<span class="zbadge zno">☕ не выполнено</span>'):''}${(e.checklist&&e.checklist.length)?`<span class="zbadge zok" title="${escapeHtml(e.checklist.map(c=>c.text).join(', '))}">✅ чек-лист (${e.checklist.length})</span>`:''}
+      <span class="stat ${e.status==='closed'?'stat-closed':'stat-open'}">${e.status==='closed'?'закрыта':'не закрыта'}</span>${e.status==='closed'?(e.zReport?'<span class="zbadge zok">Z-отчёт ✓</span>':'<span class="zbadge zno">Z-отчёт ✗</span>'):''}${e.coffeeAssigned?(e.coffeeDone?'<span class="zbadge zok">☕ выполнено</span>':e.coffeeStatus==='missed'?'<span class="zbadge zno">☕ пропуск</span>':'<span class="zbadge zno">☕ не выполнено</span>'):''}${(e.checklist&&e.checklist.length)?`<span class="zbadge zok" title="${escapeHtml(e.checklist.map(c=>c.text).join(', '))}">✅ чек-лист (${e.checklist.length})</span>`:''}
       <span class="day-by">заполнил(а): <b>${escapeHtml(shortName(e.filledBy||'—'))}</b><br><span style="color:var(--ink-faint)">${fmtTime(e.submittedAt)}</span></span></div>
     <div class="day-body">
       <div class="kv">
@@ -7718,7 +7787,7 @@ function exportExcel(entries){
       'Наличными за день':(e.cashEnd==null?'':num(e.cashEnd)-num(e.cashStart)-inSum+outSum),'Движения нетто':inSum-outSum,'Движения (детально)':chgText,
       'Картой':e.cashless??'','QR':e.allsports??'','EPOS':e.epos??'',
       'Выручка за день':(e.cashEnd==null?'':(num(e.cashEnd)-num(e.cashStart)-inSum+outSum)+num(e.cashless)+num(e.allsports)+num(e.epos)),
-      'Между сменами':(function(){const p=lastCashEndBefore(e.studioId,e.date);return (p&&e.cashStart!=null)?num(e.cashStart)-p.cashEnd:'';})(),'Причина (между сменами)':e.interNote||'','Z-отчёт':e.zReport?'да':(e.status==='closed'?'нет':''),'Кофе+снеки':e.coffeeAssigned?(e.coffeeDone?'выполнено':'нет'):'',
+      'Между сменами':(function(){const p=lastCashEndBefore(e.studioId,e.date);return (p&&e.cashStart!=null)?num(e.cashStart)-p.cashEnd:'';})(),'Причина (между сменами)':e.interNote||'','Z-отчёт':e.zReport?'да':(e.status==='closed'?'нет':''),'Кофе':e.coffeeAssigned?(e.coffeeDone?'выполнено':'нет'):'',
       'Пришло новых':came,'Купили абонемент':bought,'Конверсия новых':pct(bought,came),'Абонементы закончились':endedC,'Продлили':renewC,'Не продлили':notRen,'Конверсия продлений':pct(renewC,endedC),
       'Новые клиенты (детально)':newDet,'Не продлили (детально)':nrDet,'Комментарии':e.comments||''
     };
@@ -12235,6 +12304,14 @@ function confirmModal(msg,onYes){
 const MON2=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 const SCH_DOW=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
 let SCH=null, SCHDATA=null, TEAM=[], SCHsel=null, ABS_MODE='cal', COFFEE_ROSTER=[], ADMIN_PHONES={};
+let COFFEE_SCHEDULE_MARKERS=new Map();
+async function coffeeScheduleLoadMarkers(period){
+  COFFEE_SCHEDULE_MARKERS=new Map();
+  // Only date + assignee for the roster; even staff without the Coffee tab can see ☕.
+  try{const resp=await rpc('app_coffee_ey_schedule_marks',{p_token:TOKEN,p_period:period});
+    COFFEE_SCHEDULE_MARKERS=new Map((resp||[]).map(t=>[t.date,t]));
+  }catch(_){/* No guessed markers when the server read fails. */}
+}
 
 function monthKey(y,m){return y+'-'+String(m+1).padStart(2,'0');}
 function schPad(n){return String(n).padStart(2,'0');}
@@ -12275,7 +12352,7 @@ async function saveMonth(){ await apiSaveSchedule(monthKey(SCH.y,SCH.m), SCHDATA
 async function renderSchedule(body){
   const editor = can('schedule.edit');
   if(!SCH){ const now=new Date(); const defSids = editor ? STUDIOS.map(s=>s.id) : (session.home?[session.home]:STUDIOS.map(s=>s.id)); SCH={y:now.getFullYear(), m:now.getMonth(), sids:defSids, view:'calendar', calView:(typeof window!=='undefined'&&window.innerWidth<640)?'list':'grid'}; }
-  try{ TEAM=await apiListTeam(); SCHDATA=await loadMonth(SCH.y,SCH.m); }
+  try{ TEAM=await apiListTeam(); SCHDATA=await loadMonth(SCH.y,SCH.m);await coffeeScheduleLoadMarkers(monthKey(SCH.y,SCH.m)); }
   catch(e){ return handleErr(e); }
   try{ const _s=await apiGetSettings(); ADMIN_PHONES=(_s&&_s.adminPhones)||{}; }
   catch(e){ ADMIN_PHONES={}; }
@@ -12290,7 +12367,7 @@ function drawSchedule(body, editor){
   const sub=[['calendar','Календарь'],['overview','Обзор']];
   if(canAbsence||can('schedule.leave_norms')) sub.push(['absences','Отсутствия']);
   if(session.role!=='owner') sub.push(['dashboard','Моё расписание']);
-  sub.push(['coffee','Кофе']);
+  // EY: «Кофе» is a dedicated left-hand navigation item; no duplicate subtab.
   if(!sub.some(x=>x[0]===SCH.view)) SCH.view=sub[0][0];
   body.innerHTML=`<div id="schedRoot">
     <div class="sch-bar">
@@ -12310,7 +12387,7 @@ function drawSchedule(body, editor){
   const root=body.querySelector('#schedRoot');
   root.querySelectorAll('[data-mv]').forEach(b=>b.onclick=async()=>{
     let m=SCH.m+(+b.dataset.mv), y=SCH.y; if(m<0){m=11;y--;} if(m>11){m=0;y++;} SCH.y=y; SCH.m=m;
-    try{ SCHDATA=await loadMonth(y,m); }catch(e){ return handleErr(e); } drawSchedule(body,can('schedule.edit'));
+    try{ SCHDATA=await loadMonth(y,m);await coffeeScheduleLoadMarkers(monthKey(y,m)); }catch(e){ return handleErr(e); } drawSchedule(body,can('schedule.edit'));
   });
   root.querySelectorAll('[data-sview]').forEach(b=>b.onclick=()=>{ SCH.view=b.dataset.sview; root.querySelectorAll('[data-sview]').forEach(x=>x.classList.toggle('on',x.dataset.sview===SCH.view)); drawSub(root); });
   const more=root.querySelector('[data-sch-more]');if(more)more.onclick=()=>{
@@ -12327,7 +12404,7 @@ function drawSub(root){
   if(SCH.view==='calendar') renderSchCalendar(el);
   else if(SCH.view==='overview') renderSchOverview(el);
   else if(SCH.view==='absences') renderSchAbsences(el);
-  else if(SCH.view==='coffee') renderSchCoffee(el);
+  // Coffee is rendered exclusively through the main tab and verified server access.
   else renderSchPersonal(el);
 }
 const ABS_CLR={otpusk:'#FAC775',bol:'#F09595',otgul:'#B4B2A9'};
@@ -12364,6 +12441,29 @@ function equipMonthRoster(){
  return [...set.values()].sort((a,b)=>String(a.name).localeCompare(String(b.name),'ru'));
 }
 const equipCanAssign=(login,iso)=>equipManual(login)||equipShift(login,iso);
+/* EY · Independent Coffee module. Uses the existing DO equipment renderer unchanged. */
+async function renderCoffeeTop(body){
+ if(!session?.coffeeAllowed){body.innerHTML='<div class="empty">Кофе доступно только назначенным исполнителям, старшему администратору и руководителю.</div>';return;}
+ const now=new Date();
+ if(!SCH)SCH={y:now.getFullYear(),m:now.getMonth(),view:'calendar',sids:STUDIOS.map(s=>s.id),calView:'list'};
+ try{TEAM=await apiListTeam();SCHDATA=await loadMonth(SCH.y,SCH.m);}
+ catch(e){handleErr(e);return;}
+ function draw(){
+  body.innerHTML=`<div id="schedRoot" class="fad-coffee-top"><div class="sch-bar"><div class="sch-month">
+    <button class="btn btn-sm" type="button" data-coffee-month="-1" aria-label="Предыдущий месяц">‹</button>
+    <b>${MON2[SCH.m]} ${SCH.y}</b>
+    <button class="btn btn-sm" type="button" data-coffee-month="1" aria-label="Следующий месяц">›</button></div>
+    <span class="sch-status ap">Обслуживание оборудования · Машерова, 11</span></div><div id="coffeeTopSlot"></div></div>`;
+  const slot=body.querySelector('#coffeeTopSlot');void renderSchCoffee(slot);
+  body.querySelectorAll('[data-coffee-month]').forEach(b=>b.onclick=async()=>{
+   const d=new Date(SCH.y,SCH.m+Number(b.dataset.coffeeMonth),1);
+   SCH.y=d.getFullYear();SCH.m=d.getMonth();
+   try{SCHDATA=await loadMonth(SCH.y,SCH.m);draw();}
+   catch(e){handleErr(e);}
+  });
+ }
+ draw();
+}
 async function renderSchCoffee(el){
  el.innerHTML=`<div class="section-title">Кофе · ${MON2[SCH.m]} ${SCH.y} <small style="font-weight:500;color:var(--ink-soft)">(Машерова, 11)</small></div>
  <div class="eq-tabs" role="tablist" aria-label="Кофе"><button class="eq-tab${EQUIPMENT_VIEW==='graph'?' on':''}" data-eq-view="graph" role="tab" aria-selected="${EQUIPMENT_VIEW==='graph'}">График</button><button class="eq-tab${EQUIPMENT_VIEW==='bonus'?' on':''}" data-eq-view="bonus" role="tab" aria-selected="${EQUIPMENT_VIEW==='bonus'}">Доплаты</button></div>
@@ -12373,7 +12473,11 @@ async function renderSchCoffee(el){
  await equipReload(el);
 }
 async function equipReload(el){
- try{EQUIPMENT_DATA=await rpc('app_equipment_u_snapshot',{p_token:TOKEN,p_period:monthKey(SCH.y,SCH.m)});}
+ try{EQUIPMENT_DATA=await rpc('app_equipment_u_snapshot',{p_token:TOKEN,p_period:monthKey(SCH.y,SCH.m)});
+   const statuses=await rpc('app_coffee_ey_state',{p_token:TOKEN,p_period:monthKey(SCH.y,SCH.m)});
+   const known=new Map((statuses?.tasks||[]).map(t=>[t.date,t]));
+   EQUIPMENT_DATA.tasks=(EQUIPMENT_DATA.tasks||[]).map(t=>({...t,missed:known.get(t.date)?.missed===true}));
+ }
  catch(e){EQUIPMENT_DATA={error:String(e?.message||e),tasks:[],totals:[],manual:[]};}
  if(el.isConnected)equipDraw(el);
 }
@@ -12395,10 +12499,10 @@ function equipGrid(roster,n,today){
   for(let d=1;d<=n;d++){
    const date=schIso(SCH.y,SCH.m,d),shift=equipShift(p.login,date),t=equipTask(date),mine=t?.login===p.login,
     enabled=shift||equipManual(p.login),locked=t?.done&&!mine,
-    status=mine?(t.done?'done':date<today?'late':'assigned'):t?('other'+(t.done?' do-locked':'')):enabled?'shift':'blocked',
-    title=mine?(t.done?'Выполнено':date<today?'Не отмечено':'Назначено'):t?('Назначено: '+(equipPerson(t.login)?.name||t.login)+(t.done?' · выполнено, нельзя заменить':'')):(enabled?'Свободно':'Нет смены на Машерова'),
+    status=mine?(t.done?'done':t.missed?'late':date<today?'late':'assigned'):t?('other'+(t.done?' do-locked':'')):enabled?'shift':'blocked',
+    title=mine?(t.done?'Выполнено':t.missed?'Пропуск':date<today?'Не отмечено':'Назначено'):t?('Назначено: '+(equipPerson(t.login)?.name||t.login)+(t.done?' · выполнено, нельзя заменить':'')):(enabled?'Свободно':'Нет смены на Машерова'),
     disabled=!equipOwner()||(!enabled&&!mine),
-    symbol=mine?(t.done?'✓':date<today?'!':'·'):t?'·':'';
+    symbol=mine?(t.done?'✓':t.missed?'×':date<today?'!':'·'):t?'·':'';
    html+=`<button type="button" class="do-grid-cell ${status}${date===today?' today':''}${EQUIPMENT_PICK?.date===date&&EQUIPMENT_PICK?.login===p.login?' chosen':''}"
      data-eq-day="${date}" data-eq-login="${escapeHtml(p.login)}" title="${escapeHtml(p.name+' · '+date+' · '+title)}"
      aria-label="${escapeHtml(p.name+' · '+date+' · '+title)}" ${disabled?'disabled':''}>${symbol}</button>`;
@@ -12419,6 +12523,10 @@ function equipDrawGraph(el,host){
  <div class="dl-section"><b>Сегодня · ${new Date(today+'T12:00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'long',timeZone:'Europe/Minsk'})}</b>${thisMonth?`<div class="dl-today-row"><span><b>Обслуживание оборудования</b><small>${current?equipShort(current.login):'Исполнителя назначает руководитель'}</small></span><span class="dl-status ${current?.done?'done':current?'assigned':'missing'}">${current?.done?'✓ Выполнено':current?'Назначено':'Нет исполнителя'}</span>${current&&!current.done&&(equipOwner()||current.login===session.login)?`<button type="button" class="btn btn-sm" data-do-complete ${rate<=0?'disabled title="Сначала установите ставку"':''}>Выполнено</button>`:''}</div>`:'<p class="eq-hint">Для текущих назначений откройте этот месяц.</p>'}</div></div>
  <div class="dl-section dl-rules"><b>Правила графика</b><p>Одно задание и один исполнитель на день. Назначает руководитель или сотрудник с правом управления. Администратору — только на смену Машерова; добавленному вручную — любой день. Исполнитель отмечает только своё сегодняшнее задание, управляющий может отметить прошедший день. Будущую дату выполнить нельзя. При ставке 0 отметка заблокирована. Руководителю доплата не начисляется. Ставка сохраняется при выполнении, прежние начисления не пересчитываются.</p></div>`;
  host.querySelectorAll('[data-eq-day]').forEach(b=>b.onclick=()=>void equipQuickClick(el,b.dataset.eqDay,b.dataset.eqLogin));
+ if(equipOwner()&&EQUIPMENT_PICK){const x=equipTask(EQUIPMENT_PICK.date);if(x?.login===EQUIPMENT_PICK.login&&!x.done){
+   const skip=document.createElement('button');skip.type='button';skip.className='btn btn-sm';skip.textContent='Пропуск · '+EQUIPMENT_PICK.date;
+   skip.onclick=()=>void equipSetMissed(el,EQUIPMENT_PICK.date);host.querySelector('#doStatus')?.append(' ',skip);
+ }}
  const fill=host.querySelector('[data-do-auto]');if(fill)fill.onclick=()=>equipAutofill(el);
  const clear=host.querySelector('[data-do-clear]');if(clear)clear.onclick=()=>equipClearFuture(el);
  const add=host.querySelector('[data-do-add]');if(add)add.onclick=()=>equipAddModal(el,roster);
@@ -12438,16 +12546,16 @@ function equipDrawManagerMobile(el,host){
  const weekDays=Array.from({length:7},(_,i)=>monday+i).filter(d=>d>=1&&d<=monthDays);
  const shortDow=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
  const strip=weekDays.map(d=>{const date=schIso(SCH.y,SCH.m,d),w=(new Date(date+'T12:00:00Z').getUTCDay()+6)%7,t=equipTask(date);
-  const tone=t?.done?'done':t?'assigned':'none';
+  const tone=t?.done?'done':t?.missed?'missed':t?'assigned':'none';
   return `<button type="button" class="eq-m-day ${selected===date?'on':''}" data-eq-m-date="${date}" aria-pressed="${selected===date}"><span>${shortDow[w]}</span><b>${d}</b><i class="${tone}" aria-hidden="true"></i></button>`;}).join('');
  const employee=roster.map(p=>{const chosen=task?.login===p.login,allowed=equipCanAssign(p.login,selected),owner=equipIsOwnerPerson(p.login),canChange=equipOwner()&&(allowed||chosen),canComplete=chosen&&!task.done&&(equipOwner()||task.login===session?.login);
-  const status=chosen?(task.done?'✓ Выполнено':'Назначено'):allowed?'Свободен':'Нет смены';
-  const action=canChange?`<button type="button" class="eq-m-person-action${chosen&&!task.done?' primary':''}" data-eq-m-action="${escapeHtml(p.login)}">${chosen?(task.done?'Снять':'Выполнено'):'Назначить'}</button>`:'';
+  const status=chosen?(task.done?'✓ Выполнено':task.missed?'Пропуск':'Назначено'):allowed?'Свободен':'Нет смены';
+  const action=canChange?`<button type="button" class="eq-m-person-action${chosen&&!task.done?' primary':''}" data-eq-m-action="${escapeHtml(p.login)}">${chosen?(task.done?'Снять':'Выполнено'):'Назначить'}</button>${chosen&&!task.done?`<button type="button" class="eq-m-person-action" data-eq-m-skip="${escapeHtml(p.login)}">Пропуск</button>`:''}`:chosen&&!task.done&&p.login===session?.login?`<button type="button" class="eq-m-person-action" data-eq-m-skip="${escapeHtml(p.login)}">Пропуск</button>`:'';
   const initial=escapeHtml((p.name||'С').split(' ').map(v=>v[0]||'').slice(0,2).join('').toUpperCase());
   return `<article class="eq-m-person"><span class="eq-m-avatar">${initial}</span><div class="eq-m-name"><b>${escapeHtml(p.name)}</b><span>${status}${owner?' · руководитель, без доплаты':''}</span></div>${action}</article>`;}).join('');
  const dates=weekDays.map(d=>schIso(SCH.y,SCH.m,d));
  const heads=dates.map(date=>`<span class="${date===today?'today':''}">${Number(date.slice(8))}</span>`).join('');
- const matRows=roster.map(p=>`<div class="eq-m-matrix-row"><span title="${escapeHtml(p.name)}">${escapeHtml(fadPersonName(p.login,p.name,true))}</span>${dates.map(date=>{const t=equipTask(date),own=t?.login===p.login,shift=equipCanAssign(p.login,date),tone=own?(t.done?'done':date<today?'late':'assigned'):shift?'shift':'none';return `<button type="button" class="${tone} ${date===today?'today':''}" data-eq-m-date="${date}" data-eq-m-login="${escapeHtml(p.login)}" aria-label="${escapeHtml(p.name)} · ${date} · ${own?(t.done?'выполнено':'назначено'):'без назначения'}">${own?(t.done?'✓':'·'):''}</button>`;}).join('')}</div>`).join('');
+ const matRows=roster.map(p=>`<div class="eq-m-matrix-row"><span title="${escapeHtml(p.name)}">${escapeHtml(fadPersonName(p.login,p.name,true))}</span>${dates.map(date=>{const t=equipTask(date),own=t?.login===p.login,shift=equipCanAssign(p.login,date),tone=own?(t.done?'done':t.missed?'late':date<today?'late':'assigned'):shift?'shift':'none';return `<button type="button" class="${tone} ${date===today?'today':''}" data-eq-m-date="${date}" data-eq-m-login="${escapeHtml(p.login)}" aria-label="${escapeHtml(p.name)} · ${date} · ${own?(t.done?'выполнено':t.missed?'пропуск':'назначено'):'без назначения'}">${own?(t.done?'✓':t.missed?'×':'·'):''}</button>`;}).join('')}</div>`).join('');
  host.innerHTML=`<section class="eq-m-manager"><div class="eq-m-rate">График обслуживания · ставка <b>${equipPrice(rate)}</b> за выполненное</div>
    <section class="eq-m-surface"><b>Выберите день</b><div class="eq-m-week">${strip}</div></section>
    <section class="eq-m-surface"><div class="eq-m-day-heading"><b>${new Date(selected+'T12:00:00Z').toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long',timeZone:'UTC'})}</b>${selected===today?'<span>Сегодня</span>':''}</div>
@@ -12459,11 +12567,22 @@ function equipDrawManagerMobile(el,host){
  host.querySelectorAll('[data-eq-m-date]').forEach(b=>b.onclick=()=>{EQUIPMENT_MOBILE_DAY=b.dataset.eqMDate;
     if(b.dataset.eqMLogin)EQUIPMENT_PICK={date:b.dataset.eqMDate,login:b.dataset.eqMLogin};equipDraw(el);});
  host.querySelectorAll('[data-eq-m-action]').forEach(b=>b.onclick=()=>void equipQuickClick(el,selected,b.dataset.eqMAction));
+ host.querySelectorAll('[data-eq-m-skip]').forEach(b=>b.onclick=()=>void equipSetMissed(el,selected));
  host.querySelector('[data-eq-m-auto]')?.addEventListener('click',()=>equipAutofill(el));
  host.querySelector('[data-eq-m-clear]')?.addEventListener('click',()=>equipClearFuture(el));
  host.querySelector('[data-eq-m-add]')?.addEventListener('click',()=>equipAddModal(el,roster));
 }
 function equipActionLabel(action){return ({assign:'назначено',replace:'исполнитель изменён',complete:'выполнено',undo_and_remove:'снято',unassign:'снято'})[action]||'изменено';}
+async function equipSetMissed(el,date){
+ if(EQUIPMENT_BUSY)return;
+ const task=equipTask(date);if(!task||task.done)return;
+ if(!equipOwner()&&task.login!==session?.login){toast('Только назначенный исполнитель может отметить пропуск',true);return;}
+ const m=modal(`<h3>Обслуживание кофе не выполнено?</h3><p>За ${escapeHtml(date)} будет отмечен «Пропуск». Доплата не начисляется.</p><div class="actions"><button class="btn" data-x>Отмена</button><button class="btn btn-primary" data-coffee-miss>Подтвердить пропуск</button></div>`);
+ m.querySelector('[data-coffee-miss]').onclick=async()=>{closeModal(m);EQUIPMENT_BUSY=true;
+  try{await rpc('app_coffee_ey_mark',{p_token:TOKEN,p_date:date,p_decision:'missed'});toast('Пропуск отмечен');await equipReload(el);}
+  catch(e){handleErr(e);}finally{EQUIPMENT_BUSY=false;}
+ };
+}
 async function equipQuickClick(el,date,login){
  if(EQUIPMENT_BUSY||!equipOwner())return;
  const current=equipTask(date),today=equipToday();
@@ -12527,19 +12646,20 @@ function equipDrawMobile(el,host){
  total=(EQUIPMENT_DATA?.totals||[]).find(t=>t.login===session.login)||{amount:0,count:0},dates=[];
  for(let i=1;i<=schDaysIn(SCH.y,SCH.m);i++){const d=schIso(SCH.y,SCH.m,i);if(d>today&&equipShift(session.login,d))dates.push(d);}
  host.innerHTML=`<div class="dl-mobile-head"><span>МАШЕРОВА, 11 · КОФЕ</span><h2>${isCurrent?'Сегодня, '+new Date(today+'T12:00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'long',timeZone:'Europe/Minsk'}):MON2[SCH.m]+' '+SCH.y}</h2><p>${escapeHtml(fadPersonName(session.login,session.name))} · ${isCurrent&&equipShift(session.login,today)?'смена на Машерова':'график оборудования'}</p></div>
- ${isCurrent?`<div class="dl-mobile-list"><div class="dl-mobile-card"><div class="dl-mobile-row"><b>Обслуживание оборудования</b><span class="dl-status ${task?.done?'done':task?'assigned':'missing'}">${task?.done?'✓ Выполнено':task?(mine?'Назначено':'Другой исполнитель'):'Нет исполнителя'}</span></div><p>Кофемашина и торговый автомат</p><p>${task?(mine?'Назначено на вас':'Исполнитель: '+equipShort(task.login)):'Исполнителя назначает руководитель.'}</p>${mine&&!task.done?`<button type="button" class="btn btn-primary dl-mobile-done" data-do-mobile-complete ${rate<=0?'disabled title="Руководитель должен задать ставку"':''}>Выполнено</button>`:''}</div></div>`:'<p class="eq-hint">Откройте текущий месяц, чтобы отметить задание.</p>'}
+ ${isCurrent?`<div class="dl-mobile-list"><div class="dl-mobile-card"><div class="dl-mobile-row"><b>Обслуживание оборудования</b><span class="dl-status ${task?.done?'done':task?'assigned':'missing'}">${task?.done?'✓ Выполнено':task?.missed?'Пропуск':task?(mine?'Назначено':'Другой исполнитель'):'Нет исполнителя'}</span></div><p>Кофемашина и торговый автомат</p><p>${task?(mine?'Назначено на вас':'Исполнитель: '+equipShort(task.login)):'Исполнителя назначает руководитель.'}</p>${mine&&!task.done?`<div class="coffee-mobile-actions"><button type="button" class="btn btn-primary dl-mobile-done" data-do-mobile-complete ${rate<=0?'disabled title="Руководитель должен задать ставку"':''}>Выполнено</button><button type="button" class="btn dl-mobile-done" data-do-mobile-missed>Пропуск</button></div>`:''}</div></div>`:'<p class="eq-hint">Откройте текущий месяц, чтобы отметить задание.</p>'}
  <div class="dl-mobile-card dl-mobile-summary"><div><b>Мои доплаты, ${MON2[SCH.m].toLowerCase()}</b><p>${Number(total.count||0)} заданий выполнено</p></div><strong>${equipPrice(total.amount)}</strong><p>Ближайшие смены на Машерова: ${dates.slice(0,3).length?dates.slice(0,3).map(d=>+d.slice(8)).join(', ')+' '+MON2[SCH.m].toLowerCase():'не назначены'}</p></div>`;
  const btn=host.querySelector('[data-do-mobile-complete]');if(btn)btn.onclick=()=>void equipComplete(el,today);
+ const miss=host.querySelector('[data-do-mobile-missed]');if(miss)miss.onclick=()=>void equipSetMissed(el,today);
 }
 function equipDrawMyBonus(el,host){
  const mine=equipTasks().filter(t=>t.login===session.login).sort((a,b)=>b.date.localeCompare(a.date)),
  total=(EQUIPMENT_DATA?.totals||[]).find(t=>t.login===session.login)||{amount:0,count:0};
  host.innerHTML=`<div class="dl-mobile-head"><span>МАШЕРОВА, 11 · КОФЕ</span><h2>Мои доплаты · ${MON2[SCH.m].toLowerCase()} ${SCH.y}</h2></div>
  <div class="dl-kpis"><div class="dl-kpi"><small>Начислено за месяц</small><strong>${equipPrice(total.amount)}</strong></div><div class="dl-kpi"><small>Выполнено</small><strong>${Number(total.count||0)}</strong></div></div>
- <div class="dl-section"><b>Мои задания</b>${mine.length?mine.map(t=>`<div class="dl-today-row"><span><b>Обслуживание оборудования</b><small>${t.date.split('-').reverse().join('.')}</small></span><span class="dl-status ${t.done?'done':'assigned'}">${t.done?'✓ '+equipPrice(t.amount):'Ожидает выполнения'}</span></div>`).join(''):'<p class="eq-hint">Назначений пока нет.</p>'}</div>`;
+ <div class="dl-section"><b>Мои задания</b>${mine.length?mine.map(t=>`<div class="dl-today-row"><span><b>Обслуживание оборудования</b><small>${t.date.split('-').reverse().join('.')}</small></span><span class="dl-status ${t.done?'done':'assigned'}">${t.done?'✓ '+equipPrice(t.amount):t.missed?'Пропуск':'Ожидает выполнения'}</span></div>`).join(''):'<p class="eq-hint">Назначений пока нет.</p>'}</div>`;
 }
 function equipDrawBonus(el,host){
- const today=equipToday(),tasks=equipTasks(),done=tasks.filter(t=>t.done),overdue=tasks.filter(t=>t.status==='assigned'&&t.date<today),
+ const today=equipToday(),tasks=equipTasks(),done=tasks.filter(t=>t.done),overdue=tasks.filter(t=>t.status==='assigned'&&!t.missed&&t.date<today),
  rate=equipRate(),totals=EQUIPMENT_DATA?.totals||[],allSum=totals.reduce((s,t)=>s+Number(t.amount||0),0),roster=equipMonthRoster(),
  hist=(EQUIPMENT_DATA?.rate_history||[]).slice().sort((a,b)=>String(b.from).localeCompare(String(a.from))),
  journal=tasks.filter(t=>t.done||t.status==='assigned'&&t.date<today).slice().sort((a,b)=>b.date.localeCompare(a.date)),
@@ -12549,7 +12669,7 @@ function equipDrawBonus(el,host){
  <div class="dl-panel-cols"><div class="dl-section"><div class="dl-flex-head"><div><b>Ставка · Обслуживание оборудования</b><p class="eq-hint">Одно задание: кофемашина и торговый автомат. Ставка на дату выполнения сохраняется.</p></div>${equipOwner()?'<button type="button" class="btn btn-primary btn-sm" data-do-save-rate>Сохранить ставку</button>':''}</div><div class="eq-rate-row"><label>Обслуживание оборудования<span><input type="number" min="0" max="1000" step="0.01" data-do-rate value="${rate.toFixed(2)}" ${equipOwner()?'':'disabled title="Только просмотр"'}/> BYN</span></label></div><p class="eq-hint">Ставка 0 BYN запрещает подтверждать выполнение. Ранее начисленные суммы не меняются.</p></div>
  <div class="dl-section"><b>История ставки</b><div class="dl-hist">${hist.length?hist.slice(0,20).map(h=>`<div><small>с ${new Date(h.from).toLocaleDateString('ru-RU',{timeZone:'Europe/Minsk'})}</small><b>${equipPrice(h.amount)}</b></div>`).join(''):'<p class="eq-hint">История появится после установки ставки.</p>'}</div></div></div>
  <div class="dl-section dl-staff-bonuses"><b>Начислено по администраторам</b><p class="eq-hint">Доплата автоматически включается в зарплату администраторов отдельно от бонусов.</p><div class="dl-table-wrap"><table class="dl-table"><thead><tr><th>Администратор</th><th>Выполнено заданий</th><th>Ставка</th><th>Доплата, BYN</th></tr></thead><tbody>${roster.map(p=>{const t=totals.find(x=>x.login===p.login)||{},owner=equipIsOwnerPerson(p.login);return `<tr><td>${escapeHtml(p.name)}${owner?' <small>· руководитель</small>':''}</td><td>${owner?'—':Number(t.count||0)}</td><td>${owner?'—':equipPrice(rate)}</td><td><b>${owner?'без доплаты':equipPrice(t.amount||0)}</b></td></tr>`;}).join('')||'<tr><td colspan="4">Нет сотрудников</td></tr>'}<tr class="dl-total"><td>Итого</td><td>${totals.reduce((s,x)=>s+Number(x.count||0),0)}</td><td>—</td><td><b>${equipPrice(allSum)}</b></td></tr></tbody></table></div></div>
- <div class="dl-section dl-journal"><b>Журнал работ</b><p class="eq-hint">Дата, исполнитель, сохранённая ставка, кто отметил; пропуски и отметки задним числом.</p><div class="dl-table-wrap"><table class="dl-table"><thead><tr><th>Дата</th><th>Исполнитель</th><th>Ставка, BYN</th><th>Отметил(а)</th></tr></thead><tbody>${journal.map(t=>`<tr><td>${t.date.slice(8)}.${t.date.slice(5,7)}</td><td>${equipShort(t.login)}</td><td>${t.done?equipPrice(t.amount):'—'}</td><td>${t.done?equipShort(t.completed_by)+(t.backdated?' <span class="dl-badge">задним числом</span>':''):'<span class="dl-status missing">не отмечено</span>'}</td></tr>`).join('')||'<tr><td colspan="4">Заданий нет</td></tr>'}</tbody></table></div></div>
+ <div class="dl-section dl-journal"><b>Журнал работ</b><p class="eq-hint">Дата, исполнитель, сохранённая ставка, кто отметил; пропуски и отметки задним числом.</p><div class="dl-table-wrap"><table class="dl-table"><thead><tr><th>Дата</th><th>Исполнитель</th><th>Ставка, BYN</th><th>Отметил(а)</th></tr></thead><tbody>${journal.map(t=>`<tr><td>${t.date.slice(8)}.${t.date.slice(5,7)}</td><td>${equipShort(t.login)}</td><td>${t.done?equipPrice(t.amount):'—'}</td><td>${t.done?equipShort(t.completed_by)+(t.backdated?' <span class="dl-badge">задним числом</span>':''):t.missed?'<span class="dl-status missing">Пропуск</span>':'<span class="dl-status missing">не отмечено</span>'}</td></tr>`).join('')||'<tr><td colspan="4">Заданий нет</td></tr>'}</tbody></table></div></div>
  ${old.length?`<div class="dl-section"><b>Исторические начисления до объединения</b><p class="eq-hint">Сохранены по исходным сотрудникам и суммам, без пересчёта и без удвоения в зарплате.</p><div class="dl-table-wrap"><table class="dl-table"><thead><tr><th>Дата</th><th>Исполнитель</th><th>Старый тип</th><th>Начислено</th></tr></thead><tbody>${old.map(t=>`<tr><td>${t.date.slice(8)}.${t.date.slice(5,7)}</td><td>${equipShort(t.login)}</td><td>${escapeHtml(({coffee_refill:'Кофемашина · пополнение',coffee_service:'Кофемашина · обслуживание',vending_refill:'Автомат · пополнение'})[t.type]||t.type)}</td><td>${equipPrice(t.amount)}</td></tr>`).join('')}</tbody></table></div></div>`:''}
  ${merges.length?`<details class="dl-section"><summary><b>Журнал объединения старых назначений</b></summary><p class="eq-hint">Старые задания не удалены. Для каждой даты выбрана одна строка: сначала выполненная, затем с большей суммой.</p><div class="dl-hist">${merges.map(m=>`<div><small>${escapeHtml(String(m.date))} · ${escapeHtml(m.old_type||'')} · ${escapeHtml(fadPersonName(m.login))}</small><b>${m.kept?'оставлено':'в архиве'}</b></div>`).join('')}</div></details>`:''}
  <p class="eq-hint">Доплата не влияет на бонус филиала, качество и расчёт премии старшего администратора.</p>`;
@@ -12684,7 +12804,8 @@ function schStrip(d, iso, sid, editor, showLabel){
   }
   const armed=(SCHsel&&editor)?' armed':'';
   const lbl=showLabel?`<span class="strip-lbl" style="color:${st.color}">${st.name[0]}</span>`:'';
-  const coffeeMark=(sid==='masherova' && SCHDATA.coffee && SCHDATA.coffee[iso])?`<span class="coffee-mark" title="Кофе+снеки: ${escapeHtml(coffeeName(SCHDATA.coffee[iso]))}">☕</span>`:'';
+  const coffeeItem=COFFEE_SCHEDULE_MARKERS.get(iso);
+  const coffeeMark=sid==='masherova'&&coffeeItem?`<span class="coffee-mark" title="Кофе: ${escapeHtml(coffeeName(coffeeItem.login))}">☕</span>`:'';
   return `<div class="sch-strip${closed?' closed':''}${need?' need':''}${fill?' fill':''}${armed}" data-day="${d}" data-sid="${sid}" style="border-left:3px solid ${st.color}">${lbl}${coffeeMark}${inner}</div>`;
 }
 function renderSchCalendar(el){
@@ -12916,7 +13037,9 @@ function adminScheduleOverviewGrid(){
         else { const stops=[]; cols.forEach((c,i)=>{ const a=Math.round(i*100/cols.length), b=Math.round((i+1)*100/cols.length); stops.push(`${c} ${a}%`,`${c} ${b}%`); }); style=`background:linear-gradient(90deg,${stops.join(',')});border-color:transparent`; }
         title=sids.map(id=>studioName(id)).join(' / ');
       }
-      html+=`<div class="${cls}"${style?` style="${style}"`:''}${title?` title="${escapeHtml(title)}"`:''}></div>`;
+      const coffee=COFFEE_SCHEDULE_MARKERS.get(iso);
+      const coffeeAssigned=coffee?.login===a.login;
+      html+=`<div class="${cls}${coffeeAssigned?' coffee-scheduled':''}"${style?` style="${style}"`:''} title="${escapeHtml(title+(coffeeAssigned?' · Обслуживание кофе':''))}">${coffeeAssigned?'<span class="coffee-scheduled-icon" aria-label="Обслуживание кофе">☕</span>':''}</div>`;
     }
   });
   html+='</div>';
