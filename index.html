@@ -4892,6 +4892,16 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="month"]::-webk
 .fad-global-datepicker .fad-gdp-foot span{font-size:10px;color:#87958c}
 .fad-global-datepicker button:focus-visible,.fad-global-datepicker select:focus-visible{outline:2px solid #2d7a59;outline-offset:2px}
 
+
+/* FH · Consistent calendar-triggering month titles across Coffee and Schedule. */
+#schedRoot .sch-month .fad-month-title{display:inline-flex;align-items:center;gap:8px;border:1px solid transparent;border-radius:9px;background:transparent;padding:7px 10px;color:var(--ink);font-weight:800;font-size:17px;cursor:pointer;white-space:nowrap;min-height:36px}
+#schedRoot .sch-month .fad-month-title:hover,#schedRoot .sch-month .fad-month-title:focus-visible{background:#f1f7f3;border-color:#bed6c5;color:#216746;outline:none}
+#schedRoot .sch-month .fad-month-title span{font-size:11px;color:#6a8676}
+.fad-global-datepicker.fad-month-calendar .payroll-range-days .active{background:#e7f1ea;color:#1d6343}
+.fad-global-datepicker.fad-month-calendar .payroll-range-days .is-today.active{background:#2d7a59;color:#fff}
+.fad-global-datepicker.fad-month-calendar .payroll-range-day:disabled{background:none!important}
+.fad-global-datepicker.fad-month-calendar [data-fmp-apply]:disabled{opacity:.35;cursor:not-allowed}
+@media(max-width:640px){#schedRoot .sch-month .fad-month-title{font-size:14px;padding:6px;gap:4px}}
 </style>
 
 <div id="root"></div>
@@ -4912,7 +4922,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '23.11.2026-fg'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '23.11.2026-fh'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -6702,11 +6712,9 @@ async function renderBalance(body){
   }
   function renderMobileBalance(c){
     const tabs=[['overview','Обзор'],['expenses','Расходы'],['branches','Филиалы'],['forecast','Прогноз']];
-    const idx=months.indexOf(state.period);
-    const monthsNav=`<div class="fb-m-period"><button type="button" data-fb-month="-1" ${idx<=0?'disabled':''} aria-label="Предыдущий месяц">‹</button><b>${esc(monthTitle(state.period))}</b><button type="button" data-fb-month="1" ${idx>=months.length-1?'disabled':''} aria-label="Следующий месяц">›</button></div>`;
     const tabbar=`<div class="fb-m-tabs" role="tablist" aria-label="Разделы баланса">${tabs.map(([key,name])=>`<button type="button" role="tab" data-fb-mobile-section="${key}" aria-selected="${mobileSection===key}" class="${mobileSection===key?'on':''}">${name}</button>`).join('')}</div>`;
     const content=mobileSection==='expenses'?table(c):mobileSection==='branches'?mobileBranchCards(c):mobileSection==='forecast'?prediction(c):mobileBalanceOverview(c);
-    return `${tabbar}${monthsNav}${dateButton()}<div class="fb-m-subtitle">Студии Flexico · Толбухина, Машерова, Куйбышева</div>${status()}${dateRevenue()}<div class="fb-m-content">${content}</div>`;
+    return `${tabbar}${dateButton()}<div class="fb-m-subtitle">Студии Flexico · Толбухина, Машерова, Куйбышева</div>${status()}${dateRevenue()}<div class="fb-m-content">${content}</div>`;
   }
   // FF: Month/year controls inside Balance date selection match payroll calendars.
   shell.addEventListener('change',ev=>{
@@ -7303,10 +7311,27 @@ async function renderShift(body){
 }
 
 /* ================= The daily form ================= */
+/* FH: One failed RPC must not make a completed Coffee task impossible to verify.
+   The fallback uses the existing permission-checked monthly Coffee RPC and never
+   grants permissions or writes data. Server close guard remains authoritative. */
+async function fadReadCoffeeShiftState(date){
+  try{return await rpc('app_coffee_ey_shift_state',{p_token:TOKEN,p_date:date});}
+  catch(primary){
+    try{
+      const snapshot=await rpc('app_coffee_ey_state',{p_token:TOKEN,p_period:String(date).slice(0,7)});
+      const task=(Array.isArray(snapshot?.tasks)?snapshot.tasks:[]).find(x=>String(x.date).slice(0,10)===date);
+      if(!task)throw new Error('Нет доступного задания на эту дату');
+      return {task:{date:date,login:task.login,done:task.done===true||task.status==='done',missed:task.missed===true,status:task.status},
+        responsible:session?.role==='owner'||task.login===session?.login,viaFallback:true};
+    }catch(secondary){
+      throw new Error('Не удалось проверить кофе: '+String(primary?.message||primary)+'. Дополнительная проверка: '+String(secondary?.message||secondary));
+    }
+  }
+}
 async function fillCoffeeChk(container, date, data){
   const box=container.querySelector('#coffeeWrap');if(!box)return null;
   box.innerHTML='<div class="hintline">Проверяем назначение на кофе…</div>';
-  const res=await rpc('app_coffee_ey_shift_state',{p_token:TOKEN,p_date:date});
+  const res=await fadReadCoffeeShiftState(date);
   if(!box.isConnected)return null;
   const task=res?.task||null;
   if(!task){box.innerHTML='';return null;}
@@ -7414,7 +7439,7 @@ function renderForm(container,studio,date,data,onSaved,opts){
     </div>`;
 
   let coffeeTask=null,coffeeLoadError='';
-  const coffeeReady=studio==='masherova'?fillCoffeeChk(container,date,data).then(t=>{coffeeTask=t;return t;}).catch(e=>{coffeeLoadError=String(e?.message||e);const box=container.querySelector('#coffeeWrap');if(box)box.innerHTML='<div class="eq-warning" role="alert">Не удалось проверить назначение кофе. Закрытие смены временно заблокировано.</div>';return null;}):Promise.resolve(null);
+  const coffeeReady=studio==='masherova'?fillCoffeeChk(container,date,data).then(t=>{coffeeTask=t;coffeeLoadError='';return t;}).catch(e=>{coffeeLoadError=String(e?.message||e);const box=container.querySelector('#coffeeWrap');if(box)box.innerHTML='<div class="eq-warning" role="alert">Проверка кофе временно недоступна: '+escapeHtml(coffeeLoadError)+'<br>При закрытии смены проверка повторится. Если ошибка останется — сообщите руководителю.</div>';return null;}):Promise.resolve(null);
   // сравнение утренних наличных с остатком на конец предыдущего дня (тот же филиал)
   const morningCmp=container.querySelector('#morningCmp');
   const interWrap=container.querySelector('#interWrap'), interAmt=container.querySelector('#interAmt');
@@ -7616,17 +7641,22 @@ function renderForm(container,studio,date,data,onSaved,opts){
   }
   async function resolveCoffeeBeforeClosing(){
     await coffeeReady;
-    if(coffeeLoadError){toast('Не удалось проверить кофе — обновите страницу',true);return;}
-    // Refresh just before closing: another responsible employee may have
-    // completed or missed the same assignment in the Coffee tab meanwhile.
+    // Always retry on close; an initial temporary failure is not sticky.
+    // The live state is canonical, including a completion made in Coffee tab.
     if(studio==='masherova'){
       try{
-        const latest=await rpc('app_coffee_ey_shift_state',{p_token:TOKEN,p_date:date});
+        const latest=await fadReadCoffeeShiftState(date);
+        coffeeLoadError='';
         if(latest?.task){
           coffeeTask={...latest.task,responsible:latest.responsible===true};
-          if(latest.task.done&&container.querySelector('#coffeeDone'))container.querySelector('#coffeeDone').checked=true;
+          const checkbox=container.querySelector('#coffeeDone');
+          if(latest.task.done&&checkbox)checkbox.checked=true;
         }else coffeeTask=null;
-      }catch(_){toast('Не удалось обновить статус кофе — повторите попытку',true);return;}
+      }catch(err){
+        coffeeLoadError=String(err?.message||err);
+        toast('Не удалось проверить кофе: '+coffeeLoadError,true);
+        return;
+      }
     }
     if(!coffeeTask){proceedClose(null);return;}
     if(coffeeTask.responsible!==true){
@@ -12693,7 +12723,7 @@ function drawSchedule(body, editor){
   if(!sub.some(x=>x[0]===SCH.view)) SCH.view=sub[0][0];
   body.innerHTML=`<div id="schedRoot">
     <div class="sch-bar">
-      <div class="sch-month"><button class="btn btn-sm" data-mv="-1">‹</button><b>${MON2[SCH.m]} ${SCH.y}</b><button class="btn btn-sm" data-mv="1">›</button></div>
+      <div class="sch-month"><button class="btn btn-sm" data-mv="-1">‹</button><button class="fad-month-title" type="button" data-fad-month-picker="schedule" data-fad-month-value="${monthKey(SCH.y,SCH.m)}" aria-label="Выбрать месяц расписания">${MON2[SCH.m]} ${SCH.y}<span aria-hidden="true">▾</span></button><button class="btn btn-sm" data-mv="1">›</button></div>
       <span class="sch-status ${SCHDATA.approved?'ap':'dr'}">${SCHDATA.approved?'✓ утверждён':'черновик'}</span>
       <div class="grow"></div>
       <button type="button" class="sch-mobile-menu-trigger" data-sch-more aria-expanded="false" aria-controls="sch-mobile-actions" aria-label="Действия месяца">⋮</button>
@@ -12710,6 +12740,12 @@ function drawSchedule(body, editor){
   root.querySelectorAll('[data-mv]').forEach(b=>b.onclick=async()=>{
     let m=SCH.m+(+b.dataset.mv), y=SCH.y; if(m<0){m=11;y--;} if(m>11){m=0;y++;} SCH.y=y; SCH.m=m;
     try{ SCHDATA=await loadMonth(y,m);await coffeeScheduleLoadMarkers(monthKey(y,m)); }catch(e){ return handleErr(e); } drawSchedule(body,can('schedule.edit'));
+  });
+  root.querySelector('[data-fad-month-picker="schedule"]')?.addEventListener('fad-month-change',async ev=>{
+    const next=String(ev.detail?.month||'');if(!/^20\d{2}-(0[1-9]|1[0-2])$/.test(next))return;
+    const [year,month]=next.split('-').map(Number);if(year===SCH.y&&month===SCH.m+1)return;
+    try{const result=await loadMonth(year,month-1);await coffeeScheduleLoadMarkers(next);
+      SCH.y=year;SCH.m=month-1;SCHDATA=result;drawSchedule(body,can('schedule.edit'));}catch(err){handleErr(err);}
   });
   root.querySelectorAll('[data-sview]').forEach(b=>b.onclick=()=>{ SCH.view=b.dataset.sview; root.querySelectorAll('[data-sview]').forEach(x=>x.classList.toggle('on',x.dataset.sview===SCH.view)); drawSub(root); });
   const more=root.querySelector('[data-sch-more]');if(more)more.onclick=()=>{
@@ -12773,10 +12809,16 @@ async function renderCoffeeTop(body){
  function draw(){
   body.innerHTML=`<div id="schedRoot" class="fad-coffee-top"><div class="sch-bar"><div class="sch-month">
     <button class="btn btn-sm" type="button" data-coffee-month="-1" aria-label="Предыдущий месяц">‹</button>
-    <b>${MON2[SCH.m]} ${SCH.y}</b>
+    <button class="fad-month-title" type="button" data-fad-month-picker="coffee" data-fad-month-value="${monthKey(SCH.y,SCH.m)}" aria-label="Выбрать месяц кофе">${MON2[SCH.m]} ${SCH.y}<span aria-hidden="true">▾</span></button>
     <button class="btn btn-sm" type="button" data-coffee-month="1" aria-label="Следующий месяц">›</button></div>
     <span class="sch-status ap">Обслуживание оборудования · Машерова, 11</span></div><div id="coffeeTopSlot"></div></div>`;
   const slot=body.querySelector('#coffeeTopSlot');void renderSchCoffee(slot);
+  body.querySelector('[data-fad-month-picker="coffee"]')?.addEventListener('fad-month-change',async ev=>{
+    const next=String(ev.detail?.month||'');if(!/^20\d{2}-(0[1-9]|1[0-2])$/.test(next))return;
+    const [year,month]=next.split('-').map(Number);if(year===SCH.y&&month===SCH.m+1)return;
+    try{const result=await loadMonth(year,month-1);SCH.y=year;SCH.m=month-1;SCHDATA=result;draw();}
+    catch(err){handleErr(err);}
+  });
   body.querySelectorAll('[data-coffee-month]').forEach(b=>b.onclick=async()=>{
    const d=new Date(SCH.y,SCH.m+Number(b.dataset.coffeeMonth),1);
    SCH.y=d.getFullYear();SCH.m=d.getMonth();
@@ -16500,17 +16542,17 @@ async function renderTeamEvents(body){
     const monthSelect=`<select data-gdp-month aria-label="Месяц календаря">${names.map((nm,i)=>`<option value="${pad(i+1)}"${m===i+1?' selected':''}>${nm}</option>`).join('')}</select>`;
     const yearSelect=`<select data-gdp-year aria-label="Год календаря">${years.map(v=>`<option value="${v}"${v===y?' selected':''}>${v}</option>`).join('')}</select>`;
     let days='';
-    if(!isMonth){
+    {
       const offset=(new Date(Date.UTC(y,m-1,1)).getUTCDay()+6)%7;
       days=Array.from({length:offset},()=>'<span aria-hidden="true"></span>').join('');
       const maxDay=new Date(Date.UTC(y,m,0)).getUTCDate();
       for(let i=1;i<=maxDay;i++){
-        const d=period+'-'+pad(i),blocked=(min&&d<min)||(max&&d>max),selected=d===val;
+        const d=period+'-'+pad(i),blocked=isMonth?((min&&period<min.slice(0,7))||(max&&period>max.slice(0,7))):((min&&d<min)||(max&&d>max)),selected=isMonth?(period===val&&i===1):d===val;
         days+=`<button type="button" data-gdp-day="${d}" class="payroll-range-day${selected?' active':''}${d===today()?' is-today':''}" ${blocked?'disabled':''} aria-pressed="${selected}" aria-label="${d}">${i}</button>`;
       }
     }
     popup.innerHTML=`<div class="payroll-range-header">${monthSelect}${yearSelect}</div>`+
-      (isMonth?'':`<div class="payroll-range-weekdays" aria-hidden="true">${week.map(d=>`<span>${d}</span>`).join('')}</div><div class="payroll-range-days" role="group" aria-label="Выбор даты">${days}</div>`)+
+      `<div class="payroll-range-weekdays" aria-hidden="true">${week.map(d=>`<span>${d}</span>`).join('')}</div><div class="payroll-range-days" role="group" aria-label="Выбор даты">${days}</div>`+
       `<div class="fad-gdp-foot"><span>${isMonth?'Выбор месяца':'Выбор даты'}</span>${isMonth?'<button type="button" data-gdp-month-apply>Выбрать месяц</button>':''}${source.required?'':'<button type="button" data-gdp-clear>Очистить</button>'}</div>`;
   }
   function position(){if(!popup||!source)return;
@@ -16549,7 +16591,7 @@ async function renderTeamEvents(body){
   });
   document.addEventListener('click',ev=>{
     if(!popup||!popup.contains(ev.target))return;
-    const day=ev.target.closest('[data-gdp-day]');if(day){setDate(day.dataset.gdpDay);return;}
+    const day=ev.target.closest('[data-gdp-day]');if(day){setDate(source?.type==='month'?day.dataset.gdpDay.slice(0,7):day.dataset.gdpDay);return;}
     if(ev.target.closest('[data-gdp-clear]')){setDate('');return;}
     if(ev.target.closest('[data-gdp-month-apply]')){
       if(source?.min&&period<source.min.slice(0,7)||source?.max&&period>source.max.slice(0,7))return;
@@ -16560,4 +16602,70 @@ async function renderTeamEvents(body){
   document.addEventListener('scroll',ev=>{if(!popup)return;if(popup.contains(ev.target))return;position();},true);
 })();
 
+
+/* FH · Uniform month/year/day calendar for every historical month <select>,
+   plus Schedule and Coffee month titles. The original select remains the
+   source of truth; a choice dispatches its original change event. */
+(function installFadMonthSelectCalendar(){
+ const names=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+ const pad=n=>String(n).padStart(2,'0');
+ const isPeriod=x=>/^\d{4}-(0[1-9]|1[0-2])$/.test(String(x||''));
+ const today=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Minsk',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+ let target=null,popup=null,view='',available=null;
+ const isMonthSelect=x=>x?.tagName==='SELECT'&&x.options.length>1&&[...x.options].every(o=>isPeriod(o.value));
+ function close(){popup?.remove();popup=null;target=null;}
+ function current(){return target?.tagName==='SELECT'?target.value:target?.dataset.fadMonthValue;}
+ function permitted(p){return !available||available.has(p);}
+ function commit(value){const t=target;if(!t||!permitted(value))return;close();
+   if(t.tagName==='SELECT'){if(t.value!==value){t.value=value;t.dispatchEvent(new Event('input',{bubbles:true}));t.dispatchEvent(new Event('change',{bubbles:true}));}}
+   else t.dispatchEvent(new CustomEvent('fad-month-change',{bubbles:true,detail:{month:value}}));}
+ function render(){if(!popup||!target?.isConnected)return close();
+   const [y,m]=view.split('-').map(Number),value=current();
+   const minYear=available?Math.min(...[...available].map(p=>+p.slice(0,4))):2020;
+   const maxYear=available?Math.max(...[...available].map(p=>+p.slice(0,4))):Math.max(2035,y+5);
+   const years=Array.from({length:Math.max(1,Math.min(100,maxYear-minYear+1))},(_,i)=>minYear+i);
+   if(!years.includes(y))years.push(y);years.sort((a,b)=>a-b);
+   const offset=(new Date(Date.UTC(y,m-1,1)).getUTCDay()+6)%7;
+   let days=Array(offset).fill('<span aria-hidden="true"></span>').join('');
+   const n=new Date(Date.UTC(y,m,0)).getUTCDate();
+   for(let d=1;d<=n;d++){
+     const iso=view+'-'+pad(d),active=value===view;
+     days+=`<button type="button" data-fmp-day="${iso}" class="payroll-range-day${active?' active':''}${today()===iso?' is-today':''}" ${permitted(view)?'':'disabled'} aria-label="Выбрать ${names[m-1]} ${y}" aria-pressed="${active}">${d}</button>`;
+   }
+   popup.innerHTML=`<div class="payroll-range-header"><select data-fmp-month aria-label="Месяц календаря">${names.map((name,i)=>`<option value="${pad(i+1)}" ${m===i+1?'selected':''}>${name}</option>`).join('')}</select><select data-fmp-year aria-label="Год календаря">${years.map(n=>`<option value="${n}" ${n===y?'selected':''}>${n}</option>`).join('')}</select></div><div class="payroll-range-weekdays" aria-hidden="true">${['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(x=>`<span>${x}</span>`).join('')}</div><div class="payroll-range-days">${days}</div><div class="fad-gdp-foot"><span>Выберите месяц или любую дату</span><button type="button" data-fmp-apply ${permitted(view)?'':'disabled'}>Выбрать месяц</button></div>`;
+ }
+ function position(){if(!target||!popup)return;const r=target.getBoundingClientRect();
+   const h=popup.getBoundingClientRect().height,w=popup.getBoundingClientRect().width;
+   const below=innerHeight-r.bottom-8,above=r.top-8;
+   popup.style.left=Math.max(8,Math.min(innerWidth-w-8,r.left))+'px';
+   popup.style.top=Math.max(8,below>=h||below>=above?Math.min(innerHeight-h-8,r.bottom+6):r.top-h-6)+'px';
+ }
+ function open(el){if(target===el&&popup)return close();close();target=el;
+   available=isMonthSelect(el)?new Set([...el.options].map(o=>o.value)):null;
+   const val=current();view=isPeriod(val)?val:today().slice(0,7);
+   popup=document.createElement('div');popup.className='fad-global-datepicker fad-month-calendar';popup.setAttribute('role','dialog');popup.setAttribute('aria-label','Выбор месяца');
+   document.body.appendChild(popup);render();position();
+ }
+ document.addEventListener('pointerdown',e=>{
+   if(popup?.contains(e.target))return;
+   const el=e.target.closest?.('select,[data-fad-month-picker]');
+   if(el&&!el.disabled&&(isMonthSelect(el)||el.matches('[data-fad-month-picker]'))){e.preventDefault();open(el);return;}
+   if(popup)close();
+ },true);
+ document.addEventListener('keydown',e=>{
+   if(e.key==='Escape'&&popup){const t=target;close();t?.focus();e.preventDefault();return;}
+   const el=document.activeElement;
+   if(['Enter',' ','ArrowDown'].includes(e.key)&&el&&(isMonthSelect(el)||el.matches?.('[data-fad-month-picker]'))){e.preventDefault();open(el);}
+ },true);
+ document.addEventListener('change',e=>{
+   if(!popup?.contains(e.target))return;
+   if(e.target.matches('[data-fmp-month],[data-fmp-year]')){view=popup.querySelector('[data-fmp-year]').value+'-'+popup.querySelector('[data-fmp-month]').value;render();position();}
+ });
+ document.addEventListener('click',e=>{
+   if(!popup?.contains(e.target))return;
+   if(e.target.closest('[data-fmp-day],[data-fmp-apply]'))commit(view);
+ });
+ window.addEventListener('resize',()=>{if(popup)position();},{passive:true});
+ document.addEventListener('scroll',e=>{if(popup&&!popup.contains(e.target))position();},true);
+})();
 </script>
