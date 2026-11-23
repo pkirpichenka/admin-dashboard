@@ -9,6 +9,7 @@
 <title>Flexico-Admin-Dashboard</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMyRTdENUIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMxRTVDNDEiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjI2IiBmaWxsPSJ1cmwoI2cpIi8+PHJlY3QgeD0iMzYiIHk9IjI3IiB3aWR0aD0iMzMiIGhlaWdodD0iMTAiIHJ4PSIyIiBmaWxsPSIjZmZmIi8+PHJlY3QgeD0iMzYiIHk9IjI3IiB3aWR0aD0iMTAiIGhlaWdodD0iNDYiIHJ4PSIyIiBmaWxsPSIjZmZmIi8+PHJlY3QgeD0iMzYiIHk9IjQ2IiB3aWR0aD0iMjUiIGhlaWdodD0iMTAiIHJ4PSIyIiBmaWxsPSIjZmZmIi8+PC9zdmc+"/>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light" />
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -17,6 +18,9 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Golos+Text:wght@400;500;600;700&display=swap');
 
+/* FAD EQ · одна светлая тема в системе и всех вкладках. */
+:root{color-scheme:only light}
+html,body,button,input,select,textarea{color-scheme:only light}
 /* ===== FAD · Design system BN · single source of design tokens ===== */
 :root {
   --fad-green: #2E7D5B;
@@ -3425,8 +3429,12 @@ input[type="time"]::-webkit-calendar-picker-indicator{position:absolute;right:8p
 .ct-root.ct-compact :is(.ct-select,.ct-field,.ct-textarea).ct-invalid{border-color:var(--ct-bad)!important;outline-color:var(--ct-bad)!important}
 @media(max-width:1230px){.ct-root.ct-compact .ct-task-line .ct-row{grid-template-columns:21px minmax(125px,1.1fr) minmax(0,auto) minmax(70px,.8fr) auto auto minmax(112px,130px) 24px;gap:5px;padding:5px 8px}.ct-root.ct-compact .ct-task-line .ct-chip{font-size:9px;padding:2px 4px}.ct-root.ct-compact .ct-quick-chip{padding:5px 6px;font-size:10px}.ct-root.ct-compact .ct-team-grid-head,.ct-root.ct-compact .ct-team-task{grid-template-columns:minmax(125px,1.35fr) 70px 55px 85px 75px minmax(75px,1fr) minmax(100px,1fr)}}
 @media(max-width:950px){.ct-root.ct-compact .ct-task-line .ct-row,.ct-root.ct-compact .ct-task-line .ct-row-done{display:grid;grid-template-columns:21px minmax(0,1fr) 26px;gap:4px 9px;min-height:0;padding:7px 10px}.ct-root.ct-compact .ct-row .ct-task-check{grid-column:1;grid-row:1}.ct-root.ct-compact .ct-row-person{grid-column:2;grid-row:1}.ct-root.ct-compact .ct-row .ct-expand-btn{grid-column:3;grid-row:1}.ct-root.ct-compact .ct-row .ct-chips{grid-column:2 / 4;grid-row:2}.ct-root.ct-compact .ct-row .ct-task-short{grid-column:2 / 4;grid-row:3}.ct-root.ct-compact .ct-row .ct-crm-line{grid-column:2;grid-row:4;justify-self:start}.ct-root.ct-compact .ct-row .ct-copy-btn{grid-column:2;grid-row:5;justify-self:start}.ct-root.ct-compact .ct-row .ct-result-select{grid-column:3;grid-row:5;justify-self:end;width:min(180px,100%)}.ct-root.ct-compact .ct-task-line .ct-row:not(.ct-row-done){grid-template-columns:21px minmax(85px,1fr) minmax(125px,1fr)}.ct-root.ct-compact .ct-row:not(.ct-row-done) .ct-crm-line{grid-row:4;grid-column:2}.ct-root.ct-compact .ct-row:not(.ct-row-done) .ct-copy-btn{grid-row:4;grid-column:3;justify-self:start}.ct-root.ct-compact .ct-row:not(.ct-row-done) .ct-result-select{grid-row:5;grid-column:2/4;width:100%}.ct-root.ct-compact .ct-row-done .ct-row-done-info{grid-column:2 / 4;grid-row:3}.ct-root.ct-compact .ct-row-done>.ct-chip{grid-column:2 / 4;grid-row:2;justify-self:start}.ct-root.ct-compact .ct-expanded{padding-left:11px}.ct-root.ct-compact .ct-compact-form{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.ct-root.ct-compact .ct-compact-form .ct-foot{grid-column:1/-1;align-items:flex-start}.ct-root.ct-compact .ct-admin-head{grid-template-columns:minmax(0,1fr) 20px;gap:5px}.ct-root.ct-compact .ct-admin-head .ct-progress{grid-column:1/-1;grid-row:2}.ct-root.ct-compact .ct-admin-head .ct-stat,.ct-root.ct-compact .ct-admin-head .ct-last{display:none}.ct-root.ct-compact .ct-team-grid-head{display:none}.ct-root.ct-compact .ct-team-task{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;padding:8px 10px}.ct-root.ct-compact .ct-team-task>span:before{content:attr(data-label) ': ';color:var(--ct-muted);font-weight:600}.ct-root.ct-compact .ct-team-task>span{white-space:normal;overflow-wrap:anywhere}.ct-root.ct-compact .ct-team-task>.ct-team-comment,.ct-root.ct-compact .ct-team-task>.ct-team-mark{grid-column:1/-1;white-space:normal}.ct-root.ct-compact .ct-compact-filters{flex-wrap:wrap}.ct-root.ct-compact .ct-compact-filters .ct-search{max-width:none}}
-@media(max-width:560px){.ct-root.ct-compact .ct-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.ct-root.ct-compact .ct-kpi{border-right:0;border-bottom:1px solid var(--ct-border);padding:6px 10px;min-height:46px}.ct-root.ct-compact .ct-kpi:nth-child(odd){border-right:1px solid var(--ct-border)}.ct-root.ct-compact .ct-kpi:last-child{border-bottom:0}.ct-root.ct-compact .ct-filter-sticky{top:58px}.ct-root.ct-compact .ct-compact-filters .ct-search{flex-basis:100%;min-width:0}.ct-root.ct-compact .ct-compact-filters .ct-select{flex:1 1 110px;max-width:none}.ct-root.ct-compact .ct-compact-filters .ct-count{flex:1 1 100%;margin-left:0}.ct-root.ct-compact .ct-compact-form{grid-template-columns:1fr}.ct-root.ct-compact .ct-compact-form .ct-foot{grid-column:auto}.ct-root.ct-compact .ct-row .ct-task-short{white-space:nowrap}.ct-root.ct-compact .ct-branch-tabs{width:100%}.ct-root.ct-compact .ct-planbar{padding:8px 10px}}
-@media(prefers-color-scheme:dark){.ct-root.ct-compact{--ct-surface:#17271e;--ct-soft:#20352a;--ct-text:#e8f1eb;--ct-muted:#a0b1a5;--ct-border:#375246;--ct-ok:#64ad87;--ct-bad:#f08a78}.ct-root.ct-compact .ct-filter-sticky{background:#122119}.ct-root.ct-compact .ct-chip{background:#284134;color:#d7e8db}.ct-root.ct-compact .ct-field,.ct-root.ct-compact .ct-select,.ct-root.ct-compact .ct-textarea{color-scheme:dark}}
+@media(max-width:560px){.ct-root.ct-compact .ct-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.ct-root.ct-compact .ct-kpi{border-right:0;border-bottom:1px solid var(--ct-border);padding:8px 10px;min-height:58px}.ct-root.ct-compact .ct-kpi:nth-child(odd){border-right:1px solid var(--ct-border)}.ct-root.ct-compact .ct-kpi:last-child{border-bottom:0}.ct-root.ct-compact .ct-filter-sticky{top:58px}.ct-root.ct-compact .ct-compact-filters .ct-search{flex-basis:100%;min-width:0}.ct-root.ct-compact .ct-compact-filters .ct-select{flex:1 1 110px;max-width:none}.ct-root.ct-compact .ct-compact-filters .ct-count{flex:1 1 100%;margin-left:0}.ct-root.ct-compact .ct-compact-form{grid-template-columns:1fr}.ct-root.ct-compact .ct-compact-form .ct-foot{grid-column:auto}.ct-root.ct-compact .ct-row .ct-task-short{white-space:normal;line-height:1.45}.ct-root.ct-compact .ct-branch-tabs{width:100%}.ct-root.ct-compact .ct-planbar{padding:10px 12px}.ct-root.ct-compact .ct-planbar-actions{width:100%}.ct-root.ct-compact .ct-planbar-actions .ct-btn{width:100%;justify-content:center}.ct-root.ct-compact .ct-manager-filter{align-items:flex-start}.ct-root.ct-compact .ct-admin-head{padding:10px}.ct-root.ct-compact .ct-admin-head .ct-progress{margin-top:2px}.ct-root.ct-compact .ct-admin-name b{font-size:13px}.ct-root.ct-compact .ct-admin-name small{font-size:11px}.ct-root.ct-compact .ct-row-person>strong{white-space:normal;line-height:1.35}.ct-root.ct-compact .ct-row-person>small{white-space:normal;line-height:1.35}}
+
+/* Единая светлая палитра FAD на всех экранах. */
+.ct-root.ct-compact{color-scheme:light}
+
+
 
 
 /* Three-line mobile task rows and a single compact action group. */
@@ -3451,10 +3459,14 @@ input[type="time"]::-webkit-calendar-picker-indicator{position:absolute;right:8p
  .ct-root.ct-compact .ct-task-line .ct-row .ct-row-actions .ct-copy-btn{padding:0 7px}
 }
 @media(max-width:560px){
- .ct-root.ct-compact .ct-task-line .ct-row:not(.ct-row-done){grid-template-columns:21px minmax(0,1fr) minmax(0,1fr) 24px}
- .ct-root.ct-compact .ct-task-line .ct-row:not(.ct-row-done) .ct-chips{overflow:hidden}
- .ct-root.ct-compact .ct-task-line .ct-row:not(.ct-row-done) .ct-row-actions{gap:4px;grid-template-columns:42px minmax(84px,auto) minmax(120px,1fr)}
- .ct-root.ct-compact .ct-task-line .ct-row:not(.ct-row-done) .ct-row-actions .ct-result-select{font-size:11px!important}
+ .ct-root.ct-compact .ct-task-line .ct-row:not(.ct-row-done){grid-template-columns:21px minmax(0,1fr) minmax(0,1fr) 24px;gap:5px 7px}
+ .ct-root.ct-compact .ct-task-line .ct-row:not(.ct-row-done) .ct-row-person{grid-column:2 / 5}
+ .ct-root.ct-compact .ct-task-line .ct-row:not(.ct-row-done) .ct-chips{grid-column:2 / 5;grid-row:2;overflow:hidden}
+ .ct-root.ct-compact .ct-task-line .ct-row:not(.ct-row-done) .ct-task-short{grid-column:2 / 5;grid-row:3;white-space:normal}
+ .ct-root.ct-compact .ct-task-line .ct-row:not(.ct-row-done) .ct-row-actions{grid-column:2 / 5;grid-row:4;gap:6px;grid-template-columns:42px minmax(0,1fr)}
+ .ct-root.ct-compact .ct-task-line .ct-row:not(.ct-row-done) .ct-row-actions .ct-crm-line{grid-column:1;grid-row:1;justify-self:start!important;align-self:center}
+ .ct-root.ct-compact .ct-task-line .ct-row:not(.ct-row-done) .ct-row-actions .ct-copy-btn{grid-column:2;grid-row:1;min-height:34px;padding:0 10px;justify-content:center}
+ .ct-root.ct-compact .ct-task-line .ct-row:not(.ct-row-done) .ct-row-actions .ct-result-select{grid-column:1 / -1;grid-row:2;font-size:12px!important;min-height:36px}
 }
 
 /* FAD DF · База знаний · исключительно scoped стили */
@@ -3560,8 +3572,8 @@ input[type="time"]::-webkit-calendar-picker-indicator{position:absolute;right:8p
 #tabbody .kb-root .kb-confirm{border:1px solid #e6baa8;border-radius:10px;background:var(--kb-warning);padding:12px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:12px;font-size:12px}
 #tabbody .kb-root .kb-mini-footer{font-size:11px;color:var(--kb-muted);margin:0}
 #tabbody .kb-root .kb-status{font-size:11px;color:var(--kb-muted);min-height:14px}
-/* При переключении темы FAD наследуем общие токены; отдельные тёмные токены нужны только предупреждению. */
-html[data-theme="dark"] #tabbody .kb-root,body[data-theme="dark"] #tabbody .kb-root,.dark #tabbody .kb-root{--kb-warning:#473a17;--kb-warn-ink:#f9d88b}
+/* Все элементы базы знаний используют общую светлую палитру FAD. */
+
 @media(max-width:1100px){#tabbody .kb-root .kb-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:790px){
  #tabbody .kb-root .kb-layout{display:block}
@@ -3570,6 +3582,25 @@ html[data-theme="dark"] #tabbody .kb-root,body[data-theme="dark"] #tabbody .kb-r
  #tabbody .kb-root .kb-back{display:inline-flex}
  #tabbody .kb-root .kb-pane{padding:16px;margin-top:0;min-height:0}
  #tabbody .kb-root .kb-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:640px){
+ #tabbody .kb-root{gap:14px}
+ #tabbody .kb-root .kb-head{align-items:flex-start;gap:10px}
+ #tabbody .kb-root .kb-head>div:first-child{width:100%}
+ #tabbody .kb-root .kb-actions{width:100%;justify-content:flex-start;gap:8px}
+ #tabbody .kb-root .kb-btn{min-height:36px}
+ #tabbody .kb-root .kb-switch{font-size:12px;gap:7px}
+ #tabbody .kb-root .kb-search{min-height:52px;padding:5px 12px}
+ #tabbody .kb-root #kbSearch{padding:11px 0;font-size:14px}
+ #tabbody .kb-root .kb-quick{gap:8px;align-items:flex-start}
+ #tabbody .kb-root .kb-quick>span{flex:0 0 100%}
+ #tabbody .kb-root .kb-chip{min-height:32px;padding:6px 12px;font-size:12px}
+ #tabbody .kb-root .kb-tile{align-items:flex-start}
+ #tabbody .kb-root .kb-item{padding:11px}
+ #tabbody .kb-root .kb-item-title{font-size:14px;line-height:1.4}
+ #tabbody .kb-root .kb-item-summary{font-size:12px}
+ #tabbody .kb-root .kb-pane h2{font-size:18px}
+ #tabbody .kb-root .kb-question-row{align-items:flex-start}
 }
 @media(max-width:460px){
  #tabbody .kb-root{gap:13px}
@@ -3588,20 +3619,17 @@ html[data-theme="dark"] #tabbody .kb-root,body[data-theme="dark"] #tabbody .kb-r
  #tabbody .kb-root .kb-wide{grid-column:auto}
  #tabbody .kb-root .kb-question-row{flex-wrap:wrap}
 }
+@media(max-width:390px){
+ #tabbody .kb-root .kb-actions{display:grid;grid-template-columns:1fr;align-items:stretch}
+ #tabbody .kb-root .kb-actions .kb-btn{width:100%}
+ #tabbody .kb-root .kb-quick{margin-top:7px}
+ #tabbody .kb-root .kb-chip{max-width:100%}
+}
 
-/* Системная тёмная тема и явно выбранная тёмная тема FAD. */
-html[data-theme="dark"] #tabbody .kb-root,body[data-theme="dark"] #tabbody .kb-root,.theme-dark #tabbody .kb-root{
- --kb-bg:#142219;--kb-card:#1c2c22;--kb-border:#365042;--kb-muted:#a2b6a8;
- --kb-ink:#e8f3eb;--kb-green:#7cc69e;--kb-soft:#244331;--kb-warning:#443716;
- --kb-warn-ink:#f0d289;--kb-shadow:0 2px 10px #0003;color-scheme:dark;
-}
-@media(prefers-color-scheme:dark){
- html:not([data-theme="light"]) #tabbody .kb-root{
- --kb-bg:#142219;--kb-card:#1c2c22;--kb-border:#365042;--kb-muted:#a2b6a8;
- --kb-ink:#e8f3eb;--kb-green:#7cc69e;--kb-soft:#244331;--kb-warning:#443716;
- --kb-warn-ink:#f0d289;--kb-shadow:0 2px 10px #0003;color-scheme:dark;
- }
-}
+
+
+/* Мобильная версия повторяет светлую палитру десктопа. */
+#tabbody .kb-root{color-scheme:light}
 
 /* FAD DG · Мероприятия команды — scoped, FAD-native components */
 #tabbody .tev-root{--ev-card:var(--surface,#fff);--ev-line:var(--line,#dce5dd);--ev-ink:var(--ink,#19352b);--ev-muted:var(--ink-soft,#718176);--ev-green:var(--accent,#207451);--ev-soft:#e9f4ec;--ev-hover:#f5f8f4;display:flex;flex-direction:column;gap:16px;max-width:1550px;width:100%;min-width:0;color:var(--ev-ink);padding-bottom:40px}
@@ -3707,14 +3735,14 @@ html[data-theme="dark"] #tabbody .kb-root,body[data-theme="dark"] #tabbody .kb-r
 #tabbody .tev-root .ev-inline-warning{border:1px solid #d8ae5a;background:#fff4db;color:#785517;padding:11px;border-radius:8px;font-size:12px;margin:10px 0}
 #tabbody .tev-root .ev-detail-back{display:none;margin-bottom:8px}
 #tabbody .tev-root .ev-status-line{font-size:11px;min-height:16px;color:var(--ev-muted)}
-html[data-theme=dark] #tabbody .tev-root,body[data-theme=dark] #tabbody .tev-root,.theme-dark #tabbody .tev-root{--ev-card:#1d3026;--ev-line:#354e40;--ev-ink:#ecf4ef;--ev-muted:#a4b7ab;--ev-green:#67b98b;--ev-soft:#294533;--ev-hover:#243b2f}
-html[data-theme=dark] #tabbody .tev-root .ev-chip[aria-pressed=true],html[data-theme=dark] #tabbody .tev-root .ev-btn-primary{color:#112b1d}
-@media(prefers-color-scheme:dark){html:not([data-theme=light]) #tabbody .tev-root{--ev-card:#1d3026;--ev-line:#354e40;--ev-ink:#ecf4ef;--ev-muted:#a4b7ab;--ev-green:#67b98b;--ev-soft:#294533;--ev-hover:#243b2f}}
+
+
+
 @media(max-width:1130px){#tabbody .tev-root .ev-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}#tabbody .tev-root .ev-event{grid-template-columns:39px minmax(0,1fr)}#tabbody .tev-root .ev-event-tags{grid-column:2;max-width:none;justify-content:flex-start}}
 @media(max-width:810px){#tabbody .tev-root .ev-layout{display:block}#tabbody .tev-root .ev-panel{position:static;margin-top:12px}#tabbody .tev-root .ev-layout.ev-mobile-detail .ev-left{display:none}#tabbody .tev-root .ev-layout:not(.ev-mobile-detail) .ev-panel{display:none}#tabbody .tev-root .ev-detail-back{display:inline-flex}#tabbody .tev-root .ev-year-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:480px){#tabbody .tev-root .ev-head h2{font-size:17px}#tabbody .tev-root .ev-head{align-items:flex-start}#tabbody .tev-root .ev-kpi{padding:11px;min-height:92px}#tabbody .tev-root .ev-kpi strong{font-size:15px}#tabbody .tev-root .ev-filters{padding:9px}#tabbody .tev-root .ev-filter-line{gap:5px}#tabbody .tev-root .ev-chip{font-size:10px;padding:7px 9px}#tabbody .tev-root .ev-year-grid{grid-template-columns:1fr}#tabbody .tev-root .ev-modal{padding:14px}#tabbody .tev-root .ev-form-grid{grid-template-columns:minmax(0,1fr)}#tabbody .tev-root .ev-staff-picker{grid-template-columns:1fr}#tabbody .tev-root .ev-kpis{gap:7px}#tabbody .tev-root .ev-event-name{font-size:11px}#tabbody .tev-root .ev-tools .ev-btn{flex:1 1 auto}}
 
-/* FAD DL · equipment schedule + pay · responsive and theme-aware */
+/* FAD DL · equipment schedule + pay · responsive, light-only */
 #schedRoot .eq-tabs{background:var(--surface-2);width:max-content;gap:4px}
 #schedRoot .eq-tab{min-height:44px;font-size:13px;padding:9px 17px}
 #schedRoot .eq-tab.on{background:var(--accent-deep);color:#fff}
@@ -3822,12 +3850,12 @@ html[data-theme=dark] #tabbody .tev-root .ev-chip[aria-pressed=true],html[data-t
 #schedRoot .dl-mobile-summary>p{flex:0 0 100%;margin:4px 0 0}
 @media(max-width:980px){#schedRoot .dl-equipment-groups{grid-template-columns:1fr}#schedRoot .dl-panel-cols{grid-template-columns:1fr}#schedRoot .dl-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:550px){#schedRoot .dl-section{padding:12px}#schedRoot .dl-kpi{padding:11px}#schedRoot .dl-kpi strong{font-size:17px}#schedRoot .dl-work-list{grid-template-columns:1fr}#schedRoot .eq-tabs{max-width:100%;width:100%}#schedRoot .eq-tab{flex:1}#schedRoot .dl-mobile-card{padding:14px}}
-html[data-theme=dark] #schedRoot .dl-status.done{background:#244c39;color:#d5f9e4;border-color:#3e7658}
-html[data-theme=dark] #schedRoot .dl-status.assigned{background:#514127;color:#ffe4ad;border-color:#80612d}
-html[data-theme=dark] #schedRoot .dl-status.missing{background:#582f31;color:#ffb5b0;border-color:#864044}
-html[data-theme=dark] #schedRoot .dl-grid-cell.shift{background:#244c39;border-color:#3e7658}
-html[data-theme=dark] #schedRoot .dl-grid-cell.assigned{background:#795c28;border-color:#b18b3a;color:#fff}
-html[data-theme=dark] #schedRoot .dl-grid-cell.late,html[data-theme=dark] #schedRoot .dl-alert{background:#522d2e;color:#ffe0dd}
+
+
+
+
+
+
 /* DN: compact single-click equipment scheduling, three status dots per date. */
 #schedRoot .dl-work.dm-summary{cursor:default;min-height:112px}
 #schedRoot .dl-work.dm-summary:hover{border-color:var(--line)}
@@ -3861,11 +3889,11 @@ html[data-theme=dark] #schedRoot .dl-grid-cell.late,html[data-theme=dark] #sched
 #schedRoot .dn-grid .dl-grid-sum{font-size:10px}
 #schedRoot .dn-selected-help{border-top:1px solid var(--line);padding-top:10px;margin-top:8px;font-size:11.5px;color:var(--ink-soft)}
 #schedRoot .dn-selected-help b{color:var(--ink)}
-html[data-theme=dark] #schedRoot .dn-grid-cell.shift{background:#274535;border-color:#456956}
-html[data-theme=dark] #schedRoot .dn-dot.empty{border-color:#718678}
-html[data-theme=dark] #schedRoot .dn-dot.assigned{background:#8c672c;border-color:#d19c56}
-html[data-theme=dark] #schedRoot .dn-dot.done{background:#287651;border-color:#419c70}
-html[data-theme=dark] #schedRoot .dn-dot.late{background:#572b29;border-color:#dc716d}
+
+
+
+
+
 @media(max-width:600px){#schedRoot .dn-tools{gap:6px}#schedRoot .dn-tool{padding:8px 10px}#schedRoot .dl-scroll{max-width:100%}}
 /* DO · одно задание в день · компактная сетка */
 #schedRoot .do-grid{min-width:1190px;width:100%;font-size:11px}
@@ -3896,11 +3924,11 @@ html[data-theme=dark] #schedRoot .dn-dot.late{background:#572b29;border-color:#d
 @media(max-width:950px){#schedRoot .do-below{grid-template-columns:1fr}}
 @media(max-width:600px){#schedRoot .do-graph-head{flex-direction:column;align-items:flex-start}#schedRoot .do-graph-head .dl-actions{justify-content:flex-start;flex-wrap:wrap}#schedRoot .do-graph-head .btn{min-height:44px}#schedRoot .dl-scroll{max-width:100%}#schedRoot .dl-mobile-done{min-height:48px}}
 #schedRoot .do-grid-cell:disabled:not(.blocked){opacity:1;cursor:default}
-html[data-theme=dark] #schedRoot .do-grid-cell.shift{background:#274936;border-color:#456c53}
-html[data-theme=dark] #schedRoot .do-grid-cell.assigned{background:#795c28;border-color:#b18b3a;color:#fff}
-html[data-theme=dark] #schedRoot .do-grid-cell.other{background:#484039;border-color:#706254;color:#e2c7a7}
-html[data-theme=dark] #schedRoot .do-grid-cell.other.do-locked{background:#3c3934;border-color:#8a7668;color:#d0a987}
-html[data-theme=dark] #schedRoot .do-grid-cell.late{background:#522d2e;border-color:#df6f69;color:#ffe0dd}
+
+
+
+
+
 
 
 /* FAD DR · просмотр карточки тренера прямо из двух режимов замены */
@@ -4242,10 +4270,7 @@ html[data-theme=dark] #schedRoot .do-grid-cell.late{background:#522d2e;border-co
  .fad-balance-em #fb-en-expenses .fb-en-bulk{width:calc(100vw - 18px);bottom:calc(9px + env(safe-area-inset-bottom,0px))}
  .fad-balance-em #fb-en-expenses:has(.fb-en-bulk){padding-bottom:110px}
 }
-@media(prefers-color-scheme:dark){
- .fad-balance-em #fb-en-expenses .fb-en-table .fb-en-group>td{background:var(--surface-2,#1c2a23)!important}
- .fad-balance-em #fb-en-expenses .fb-en-group:hover>td{background:var(--surface-2,#1c2a23)!important}
-}
+
 
 </style>
 
@@ -4267,7 +4292,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '22.11.2026-eo'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '23.11.2026-eq'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
