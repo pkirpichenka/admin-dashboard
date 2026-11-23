@@ -4829,6 +4829,32 @@ input[type="time"]::-webkit-calendar-picker-indicator{position:absolute;right:8p
  #schedRoot .sch-v2-shift-action{grid-column:2;grid-row:3;text-align:right;}
 }
 
+
+/* FD · Evidence-based balance date range + explicit import validation. No formula changes. */
+.fad-balance .fb-fd-datebox{position:relative;display:inline-flex;align-items:center;min-width:0;z-index:7}
+.fad-balance .fb-fd-range-btn{min-height:36px;white-space:normal;line-height:1.3;text-align:left;border:1px solid #bed5c5;background:#f6faf7;color:#1f6b4a;font-weight:700}
+.fad-balance .fb-fd-calendar{position:absolute;top:calc(100% + 6px);right:0;z-index:200;width:min(355px,calc(100vw - 32px));max-height:min(570px,72dvh);overflow-y:auto;padding:16px;background:#fff;border:1px solid #cbded0;border-radius:14px;box-shadow:0 18px 40px #16241d33;box-sizing:border-box}
+.fad-balance .fb-fd-cal-head{display:flex;gap:8px;align-items:center;justify-content:space-between}
+.fad-balance .fb-fd-cal-head b{font-size:14px}.fad-balance .fb-fd-calendar p,.fad-balance .fb-fd-calendar small{display:block;font-size:12px;line-height:1.5;color:#586a5f;margin:9px 0}
+.fad-balance .fb-fd-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin:8px 0}
+.fad-balance .fb-fd-weekday{font-size:11px;line-height:23px;text-align:center;color:#586a5f;font-weight:800}
+.fad-balance .fb-fd-day{background:#fff;border:1px solid #e0e7df;color:#14231b;border-radius:8px;min-height:38px;min-width:0;font-variant-numeric:tabular-nums;cursor:pointer}
+.fad-balance .fb-fd-day.in-range{background:#e1eee5;color:#1a4531;border-color:#d3e6d9}
+.fad-balance .fb-fd-day.is-start,.fad-balance .fb-fd-day.is-end{background:#2d6a4a;color:#fff;border-color:#2d6a4a;font-weight:800}
+.fad-balance .fb-fd-day.is-today:not(.is-start):not(.is-end){outline:2px solid #2d6a4a;outline-offset:0}
+.fad-balance .fb-fd-day:focus-visible{outline:3px solid #c9ab51;outline-offset:2px}
+.fad-balance .fb-fd-selected-revenue{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:12px 15px;margin:8px 0 14px;border:1px solid #b9d5c1;background:#f7fbf8;border-radius:12px;font-variant-numeric:tabular-nums}
+.fad-balance .fb-fd-selected-revenue>div{display:grid;gap:3px;min-width:0;flex:1}.fad-balance .fb-fd-selected-revenue small{font-size:11px;color:#586a5f;overflow-wrap:anywhere}
+.fb-fd-audit .fb-fd-audit-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
+.fb-fd-audit .fb-fd-audit-cards>div{display:grid;gap:4px;background:#f2f6f2;border:1px solid #dbe2db;border-radius:10px;padding:10px;min-width:0}
+.fb-fd-audit .fb-fd-audit-cards small{font-size:11px;color:#586a5f}.fb-fd-audit .fb-fd-audit-cards b{font-size:15px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.fb-fd-audit .fb-fd-matched{color:#1a6a45}.fb-fd-audit .fb-fd-delta{color:#b3322b}
+.fb-fd-audit details{margin:12px 0}.fb-fd-audit summary{cursor:pointer;color:#1f6b4a;font-weight:700}
+.fb-eu-modal .fb-fd-save-status{padding:10px 12px;background:#e8f2ea;border:1px solid #b8d0c0;color:#1f6b4a;border-radius:9px;margin-bottom:12px;overflow-wrap:anywhere;line-height:1.5}
+.fb-eu-modal .fb-fd-save-status.error{background:#fbe5e3;border-color:#e9b0aa;color:#9e302b}
+.fb-eu-modal .fb-fd-save-status[hidden]{display:none!important}
+.fad-balance .fb-fd-source{font-size:10px;line-height:1.4;color:#586a5f}
+@media(max-width:767px){.fad-balance .fb-fd-datebox{margin:6px 0;max-width:100%;display:block}.fad-balance .fb-fd-range-btn{width:100%;min-height:44px}.fad-balance .fb-fd-calendar{left:0;right:auto;width:min(345px,calc(100vw - 32px))}.fb-fd-audit .fb-fd-audit-cards{grid-template-columns:1fr}.fad-balance .fb-fd-selected-revenue .fb-action{width:100%}}
 </style>
 
 <div id="root"></div>
@@ -4849,7 +4875,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '23.11.2026-fc'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '23.11.2026-fd'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -6225,7 +6251,8 @@ async function renderBalance(body){
   const monthToday=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Minsk',year:'numeric',month:'2-digit'}).format(new Date());
   const dateToday=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Minsk',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
   const months=Array.from({length:36},(_,i)=>{const [y,m]=monthToday().split('-').map(Number);return new Date(Date.UTC(y,m-1+i-16,1)).toISOString().slice(0,7);});
-  const state={period:monthToday(),bill:null,snap:null,filter:'all',busy:false,error:'',status:'',incomeAudit:null};
+  const state={period:monthToday(),bill:null,snap:null,filter:'all',busy:false,error:'',status:'',incomeAudit:null,
+    dateStart:null,dateEnd:null,dateAwaitEnd:false,dateOpen:false};
   const shell=document.createElement('section');shell.className='fad-balance fad-balance-em fade-in';body.replaceChildren(shell);
   const live=()=>shell.isConnected&&!!TOKEN&&!!session&&['owner','admin'].includes(session.role);
   const el=id=>shell.querySelector('#'+id);
@@ -6237,7 +6264,8 @@ async function renderBalance(body){
   const allAuto=()=>{const out=(data().expenses||[]).filter(x=>x.source==='impulse'||x.source==='fad');
     return state.period>monthToday()?[]:out.filter(x=>x.amount!=null&&n(x.amount)!==0).map(x=>({
       id:String(x.payment_key||x.external_id||x.name),name:x.name,kind:x.kind==='fixed'?'fixed':'var',source:x.source,
-      unit:x.unit||null,legal_entity:x.legal_entity||null,amount:n(x.amount),paid_amount:Math.min(n(x.amount),Math.max(0,n(x.paid_amount))),isAuto:true}));
+      unit:x.unit||null,legal_entity:x.legal_entity||null,amount:n(x.amount),paid_amount:Math.min(n(x.amount),Math.max(0,n(x.paid_amount))),
+      expense_type:x.expense_type||null,external_id:x.external_id||null,payment_origin:x.payment_origin||null,isAuto:true}));
   };
   function calc(){
     const manual=rows(),auto=allAuto(),income=data().income||[],revenue=income.reduce((s,x)=>s+n(x.amount),0);
@@ -6274,8 +6302,47 @@ async function renderBalance(body){
   }
   const pill=(label,cls='neutral')=>`<span class="fb-em-pill ${cls}">${esc(label)}</span>`;
   const opts=(values,value)=>values.map(([v,label])=>`<option value="${esc(v)}"${v===value?' selected':''}>${esc(label)}</option>`).join('');
+  // FD: Choose two calendar dates with the left mouse button. This filters the
+  // revenue evidence panel only; existing monthly KPI/expense math stays intact.
+  const daysInSelectedMonth=()=>new Date(Date.UTC(+state.period.slice(0,4),+state.period.slice(5),0)).getUTCDate();
+  const dateBounds=()=>({start:state.dateStart||state.period+'-01',end:state.dateEnd||state.period+'-'+String(daysInSelectedMonth()).padStart(2,'0')});
+  const shortDate=iso=>iso?iso.slice(8)+'.'+iso.slice(5,7):'—';
+  function dateCalendar(){
+    const [y,m]=state.period.split('-').map(Number),offset=(new Date(Date.UTC(y,m-1,1)).getUTCDay()+6)%7;
+    const {start,end}=dateBounds(),selecting=state.dateAwaitEnd;
+    const head=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(x=>`<span class="fb-fd-weekday">${x}</span>`).join('');
+    let days='';for(let z=0;z<offset;z++)days+='<span aria-hidden="true"></span>';
+    for(let d=1;d<=daysInSelectedMonth();d++){
+      const iso=state.period+'-'+String(d).padStart(2,'0'),inRange=!selecting&&iso>=start&&iso<=end;
+      days+=`<button type="button" data-fb-date="${iso}" class="fb-fd-day${inRange?' in-range':''}${iso===start?' is-start':''}${iso===end&&!selecting?' is-end':''}${iso===curDate()?' is-today':''}" aria-label="${d} ${monthTitle(state.period)}" aria-pressed="${inRange}">${d}</button>`;
+    }
+    return `<div class="fb-fd-calendar" role="group" aria-label="Выбор периода по дням"><div class="fb-fd-cal-head"><b>${esc(monthTitle(state.period))}</b><button type="button" data-fb-date-reset class="fb-em-link">Весь месяц</button></div>
+      <p>${selecting?'Укажите конец периода вторым нажатием левой кнопки мыши.':'Нажмите начало периода, затем конец. Выбираются даты внутри месяца.'}</p>
+      <div class="fb-fd-grid">${head}${days}</div><small>Месячные KPI и расходы остаются за весь месяц. Выбор дат уточняет только выручку.</small></div>`;
+  }
+  function dateButton(){const b=dateBounds();return `<div class="fb-fd-datebox"><button type="button" class="fb-action fb-fd-range-btn" data-fb-date-open aria-expanded="${state.dateOpen}" aria-label="Выбрать даты выручки">Календарь · ${shortDate(b.start)}–${shortDate(b.end)}</button>${state.dateOpen?dateCalendar():''}</div>`;}
+  function dateRevenue(){
+    if(!state.dateStart||!state.dateEnd)return '';
+    const {start,end}=dateBounds(),selection=(data().income||[]).filter(x=>{
+      const dt=String(x.sale_day||x.day||'').slice(0,10);return dt>=start&&dt<=end;});
+    const amount=selection.reduce((total,x)=>total+n(x.amount),0);
+    const byUnit=Object.entries(U).map(([unit,name])=>`${name}: ${money(selection.filter(x=>x.unit===unit).reduce((total,x)=>total+n(x.amount),0))}`).join(' · ');
+    return `<section class="fb-fd-selected-revenue" aria-live="polite"><div><b>Выручка ${shortDate(start)}–${shortDate(end)}: ${money(amount)}</b>
+      <small>${selection.length} операций · ${esc(byUnit)}</small><small>Только факт выручки за выбранные дни. Карточки расходов, прибыли и безубыточности рассчитаны за месяц.</small></div>
+      <button type="button" class="fb-action" data-fb-export>Скачать операции CSV</button></section>`;
+  }
+  function exportIncomeCsv(){
+    const {start,end}=dateBounds(),items=(data().income||[]).filter(x=>String(x.sale_day||x.day||'').slice(0,10)>=start&&String(x.sale_day||x.day||'').slice(0,10)<=end);
+    const quote=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+    const out=[['Дата','Филиал','Категория FAD','Сумма BYN','Источник','ID операции'].map(quote).join(';'),...items.map(x=>[
+      String(x.sale_day||x.day||'').slice(0,10),U[x.unit]||x.unit,x.income_type,Number(x.amount).toFixed(2).replace('.',','),x.source||'impulse',x.external_id||''
+    ].map(quote).join(';'))].join('\r\n');
+    const blob=new Blob(['\uFEFF'+out],{type:'text/csv;charset=utf-8'}),href=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=href;a.download=`FAD_выручка_${start}_${end}.csv`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(href),2000);
+  }
   function toolbar(){return `<div class="fb-em-toolbar"><div class="fb-em-caption">Студии Flexico <span>Толбухина, 2 · Машерова, 11 · Куйбышева, 22</span></div>
     <div class="fb-em-tools"><label>Период <select id="fb-period" class="fb-select">${months.map(k=>`<option value="${k}"${k===state.period?' selected':''}>${esc(monthTitle(k))}</option>`).join('')}</select></label>
+    ${dateButton()}
     ${isOwner?`<button type="button" class="fb-action primary" id="fb-reload" ${state.busy?'disabled':''}>${state.busy?'Обновление…':'Обновить данные'}</button>`:''}</div></div>`;}
   function status(){const list=data().source_status||[];const imp=list.find(x=>x.source==='impulse')||{};
     const when=imp.last_success_at?new Date(imp.last_success_at).toLocaleString('ru-RU',{timeZone:'Europe/Minsk',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'нет загрузки';
@@ -6345,7 +6412,9 @@ async function renderBalance(body){
         pending=auto?Math.max(0,amount-n(x.paid_amount)):paid?0:Math.max(0,amount||0),
         paidMoney=auto?n(x.paid_amount):paid?n(x.paid_amount):Math.min(amount||0,n(x.paid_amount));
       let group=auto?'auto':paid?'paid':diff==null?'later':diff<0?'overdue':diff===0?'today':diff<=7?'soon':'later';
-      let status=auto?pill(paid?'Выплачено':'Выплачено '+money(x.paid_amount),paid?'ok':'warn'):
+      let status=auto?(x.source==='impulse'
+        ?pill(paid?'Проведено в Impulse':'Учтено в Impulse: '+money(x.paid_amount),paid?'ok':'warn')
+        :pill(paid?'Выплачено':'Выплачено '+money(x.paid_amount),paid?'ok':'warn')):
         pill(dueInfo(x).s,dueInfo(x).cls);
       const attention=!auto&&!paid&&diff!=null&&((amount==null&&diff<=0)||(amount!=null&&diff<=7));
       return {x,id:String(x.id),auto,paid,amount,paidMoney,pending,diff,group,status,attention,
@@ -6399,9 +6468,11 @@ async function renderBalance(body){
       `<button class="fb-action${cmd==='pay'?' primary':''}" type="button" data-em="${cmd}" data-id="${esc(x.id)}" data-month="${esc(state.period)}">${cmd==='pay'?'Оплачено':cmd==='edit'?'Указать срок':'Внести сумму'}</button>`}
       <button class="fb-action" type="button" data-em="edit" data-id="${esc(x.id)}">Изменить</button></div>`;}
     const checkbox=expSelectAllowed(r)?`<input type="checkbox" data-en-select="${esc(x.id)}" ${expView.selected.has(r.id)?'checked':''} aria-label="Выбрать ${esc(r.title)}">`:'';
+    const impulseCode=({refund:'15',additional_expense:'18',goods_purchase:'19'})[x.expense_type]||'не определён';
+    const impulseProof=auto&&x.source==='impulse'?`<div class="fb-em-small fb-fd-source">Код ImpulseCRM: ${esc(impulseCode)} · операция ${esc(String(x.external_id||'без ID'))}. Отражена как выплата по кассовой операции CRM, банковская сверка отдельно.</div>`:'';
     return `<tr class="fb-en-line${expView.selected.has(r.id)?' fb-en-selected':''}"><td class="fb-en-check">${checkbox}</td>
       <td class="fb-left" data-label="Статья"><b>${esc(r.title)}</b>${newRate?'<span class="fb-em-new">новая сумма</span>':''}
-        <div class="fb-em-small">${esc(r.category)} · ${esc(E[x.legal_entity]||'Юрлицо не указано')} · ${auto?'авто · '+(x.source==='fad'?'FAD':'ImpulseCRM'):esc(K[x.kind]||'Переменная')+' · '+esc(frequencyLabel(x.frequency))+' · вручную'}</div></td>
+        <div class="fb-em-small">${esc(r.category)} · ${esc(E[x.legal_entity]||'Юрлицо не указано')} · ${auto?'авто · '+(x.source==='fad'?'FAD':'ImpulseCRM'):esc(K[x.kind]||'Переменная')+' · '+esc(frequencyLabel(x.frequency))+' · вручную'}</div>${impulseProof}</td>
       <td data-label="Срок оплаты">${auto?'—':`<span>${esc(date)}</span>${rel?`<div class="fb-em-small">${esc(rel)}</div>`:''}`}</td>
       <td class="fb-en-money" data-label="Сумма"><b>${money(amount)}</b></td><td data-label="Статус">${r.status}${paidNote}</td><td class="fb-m-card-actions" data-label="Действия">${actions}</td></tr>`;
   }
@@ -6594,12 +6665,12 @@ async function renderBalance(body){
     const monthsNav=`<div class="fb-m-period"><button type="button" data-fb-month="-1" ${idx<=0?'disabled':''} aria-label="Предыдущий месяц">‹</button><b>${esc(monthTitle(state.period))}</b><button type="button" data-fb-month="1" ${idx>=months.length-1?'disabled':''} aria-label="Следующий месяц">›</button></div>`;
     const tabbar=`<div class="fb-m-tabs" role="tablist" aria-label="Разделы баланса">${tabs.map(([key,name])=>`<button type="button" role="tab" data-fb-mobile-section="${key}" aria-selected="${mobileSection===key}" class="${mobileSection===key?'on':''}">${name}</button>`).join('')}</div>`;
     const content=mobileSection==='expenses'?table(c):mobileSection==='branches'?mobileBranchCards(c):mobileSection==='forecast'?prediction(c):mobileBalanceOverview(c);
-    return `${tabbar}${monthsNav}<div class="fb-m-subtitle">Студии Flexico · Толбухина, Машерова, Куйбышева</div>${status()}<div class="fb-m-content">${content}</div>`;
+    return `${tabbar}${monthsNav}${dateButton()}<div class="fb-m-subtitle">Студии Flexico · Толбухина, Машерова, Куйбышева</div>${status()}${dateRevenue()}<div class="fb-m-content">${content}</div>`;
   }
   function render(){if(!live())return;const c=calc();
     shell.classList.toggle('fb-mobile-view',mobileBalance());
-    shell.innerHTML=mobileBalance()?renderMobileBalance(c):toolbar()+status()+`<div class="fb-em-stack">${attention()}${kpis(c)}${revenues(c)}${table(c)}${prediction(c)}${branchTable(c)}</div>`;
-    const period=el('fb-period');if(period)period.onchange=()=>{state.period=period.value;expView.selected.clear();expView.day=null;expView.expanded={};load();};
+    shell.innerHTML=mobileBalance()?renderMobileBalance(c):toolbar()+status()+dateRevenue()+`<div class="fb-em-stack">${attention()}${kpis(c)}${revenues(c)}${table(c)}${prediction(c)}${branchTable(c)}</div>`;
+    const period=el('fb-period');if(period)period.onchange=()=>{state.period=period.value;state.dateStart=state.dateEnd=null;state.dateAwaitEnd=state.dateOpen=false;expView.selected.clear();expView.day=null;expView.expanded={};load();};
     const update=el('fb-reload');if(update)update.onclick=refreshExternal;
     if(mobileBalance()&&mobileSection==='expenses'&&!vDayScrolled)requestAnimationFrame(()=>fadCenterBalanceDay(shell));
     const audit=el('fb-audit');if(audit)audit.onclick=auditImpulse;
@@ -6630,10 +6701,20 @@ async function renderBalance(body){
       body:JSON.stringify({token:TOKEN,source:'impulse',month:state.period,mode:'inspect'})});
       const j=await response.json().catch(()=>({}));if(!response.ok||!j.ok)throw Error(String(j.error||'Не удалось прочитать CRM'));
       const rows=(j.types||[]).map(x=>`<tr><td>${esc(String(x.code))}</td><td class="fb-left">${esc(x.title||'')}</td><td>${n(x.count)}</td><td>${money(x.signed)}</td><td>${esc(String(x.classification||''))}</td></tr>`).join('');
-      const ov=modal(`<div class="fb-em-modal"><h3>Сверка выручки ImpulseCRM · ${esc(monthTitle(state.period))}</h3><p class="fb-em-muted">Только чтение. Внесение в Баланс выполняется кнопкой «Обновить данные».</p>
-        <p><b>Выручка по API:</b> ${money(j.accepted_amount)} · ${n(j.accepted)} операций<br><b>Расходы:</b> ${money(j.expenses_amount)} · ${n(j.expenses_count)} операций</p>
-        <div class="fb-table-scroll"><table class="fb-table"><thead><tr><th>Код</th><th class="fb-left">Тип</th><th>Опер.</th><th>Сумма</th><th>Классификация</th></tr></thead><tbody>${rows}</tbody></table></div>
-        <div class="fb-em-modal-actions"><button class="fb-action primary" type="button" data-x>Закрыть</button></div></div>`);
+      const sourceSum=n(j.accepted_amount),stored=calc().revenue,delta=+(stored-sourceSum).toFixed(2);
+      const diagnostics=(j.exclusions||[]).map(x=>`<tr><td class="fb-left">${esc(x.reason||'')}</td><td>${n(x.count)}</td><td>${money(x.signed)}</td></tr>`).join('');
+      const ov=modal(`<div class="fb-em-modal fb-fd-audit"><h3>Сверка выручки ImpulseCRM · ${esc(monthTitle(state.period))}</h3><p class="fb-em-muted">Сравнение одного и того же месяца, без изменения данных. API считает выбранные коды поступлений, а отчёт «Доход» внутри ImpulseCRM может использовать другую классификацию.</p>
+        <div class="fb-fd-audit-cards"><div><small>Сохранено в FAD</small><b>${money(stored)}</b></div><div><small>Актуальный API Impulse</small><b>${money(sourceSum)}</b></div><div><small>Разница FAD − API</small><b class="${Math.abs(delta)<.005?'fb-fd-matched':'fb-fd-delta'}">${money(delta)}</b></div></div>
+        <p>${Math.abs(delta)<.005?'✓ FAD совпадает с текущим импортируемым итогом API. Если экран «Доход» Impulse отличается — причина в критериях его отчёта или границах дат.':`⚠ Сохранённый итог FAD отличается от свежего API на ${money(delta)}. Проверьте время загрузки, исключённые операции и повторите синхронизацию при стабильных данных.`}</p>
+        <label class="fb-em-field"><span>Доход на экране ImpulseCRM (введите сумму для сравнения)</span><input type="text" inputmode="decimal" id="fb-fd-crm-total" placeholder="Например, 40 321,00"></label>
+        <p id="fb-fd-crm-diff" class="fb-em-muted">Сравнение с экраном Impulse появится после ввода суммы.</p>
+        <p><b>По API:</b> ${n(j.accepted)} операций выручки · <b>Расходы CRM:</b> ${money(j.expenses_amount)} (${n(j.expenses_count)} операций). Коды 11/12/13 участвуют в выручке; 15 — возвраты, 18/19 — расходы. Не приравнивайте итог всех кодов к отчёту «Доход».</p>
+        <div class="fb-table-scroll"><table class="fb-table"><thead><tr><th>Код</th><th class="fb-left">Тип операции</th><th>Операций</th><th>Сумма</th><th>Роль в API</th></tr></thead><tbody>${rows}</tbody></table></div>
+        <details><summary>Исключённые операции API</summary><div class="fb-table-scroll"><table class="fb-table"><thead><tr><th class="fb-left">Основание</th><th>Кол-во</th><th>Сумма</th></tr></thead><tbody>${diagnostics||'<tr><td colspan="3">Нет исключённых операций</td></tr>'}</tbody></table></div></details>
+        <div class="fb-em-modal-actions"><button class="fb-action" type="button" id="fb-fd-download">Скачать операции FAD (CSV)</button><button class="fb-action primary" type="button" data-x>Закрыть</button></div></div>`);
+      ov.querySelector('#fb-fd-crm-total').oninput=ev=>{const raw=String(ev.target.value||'').replace(/[\s\u00a0\u202f]/g,'').replace(',','.');const entered=Number(raw);const target=ov.querySelector('#fb-fd-crm-diff');
+        target.textContent=!raw||!Number.isFinite(entered)?'Введите числовую сумму из отчёта Impulse.':`Разница FAD − экран Impulse: ${money(stored-entered)}. API − экран Impulse: ${money(sourceSum-entered)}. Если FAD совпадает с API, проверьте методику отчёта CRM.`;};
+      ov.querySelector('#fb-fd-download').onclick=exportIncomeCsv;
     }catch(e){toast('Сверка: '+String(e.message||e),true);}finally{state.busy=false;if(live())render();}
   }
   async function discoverImpulseCodes(){if(!isOwner||state.busy)return;state.busy=true;render();
@@ -6953,8 +7034,8 @@ async function renderBalance(body){
     const current=possible.find(x=>x.id===choice)||null;
     const label=current?.name||row.counterparty.slice(0,160);
     const description=`${row.month} · ${money(row.amount)} · ${E[row.legal_entity]}`;
-    root.querySelector('#fb-eu-review').innerHTML=`<form id="fb-eu-form">
-      <h4>Подтвердить расход</h4><p>${esc(description)}</p>
+    root.querySelector('#fb-eu-review').innerHTML=`<form id="fb-eu-form" novalidate>
+      <h4>Подтвердить расход</h4><p>${esc(description)}</p><div class="fb-fd-save-status" id="fb-fd-import-message" role="alert" hidden></div>
       <label>Статья в FAD<select id="fb-eu-target">${euOpts([['','Создать новую статью'],...possible.map(a=>[a.id,a.name+' · '+(U[a.unit]||'Все филиалы')])],choice)}</select></label>
       <div class="fb-eu-form-grid">
        <label class="fb-eu-wide">Название статьи<input id="fb-eu-name" maxlength="160" required value="${esc(label)}"></label>
@@ -6983,21 +7064,29 @@ async function renderBalance(body){
       form.querySelector('#fb-eu-entity').value=x.legal_entity;
     });
     form.querySelector('#fb-eu-paid').onchange=e=>{form.querySelector('#fb-eu-date-wrap').hidden=!e.target.checked;};
+    const message=form.querySelector('#fb-fd-import-message');
+    const showImportError=text=>{message.hidden=false;message.textContent=text;message.classList.add('error');message.scrollIntoView({block:'nearest'});};
     form.onsubmit=async e=>{
       e.preventDefault();if(bankState.busy)return;
+      message.hidden=true;message.textContent='';message.classList.remove('error');
       const f=form.elements;
       const item={article_id:f['fb-eu-target'].value||null,name:f['fb-eu-name'].value.trim(),
         category:f['fb-eu-category'].value,kind:f['fb-eu-kind'].value,frequency:f['fb-eu-frequency'].value,day:f['fb-eu-day'].value,
         legal:f['fb-eu-entity'].value,unit:f['fb-eu-unit'].value==='all'?'':f['fb-eu-unit'].value,
         paid:f['fb-eu-paid'].checked,date:f['fb-eu-paid'].checked?f['fb-eu-date'].value:null};
-      if(!f['fb-eu-checked'].checked||!item.category||!item.kind||!item.frequency||!item.day||!item.legal||!f['fb-eu-unit'].value){euToast('Заполните все поля и подтвердите проверку на дубли',true);return;}
-      if(item.legal!==row.legal_entity){euToast('Юрлицо должно совпадать с исходной выпиской. Если там ошибка — отклоните строку.',true);return;}
-      if(item.paid&&!/^20\d{2}-\d{2}-\d{2}$/.test(item.date||'')){euToast('Введите точную дату оплаты',true);return;}
-      bankState.busy=true;const save=form.querySelector('button[type="submit"]');save.disabled=true;
+      if(!item.name||!item.category||!item.kind||!item.frequency||!item.day||!item.legal||!f['fb-eu-unit'].value||!f['fb-eu-checked'].checked){showImportError('Заполните название, категорию, тип, периодичность, день, юрлицо, филиал и подтверждение проверки на дубли.');return;}
+      if(item.legal!==row.legal_entity){showImportError('Юрлицо должно совпадать с выпиской. Если в источнике ошибка — отклоните строку.');return;}
+      if(item.paid&&!/^20\d{2}-\d{2}-\d{2}$/.test(item.date||'')){showImportError('Для отметки «Оплачено» укажите точную фактическую дату оплаты.');return;}
+      bankState.busy=true;const save=form.querySelector('button[type="submit"]');save.disabled=true;save.textContent='Сохранение…';
+      message.hidden=false;message.textContent='Сохраняем подтверждение на сервере…';
       try{
         await rpc('app_balance_fb_decide',{p_token:TOKEN,p_row_id:row.id,p_action:'approve',p_item:item});
-        bankState.selected=null;await euRead();euRenderQueue();await load();euToast('Расход добавлен после подтверждения');
-      }catch(err){euToast('Не сохранено: '+String(err.message||err),true);}finally{bankState.busy=false;if(save.isConnected)save.disabled=false;}
+        bankState.selected=null;await euRead();euRenderQueue();
+        const progress=euRoot()?.querySelector('#fb-eu-progress');
+        if(progress)progress.textContent='✓ Подтверждён расход «'+row.counterparty+'» за '+row.month+'. Он добавлен в FAD; следующая строка остаётся на проверке.';
+        await load();euToast('Расход добавлен после подтверждения');
+      }catch(err){showImportError('Не удалось добавить расход: '+String(err.message||err)+'. Запись остаётся на проверке и в Баланс не включена.');}
+      finally{bankState.busy=false;if(save.isConnected){save.disabled=false;save.textContent='Добавить в расходы FAD';}}
     };
     requestAnimationFrame(()=>root.querySelector('#fb-eu-review')?.scrollIntoView({behavior:'smooth',block:'nearest'}));
   }
@@ -7067,9 +7156,17 @@ async function renderBalance(body){
     }
     const button=ev.target.closest('button');if(!button||!shell.contains(button))return;
     const d=button.dataset,v=expView;
+    if(Object.prototype.hasOwnProperty.call(d,'fbDateOpen')){state.dateOpen=!state.dateOpen;render();return;}
+    if(Object.prototype.hasOwnProperty.call(d,'fbDateReset')){state.dateStart=state.dateEnd=null;state.dateAwaitEnd=false;state.dateOpen=false;render();return;}
+    if(d.fbDate){
+      if(!state.dateAwaitEnd){state.dateStart=d.fbDate;state.dateEnd=null;state.dateAwaitEnd=true;}
+      else {state.dateEnd=d.fbDate;if(state.dateEnd<state.dateStart)[state.dateStart,state.dateEnd]=[state.dateEnd,state.dateStart];state.dateAwaitEnd=false;state.dateOpen=false;}
+      render();return;
+    }
+    if(Object.prototype.hasOwnProperty.call(d,'fbExport')){exportIncomeCsv();return;}
     if(d.fbMobileSection){mobileSection=d.fbMobileSection;render();return;}
     if(d.fbBranchSort){mobileBranchSort=d.fbBranchSort;render();return;}
-    if(d.fbMonth){const index=months.indexOf(state.period)+Number(d.fbMonth);if(index>=0&&index<months.length){state.period=months[index];expView.selected.clear();expView.day=null;expView.expanded={};vDayScrolled=false;void load();}return;}
+    if(d.fbMonth){const index=months.indexOf(state.period)+Number(d.fbMonth);if(index>=0&&index<months.length){state.period=months[index];state.dateStart=state.dateEnd=null;state.dateAwaitEnd=state.dateOpen=false;expView.selected.clear();expView.day=null;expView.expanded={};vDayScrolled=false;void load();}return;}
     if(d.enMobileFilters){v.sheetOpen=d.enMobileFilters==='open';rerenderExpenseList();
       if(v.sheetOpen)requestAnimationFrame(()=>el('fb-en-expenses')?.querySelector('.fb-m-sheet-head button')?.focus());
       else requestAnimationFrame(()=>el('fb-en-expenses')?.querySelector('.fb-m-filters-trigger')?.focus());return;}
@@ -13235,7 +13332,7 @@ function adminScheduleOverviewGrid(){
       }
       const coffee=COFFEE_SCHEDULE_MARKERS.get(iso);
       const coffeeAssigned=coffee?.login===a.login;
-      html+=`<div class="${cls}${coffeeAssigned?' coffee-scheduled':''}"${style?` style="${style}"`:''} title="${escapeHtml(title+(coffeeAssigned?' · Обслуживание кофе':''))}">${coffeeAssigned?'<span class="coffee-scheduled-icon" role="img" aria-label="Обслуживает кофе">${FAD_SCH_COFFEE_ICON}</span>':''}</div>`;
+      html+=`<div class="${cls}${coffeeAssigned?' coffee-scheduled':''}"${style?` style="${style}"`:''} title="${escapeHtml(title+(coffeeAssigned?' · Обслуживание кофе':''))}">${coffeeAssigned?`<span class="coffee-scheduled-icon" role="img" aria-label="Обслуживает кофе">${FAD_SCH_COFFEE_ICON}</span>`:''}</div>`;
     }
     html+=`<div class="adm-sched-total">${fmtH(adminHours(a.login))} ч</div>`;
   });
