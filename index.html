@@ -4594,7 +4594,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '23.11.2026-et'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '23.11.2026-ev'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -5543,8 +5543,8 @@ function getNavigationTabs(){
   getNavigationTabs.registry=definitions; // только для проверки валидности NAV_ITEMS
   if(session?.role==='trainer')return [definitions.events];
   const ownerOrder=['reports','plan','clients','schedule','knowledge','balance','salaries','replacements','employees','roles','marketing','calendar','messages','events'];
-  const gorovayaOrder=['shift','plan','clients','reports','schedule','knowledge','balance','salaries','replacements','employees','marketing','calendar','messages','events'];
-  const adminOrder=['shift','plan','clients','schedule','knowledge','balance','replacements','marketing','events'];
+  const gorovayaOrder=['shift','plan','clients','reports','schedule','knowledge','salaries','replacements','employees','marketing','calendar','messages','events'];
+  const adminOrder=['shift','plan','clients','schedule','knowledge','replacements','marketing','events'];
   const order=isOwner?ownerOrder:(isGorovaya?gorovayaOrder:adminOrder);
   const canSee={
     shift:!isOwner,
@@ -5553,7 +5553,7 @@ function getNavigationTabs(){
     reports:isOwner||(isGorovaya&&can('reports.view_all')),
     schedule:true,
     knowledge:isOwner||(session.role==='admin'&&!session.fadRoleLoadFailed),
-    balance:isOwner||session?.role==='admin',
+    balance:isOwner,
     salaries:isOwner||(isGorovaya&&session.adminPayrollAccess===true),
     replacements:isOwner||session.role==='admin',
     employees:isOwner||(isGorovaya&&['employees.view','employees.manage','admins.view','admins.manage','admins.permissions','admins.audit','telegram.manage'].some(k=>can(k))),
@@ -5566,11 +5566,11 @@ function getNavigationTabs(){
   if(!isOwner&&session.fadRolePermissions){
     // Для назначенных ролей сервер проверяет права действий; nav.* управляет только видимостью вкладок.
     const p=session.fadRolePermissions;
-    const roleOrder=['shift','plan','clients','reports','schedule','knowledge','balance','salaries','replacements','employees','marketing','calendar','messages','events'];
+    const roleOrder=['shift','plan','clients','reports','schedule','knowledge','salaries','replacements','employees','marketing','calendar','messages','events'];
     return roleOrder.filter(key=>{
       // Два независимых права каждого модуля: nav.* = просмотр, *.edit/manage = изменение.
       // Роли тренеров проверяются отдельно выше; для администратора действуют галочки из «Роли».
-      if(key==='balance')return session.role==='admin';
+      if(key==='balance')return false; // EV: only owner; assigned admin roles cannot open Balance
       if(key==='clients')return !!session.clientsAccess?.enabled&&(!!session.clientsAccess?.own||!!session.clientsAccess?.team);
       if(p['nav.'+key]!==true)return false;
       if(key==='reports')return can('reports.view_all');
@@ -5637,7 +5637,7 @@ function renderNav(tabs, host, selectTab){
 /* FAD EM: scheduled-payment badge refresh, read-only. */
 async function fadRefreshBalanceBadge(){
  const button=document.querySelector('#fadSidebarNav [data-tab="balance"]');
- if(!button||!TOKEN||!session||!['owner','admin'].includes(session.role))return;
+ if(!button||!TOKEN||!session||session.role!=='owner')return;
  try{
   const period=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Minsk',year:'numeric',month:'2-digit'}).format(new Date());
   const info=await rpc('app_balance_em_read',{p_token:TOKEN,p_period:period});
@@ -5944,7 +5944,7 @@ setInterval(()=>{
 /* FAD EM · Баланс: unified owner/staff read-only view, recurring bills and payment dates.
    Source ImpulseCRM revenue, source FAD payroll and existing SQL mathematics are untouched. */
 async function renderBalance(body){
-  if(!session||!['owner','admin'].includes(session.role)){
+  if(!session||session.role!=='owner'){
     body.innerHTML='<div class="empty">Раздел недоступен для этой роли.</div>';return;
   }
   const isOwner=session.role==='owner';
