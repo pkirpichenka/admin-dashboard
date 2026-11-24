@@ -4954,6 +4954,19 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="month"]::-webk
 @keyframes fad-sn-sheet{from{transform:translateY(100%)}to{transform:translateY(0)}}
 @media(prefers-reduced-motion:reduce){.fad-sn-dialog,.fad-sn-dialog *, .fad-sn-dialog *::before,.fad-sn-dialog *::after,.fad-sn-preview,.fad-sn-preview *,.fad-sn-preview *::before,.fad-sn-preview *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.fad-sn-cta:hover{transform:none}}
 
+
+/* FN · Only the two date selectors in Reports. Same visual language as Balance. */
+.fad-report-date-trigger{display:inline-flex;align-items:center;justify-content:space-between;gap:10px;min-height:40px;padding:8px 11px;white-space:nowrap;border:1px solid #dce5de;border-radius:10px;background:#fff;color:#203b2b;font:inherit;font-size:13px;font-weight:650;cursor:pointer}
+.fad-report-date-trigger:hover,.fad-report-date-trigger:focus-visible,.fad-report-date-trigger[aria-expanded="true"]{border-color:#2d7a59;outline:none}
+.fad-report-date-trigger:focus-visible{outline:2px solid #2d7a59;outline-offset:2px}
+.fad-report-date-trigger svg{width:16px;height:16px;flex:none;color:#638273}
+.fad-report-datepicker .payroll-range-day.in-range{background:#e2eee7;color:#214735;border-radius:6px}
+.fad-report-datepicker .payroll-range-day.range-start,.fad-report-datepicker .payroll-range-day.range-end,.fad-report-datepicker .payroll-range-day.range-draft{background:#2d7a59;color:white;border-color:#2d7a59;border-radius:8px}
+.fad-report-datepicker .payroll-range-day.is-today:not(.active):not(.range-start):not(.range-end):not(.range-draft){outline:1.5px solid #2d7a59;outline-offset:-2px}
+.fad-report-datepicker .fad-gdp-foot span{color:#637469;font-size:11px}
+.fad-report-datepicker .fad-gdp-foot button{background:transparent;text-decoration:underline;padding:4px 0;color:#1f6b47;white-space:nowrap}
+@media(max-width:600px){.fad-report-date-trigger{min-height:44px;max-width:100%;gap:7px;font-size:12px}.fad-report-datepicker .payroll-range-day{height:38px}}
+
 </style>
 
 <div id="root"></div>
@@ -4974,7 +4987,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '24.11.2026-fm'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '24.11.2026-fn'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -8027,6 +8040,45 @@ function dayCard(e,open,source){
     </div></div>`;
 }
 
+
+/* FN · Reports calendar: a single day or a two-click range, including cross-month ranges.
+   Hidden original date controls preserve existing report and export logic. */
+function mountFadReportDateSelectors(body,day,from,to){
+  const dayBtn=body.querySelector('#fadReportDay'),rangeBtn=body.querySelector('#fadReportPeriod');
+  const names=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  const week=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+  const pad=n=>String(n).padStart(2,'0');
+  const fmt=d=>d?d.split('-').reverse().join('.'):'—';
+  const sync=()=>{if(dayBtn)dayBtn.querySelector('span').textContent=fmt(day.value);if(rangeBtn)rangeBtn.querySelector('span').textContent=fmt(from.value)+' — '+fmt(to.value);};
+  let popup=null,anchor=null,mode='',view='',draft=null,abort=null,observer=null;
+  function close(focus=false){const old=anchor;abort?.abort();abort=null;observer?.disconnect();observer=null;popup?.remove();popup=null;anchor=null;draft=null;old?.setAttribute('aria-expanded','false');if(focus&&old?.isConnected)old.focus({preventScroll:true});}
+  function bounds(){const a=mode==='day'?day:from;return {min:a.min||'1900-01-01',max:a.max||'2100-12-31'};}
+  function position(){if(!popup||!anchor?.isConnected)return close();const r=anchor.getBoundingClientRect(),h=popup.offsetHeight,w=popup.offsetWidth;
+    const below=innerHeight-r.bottom-8,above=r.top-8;popup.style.left=Math.max(8,Math.min(innerWidth-w-8,r.left))+'px';popup.style.top=Math.max(8,below>=h||below>=above?Math.min(innerHeight-h-8,r.bottom+5):r.top-h-5)+'px';}
+  function monthBounds(y,m){const a=y+'-'+pad(m)+'-01',b=y+'-'+pad(m)+'-'+pad(new Date(Date.UTC(y,m,0)).getUTCDate());return {a,b};}
+  function render(){if(!popup)return;const [y,m]=view.split('-').map(Number),{min,max}=bounds();const years=[];for(let i=+min.slice(0,4);i<=+max.slice(0,4);i++)years.push(i);
+    const low=mode==='range'?[from.value,to.value].sort()[0]:day.value,high=mode==='range'?[from.value,to.value].sort()[1]:day.value;
+    const start=draft||low,end=draft||high;let cells=Array((new Date(Date.UTC(y,m-1,1)).getUTCDay()+6)%7).fill('<span aria-hidden="true"></span>').join('');
+    for(let i=1,n=new Date(Date.UTC(y,m,0)).getUTCDate();i<=n;i++){const d=view+'-'+pad(i),blocked=d<min||d>max,selected=!blocked&&d>=start&&d<=end;
+      cells+=`<button type="button" data-frd-day="${d}" class="payroll-range-day${selected?(mode==='day'?' active':' in-range'+(d===start?' range-start':'')+(d===end?' range-end':'')+(draft?' range-draft':'')):''}${d===todayStr()?' is-today':''}" aria-label="${fmt(d)}" aria-pressed="${selected}" ${blocked?'disabled':''}>${i}</button>`;}
+    const monthOptions=names.map((name,i)=>{const {a,b}=monthBounds(y,i+1);return `<option value="${pad(i+1)}" ${i+1===m?'selected':''} ${a>max||b<min?'disabled':''}>${name}</option>`;}).join('');
+    popup.innerHTML=`<div class="payroll-range-header"><select data-frd-month aria-label="Месяц календаря">${monthOptions}</select><select data-frd-year aria-label="Год календаря">${years.map(n=>`<option value="${n}" ${n===y?'selected':''}>${n}</option>`).join('')}</select></div><div class="payroll-range-weekdays" aria-hidden="true">${week.map(x=>`<span>${x}</span>`).join('')}</div><div class="payroll-range-days" role="group" aria-label="${mode==='range'?'Дни периода':'День отчёта'}">${cells}</div><div class="fad-gdp-foot"><span>${mode==='day'?'Выберите день':draft?'Выберите вторую дату':'Выберите начало и конец'}</span><button type="button" data-frd-quick>${mode==='day'?'Сегодня':'Весь месяц'}</button></div>`;position();}
+  function commit(a,b){const {min,max}=bounds();if(a<min||a>max||b&&(b<min||b>max))return;const isDay=mode==='day';close(true);
+    if(isDay){day.value=a;sync();day.dispatchEvent(new Event('change',{bubbles:true}));}
+    else {const pair=[a,b].sort();from.value=pair[0];to.value=pair[1];sync();to.dispatchEvent(new Event('change',{bubbles:true}));}}
+  function open(btn,kind){if(anchor===btn&&popup)return close(true);close();anchor=btn;mode=kind;view=(kind==='day'?day.value:from.value).slice(0,7)||todayStr().slice(0,7);draft=null;
+    popup=document.createElement('div');popup.className='fad-global-datepicker fad-report-datepicker';popup.setAttribute('role','dialog');popup.setAttribute('aria-label',kind==='day'?'Выбор дня отчёта':'Выбор периода отчёта');popup.style.maxHeight='calc(100dvh - 16px)';popup.style.overflowY='auto';document.body.append(popup);btn.setAttribute('aria-expanded','true');abort=new AbortController();const opt={signal:abort.signal};
+    render();popup.querySelector('.range-start,.active,.payroll-range-day:not(:disabled)')?.focus({preventScroll:true});
+    popup.addEventListener('click',e=>{const hit=e.target.closest('[data-frd-day]');if(hit&&!hit.disabled){const d=hit.dataset.frdDay;if(mode==='day')commit(d);else if(draft)commit(draft,d);else{draft=d;render();popup?.querySelector('.range-draft')?.focus({preventScroll:true});}return;}
+      if(e.target.closest('[data-frd-quick]')){const {min,max}=bounds();if(mode==='day'){const d=todayStr();commit(d<min?min:d>max?max:d);}else{const [y,m]=view.split('-').map(Number),{a,b}=monthBounds(y,m);commit(a<min?min:a,b>max?max:b);}}},opt);
+    popup.addEventListener('change',e=>{if(!e.target.matches('[data-frd-month],[data-frd-year]'))return;const field=e.target.matches('[data-frd-month]')?'month':'year',y=+popup.querySelector('[data-frd-year]').value,m=+popup.querySelector('[data-frd-month]').value,{min,max}=bounds();view=y+'-'+pad(m);if(view<min.slice(0,7))view=min.slice(0,7);if(view>max.slice(0,7))view=max.slice(0,7);render();popup?.querySelector('[data-frd-'+field+']')?.focus({preventScroll:true});},opt);
+    document.addEventListener('pointerdown',e=>{if(!popup?.contains(e.target)&&!anchor?.contains(e.target))close();},{capture:true,...opt});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();close(true);}},{capture:true,...opt});
+    window.addEventListener('resize',position,opt);document.addEventListener('scroll',e=>{if(!popup?.contains(e.target))position();},{capture:true,...opt});
+    observer=new MutationObserver(()=>{if(!anchor?.isConnected)close();});observer.observe(body,{childList:true,subtree:true});}
+  dayBtn?.addEventListener('click',()=>open(dayBtn,'day'));rangeBtn?.addEventListener('click',()=>open(rangeBtn,'range'));sync();return {sync};
+}
+
 /* ================= All reports (owner + senior) ================= */
 async function renderAllReports(body){
   let all, sched=null; try{ all=await loadAllReports(true); }catch(e){ return handleErr(e); }
@@ -8044,12 +8096,12 @@ async function renderAllReports(body){
     ${reportDays>0?`<div class="hintline" style="margin-bottom:10px">Доступны отчёты за последние <b>${reportDays}</b> дн., включая сегодня · с ${fmtLong(minReportDate)} по ${fmtLong(maxReportDate)}.</div>`:''}
     ${cashNowCard(all)}
     <div class="bar fade-in">
-      <div class="datepick"><span class="lbl">День:</span><button class="btn btn-sm daynav" id="dPrev" title="Предыдущий день">‹</button><input type="date" id="pick" ${minReportDate?`min="${minReportDate}"`:''} value="${maxReportDate}" style="width:auto"/><button class="btn btn-sm daynav" id="dNext" title="Следующий день">›</button><button class="btn btn-sm" id="dToday">Сегодня</button></div>
+      <div class="datepick"><span class="lbl">День:</span><button class="btn btn-sm daynav" id="dPrev" title="Предыдущий день">‹</button><input type="date" id="pick" ${minReportDate?`min="${minReportDate}" max="${maxReportDate}"`:''} value="${maxReportDate}" hidden style="display:none"/><button type="button" id="fadReportDay" class="fad-report-date-trigger" aria-haspopup="dialog" aria-expanded="false" aria-label="Выбрать день отчёта"><span></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4M17 3v4M3 10h18"/></svg></button><button class="btn btn-sm daynav" id="dNext" title="Следующий день">›</button><button class="btn btn-sm" id="dToday">Сегодня</button></div>
       <div class="datepick"><span class="lbl">Студия:</span><select id="stf" style="width:auto"><option value="all">Все студии</option>${STUDIOS.map(s=>`<option value="${s.id}">${s.name} · ${s.address}</option>`).join('')}</select></div>
     </div>
     <div id="picked"></div>
     ${allowPeriod?`<div class="bar">
-      <div class="datepick"><span class="lbl">Период:</span><input type="date" id="pfrom" ${minReportDate?`min="${minReportDate}"`:''} max="${maxReportDate}" value="${minReportDate||maxReportDate.slice(0,8)+'01'}" style="width:auto"/><span class="lbl">—</span><input type="date" id="pto" ${minReportDate?`min="${minReportDate}"`:''} max="${maxReportDate}" value="${maxReportDate}" style="width:auto"/></div>
+      <div class="datepick"><span class="lbl">Период:</span><input type="date" id="pfrom" ${minReportDate?`min="${minReportDate}"`:''} max="${maxReportDate}" value="${minReportDate||maxReportDate.slice(0,8)+'01'}" hidden style="display:none"/><input type="date" id="pto" ${minReportDate?`min="${minReportDate}"`:''} max="${maxReportDate}" value="${maxReportDate}" hidden style="display:none"/><button type="button" id="fadReportPeriod" class="fad-report-date-trigger" aria-haspopup="dialog" aria-expanded="false" aria-label="Выбрать период отчёта"><span></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4M17 3v4M3 10h18"/></svg></button></div>
       <div class="datepick"><span class="lbl">Студия:</span><select id="stfP" style="width:auto"><option value="all">Все студии</option>${STUDIOS.map(s=>`<option value="${s.id}">${s.name} · ${s.address}</option>`).join('')}</select></div>
       <div class="grow"></div>
       ${allowExport?`<button class="btn icon-only" id="export" title="Выгрузить в Excel" aria-label="Выгрузить в Excel"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" fill="#217346"/><path d="M8.7 8l2.6 4-2.6 4M15.3 8l-2.6 4 2.6 4" stroke="#fff" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`:''}
@@ -8096,7 +8148,9 @@ async function renderAllReports(body){
     wireDayCards(alllist,()=>renderAllReports(body),all); wireEdit(alllist);
   }
   const pfrom=body.querySelector('#pfrom'), pto=body.querySelector('#pto'), periodsum=body.querySelector('#periodsum');
+  const reportDates=mountFadReportDateSelectors(body,pick,pfrom,pto);
   function showPeriod(){
+    reportDates.sync();
     if(!allowPeriod||!stfP||!pfrom||!pto||!periodsum) return;
     const f=stfP.value, a=pfrom.value, b=pto.value;
     if(!a||!b){ periodsum.innerHTML=''; return; }
@@ -8125,8 +8179,8 @@ async function renderAllReports(body){
     }).join('');
     box.innerHTML=`<div class="cn-name">${title}</div>${lines}`;
   }
-  async function pickChanged(){ await updateShiftTile(pick.value); refresh(); }
-  function stepDay(delta){ const d=new Date(pick.value+'T00:00:00'); if(isNaN(d)) return; d.setDate(d.getDate()+delta); const next=dISO(d); if(minReportDate&&next<minReportDate)return; pick.value=next; pickChanged(); }
+  async function pickChanged(){ reportDates.sync(); await updateShiftTile(pick.value); refresh(); }
+  function stepDay(delta){ const d=new Date(pick.value+'T00:00:00'); if(isNaN(d)) return; d.setDate(d.getDate()+delta); const next=dISO(d); if((pick.min&&next<pick.min)||(pick.max&&next>pick.max))return; pick.value=next; pickChanged(); }
   pick.onchange=pickChanged;
   body.querySelector('#dPrev').onclick=()=>stepDay(-1);
   body.querySelector('#dNext').onclick=()=>stepDay(1);
