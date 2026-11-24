@@ -4974,7 +4974,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '24.11.2026-fl'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '24.11.2026-fm'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -5877,6 +5877,15 @@ const NAV_ITEMS = [
   {id:'messages',label:'Сообщения',icon:'M21 11.5a8.5 8.5 0 0 1-8.5 8.5H5l-3 2v-8a8.5 8.5 0 1 1 19-2.5z',group:'comms'},
   {id:'events',label:'Мероприятия',icon:'M8 2v4 M16 2v4 M3 9h18 M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z M8 13h4 M8 17h8',group:'comms'}
 ];
+// FM: only the owner sees Coffee immediately after Plan.
+function fadOrderedNavItems(){
+  if(session?.role!=='owner')return NAV_ITEMS;
+  const items=NAV_ITEMS.filter(item=>item.id!=='coffee');
+  const coffee=NAV_ITEMS.find(item=>item.id==='coffee');
+  const plan=items.findIndex(item=>item.id==='plan');
+  if(coffee&&plan>=0)items.splice(plan+1,0,coffee);
+  return items;
+}
 function header(){
   // Старые id refreshBtn и logout и их обработчики сохраняются; элементы перемещены в sidebar.
   const full=session.role==='owner'||(PERMISSION_KEYS.every(k=>can(k))&&reportDaysLimit()===0);
@@ -5926,7 +5935,7 @@ function getNavigationTabs(){
   };
   getNavigationTabs.registry=definitions; // только для проверки валидности NAV_ITEMS
   if(session?.role==='trainer')return [definitions.events];
-  const ownerOrder=['coffee','reports','plan','clients','schedule','knowledge','balance','salaries','replacements','employees','roles','marketing','calendar','messages','events'];
+  const ownerOrder=['reports','plan','coffee','clients','schedule','knowledge','balance','salaries','replacements','employees','roles','marketing','calendar','messages','events'];
   const gorovayaOrder=['shift','coffee','plan','clients','reports','schedule','knowledge','salaries','replacements','employees','marketing','calendar','messages','events'];
   const adminOrder=['shift','coffee','plan','clients','schedule','knowledge','replacements','marketing','events'];
   const order=isOwner?ownerOrder:(isGorovaya?gorovayaOrder:adminOrder);
@@ -5982,7 +5991,7 @@ function renderNav(tabs, host, selectTab){
   const groupOrder=[];
   const registry=getNavigationTabs.registry||{};
   const seenIds=new Set();
-  for(const item of NAV_ITEMS){
+  for(const item of fadOrderedNavItems()){
     if(!item || !item.id)continue;
     if(seenIds.has(item.id)){console.warn('FAD navigation: повторный ключ в NAV_ITEMS',item.id);continue;}
     seenIds.add(item.id);
@@ -6312,7 +6321,7 @@ function renderRoleUI(tabs){
   drawMobileNav();
   const visibleKeys=new Set(NAV_ITEMS.map(item=>item.id));
   const restored=tabs.findIndex(tab=>tab.key===rememberedTab&&visibleKeys.has(tab.key));
-  const initial=restored>=0?restored:NAV_ITEMS.map(item=>tabs.findIndex(t=>t.key===item.id)).find(i=>i>=0);
+  const initial=restored>=0?restored:fadOrderedNavItems().map(item=>tabs.findIndex(t=>t.key===item.id)).find(i=>i>=0);
   if(initial!==undefined)show(initial);
   else {root.querySelector('#fadCurrentTitle').textContent='Нет доступных разделов';body.innerHTML='<div class="empty">Для пользователя нет доступных разделов.</div>';}
 }
