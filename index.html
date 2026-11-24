@@ -4967,6 +4967,22 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="month"]::-webk
 .fad-report-datepicker .fad-gdp-foot button{background:transparent;text-decoration:underline;padding:4px 0;color:#1f6b47;white-space:nowrap}
 @media(max-width:600px){.fad-report-date-trigger{min-height:44px;max-width:100%;gap:7px;font-size:12px}.fad-report-datepicker .payroll-range-day{height:38px}}
 
+/* FO · Only Reports direction-specific layout; existing FAD cards/buttons/date picker reused. */
+.fo-hidden,.fo-view[hidden]{display:none!important}
+.fo-switch{display:flex;gap:4px;align-items:center;width:max-content;max-width:100%;padding:4px;border-radius:13px;background:var(--surface-2);margin-bottom:16px;overflow-x:auto;scrollbar-width:thin;box-sizing:border-box}
+.fo-switch button{border:1px solid transparent;background:transparent;color:var(--ink-soft);padding:0 14px;min-height:44px;border-radius:10px;display:flex;align-items:center;gap:8px;white-space:nowrap;flex:none;font-weight:700;font-size:14px}
+.fo-switch button[aria-pressed=true]{background:#fff;color:#0F4D33;border-color:var(--line);box-shadow:0 2px 5px #123a2912}
+.fo-switch button:focus-visible,.fo-table-link:focus-visible,.fo-attention:focus-visible,.fo-tile:focus-visible{outline:2px solid #1F7A4D;outline-offset:2px}
+.fo-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--fo-dot);flex:none;vertical-align:middle;margin-right:5px}
+.fo-switch .fo-dot{margin-right:0}.fo-short{display:none}.fo-view{min-width:0;max-width:100%;margin-top:12px}
+.fad-main #tabbody.page .fo-view .fo-kpis,.fo-view .fo-kpis{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:16px;gap:12px}
+.fo-view .fo-tile{margin:0!important;min-width:0;text-align:left;overflow-wrap:anywhere;min-height:112px}.fo-view button.fo-tile{font:inherit;cursor:pointer;background:var(--surface);color:var(--ink)}.fo-view button.fo-tile:hover{border-color:#1F7A4D}.fo-view .fo-tile .cn-name{display:flex;align-items:center;gap:4px;flex-wrap:wrap}.fo-view .fo-tile .cn-val{font-size:clamp(19px,2vw,28px);line-height:1.2;margin:10px 0}.fo-view .fo-open{font-size:11px;color:#1F7A4D;margin-left:auto;font-weight:600}.fo-view .fo-total{background:#0F4D33!important;border-color:#0F4D33!important;color:white!important}.fo-view .fo-total :is(.cn-name,.cn-val,.cn-note){color:white!important}
+.fo-view .fo-columns{display:grid;gap:16px;align-items:start;min-width:0}.fo-view .fo-overview{grid-template-columns:minmax(0,2fr) minmax(0,1fr)}.fo-view .fo-vending{grid-template-columns:minmax(0,2fr) minmax(0,1fr)}.fo-view .fo-coffee{grid-template-columns:repeat(3,minmax(0,1fr))}.fo-view .fo-stack,.fo-view .fo-panel{min-width:0}.fo-view .fo-panel .card-head h2{font-size:14px}.fo-view .fo-panel .card-body{padding:14px 18px}.fo-view .fo-empty{padding:20px 8px;text-align:center;min-height:0;margin:0;color:var(--ink-soft);font-size:13px}.fo-view .fo-structure{display:flex;overflow:hidden;height:12px;background:var(--surface-2);border-radius:999px}.fo-view .fo-structure span+span{border-left:2px solid white}.fo-view .fo-legend{display:flex;flex-wrap:wrap;gap:12px 20px;margin-top:13px;font-size:13px}.fo-view .fo-legend small{color:var(--ink-soft);font-size:12px}.fo-view .fo-hint{margin-top:10px;line-height:1.45;color:var(--ink-soft)}
+.fo-view .fo-table{border-collapse:collapse;width:100%;font-size:13px;table-layout:auto}.fo-view .fo-table th,.fo-view .fo-table td{padding:10px 5px;border-bottom:1px solid var(--line);text-align:right;overflow-wrap:anywhere}.fo-view .fo-table th:first-child{text-align:left}.fo-view .fo-table thead th{color:var(--ink-soft);font-size:11px;font-weight:600}.fo-view .fo-table-total{font-weight:800;border-top:2px solid var(--ink)}.fo-view .fo-table-link{display:inline-flex;align-items:center;gap:4px;text-align:left;padding:4px 0;border:0;background:transparent;color:var(--ink);font:inherit;font-weight:700}.fo-view .fo-line{display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);padding:11px 0;font-size:13px}.fo-view .fo-line span{color:var(--ink-soft)}.fo-view .fo-line b{text-align:right;overflow-wrap:anywhere}.fo-view .fo-line:last-child{border-bottom:0}.fo-view .fo-link{margin-top:10px;white-space:normal;color:#1F7A4D;min-height:44px}
+.fo-view .fo-attention{display:flex;width:100%;align-items:center;justify-content:space-between;gap:8px;background:none;border:0;border-bottom:1px solid var(--line);text-align:left;padding:10px 0;min-height:44px;color:var(--ink);font:inherit}.fo-view .fo-attention small{display:block;color:var(--ink-soft);margin-top:3px}.fo-view .fo-status{display:inline-block;border-radius:999px;padding:4px 8px;white-space:nowrap;font-size:11px;font-weight:700}.fo-view .fo-status.ok{background:#e2f1e7;color:#17613d}.fo-view .fo-status.soon{background:#faefd5;color:#795400}.fo-view .fo-status.low{background:#fbe4e1;color:#a22d23}.fo-view .fo-stock-value{display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap}.fo-view .fo-meter{width:72px;max-width:100%;height:6px;display:inline-block;background:#e2e8e3;border-radius:5px;overflow:hidden;vertical-align:middle}.fo-view .fo-meter i{height:100%;display:block;background:#1F7A4D}.fo-view .fo-meter.low i{background:#bd342b}.fo-view .fo-meter.soon i{background:#d89a1b}.fo-view .fo-meter.drink i{background:#8B5A3C}.fo-view .fo-drink{display:grid;grid-template-columns:minmax(0,1fr) minmax(40px,1fr) auto;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px}.fo-view .fo-drink .fo-meter{width:100%}.fo-view .fo-actions{display:flex;gap:8px;flex-wrap:wrap}.fo-view .fo-actions button{min-height:44px}.fo-view .fo-actions button:disabled{opacity:.55;cursor:not-allowed}.fo-view .fo-report .day-head{cursor:default;flex-wrap:wrap}.fo-view .fo-report .day-by{white-space:normal}.fo-view .fo-report .v{overflow-wrap:anywhere}
+@media(max-width:1100px){.fo-view .fo-overview,.fo-view .fo-vending{grid-template-columns:1fr}.fo-view .fo-coffee{grid-template-columns:repeat(2,minmax(0,1fr))}.fo-view .fo-coffee .fo-stack{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}}
+@media(max-width:767px){.fo-switch{width:100%;max-width:100%;margin-bottom:12px}.fo-switch button{padding:0 12px}.fo-long{display:none}.fo-short{display:inline}.fad-main #tabbody.page .fo-view .fo-kpis,.fo-view .fo-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.fad-main #tabbody.page .fo-view .fo-tile{padding:12px;min-height:104px}.fo-view .fo-tile .cn-val{font-size:20px}.fo-view .fo-tile .cn-name{font-size:12px}.fo-view .fo-open{display:none}.fo-view .fo-columns,.fo-view .fo-coffee .fo-stack{display:grid;grid-template-columns:minmax(0,1fr);gap:0}.fo-view .fo-panel .card-body{padding:12px}.fo-view .fo-table,.fo-view .fo-table tbody,.fo-view .fo-table tr{display:block;width:100%;min-width:0}.fo-view .fo-table thead{display:none}.fo-view .fo-table tr{padding:8px 0;border-bottom:1px solid var(--line)}.fo-view .fo-table th,.fo-view .fo-table td{display:flex;justify-content:space-between;align-items:center;text-align:right;gap:8px;border:0;padding:4px 0;min-width:0}.fo-view .fo-table th:first-child{font-size:14px;text-align:left}.fo-view .fo-table td:before{content:attr(data-label);color:var(--ink-soft);font-weight:500;text-align:left}.fo-view .fo-table-link{min-height:44px}.fo-view .fo-report .kv{grid-template-columns:repeat(2,minmax(0,1fr))}.fo-view .fo-report .day-head{gap:8px}.fo-view .fo-report .day-by{width:100%;text-align:left;margin:0}.fo-view .fo-tile .cn-note{font-size:11px}}
+
 </style>
 
 <div id="root"></div>
@@ -4987,7 +5003,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '24.11.2026-fn'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '24.11.2026-fo'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -6282,6 +6298,7 @@ function renderRoleUI(tabs){
     }
     currentTab=i;
     const key=tabs[i].key;
+    if(key!=='reports'&&fadFoRoute())try{history.replaceState(history.state,'',location.pathname+location.search);}catch(_){}
     body.dataset.activeTab=key;
     const item=NAV_ITEMS.find(item=>item.id===key);
     const label=item?(item.seniorLabel&&isGorovayaNavigation()?item.seniorLabel:item.label):tabs[i].label;
@@ -6334,7 +6351,8 @@ function renderRoleUI(tabs){
   drawMobileNav();
   const visibleKeys=new Set(NAV_ITEMS.map(item=>item.id));
   const restored=tabs.findIndex(tab=>tab.key===rememberedTab&&visibleKeys.has(tab.key));
-  const initial=restored>=0?restored:fadOrderedNavItems().map(item=>tabs.findIndex(t=>t.key===item.id)).find(i=>i>=0);
+  const reportRoute=fadFoRoute()?tabs.findIndex(t=>t.key==='reports'):-1;
+  const initial=reportRoute>=0?reportRoute:restored>=0?restored:fadOrderedNavItems().map(item=>tabs.findIndex(t=>t.key===item.id)).find(i=>i>=0);
   if(initial!==undefined)show(initial);
   else {root.querySelector('#fadCurrentTitle').textContent='Нет доступных разделов';body.innerHTML='<div class="empty">Для пользователя нет доступных разделов.</div>';}
 }
@@ -8079,8 +8097,70 @@ function mountFadReportDateSelectors(body,day,from,to){
   dayBtn?.addEventListener('click',()=>open(dayBtn,'day'));rangeBtn?.addEventListener('click',()=>open(rangeBtn,'range'));sync();return {sync};
 }
 
+/* FO · Reports directions. Studio uses the original FN source and calculations.
+   New direction data adapter intentionally has no source until integration is commissioned. */
+const FAD_FO_DIRECTIONS={all:{name:'Все направления',short:'Все'},studio:{name:'Студия',short:'Студия',color:'#1F7A4D'},vending:{name:'Торговый аппарат',short:'Автомат',color:'#7C5CD6'},coffee:{name:'Кофепоинт',short:'Кофепоинт',color:'#8B5A3C'}};
+const fadFoDayByLogin=new Map();
+function fadFoRoute(){const k=location.hash.slice(1);return Object.hasOwn(FAD_FO_DIRECTIONS,k)?k:null;}
+function fadFoStorageKey(){return 'fad.reports.direction.'+encodeURIComponent(String(session?.login||''));}
+function fadFoInitialDirection(){let k=fadFoRoute();if(!k)try{k=localStorage.getItem(fadFoStorageKey());}catch(_){}return Object.hasOwn(FAD_FO_DIRECTIONS,k)?k:'studio';}
+function fadFoRemember(k){try{localStorage.setItem(fadFoStorageKey(),k);}catch(_){}try{history.replaceState(history.state,'',location.pathname+location.search+'#'+k);}catch(_){}}
+function fadFoDot(k){const d=FAD_FO_DIRECTIONS[k];return d?.color?`<span class="fo-dot" style="--fo-dot:${d.color}" aria-hidden="true"></span>`:'';}
+function fadFoMoney(n){return n==null?'—':Number(n).toLocaleString('ru-RU',{maximumFractionDigits:2}).replace(/[\u0020\u202f]/g,'\u00a0')+'\u00a0BYN';}
+function fadFoNumber(n){return n==null?'—':Number(n).toLocaleString('ru-RU').replace(/[\u0020\u202f]/g,'\u00a0');}
+function fadFoCents(n){return Math.round(Number(n)*100);}
+function fadFoSum(rows,key){const known=rows.filter(r=>r&&r[key]!=null);return known.length?known.reduce((s,r)=>s+fadFoCents(r[key]),0)/100:null;}
+function fadFoStudioData(all,date){const entries=all.filter(e=>e.date===date);if(!entries.length)return null;const result={cash:0,card:0,qr:0,epos:0,revenue:0,branches:new Set(entries.map(e=>e.studioId)).size,closed:entries.filter(e=>e.status==='closed'),open:entries.filter(e=>e.status!=='closed')};for(const e of entries){const m=entryMetrics(e);result.cash+=m.day;result.card+=m.card;result.qr+=m.qr;result.epos+=m.ep;result.revenue+=m.rev;}for(const key of ['cash','card','qr','epos','revenue'])result[key]=fadFoCents(result[key])/100;return result;}
+// Contract: independent daily records, never derive device revenue from studio reports or equipment payroll.
+// {date,direction,filledBy,submittedAt,cash,card,qr,epos,count,deviceStatus,items,supplies,drinks,restocked,waste,wash,comment,service:{last,next}}.
+// A missing record is null, and a missing metric is null; zero is a real recorded amount.
+function fadFoReadDirection(direction,date){return null;}
+function fadFoStockStatus(remaining,capacity){if(remaining==null||capacity==null||!Number.isFinite(+remaining)||!(+capacity>0))return null;const ratio=+remaining/+capacity;return {label:ratio<=.25?'Мало':ratio<=.4?'Скоро':'Норма',tone:ratio<=.25?'low':ratio<=.4?'soon':'ok',percent:Math.max(0,Math.min(100,ratio*100))};}
+function fadFoPanel(title,content){return `<section class="card fo-panel"><div class="card-head"><h2>${title}</h2></div><div class="card-body">${content}</div></section>`;}
+function fadFoEmpty(text='Нет данных за этот день'){return `<div class="empty fo-empty">${escapeHtml(text)}</div>`;}
+function fadFoTile(label,value,sub='',key='',total=false){const tag=key?'button':'div';return `<${tag} ${key?`type="button" data-fo-go="${key}"`:''} class="cn-item fo-tile${total?' fo-total':''}"><div class="cn-name">${fadFoDot(key)}${escapeHtml(label)}${key?'<span class="fo-open">Открыть →</span>':''}</div><div class="cn-val">${escapeHtml(value)}</div><div class="cn-note">${escapeHtml(sub)}</div></${tag}>`;}
+function fadFoLine(label,value){return `<div class="fo-line"><span>${escapeHtml(label)}</span><b>${escapeHtml(value??'—')}</b></div>`;}
+function fadFoScheduleLink(){return session?.coffeeAllowed?'<button type="button" class="btn btn-sm fo-link" data-fo-schedule>Открыть график оборудования →</button>':'';}
+function fadFoOverview(all,date){const studio=fadFoStudioData(all,date),vending=fadFoReadDirection('vending',date),coffee=fadFoReadDirection('coffee',date),keys=['studio','vending','coffee'],values=[studio,vending,coffee],allowed=can('reports.view_totals'),known=values.filter(r=>r?.revenue!=null),total=fadFoSum(values,'revenue'),partial=known.length!==3;
+ const shares=allowed&&total>0&&known.every(r=>r.revenue>=0),share=r=>shares&&r?.revenue!=null?Number((r.revenue/total*100).toFixed(1)).toLocaleString('ru-RU')+' %':'—';
+ const value=(r,k)=>allowed?fadFoMoney(r?.[k]):'—';
+ const tiles=keys.map((k,i)=>fadFoTile(FAD_FO_DIRECTIONS[k].name,value(values[i],'revenue'),!allowed?'Итоги недоступны для роли':values[i]?i===0?`${studio.branches} из ${STUDIOS.length} филиалов с отчётами`: 'Данные за выбранный день':'Нет данных за этот день',k)).join('')+fadFoTile('Итого за день',allowed?fadFoMoney(total):'—',!allowed?'Итоги недоступны для роли':partial?'По доступным направлениям':'По всем направлениям','',true);
+ const structure=!allowed?fadFoEmpty('Нет права на просмотр итогов'):shares?`<div class="fo-structure" aria-label="Доли доступной выручки">${keys.map((k,i)=>values[i]?.revenue>0?`<span style="width:${values[i].revenue/total*100}%;background:${FAD_FO_DIRECTIONS[k].color}"></span>`:'').join('')}</div><div class="fo-legend">${keys.map((k,i)=>`<span>${fadFoDot(k)}${FAD_FO_DIRECTIONS[k].name} <small>${value(values[i],'revenue')} · ${share(values[i])}</small></span>`).join('')}</div>`:fadFoEmpty(total==null?'Нет данных за этот день':'Доли недоступны при нулевой или отрицательной выручке');
+ const cols=['revenue','cash','card','qr','epos'],labels=['Выручка','Наличные','Карта','QR','EPOS','Доля'];
+ const tr=(k,r,i)=>`<tr><th scope="row"><button type="button" class="fo-table-link" data-fo-go="${k}">${fadFoDot(k)}${FAD_FO_DIRECTIONS[k].name}</button></th>${cols.map((c,j)=>`<td data-label="${labels[j]}">${value(r,c)}</td>`).join('')}<td data-label="Доля">${allowed?share(r):'—'}</td></tr>`;
+ const table=allowed?`<table class="fo-table"><thead><tr><th>Направление</th>${labels.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${keys.map((k,i)=>tr(k,values[i],i)).join('')}<tr class="fo-table-total"><th>Итого${partial?' (доступно)':''}</th>${cols.map((c,j)=>`<td data-label="${labels[j]}">${fadFoMoney(fadFoSum(values,c))}</td>`).join('')}<td data-label="Доля">${shares?'100 %':'—'}</td></tr></tbody></table>`:fadFoEmpty('Нет права на просмотр итогов');
+ const attention=[];for(const [k,r] of [['vending',vending],['coffee',coffee]]){for(const it of (k==='vending'?r?.items:r?.supplies)||[]){const st=fadFoStockStatus(it.remaining,it.capacity);if(st&&st.tone!=='ok')attention.push({k,title:FAD_FO_DIRECTIONS[k].name+' · '+it.name,detail:`Осталось ${fadFoNumber(it.remaining)} из ${fadFoNumber(it.capacity)}`,label:st.label,tone:st.tone});}if(r?.service?.next)attention.push({k,title:FAD_FO_DIRECTIONS[k].name+' · '+(k==='coffee'?'обслуживание':'пополнение'),detail:String(r.service.next),label:'По графику',tone:'soon'});}
+ for(const e of studio?.open||[])attention.push({k:'studio',title:'Студия · '+studioAddr(e.studioId),detail:'Смена не закрыта',label:'Открыта',tone:'soon'});for(const e of studio?.closed||[])attention.push({k:'studio',title:'Студия · '+studioAddr(e.studioId),detail:'Смена закрыта'+(e.zReport?' · Z-отчёт ✓':''),label:'Готово',tone:'ok'});
+ const attentionHtml=(attention.length?attention.map(x=>`<button class="fo-attention" type="button" data-fo-go="${x.k}"><span><b>${escapeHtml(x.title)}</b><small>${escapeHtml(x.detail)}</small></span><span class="fo-status ${x.tone}">${x.label}</span></button>`).join(''):fadFoEmpty('Нет данных о задачах за этот день'))+`<div class="hintline fo-hint">Данные остатков и раздельных задач аппаратов ещё не подключены.</div>${fadFoScheduleLink()}`;
+ return `<div class="cn-grid fo-kpis">${tiles}</div>${fadFoPanel('Структура выручки',structure+(partial&&allowed?'<div class="hintline fo-hint">Доли рассчитаны только по известной выручке. Отсутствующие данные не считаются нулём.</div>':''))}<div class="fo-columns fo-overview">${fadFoPanel('Итоги по направлениям · '+fmtLong(date),table)}${fadFoPanel('Требует внимания',attentionHtml)}</div>`;
+}
+function fadFoStockTable(items,withSold){if(!Array.isArray(items)||!items.length)return fadFoEmpty();return `<table class="fo-table fo-stock"><thead><tr><th>Позиция</th>${withSold?'<th>Продано</th>':''}<th>Остаток</th><th>Статус</th></tr></thead><tbody>${items.map(it=>{const st=fadFoStockStatus(it.remaining,it.capacity);return `<tr><th scope="row">${escapeHtml(it.name||'—')}</th>${withSold?`<td data-label="Продано">${fadFoNumber(it.sold)}</td>`:''}<td data-label="Остаток"><span class="fo-stock-value">${st?`<span class="fo-meter ${st.tone}"><i style="width:${st.percent}%"></i></span>${fadFoNumber(it.remaining)} из ${fadFoNumber(it.capacity)}`:'—'}</span></td><td data-label="Статус">${st?`<span class="fo-status ${st.tone}">${st.label}</span>`:'—'}</td></tr>`;}).join('')}</tbody></table>`;}
+function fadFoDrinks(items){if(!Array.isArray(items)||!items.length)return fadFoEmpty();const max=Math.max(1,...items.map(x=>Number(x.count)||0));return items.map(x=>`<div class="fo-drink"><b>${escapeHtml(x.name||'—')}</b><span class="fo-meter drink"><i style="width:${Math.max(0,Math.min(100,(Number(x.count)||0)/max*100))}%"></i></span><span>${fadFoNumber(x.count)} шт</span></div>`).join('');}
+function fadFoDevice(direction,date){const coffee=direction==='coffee',r=fadFoReadDirection(direction,date),allowed=can('reports.view_totals'),revenue=r?.revenue??(r&&['cash','card','qr','epos'].every(k=>r[k]!=null)?fadFoSum(['cash','card','qr','epos'].map(k=>({amount:r[k]})),'amount'):null),metric=n=>allowed?fadFoMoney(n):'—',qty=n=>n==null?'—':fadFoNumber(n)+' шт',note=r?'За '+fmtLong(date):'Нет данных за этот день';
+ const tiles=fadFoTile('Выручка за день',metric(revenue),note)+fadFoTile(coffee?'Напитков':'Продаж',allowed?qty(r?.count):'—',note)+fadFoTile('Средний чек',metric(r?.count>0&&revenue!=null?revenue/r.count:null),'Выручка ÷ '+(coffee?'напитки':'продажи'))+fadFoTile(coffee?'Статус кофемашины':'Статус аппарата',r?.deviceStatus||'Нет данных','Мониторинг не подключён');
+ const payment=fadFoPanel('Оплата',fadFoLine('Картой',metric(r?.card))+fadFoLine('QR',metric(r?.qr))+fadFoLine('Наличными',metric(r?.cash))+fadFoLine('EPOS',metric(r?.epos)));
+ const service=fadFoPanel(coffee?'Обслуживание':'Пополнение',fadFoLine(coffee?'Последняя промывка':'Последнее пополнение',r?.service?.last)+fadFoLine('Следующее по графику',r?.service?.next)+'<div class="hintline fo-hint">Раздельный график пока не подключён.</div>'+fadFoScheduleLink());
+ const detail=coffee?fadFoPanel('Напитки за день',fadFoDrinks(r?.drinks))+fadFoPanel('Расходные материалы',r?.supplies?.length?fadFoStockTable(r.supplies,false):['Зёрна кофе','Молоко','Стаканы','Крышки'].map(x=>fadFoLine(x,'—')).join('')+fadFoEmpty()):fadFoPanel('Остатки и продажи по позициям',fadFoStockTable(r?.items,true));
+ const fields=[['Картой',metric(r?.card)],['QR',metric(r?.qr)],['Наличными',metric(r?.cash)],['EPOS',metric(r?.epos)],[coffee?'Напитков':'Продано',allowed?qty(r?.count):'—'],['Пополнено',r?.restocked], [coffee?'Промывка':'Списано / брак',coffee?r?.wash:r?.waste],['Комментарий',r?.comment]];
+ const report=`<div class="day open fo-report"><div class="day-head"><span class="day-date">${fmtLong(date)}</span><span class="st-tag" style="border-color:${FAD_FO_DIRECTIONS[direction].color}">${fadFoDot(direction)}${FAD_FO_DIRECTIONS[direction].name}</span><span class="stat ${r?'stat-closed':'stat-open'}">${r?'Отчёт заполнен':'Нет отчёта'}</span><span class="day-by">заполнил(а): <b>${escapeHtml(r?.filledBy||'—')}</b><br>${r?.submittedAt?escapeHtml(fmtTime(r.submittedAt)):'—'}</span></div><div class="day-body">${!r?fadFoEmpty():''}<div class="kv">${fields.map(([k,v])=>`<div class="item"><div class="k">${k}</div><div class="v">${escapeHtml(v??'—')}</div></div>`).join('')}</div><div class="fo-actions">${can('reports.edit_closed')?'<button type="button" class="btn btn-sm" disabled title="Источник отчётов ещё не подключён">Редактировать отчёт</button>':''}${can('reports.delete')?'<button type="button" class="btn btn-sm" disabled title="Источник отчётов ещё не подключён">Удалить отчёт</button>':''}</div><div class="hintline fo-hint">Заполнение и редактирование будут доступны после подключения отдельного источника отчётов.</div></div></div>`;
+ return `<div class="cn-grid fo-kpis">${tiles}</div><div class="fo-columns ${coffee?'fo-coffee':'fo-vending'}">${detail}<div class="fo-stack">${payment}${service}</div></div>${report}`;
+}
+function mountFadReportDirections(body,pick,all,onDate){
+ const dayBar=pick.closest('.bar'),studioFilter=body.querySelector('#stf')?.closest('.datepick');
+ const studioNodes=Array.from(body.children).filter(el=>el!==dayBar),nav=document.createElement('div'),extra=document.createElement('section');nav.className='fo-switch';nav.setAttribute('role','group');nav.setAttribute('aria-label','Направления отчётов');extra.className='fo-view';extra.hidden=true;
+ nav.innerHTML=Object.entries(FAD_FO_DIRECTIONS).map(([k,d])=>`<button type="button" data-fo-direction="${k}" aria-pressed="false" aria-label="${d.name}">${fadFoDot(k)}<span class="fo-long">${d.name}</span><span class="fo-short" aria-hidden="true">${d.short}</span></button>`).join('');body.prepend(nav);dayBar.after(extra);
+ let direction=fadFoInitialDirection();
+ function draw(){if(direction==='studio'||!extra.isConnected)return;extra.innerHTML=direction==='all'?fadFoOverview(all,pick.value):fadFoDevice(direction,pick.value);}
+ function select(k){if(!Object.hasOwn(FAD_FO_DIRECTIONS,k))return;direction=k;const isStudio=k==='studio';for(const el of studioNodes)el.classList.toggle('fo-hidden',!isStudio);studioFilter?.classList.toggle('fo-hidden',!isStudio);extra.hidden=isStudio;nav.querySelectorAll('[data-fo-direction]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.foDirection===k)));fadFoRemember(k);draw();}
+ nav.addEventListener('click',e=>{const b=e.target.closest('[data-fo-direction]');if(b)select(b.dataset.foDirection);});
+ extra.addEventListener('click',e=>{const b=e.target.closest('[data-fo-go]');if(b){select(b.dataset.foGo);return;}if(e.target.closest('[data-fo-schedule]'))document.querySelector('#fadSidebarNav [data-tab="coffee"]')?.click();});
+ const abort=new AbortController();window.addEventListener('hashchange',()=>{if(!nav.isConnected||body.dataset.activeTab!=='reports')return;const k=fadFoRoute();if(k)select(k);},{signal:abort.signal});const obs=new MutationObserver(()=>{if(!nav.isConnected){abort.abort();obs.disconnect();}});obs.observe(body.parentElement||body,{childList:true,subtree:true});
+ select(direction);return {draw};
+}
+
 /* ================= All reports (owner + senior) ================= */
 async function renderAllReports(body){
+  const reportLogin=session?.login, reportToken=Symbol('reports');body._foReportToken=reportToken;
   let all, sched=null; try{ all=await loadAllReports(true); }catch(e){ return handleErr(e); }
   const allowPeriod=can('reports.period');
   const allowPeriodTotals=can('reports.period_totals');
@@ -8091,12 +8171,15 @@ async function renderAllReports(body){
   const maxReportDate=accessRange.to||todayStr();
   try{ TEAM=await apiListTeam(); }catch(e){}
   try{ const _d=new Date(); sched=await apiGetSchedule(monthKey(_d.getFullYear(), _d.getMonth())); }catch(e){ sched=null; }
+  if(!body.isConnected||body._foReportToken!==reportToken||session?.login!==reportLogin||(body.dataset.activeTab&&body.dataset.activeTab!=='reports'))return;
+  const rememberedDay=fadFoDayByLogin.get(reportLogin);
+  const selectedDay=rememberedDay&&rememberedDay<=maxReportDate&&(!minReportDate||rememberedDay>=minReportDate)?rememberedDay:maxReportDate;
   body.innerHTML=`
     <div id="banner"></div>
     ${reportDays>0?`<div class="hintline" style="margin-bottom:10px">Доступны отчёты за последние <b>${reportDays}</b> дн., включая сегодня · с ${fmtLong(minReportDate)} по ${fmtLong(maxReportDate)}.</div>`:''}
     ${cashNowCard(all)}
     <div class="bar fade-in">
-      <div class="datepick"><span class="lbl">День:</span><button class="btn btn-sm daynav" id="dPrev" title="Предыдущий день">‹</button><input type="date" id="pick" ${minReportDate?`min="${minReportDate}" max="${maxReportDate}"`:''} value="${maxReportDate}" hidden style="display:none"/><button type="button" id="fadReportDay" class="fad-report-date-trigger" aria-haspopup="dialog" aria-expanded="false" aria-label="Выбрать день отчёта"><span></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4M17 3v4M3 10h18"/></svg></button><button class="btn btn-sm daynav" id="dNext" title="Следующий день">›</button><button class="btn btn-sm" id="dToday">Сегодня</button></div>
+      <div class="datepick"><span class="lbl">День:</span><button class="btn btn-sm daynav" id="dPrev" title="Предыдущий день">‹</button><input type="date" id="pick" ${minReportDate?`min="${minReportDate}"`:''} max="${maxReportDate}" value="${selectedDay}" hidden style="display:none"/><button type="button" id="fadReportDay" class="fad-report-date-trigger" aria-haspopup="dialog" aria-expanded="false" aria-label="Выбрать день отчёта"><span></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4M17 3v4M3 10h18"/></svg></button><button class="btn btn-sm daynav" id="dNext" title="Следующий день">›</button><button class="btn btn-sm" id="dToday">Сегодня</button></div>
       <div class="datepick"><span class="lbl">Студия:</span><select id="stf" style="width:auto"><option value="all">Все студии</option>${STUDIOS.map(s=>`<option value="${s.id}">${s.name} · ${s.address}</option>`).join('')}</select></div>
     </div>
     <div id="picked"></div>
@@ -8179,7 +8262,8 @@ async function renderAllReports(body){
     }).join('');
     box.innerHTML=`<div class="cn-name">${title}</div>${lines}`;
   }
-  async function pickChanged(){ reportDates.sync(); await updateShiftTile(pick.value); refresh(); }
+  const foDirections=mountFadReportDirections(body,pick,all);
+  async function pickChanged(){ fadFoDayByLogin.set(reportLogin,pick.value); reportDates.sync(); foDirections.draw(); await updateShiftTile(pick.value); if(pick.isConnected)refresh(); }
   function stepDay(delta){ const d=new Date(pick.value+'T00:00:00'); if(isNaN(d)) return; d.setDate(d.getDate()+delta); const next=dISO(d); if((pick.min&&next<pick.min)||(pick.max&&next>pick.max))return; pick.value=next; pickChanged(); }
   pick.onchange=pickChanged;
   body.querySelector('#dPrev').onclick=()=>stepDay(-1);
@@ -8189,7 +8273,7 @@ async function renderAllReports(body){
   if(stfP)stfP.onchange=showPeriod;
   if(pfrom)pfrom.onchange=showPeriod;
   if(pto)pto.onchange=showPeriod;
-  showPeriod(); await updateShiftTile(pick.value); refresh();
+  showPeriod(); await updateShiftTile(pick.value); if(!pick.isConnected)return; refresh();
   const exportBtn=body.querySelector('#export');
   if(exportBtn) exportBtn.onclick=()=>{ const f=stfP.value, a=pfrom.value, b=pto.value, lo=a<=b?a:b, hi=a<=b?b:a; exportExcel(all.filter(e=>(f==='all'||e.studioId===f) && e.date>=lo && e.date<=hi)); };
 }
