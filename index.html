@@ -4920,6 +4920,40 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="month"]::-webk
 /* FK · dictionary workspace and safe expense deletion */
 .fk-dict-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.fk-dict-tools .fj-search{flex:1;min-width:145px}.fk-dict-tabs{margin:12px 0}.fk-dict-form{padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);margin:12px 0}.fk-dict-form h4{margin:0 0 6px}.fk-dict-list{max-height:min(46vh,440px);overflow:auto;border:1px solid var(--line);border-radius:10px;padding:0 10px;margin:12px 0}.fk-dict-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid var(--line);font-size:13px}.fk-dict-row:last-child{border:0}.fk-dict-row>div:first-child{flex:1;min-width:0;overflow-wrap:anywhere}.fk-dict-row small{display:block;color:var(--ink-faint);font-size:11px}.fk-dict-row .fk-dict-tools{justify-content:flex-end}.fk-mapped-new{border:1px dashed var(--line-strong);border-radius:10px;padding:4px 9px;margin-bottom:8px}.fk-delete-details{display:grid;gap:6px;margin:12px 0;padding:10px;background:var(--surface-2);border-radius:10px}.fk-delete-details span{color:var(--ink-soft);font-size:12px}.fj-mobile-queue{display:flex;gap:8px;flex-wrap:wrap}.fb-em-actions{flex-wrap:wrap}.fb-em-actions .fb-en-danger{color:var(--fad-danger)}
 @media(max-width:600px){.fk-dict-row{align-items:flex-start;flex-direction:column;gap:6px}.fk-dict-row .fk-dict-tools{justify-content:flex-start}.fk-dict-tabs .btn{flex:1 1 44%}.fk-dict-list{max-height:35vh}.fk-dict-tools .btn{min-height:36px}}
+/* FL: isolated shift message presentation. No shared modal styles are changed. */
+.fad-sn-dialog{position:fixed;inset:0;margin:auto;padding:0;border:0;background:transparent;width:min(560px,calc(100% - 32px));max-width:none;max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);overflow:visible;color:#123a29;font-family:var(--fad-font,Manrope,system-ui,sans-serif);overscroll-behavior:contain}
+.fad-sn-dialog::backdrop{background:rgba(12,32,22,.62);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.fad-sn-dialog[open]{animation:fad-sn-in .55s cubic-bezier(.2,.8,.2,1) both}
+@keyframes fad-sn-in{from{opacity:0;transform:translateY(30px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.fad-sn-shell,.fad-sn-preview{background:#fffdf8;border-radius:28px;overflow:hidden;color:#123a29;box-sizing:border-box;min-width:0;font-family:var(--fad-font,Manrope,system-ui,sans-serif)}
+.fad-sn-shell{display:flex;flex-direction:column;max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);box-shadow:0 40px 90px rgba(0,0,0,.45)}
+.fad-sn-scroll{min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.fad-sn-panel{--sn-head:linear-gradient(135deg,#123a29,#2f8a5f);--sn-button:linear-gradient(135deg,#267951,#1f6b47);--sn-note:#eaf3ed;--sn-accent:#1f6b47;--sn-chip:#153e2e;position:relative;min-width:0}
+.fad-sn-panel[data-type=important]{--sn-head:linear-gradient(135deg,#6b1f17,#b4382a);--sn-button:#a8321f;--sn-note:#fbe9e5;--sn-accent:#a8321f;--sn-chip:#76271d}
+.fad-sn-panel[data-type=reminder]{--sn-head:linear-gradient(135deg,#17406a,#2f78b0);--sn-button:#1d5a8f;--sn-note:#e7f0f8;--sn-accent:#1d5a8f;--sn-chip:#17466f}
+.fad-sn-panel[data-type=news]{--sn-head:linear-gradient(135deg,#0d4a4f,#1d8a8f);--sn-button:#12767b;--sn-note:#e4f2f2;--sn-accent:#12767b;--sn-chip:#104b50}
+.fad-sn-head{position:relative;height:150px;overflow:hidden;background:var(--sn-head);border-radius:28px 28px 0 0;padding:26px 28px}
+.fad-sn-head::before,.fad-sn-head::after,.fad-sn-orb{content:"";position:absolute;border-radius:50%;pointer-events:none;background:rgba(255,255,255,.09)}
+.fad-sn-head::before{width:220px;height:220px;right:-38px;top:-56px}.fad-sn-head::after{width:150px;height:150px;right:70px;bottom:-68px;background:rgba(230,196,87,.18)}.fad-sn-orb{width:135px;height:135px;left:-35px;bottom:-45px}
+.fad-sn-chip{position:relative;z-index:1;display:inline-flex;align-items:center;gap:7px;max-width:100%;padding:6px 12px;border-radius:999px;background:linear-gradient(rgba(255,255,255,.13),rgba(255,255,255,.13)),var(--sn-chip);color:#fff;font-size:11px;font-weight:800;line-height:1.4;letter-spacing:.08em;text-transform:uppercase;overflow-wrap:anywhere}
+.fad-sn-chip svg{width:14px;height:14px;flex:none;color:#f3d97f}.fad-sn-handle{display:none}
+.fad-sn-icon{position:absolute;left:28px;top:104px;width:92px;height:92px;display:grid;place-items:center;border-radius:50%;background:#fffdf8;box-shadow:0 10px 24px rgba(18,58,41,.23);z-index:2;pointer-events:none}
+.fad-sn-icon::before{content:"";position:absolute;inset:0;opacity:.55;border:3px solid #c9a227;border-radius:50%;animation:fad-sn-pulse 2.2s ease-out infinite;pointer-events:none}
+@keyframes fad-sn-pulse{0%{transform:scale(.9);opacity:.55}100%{transform:scale(1.5);opacity:0}}
+.fad-sn-gold{width:74px;height:74px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#c9a227,#e6c457);color:#123a29;position:relative}.fad-sn-gold>svg{width:42px;height:42px}.fad-sn-steam{animation:fad-sn-steam 2.2s ease-in-out infinite;transform-box:fill-box;transform-origin:center}.fad-sn-steam:nth-child(2){animation-delay:.35s}@keyframes fad-sn-steam{0%,100%{opacity:.35;transform:translateY(1px)}50%{opacity:1;transform:translateY(-2px)}}
+.fad-sn-content{padding:64px 36px 0;overflow-wrap:anywhere;min-width:0}.fad-sn-meta{font-size:12px;font-weight:800;letter-spacing:.055em;color:#8a6d0a;text-transform:uppercase;line-height:1.5;margin:0 0 8px}.fad-sn-title:focus{outline:none}.fad-sn-title{font-size:30px;font-weight:800;line-height:1.16;color:#123a29;margin:0 0 12px;white-space:pre-wrap}.fad-sn-intro{font-size:15px;line-height:1.55;color:#46564e;white-space:pre-wrap;margin:0}
+.fad-sn-slots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:19px}.fad-sn-slots:has(> :only-child){grid-template-columns:1fr}.fad-sn-slot{background:#eaf3ed;border:1px solid #cfe3d5;border-radius:17px;padding:15px 17px;min-width:0}.fad-sn-slot[data-weekend=true]{background:#fbf4dc;border-color:#efdf9f}.fad-sn-slot-label{display:flex;gap:7px;align-items:center;font-size:11px;line-height:1.35;letter-spacing:.06em;text-transform:uppercase;font-weight:800;color:#1f6b47}.fad-sn-slot[data-weekend=true] .fad-sn-slot-label{color:#7a5f00}.fad-sn-slot-label svg{width:17px;height:17px;flex:none}.fad-sn-time{font-size:26px;font-weight:800;line-height:1.2;font-variant-numeric:tabular-nums;letter-spacing:-.035em;margin:9px 0 4px;color:#123a29;overflow-wrap:anywhere}.fad-sn-slot-note{font-size:13px;color:#46564e;line-height:1.4}
+.fad-sn-note{display:flex;gap:14px;align-items:center;background:var(--sn-note);border-radius:16px;margin-top:14px;padding:13px 16px;font-size:14px;line-height:1.5;color:#394b42;white-space:pre-wrap}.fad-sn-note strong{color:#123a29;font-weight:800}.fad-sn-note-icon{width:40px;height:40px;flex:none;background:#fffdf8;border:1px solid rgba(18,58,41,.13);border-radius:12px;display:grid;place-items:center;color:var(--sn-accent)}.fad-sn-note-icon svg{width:23px;height:23px}
+.fad-sn-panel+.fad-sn-panel{margin-top:26px;border-top:1px solid #dce5de}.fad-sn-footer{flex:none;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:28px 36px 30px;background:#fffdf8;min-width:0}.fad-sn-footnote{font-size:13px;line-height:1.45;color:#5b6b63;flex:1;min-width:0}.fad-sn-cta{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:12px 22px;border:0;border-radius:16px;color:#fff;background:var(--sn-button);font:800 16px/1.3 var(--fad-font,Manrope,system-ui,sans-serif);box-shadow:0 8px 18px rgba(31,107,71,.3);cursor:pointer;transition:transform .18s,box-shadow .18s;max-width:100%;overflow-wrap:anywhere}.fad-sn-cta svg{width:20px;height:20px;flex:none}.fad-sn-cta:hover{transform:translateY(-1px);box-shadow:0 11px 23px rgba(31,107,71,.35)}.fad-sn-cta:focus-visible{outline:3px solid #8a6d0a;outline-offset:4px}.fad-sn-footer[data-type=important]{--sn-button:#a8321f}.fad-sn-footer[data-type=reminder]{--sn-button:#1d5a8f}.fad-sn-footer[data-type=news]{--sn-button:#12767b}.fad-sn-footer[data-type=equipment]{--sn-button:linear-gradient(135deg,#267951,#1f6b47)}
+/* The darker button start and metadata keep normal-size text above WCAG AA. */
+.fad-sn-compose{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.12fr);gap:18px;align-items:start}.fad-sn-compose-form{display:grid;gap:12px;min-width:0}.fad-sn-compose-form label{display:grid;gap:5px;font-size:12px;font-weight:700;color:#46564e}.fad-sn-compose-form :is(input,textarea,select){width:100%;min-width:0;box-sizing:border-box}.fad-sn-compose-form textarea{resize:vertical;min-height:82px}.fad-sn-compose-form .fad-sn-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.fad-sn-slot-edit{display:grid;gap:8px;padding:12px;border:1px solid #dce5de;border-radius:12px;margin-bottom:8px}.fad-sn-compose-form .fad-sn-row{display:flex;gap:8px;align-items:center;justify-content:space-between}.fad-sn-compose-form button{min-height:36px}.fad-sn-preview-wrap{min-width:0;container-type:inline-size;position:sticky;top:82px}.fad-sn-preview{border:1px solid #dce5de;box-shadow:0 12px 30px rgba(18,58,41,.12);width:100%;max-width:560px;margin:auto}.fad-sn-preview .fad-sn-head{height:120px;padding:20px}.fad-sn-preview .fad-sn-icon{top:84px;left:20px;width:72px;height:72px}.fad-sn-preview .fad-sn-gold{width:58px;height:58px}.fad-sn-preview .fad-sn-gold>svg{width:34px;height:34px}.fad-sn-preview .fad-sn-content{padding:48px 20px 0}.fad-sn-preview .fad-sn-title{font-size:25px}.fad-sn-preview .fad-sn-time{font-size:20px}.fad-sn-preview .fad-sn-slot{padding:12px}.fad-sn-preview .fad-sn-slots{gap:10px}.fad-sn-preview .fad-sn-footer{padding:20px;flex-wrap:wrap}.fad-sn-preview .fad-sn-cta{width:100%;pointer-events:none}.fad-sn-preview .fad-sn-icon::before,.fad-sn-preview .fad-sn-steam{animation:none}.fad-sn-preview .fad-sn-icon::before{opacity:0}.fad-sn-preview .fad-sn-note{padding:12px;gap:10px}.fad-sn-preview-label{font-size:12px;font-weight:800;color:#46564e;margin:0 0 10px}.fad-sn-preview-empty{font-size:13px;color:#46564e;padding:18px;border:1px dashed #cfe3d5;border-radius:12px}
+@container(max-width:320px){.fad-sn-preview .fad-sn-time{font-size:17px}.fad-sn-preview .fad-sn-content{padding-inline:14px}.fad-sn-preview .fad-sn-slot{padding:10px 8px}.fad-sn-preview .fad-sn-slot-label{font-size:10px}.fad-sn-preview .fad-sn-slot-label svg{display:none}}
+@media(max-width:1100px){.fad-sn-compose{grid-template-columns:1fr}.fad-sn-preview-wrap{position:static}}
+@media(max-width:600px){.fad-sn-dialog{inset:auto 0 0;margin:0;width:100%;max-height:calc(100vh - 12px);max-height:calc(100dvh - 12px)}.fad-sn-dialog[open]{animation:fad-sn-sheet .5s cubic-bezier(.2,.8,.2,1) both}.fad-sn-shell{border-radius:28px 28px 0 0;max-height:calc(100vh - 12px);max-height:calc(100dvh - 12px)}.fad-sn-head{height:120px;padding:26px 20px 12px}.fad-sn-handle{display:block;position:absolute;width:40px;height:4px;top:8px;left:calc(50% - 20px);border-radius:4px;background:rgba(255,255,255,.55)}.fad-sn-icon{top:84px;left:20px;width:72px;height:72px}.fad-sn-gold{width:58px;height:58px}.fad-sn-gold>svg{width:34px;height:34px}.fad-sn-content{padding:52px 20px 0}.fad-sn-title{font-size:25px}.fad-sn-slots{gap:10px;margin-top:15px}.fad-sn-slot{padding:12px}.fad-sn-time{font-size:20px}.fad-sn-note{padding:12px;gap:10px}.fad-sn-footer{flex-direction:column;align-items:stretch;gap:9px;padding:17px 20px calc(16px + env(safe-area-inset-bottom))}.fad-sn-footnote{font-size:12px;text-align:center}.fad-sn-cta{min-height:54px;width:100%}.fad-sn-meta{font-size:11px}.fad-sn-compose-form .fad-sn-fields{grid-template-columns:1fr}}
+@media(max-width:360px){.fad-sn-content{padding-inline:16px}.fad-sn-slot{padding:10px 8px}.fad-sn-slot-label svg{display:none}.fad-sn-time{font-size:19px}.fad-sn-footer{padding-inline:16px}}
+@keyframes fad-sn-sheet{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){.fad-sn-dialog,.fad-sn-dialog *, .fad-sn-dialog *::before,.fad-sn-dialog *::after,.fad-sn-preview,.fad-sn-preview *,.fad-sn-preview *::before,.fad-sn-preview *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.fad-sn-cta:hover{transform:none}}
+
 </style>
 
 <div id="root"></div>
@@ -4940,7 +4974,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '23.11.2026-fk'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '24.11.2026-fl'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -7869,10 +7903,10 @@ function renderForm(container,studio,date,data,onSaved,opts){
     return M;
   }).catch(function(){return {};});
   if(opts&&opts.own && (data.status!=='closed')){
+    const noticeLogin=session?.login;
     msgReady.then(function(M){
-      var parts=[]; if(M.openMsg){ if(M.openMsg.all) parts.push(M.openMsg.all); if(M.openMsg.byAdmin&&M.openMsg.byAdmin[session.login]) parts.push(M.openMsg.byAdmin[session.login]); }
-      parts=parts.filter(function(x){return x&&x.trim();});
-      if(parts.length) modal(`<h3>📣 Сообщение</h3><p style="white-space:pre-wrap">${escapeHtml(parts.join('\n\n'))}</p><div class="actions"><button class="btn btn-primary" data-x>Понятно</button></div>`);
+      if(session?.login!==noticeLogin || data.status==='closed' || !container.isConnected)return;
+      fadSnShow(M.openMsg,noticeLogin,studio,date,container);
     });
   }
 }
@@ -12227,6 +12261,90 @@ async function renderCalendar(body){
 }
 
 
+/* ================= FL · shift message (only) ================= */
+const FAD_SN_TYPES={important:{label:'Важно',icon:'alert',title:'Важное сообщение'},equipment:{label:'Оборудование',icon:'coffee',title:'Обслуживание оборудования'},reminder:{label:'Напоминание',icon:'bell',title:'Напоминание'},news:{label:'Новость',icon:'megaphone',title:'Сообщение для администраторов'}};
+const FAD_SN_ICONS={
+ star:'<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9z"/>',
+ coffee:'<path class="fad-sn-steam" d="M8 2v3"/><path class="fad-sn-steam" d="M13 2v3"/><path d="M4 9h13v4a6.5 6.5 0 0 1-13 0V9zm13 0h2a3 3 0 0 1 0 6h-2M3 21h17"/>',
+ alert:'<path d="M10.3 4 2.5 18a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 4a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4m0 4h.01"/>',
+ bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9m-8 12a2 2 0 0 0 4 0"/>',
+ megaphone:'<path d="M3 9v6h4l12 5V4L7 9H3zm4 6 2 6h3l-2-5M22 10v4"/>',
+ sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/>',
+ moon:'<path d="M20.9 13.3A9 9 0 0 1 10.7 3.1 9 9 0 1 0 20.9 13.3Z"/>',
+ box:'<path d="m12 3 9 5-9 5-9-5 9-5zm-9 5v9l9 5 9-5V8m-9 5v9"/>',check:'<path d="m5 12 4 4L19 6"/>'};
+function fadSnIcon(k){return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${FAD_SN_ICONS[k]||''}</svg>`;}
+const fadSnText=v=>typeof v==='string'?v.trim():'';
+function fadSnType(v){return typeof v==='string'&&Object.prototype.hasOwnProperty.call(FAD_SN_TYPES,v)?v:'news';}
+function fadSnBranch(v){const t=fadSnText(v);return SMAP[t]?.address||t;}
+function fadSnDate(v){const t=fadSnText(v);if(/^\d{4}-\d{2}-\d{2}$/.test(t)){const [y,m,d]=t.split('-').map(Number);if(m>=1&&m<=12&&d>=1&&d<=31)return d+' '+MON[m-1]+' '+y;}return t;}
+function fadSnCoffeeLegacy(s){return /кофемаш|кофейн|кофе[ -]?маш|кофе[ -]?аппарат/i.test(s)&&/21[:.]20\s*(?:[-–—−]|до)\s*21[:.]50/.test(s)&&/17[:.]10\s*(?:[-–—−]|до)\s*17[:.]40/.test(s);}
+function fadSnCoffee(date){return {type:'equipment',title:'Пора позаботиться о кофемашине',intro:'Обслуживание кофейного аппарата рекомендуется в эти окна — выберите удобное:',slots:[{label:'Будни',time:'21:20–21:50',note:'после вечернего потока'},{label:'Выходные',time:'17:10–17:40',note:'до закрытия студии'}],note:'Кофе и снеки пополнять можно в любое время — как только заметили, что заканчивается',cta:'Понятно, приступаю',branch:'Машерова, 11',date:date||''};}
+function fadSnNormalize(raw,studio,date){
+ if(typeof raw==='string'){
+  const text=raw.trim();if(!text)return null;
+  if(fadSnCoffeeLegacy(text))return fadSnCoffee(date);
+  const type=/кофемаш|кофейн|кофе[ -]?маш|кофе[ -]?аппарат/i.test(text)?'equipment':'news';
+  const lines=text.split(/\r?\n/), first=lines[0].trim();
+  // Preserve the ENTIRE legacy message, including its first line. A short standalone heading is promoted, not duplicated.
+  const hasHeading=lines.length>1&&first.length<=85&&!/[.!?]$/.test(first)&&lines.slice(1).join('\n').trim();
+  return {type,title:hasHeading?first:FAD_SN_TYPES[type].title,intro:hasHeading?lines.slice(1).join('\n').trim():text,slots:[],note:'',cta:'Понятно',branch:fadSnBranch(studio),date:date||''};
+ }
+ if(!raw||typeof raw!=='object'||Array.isArray(raw))return null;
+ const intro=fadSnText(raw.intro)||fadSnText(raw.text), title=fadSnText(raw.title), note=fadSnText(raw.note);
+ const slots=(Array.isArray(raw.slots)?raw.slots:[]).filter(s=>s&&typeof s==='object').map(s=>({label:fadSnText(s.label),time:fadSnText(s.time),note:fadSnText(s.note)})).filter(s=>s.time||s.label||s.note);
+ if(!title&&!intro&&!note&&!slots.length)return null;
+ const type=fadSnType(raw.type||(/кофемаш|кофейн|кофе[ -]?маш|кофе[ -]?аппарат/i.test(title+' '+intro)?'equipment':'news'));
+ return {type,title:title||FAD_SN_TYPES[type].title,intro,slots,note,cta:fadSnText(raw.cta)||'Понятно',branch:fadSnBranch(raw.branch)||fadSnBranch(studio),date:fadSnText(raw.date)||date||''};
+}
+function fadSnPanel(m,id=''){
+ const esc=escapeHtml,t=FAD_SN_TYPES[m.type], e=m.type==='equipment';
+ const note=esc(m.note).replace(/(Кофе и снеки)/gi,'<strong>$1</strong>').replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>');
+ return `<section class="fad-sn-panel" data-type="${m.type}"><div class="fad-sn-head"><span class="fad-sn-handle" aria-hidden="true"></span><span class="fad-sn-orb" aria-hidden="true"></span><span class="fad-sn-chip">${fadSnIcon('star')} ${esc(t.label)}${m.branch?' · '+esc(m.branch):''}</span></div><div class="fad-sn-icon" aria-hidden="true"><div class="fad-sn-gold">${fadSnIcon(t.icon)}</div></div><div class="fad-sn-content"><div class="fad-sn-meta">Сообщение для администраторов${m.date?' · '+esc(fadSnDate(m.date)):''}</div><h2 class="fad-sn-title"${id?' id="'+id+'" tabindex="-1"':''}>${esc(m.title)}</h2>${m.intro?`<div class="fad-sn-intro">${esc(m.intro)}</div>`:''}${m.slots.length?`<div class="fad-sn-slots">${m.slots.map((s,i)=>{const weekend=/выходн|суббот|воскрес/i.test(s.label)||(!/будн/i.test(s.label)&&i%2===1);return `<div class="fad-sn-slot" data-weekend="${weekend}"><div class="fad-sn-slot-label">${fadSnIcon(weekend?'moon':'sun')}${esc(s.label)}</div>${s.time?`<div class="fad-sn-time">${esc(s.time)}</div>`:''}${s.note?`<div class="fad-sn-slot-note">${esc(s.note)}</div>`:''}</div>`}).join('')}</div>`:''}${m.note?`<div class="fad-sn-note"><span class="fad-sn-note-icon">${fadSnIcon('box')}</span><div>${note}</div></div>`:''}</div></section>`;
+}
+function fadSnFooter(m,preview=false){return `<div class="fad-sn-footer" data-type="${m.type}"><div class="fad-sn-footnote">Это сообщение исчезнет после подтверждения</div><button type="button" class="fad-sn-cta" ${preview?'tabindex="-1" aria-disabled="true"':''}>${fadSnIcon('check')}<span>${escapeHtml(m.cta)}</span></button></div>`;}
+// Per-login, per-studio, per-shift-day acknowledgement. Browser storage contains only a fingerprint, not the message text.
+const fadSnMemory=new Set();
+function fadSnFingerprint(v){const s=JSON.stringify(v);let a=2166136261,b=2246822519;for(let i=0;i<s.length;i++){const c=s.charCodeAt(i);a=Math.imul(a^c,16777619);b=Math.imul(b^c,3266489917);}return (a>>>0).toString(36)+'-'+(b>>>0).toString(36)+'-'+s.length;}
+function fadSnKey(login,studio,date,scope,raw){return 'fad.sn.ack.v1:'+encodeURIComponent(login)+':'+encodeURIComponent(studio)+':'+date+':'+scope+':'+fadSnFingerprint(raw);}
+function fadSnSeen(key){if(fadSnMemory.has(key))return true;try{return localStorage.getItem(key)==='1';}catch(_){return false;}}
+function fadSnMark(keys){keys.forEach(k=>{fadSnMemory.add(k);try{localStorage.setItem(k,'1');}catch(_){}});}
+function fadSnPrune(date){try{const cutoff=new Date(date+'T12:00:00Z');cutoff.setUTCDate(cutoff.getUTCDate()-35);const d=cutoff.toISOString().slice(0,10);for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(k?.startsWith('fad.sn.ack.v1:')&&k.split(':')[3]<d)localStorage.removeItem(k);}}catch(_){}}
+let fadSnOpen=null;
+function fadSnShow(openMsg,login,studio,date,container){
+ if(!openMsg||!login||!container?.isConnected||document.querySelector('.fad-sn-dialog[open]'))return;
+ const candidates=[['all',openMsg.all],['personal',openMsg.byAdmin?.[login]]];
+ const entries=candidates.map(([scope,raw])=>({m:fadSnNormalize(raw,studio,date),key:fadSnKey(login,studio,date,scope,raw??null)})).filter(x=>x.m&&!fadSnSeen(x.key));
+ if(!entries.length)return;
+ fadSnPrune(date);
+ const previous=document.activeElement, dialog=document.createElement('dialog');dialog.className='fad-sn-dialog';dialog.setAttribute('aria-labelledby','fad-sn-dialog-title');dialog.setAttribute('aria-modal','true');
+ dialog.innerHTML=`<div class="fad-sn-shell"><div class="fad-sn-scroll">${entries.map((x,i)=>fadSnPanel(x.m,i===0?'fad-sn-dialog-title':'')).join('')}</div>${fadSnFooter(entries[0].m)}</div>`;
+ const button=dialog.querySelector('.fad-sn-cta'); let confirmed=false;
+ function acknowledge(){if(confirmed)return;confirmed=true;fadSnMark(entries.map(x=>x.key));dialog.close();}
+ button.addEventListener('click',acknowledge);
+ dialog.addEventListener('cancel',e=>{e.preventDefault();acknowledge();});
+ // Native dialog traps focus and makes the rest of the app inert. Restore focus explicitly for async/rerendered pages.
+ dialog.addEventListener('close',()=>{dialog.remove();if(fadSnOpen===dialog)fadSnOpen=null;const fallback=container.querySelector('button:not([disabled]),input:not([readonly]):not([disabled])')||document.querySelector('.st-btn.on');if(previous?.isConnected&&previous!==document.body)previous.focus({preventScroll:true});else if(fallback?.isConnected)fallback.focus({preventScroll:true});});
+ document.body.append(dialog);fadSnOpen=dialog;try{dialog.showModal();dialog.querySelector('#fad-sn-dialog-title').focus({preventScroll:true});}catch(e){dialog.remove();fadSnOpen=null;console.error('FAD shift notice',e);}
+}
+function fadSnDraft(raw){const m=fadSnNormalize(raw,'','');return m||{type:'news',title:'',intro:'',slots:[],note:'',cta:'Понятно',branch:'',date:''};}
+function fadSnEditor(raw){const m=fadSnDraft(raw),esc=escapeHtml;
+ return `<div class="fad-sn-compose"><div class="fad-sn-compose-form" id="fadSnForm"><div class="fad-sn-fields"><label>Тип сообщения<select id="fadSnType">${Object.entries(FAD_SN_TYPES).map(([k,v])=>`<option value="${k}" ${m.type===k?'selected':''}>${esc(v.label)}</option>`).join('')}</select></label><label>Филиал в шапке<select id="fadSnBranch"><option value="" ${!m.branch?'selected':''}>Из контекста смены</option>${STUDIOS.map(s=>`<option value="${esc(s.address)}" ${m.branch===s.address?'selected':''}>${esc(s.address)}</option>`).join('')}${m.branch&&!STUDIOS.some(s=>s.address===m.branch)?`<option selected value="${esc(m.branch)}">${esc(m.branch)}</option>`:''}</select></label></div><label>Заголовок<input id="fadSnTitle" maxlength="180" value="${esc(m.title)}" placeholder="Например: Пора позаботиться о кофемашине"></label><label>Вводный текст<textarea id="fadSnIntro" rows="4" placeholder="Что нужно знать администратору">${esc(m.intro)}</textarea></label><div><div class="fad-sn-row"><span style="font-weight:700;font-size:13px">Окна времени (необязательно)</span><button type="button" class="btn btn-sm" id="fadSnAdd">+ Добавить</button></div><div id="fadSnSlots" style="margin-top:8px"></div></div><label>Примечание<textarea id="fadSnNote" rows="3" placeholder="Дополнительная информация; **жирный текст**">${esc(m.note)}</textarea></label><div class="fad-sn-fields"><label>Текст кнопки<input id="fadSnCta" maxlength="100" value="${esc(m.cta)}" placeholder="Понятно"></label><label>Дата<input id="fadSnDate" type="date" value="${esc(/^\d{4}-\d{2}-\d{2}$/.test(m.date)?m.date:'')}"></label></div><div class="hintline">Филиал влияет только на подпись, не на получателей. Пустой заголовок, текст, окна и примечание отключают сообщение.</div><div class="fad-sn-row" style="flex-wrap:wrap"><button type="button" class="btn btn-sm" id="fadSnCoffeePreset">Шаблон: кофемашина</button><button type="button" class="btn btn-sm" id="fadSnClear">Очистить сообщение</button></div></div><div class="fad-sn-preview-wrap"><div class="fad-sn-preview-label">Живой предпросмотр</div><div id="fadSnPreview"></div></div></div>`;
+}
+function fadSnBindEditor(body,raw,onChange){
+ const form=body.querySelector('#fadSnForm'),slots=form.querySelector('#fadSnSlots'),preview=body.querySelector('#fadSnPreview');const field=id=>form.querySelector('#fadSn'+id);const esc=escapeHtml;
+ function row(s={}){const el=document.createElement('div');el.className='fad-sn-slot-edit';el.innerHTML=`<div class="fad-sn-row"><span style="font-size:12px;font-weight:700">Окно времени</span><button type="button" class="btn btn-sm" data-sn-remove aria-label="Удалить окно времени">Удалить</button></div><label>Подпись<input data-sn-slot="label" value="${esc(s.label||'')}" placeholder="Будни"></label><label>Время<input data-sn-slot="time" value="${esc(s.time||'')}" placeholder="21:20–21:50"></label><label>Пояснение<input data-sn-slot="note" value="${esc(s.note||'')}" placeholder="после вечернего потока"></label>`;slots.append(el);}
+ fadSnDraft(raw).slots.forEach(row);
+ function read(){return {type:field('Type').value,title:field('Title').value.trim(),intro:field('Intro').value.trim(),slots:[...slots.children].map(el=>Object.fromEntries([...el.querySelectorAll('[data-sn-slot]')].map(i=>[i.dataset.snSlot,i.value.trim()]))).filter(s=>s.label||s.time||s.note),note:field('Note').value.trim(),cta:field('Cta').value.trim()||'Понятно',branch:field('Branch').value,date:field('Date').value};}
+ function refresh(save){const draft=read(),m=fadSnNormalize(draft,'',todayStr());if(save)onChange(m?draft:'');preview.innerHTML=m?`<div class="fad-sn-preview">${fadSnPanel(m)}${fadSnFooter(m,true)}</div>`:'<div class="fad-sn-preview-empty">Введите заголовок или текст — здесь появится сообщение.</div>';}
+ form.addEventListener('input',()=>refresh(true));form.addEventListener('change',()=>refresh(true));
+ field('Add').onclick=()=>{row();slots.lastElementChild.querySelector('input').focus();refresh(true);};
+ slots.addEventListener('click',e=>{const b=e.target.closest('[data-sn-remove]');if(b){b.closest('.fad-sn-slot-edit').remove();refresh(true);}});
+ field('CoffeePreset').onclick=()=>{if(fadSnNormalize(read(),'','')&&!confirm('Заменить содержимое выбранного сообщения шаблоном кофемашины?'))return;const m=fadSnCoffee(todayStr());['Type','Title','Intro','Note','Cta','Branch','Date'].forEach(k=>field(k).value=m[k.toLowerCase()]);slots.replaceChildren();m.slots.forEach(row);refresh(true);};
+ field('Clear').onclick=()=>{if(!confirm('Очистить сообщение для выбранного получателя?'))return;['Title','Intro','Note','Date','Branch'].forEach(k=>field(k).value='');field('Cta').value='Понятно';field('Type').value='news';slots.replaceChildren();refresh(true);};
+ refresh(false);
+}
+
+
 async function renderMessages(body){
   if(!TEAM.length){ try{ TEAM=await apiListTeam(); }catch(e){} }
   body.innerHTML=`<div class="hintline" style="padding:12px">Загрузка…</div>`;
@@ -12258,10 +12376,9 @@ async function renderMessages(body){
           <div id="clItems" class="cl-list">${items.length?items.map((it,i)=>`<div class="cl-row"><span class="cl-grip">≡</span><input class="cl-inp" data-i="${i}" value="${escapeHtml(it)}"/><button class="btn-icon cl-del" data-i="${i}" title="Удалить">🗑</button></div>`).join(''):'<div class="cl-empty">Пунктов пока нет — добавьте первый ниже.</div>'}</div>
           <div class="cl-add"><input id="clNew" placeholder="Например: Выключен свет"/><button class="btn btn-sm" id="clAdd">Добавить</button></div>
         </div>
-        <div class="card msg-card">
+        <div class="card msg-card" style="grid-column:1 / -1">
           <div class="msg-card-h"><span class="msg-ic">📣</span><div><div class="msg-card-t">Сообщение при открытии смены</div><div class="msg-card-d">Покажется всплывающим окном, когда админ откроет смену.</div></div></div>
-          <textarea id="omText" rows="6" placeholder="Например: После 18:00 придёт мастер по кондиционеру — впустите его.">${escapeHtml(om)}</textarea>
-          <div id="omPrev" class="msg-preview">${om.trim()?`<div class="msg-prev-lbl">Предпросмотр</div><div class="msg-prev-body">📣 ${escapeHtml(om)}</div>`:''}</div>
+          ${fadSnEditor(om)}
         </div>
       </div>
       <div class="msg-actions"><button class="btn btn-primary" id="msgSave">Сохранить для «${escapeHtml(tName)}»</button><span id="msgInd" class="msg-ind"></span></div>`;
@@ -12271,11 +12388,10 @@ async function renderMessages(body){
     const clAdd=body.querySelector('#clAdd'), clNew=body.querySelector('#clNew');
     clAdd.onclick=()=>{ const v=clNew.value.trim(); if(!v) return; const arr=listOf(target).slice(); arr.push(v); setListOf(target,arr); markAppDirty('messages'); draw(); };
     clNew.onkeydown=(e)=>{ if(e.key==='Enter'){ e.preventDefault(); clAdd.onclick(); } };
-    const omText=body.querySelector('#omText'), omPrev=body.querySelector('#omPrev');
-    omText.oninput=()=>{ setMsgOf(target, omText.value); markAppDirty('messages'); omPrev.innerHTML = omText.value.trim()?`<div class="msg-prev-lbl">Предпросмотр</div><div class="msg-prev-body">📣 ${escapeHtml(omText.value)}</div>`:''; };
+    fadSnBindEditor(body,om,value=>{setMsgOf(target,value);markAppDirty('messages');});
     body.querySelector('#msgSave').onclick=async()=>{
       const ind=body.querySelector('#msgInd');
-      try{ await apiSaveSettings(Object.assign({},settings,{messages:MSG})); void auditAction('Изменены сообщения и чек-листы','settings','messages',{target,checklist:listOf(target),message:msgOf(target)}); clearAppDirty('messages'); ind.textContent='✓ Сохранено'; setTimeout(()=>{ if(ind) ind.textContent=''; },2500); }catch(e){ handleErr(e); }
+      try{ const current=msgOf(target); if(typeof current==='string'&&fadSnCoffeeLegacy(current))setMsgOf(target,fadSnCoffee(todayStr())); else if(current&&typeof current==='object'&&!current.date)setMsgOf(target,{...current,date:todayStr()}); await apiSaveSettings(Object.assign({},settings,{messages:MSG})); void auditAction('Изменены сообщения и чек-листы','settings','messages',{target,checklist:listOf(target),message:msgOf(target)}); clearAppDirty('messages'); ind.textContent='✓ Сохранено'; setTimeout(()=>{ if(ind) ind.textContent=''; },2500); }catch(e){ handleErr(e); }
     };
   }
   draw();
