@@ -4916,6 +4916,10 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="month"]::-webk
 
 .fj-mobile-queue{margin:8px 0}.fj-mobile-queue .fb-action{width:100%}
 
+
+/* FK · dictionary workspace and safe expense deletion */
+.fk-dict-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.fk-dict-tools .fj-search{flex:1;min-width:145px}.fk-dict-tabs{margin:12px 0}.fk-dict-form{padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);margin:12px 0}.fk-dict-form h4{margin:0 0 6px}.fk-dict-list{max-height:min(46vh,440px);overflow:auto;border:1px solid var(--line);border-radius:10px;padding:0 10px;margin:12px 0}.fk-dict-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid var(--line);font-size:13px}.fk-dict-row:last-child{border:0}.fk-dict-row>div:first-child{flex:1;min-width:0;overflow-wrap:anywhere}.fk-dict-row small{display:block;color:var(--ink-faint);font-size:11px}.fk-dict-row .fk-dict-tools{justify-content:flex-end}.fk-mapped-new{border:1px dashed var(--line-strong);border-radius:10px;padding:4px 9px;margin-bottom:8px}.fk-delete-details{display:grid;gap:6px;margin:12px 0;padding:10px;background:var(--surface-2);border-radius:10px}.fk-delete-details span{color:var(--ink-soft);font-size:12px}.fj-mobile-queue{display:flex;gap:8px;flex-wrap:wrap}.fb-em-actions{flex-wrap:wrap}.fb-em-actions .fb-en-danger{color:var(--fad-danger)}
+@media(max-width:600px){.fk-dict-row{align-items:flex-start;flex-direction:column;gap:6px}.fk-dict-row .fk-dict-tools{justify-content:flex-start}.fk-dict-tabs .btn{flex:1 1 44%}.fk-dict-list{max-height:35vh}.fk-dict-tools .btn{min-height:36px}}
 </style>
 
 <div id="root"></div>
@@ -4936,7 +4940,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '23.11.2026-fj'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '23.11.2026-fk'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -6408,7 +6412,7 @@ async function renderBalance(body){
   }
   function toolbar(){return `<div class="fb-em-toolbar"><div class="fb-em-caption">Студии Flexico <span>Толбухина, 2 · Машерова, 11 · Куйбышева, 22</span></div>
     <div class="fb-em-tools">${dateButton()}
-    ${isOwner?`<button type="button" class="fb-action" id="fi-open" title="Ручное утверждение операций ImpulseCRM">На проверке${state.review?.count_pending?' · '+n(state.review.count_pending):''}</button><button type="button" class="fb-action primary" id="fb-reload" ${state.busy?'disabled':''}>${state.busy?'Обновление…':'Обновить данные'}</button>`:''}</div></div>`;}
+    ${isOwner?`<button type="button" class="fb-action" id="fi-open" title="Ручное утверждение операций ImpulseCRM">На проверке${state.review?.count_pending?' · '+n(state.review.count_pending):''}</button><button type="button" class="fb-action" data-fk-dictionary>Справочники</button><button type="button" class="fb-action primary" id="fb-reload" ${state.busy?'disabled':''}>${state.busy?'Обновление…':'Обновить данные'}</button>`:''}</div></div>`;}
   function status(){const list=data().source_status||[];const imp=list.find(x=>x.source==='impulse')||{};
     const when=imp.last_success_at?new Date(imp.last_success_at).toLocaleString('ru-RU',{timeZone:'Europe/Minsk',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'нет загрузки';
     const coverage=data().stale===false?'полнота подтверждена':'данные неполные';
@@ -6528,11 +6532,11 @@ async function renderBalance(body){
     const rel=r.diff==null?'':r.paid?'':r.diff<0?(-r.diff)+' дн. назад':r.diff===0?'сегодня':'через '+r.diff+' дн.';
     let actions='—';
     if(auto){actions=x.source==='fad'?'<button class="fb-em-link" type="button" data-em="salary">Зарплаты →</button>':'—';}
-    else if(isOwner&&fiLinkedArticle(x.id)){actions=`<button class="fb-action" type="button" data-em="fi-edit" data-id="${esc(x.id)}">Изменить</button>`;}
+    else if(isOwner&&fiLinkedArticle(x.id)){actions=`<div class="fb-em-actions"><button class="fb-action" type="button" data-em="fi-edit" data-id="${esc(x.id)}">Изменить</button><button class="fb-action fb-en-danger" type="button" data-em="delete" data-id="${esc(x.id)}">Удалить</button></div>`;}
     else if(isOwner){const cmd=dueInfo(x).action;actions=`<div class="fb-em-actions">${cmd==='undo'?
       `<button class="fb-action" type="button" data-em="undo" data-id="${esc(x.id)}" data-month="${esc(state.period)}">Отменить</button>`:
       `<button class="fb-action${cmd==='pay'?' primary':''}" type="button" data-em="${cmd}" data-id="${esc(x.id)}" data-month="${esc(state.period)}">${cmd==='pay'?'Оплачено':cmd==='edit'?'Указать срок':'Внести сумму'}</button>`}
-      <button class="fb-action" type="button" data-em="edit" data-id="${esc(x.id)}">Изменить</button></div>`;}
+      <button class="fb-action" type="button" data-em="edit" data-id="${esc(x.id)}">Изменить</button><button class="fb-action fb-en-danger" type="button" data-em="delete" data-id="${esc(x.id)}">Удалить</button></div>`;}
     const checkbox=expSelectAllowed(r)?`<input type="checkbox" data-en-select="${esc(x.id)}" ${expView.selected.has(r.id)?'checked':''} aria-label="Выбрать ${esc(r.title)}">`:'';
     const impulseCode=({refund:'15',additional_expense:'18',goods_purchase:'19'})[x.expense_type]||'не определён';
     const impulseProof=auto&&x.source==='impulse'?`<div class="fb-em-small fb-fd-source">Код ImpulseCRM: ${esc(impulseCode)} · операция ${esc(String(x.external_id||'без ID'))}. Отражена как выплата по кассовой операции CRM, банковская сверка отдельно.</div>`:'';
@@ -6729,7 +6733,7 @@ async function renderBalance(body){
     const tabs=[['overview','Обзор'],['expenses','Расходы'],['branches','Филиалы'],['forecast','Прогноз']];
     const tabbar=`<div class="fb-m-tabs" role="tablist" aria-label="Разделы баланса">${tabs.map(([key,name])=>`<button type="button" role="tab" data-fb-mobile-section="${key}" aria-selected="${mobileSection===key}" class="${mobileSection===key?'on':''}">${name}</button>`).join('')}</div>`;
     const content=mobileSection==='expenses'?table(c):mobileSection==='branches'?mobileBranchCards(c):mobileSection==='forecast'?prediction(c):mobileBalanceOverview(c);
-    return `${tabbar}${dateButton()}<div class="fj-mobile-queue"><button type="button" class="fb-action" id="fi-open">Расходы и выплаты${state.review?.count_pending?' · '+n(state.review.count_pending):''}</button></div><div class="fb-m-subtitle">Студии Flexico · Толбухина, Машерова, Куйбышева</div>${status()}${dateRevenue()}<div class="fb-m-content">${content}</div>`;
+    return `${tabbar}${dateButton()}<div class="fj-mobile-queue"><button type="button" class="fb-action" id="fi-open">Расходы и выплаты${state.review?.count_pending?' · '+n(state.review.count_pending):''}</button><button type="button" class="fb-action" data-fk-dictionary>Справочники</button></div><div class="fb-m-subtitle">Студии Flexico · Толбухина, Машерова, Куйбышева</div>${status()}${dateRevenue()}<div class="fb-m-content">${content}</div>`;
   }
   // FF: Month/year controls inside Balance date selection match payroll calendars.
   shell.addEventListener('change',ev=>{
@@ -6762,7 +6766,7 @@ async function renderBalance(body){
     try{const [s,b,review]=await Promise.all([
       rpc(isOwner?'app_balance_snapshot':'app_balance_em_snapshot',{p_token:TOKEN,p_period:period,p_scope:'studio',p_scenario:1}),
       rpc('app_balance_em_read',{p_token:TOKEN,p_period:period}),
-      isOwner?rpc('app_financial_fj_read',{p_token:TOKEN,p_period:period}).catch(e=>({error:String(e?.message||e)})):Promise.resolve(null)]);
+      isOwner?rpc('app_financial_fk_read',{p_token:TOKEN,p_period:period}).catch(e=>({error:String(e?.message||e)})):Promise.resolve(null)]);
       if(!live()||period!==state.period)return;
       state.snap=s;state.bill=b;state.review=review;state.status='ok';
       fadRefreshBalanceBadge();
@@ -6781,10 +6785,26 @@ async function renderBalance(body){
   /* FJ · one financial review workspace. The list stays open between decisions. */
   let fiWindow=null,fiInfo=null,fiScreen='list',fiFilter='pending',fiSearch='',fiScroll=0,fiBusy=false;
   const fiTypes={refund:'Возврат клиенту',additional_expense:'Дополнительный расход',goods_purchase:'Закупка товара',employee_payout:'Выплата сотруднику'};
+  const fiMethods={cash:'Наличными',bank:'Банковский перевод',card:'Картой',other:'Другое'};
   const fiDefaultCat=t=>t==='employee_payout'?'Персонал':t==='refund'?'Возврат клиенту':t==='goods_purchase'?'Закупки':'Прочее';
-  const fiErrorText=e=>({fi_employee_payout_requires_verified_payment:'Для выплаты сотруднику отметьте фактическую оплату и укажите дату.',fj_legacy_payroll_period:'В ноябре 2026 сохраняется прежний порядок выплат. Используйте действующий раздел зарплат.',fi_existing_provider_expense_requires_cleanup_or_review:'Операция уже есть в старом учёте. Повторное начисление запрещено.',fi_decision_locked:'Статус операции изменился. Вернитесь к списку и обновите его.',fj_article_changed_outside_review:'Статья была изменена вне очереди. Автоматическое изменение или удаление небезопасно; проверьте её в расходах.',fj_partial_payment_requires_reconciliation:'У этой статьи есть частичная оплата. Сначала сверите её в расходах.',fj_invalid_manual_date_or_amount:'Проверьте дату операции (для обычного расхода — в выбранном месяце) и сумму.'})[String(e?.message||e)]||String(e?.message||e);
+  const fiErrorText=e=>({fk_dictionary_duplicate:'Такое название уже есть (проверьте также удалённые).',fk_dictionary_archived:'Значение удалено. Восстановите его или выберите другое.',fk_dictionary_base_changed:'Логика значения изменилась. Обновите справочник.',fk_select_active_category:'Выберите действующую категорию.',fk_invalid_dictionary:'Проверьте название справочника.',fk_invalid_base:'Выберите логику учёта.',fk_article_not_in_period:'Статья не действует в этом месяце.',fi_employee_payout_requires_verified_payment:'Для выплаты сотруднику отметьте фактическую оплату и укажите дату.',fj_legacy_payroll_period:'В ноябре 2026 сохраняется прежний порядок выплат. Используйте действующий раздел зарплат.',fi_existing_provider_expense_requires_cleanup_or_review:'Операция уже есть в старом учёте. Повторное начисление запрещено.',fi_decision_locked:'Статус операции изменился. Вернитесь к списку и обновите его.',fj_article_changed_outside_review:'Статья была изменена вне очереди. Автоматическое изменение или удаление небезопасно; проверьте её в расходах.',fj_partial_payment_requires_reconciliation:'У этой статьи есть частичная оплата. Сначала сверите её в расходах.',fj_invalid_manual_date_or_amount:'Проверьте дату операции (для обычного расхода — в выбранном месяце) и сумму.'})[String(e?.message||e)]||String(e?.message||e);
   function fiLinkedArticle(id){return (state.review?.rows||[]).find(r=>r.status==='approved'&&String(r.article_id||'')===String(id));}
-  function fiDict(kind,info=fiInfo||state.review){return (Array.isArray(info?.dictionary)?info.dictionary:[]).filter(x=>x.kind===kind).sort((a,b)=>a.name.localeCompare(b.name,'ru'));}
+  function fiDict(kind,info=state.review||fiInfo,archived=false){return (Array.isArray(info?.dictionary)?info.dictionary:[]).filter(x=>x.kind===kind&&(archived?x.active===false:x.active!==false)).sort((a,b)=>a.name.localeCompare(b.name,'ru'));}
+  const fkKinds={type:'Виды операций',article:'Статьи / выплаты',category:'Категории',method:'Способы оплаты'};
+  const fkBaseLabels=kind=>kind==='type'?fiTypes:fiMethods;
+  function fkDefault(kind,base,info){return fiDict(kind,info).find(x=>x.base_code===base&&x.name===fkBaseLabels(kind)[base])?.name||fiDict(kind,info).find(x=>x.base_code===base)?.name||'';}
+  function fkMappedChoice(label,id,kind,chosen,info,restricted='',historicalBase=''){
+    const entries=fiDict(kind,info).filter(x=>!restricted||x.base_code===restricted);
+    const values=entries.map(x=>[x.name,x.name]);
+    if(chosen&&!values.some(x=>x[0]===chosen))values.unshift([chosen,chosen+' (история)']);
+    const bases=Object.entries(fkBaseLabels(kind)).filter(([k])=>!restricted||k===restricted);
+    return `<div class="fj-choice"><label class="fb-em-field"><span>${esc(label)}</span><select id="${id}">${opts([['','Выберите из списка'],...values,['__fj_new__','＋ Добавить новое…']],chosen||'')}</select></label><div class="fk-mapped-new" hidden>${field('Новое название',id+'-new','text','','maxlength="160" autocomplete="off"')}${select(kind==='type'?'Логика учёта':'Тип оплаты',id+'-base',restricted||'',[['','Выберите'],...bases])}</div></div>`;
+  }
+  function fkBindMapped(root,id){const sel=root.querySelector('#'+id),input=root.querySelector('#'+id+'-new'),base=root.querySelector('#'+id+'-base'),wrap=input.closest('.fk-mapped-new');const change=()=>{wrap.hidden=sel.value!=='__fj_new__';input.required=base.required=!wrap.hidden;};sel.addEventListener('change',change);change();}
+  function fkMappedValue(root,id,kind,info,oldName='',oldBase=''){const sel=root.querySelector('#'+id);if(sel.value==='__fj_new__')return {label:root.querySelector('#'+id+'-new').value.trim(),base:root.querySelector('#'+id+'-base').value};if(sel.value===oldName&&oldBase)return {label:sel.value,base:oldBase};const entry=fiDict(kind,info).find(x=>x.name===sel.value);return {label:sel.value,base:entry?.base_code||''};}
+  function fkTypeLabel(r){return r.fk_type_label||fiTypes[r.op_type]||r.op_type;}
+  function fkArchiveConflict(kind,name,old=''){return name!==old&&fiDict(kind,state.review,true).some(x=>x.name.trim().toLocaleLowerCase('ru')===name.trim().toLocaleLowerCase('ru'));}
+
   function fiUnique(values){const m=new Map();for(const v of values){const s=String(v||'').trim();if(s&&!m.has(s.toLocaleLowerCase('ru-RU')))m.set(s.toLocaleLowerCase('ru-RU'),s);}return [...m.values()].sort((a,b)=>a.localeCompare(b,'ru'));}
   function fiChoice(label,id,kind,chosen,info){
     const values=fiUnique([chosen,...fiDict(kind,info).map(x=>x.name)]);
@@ -6797,13 +6817,13 @@ async function renderBalance(body){
       fiWindow.addEventListener('click',e=>{if(e.target===fiWindow){e.stopImmediatePropagation();if(fiBusy)return;if(fiScreen!=='list')fiList();else closeModal(fiWindow);}},true);
       fiWindow.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();if(fiBusy)return;if(fiScreen==='list')closeModal(fiWindow);else fiList();}});
     }
-    fiScreen=screen;const root=fiWindow.querySelector('.modal');root.innerHTML=html;root.classList.toggle('fj-wide',screen==='list');root.scrollTop=0;return root;
+    fiScreen=screen;const root=fiWindow.querySelector('.modal');root.innerHTML=html;root.classList.toggle('fj-wide',screen==='list'||screen==='dictionary');root.scrollTop=0;return root;
   }
   const fiBack=()=>'<button type="button" class="fj-back" data-fj-back aria-label="Вернуться к списку">← К списку</button>';
   const fiMessage=()=>'<div class="fj-error" role="alert" data-fj-message hidden></div>';
   function fiShowError(root,e){const x=root.querySelector('[data-fj-message]');if(x){x.hidden=false;x.textContent=fiErrorText(e);x.scrollIntoView({block:'nearest'});}else toast(fiErrorText(e),true);}
   function fiWait(root,busy){fiBusy=busy;root.querySelectorAll('button').forEach(b=>b.disabled=busy);}
-  async function fiRefresh(){const p=state.period;const info=await rpc('app_financial_fj_read',{p_token:TOKEN,p_period:p});if(!live()||state.period!==p)throw Error('Период изменился. Откройте список заново.');fiInfo=state.review=info;return info;}
+  async function fiRefresh(){const p=state.period;const info=await rpc('app_financial_fk_read',{p_token:TOKEN,p_period:p});if(!live()||state.period!==p)throw Error('Период изменился. Откройте список заново.');fiInfo=state.review=info;return info;}
   async function fiAfter(root,msg){
     // The mutation already succeeded. Never offer a retry of the same write on a read error.
     try{await fiRefresh();await load();if(state.review&&!state.review.error)fiInfo=state.review;fiBusy=false;if(fiWindow?.isConnected)fiList();toast(msg);}
@@ -6818,8 +6838,8 @@ async function renderBalance(body){
       <div class="fj-filters">${[['pending','На проверке'],['approved','Утверждено'],['rejected','Исключено'],['all','Все']].map(([k,v])=>`<button type="button" class="btn ${fiFilter===k?'btn-primary':''}" data-fj-filter="${k}" aria-pressed="${fiFilter===k}">${v} · ${k==='all'?items.length:items.filter(r=>r.status===k).length}</button>`).join('')}</div>
       <input type="search" class="fj-search" placeholder="Поиск по названию, сотруднику, ID, сумме" value="${esc(fiSearch)}" aria-label="Поиск операций"><div class="fj-table-scroll"><table class="fj-table"><thead><tr><th>Операция</th><th>Дата</th><th>Сумма, BYN</th><th>Статус</th><th></th></tr></thead><tbody></tbody></table></div><div class="fj-list-foot"><span class="fb-em-muted" data-fj-count></span><button type="button" class="btn" data-fj-close>Закрыть</button></div>`,'list');
     const table=root.querySelector('tbody'),scroll=root.querySelector('.fj-table-scroll');
-    function drawRows(){const query=fiSearch.toLocaleLowerCase('ru-RU');const visible=items.filter(r=>(fiFilter==='all'||r.status===fiFilter)&&(!query||[r.approved_name,r.source_name,r.source_id,r.category,fiTypes[r.op_type],employeeName(r.employee_id),r.original_amount,r.approved_amount,r.operation_day].join(' ').toLocaleLowerCase('ru-RU').includes(query)));
-      table.innerHTML=visible.map(r=>`<tr><td><b>${esc(r.approved_name||fiTypes[r.op_type]||r.op_type)}</b><small>${esc([r.source==='manual'?'Вручную':r.source_id,r.category,employeeName(r.employee_id),U[r.approved_unit||r.unit]||''].filter(Boolean).join(' · '))}</small></td><td>${esc(r.operation_day)}</td><td><b>${money(r.status==='approved'?r.approved_amount:r.original_amount)}</b>${r.status==='approved'&&n(r.approved_amount)!==n(r.original_amount)?`<small>CRM: ${money(r.original_amount)}</small>`:''}</td><td>${r.status==='pending'?pill('На проверке','warn'):r.status==='approved'?pill(r.payment_verified?'Оплачено':'Утверждено','ok'):pill('Исключено','neutral')}</td><td>${r.status==='pending'||r.status==='approved'?`<button type="button" class="btn btn-sm" data-fj-item="${esc(r.id)}">${r.status==='approved'?'Изменить':'Открыть'}</button>`:'—'}</td></tr>`).join('')||'<tr><td colspan="5" class="fb-em-muted">Нет операций по выбранному фильтру.</td></tr>';
+    function drawRows(){const query=fiSearch.toLocaleLowerCase('ru-RU');const visible=items.filter(r=>(fiFilter==='all'||r.status===fiFilter)&&(!query||[r.approved_name,r.source_name,r.source_id,r.category,fkTypeLabel(r),r.fk_method_label,employeeName(r.employee_id),r.original_amount,r.approved_amount,r.operation_day].join(' ').toLocaleLowerCase('ru-RU').includes(query)));
+      table.innerHTML=visible.map(r=>`<tr><td><b>${esc(r.approved_name||fkTypeLabel(r))}</b><small>${esc([r.source==='manual'?'Вручную':r.source_id,fkTypeLabel(r),r.category,r.fk_method_label||fiMethods[r.payment_method],employeeName(r.employee_id),U[r.approved_unit||r.unit]||''].filter(Boolean).join(' · '))}</small></td><td>${esc(r.operation_day)}</td><td><b>${money(r.status==='approved'?r.approved_amount:r.original_amount)}</b>${r.status==='approved'&&n(r.approved_amount)!==n(r.original_amount)?`<small>CRM: ${money(r.original_amount)}</small>`:''}</td><td>${r.status==='pending'?pill('На проверке','warn'):r.status==='approved'?pill(r.payment_verified?'Оплачено':'Утверждено','ok'):pill('Исключено','neutral')}</td><td>${r.status==='pending'||r.status==='approved'?`<button type="button" class="btn btn-sm" data-fj-item="${esc(r.id)}">${r.status==='approved'?'Изменить':'Открыть'}</button>`:'—'}</td></tr>`).join('')||'<tr><td colspan="5" class="fb-em-muted">Нет операций по выбранному фильтру.</td></tr>';
       root.querySelector('[data-fj-count]').textContent=`Показано: ${visible.length} из ${items.length}`;
       table.querySelectorAll('[data-fj-item]').forEach(b=>b.onclick=()=>{fiScroll=scroll.scrollTop;const r=items.find(x=>String(x.id)===b.dataset.fjItem);if(r)fiDecision(r,fiInfo);});
     }
@@ -6829,35 +6849,54 @@ async function renderBalance(body){
     root.querySelector('[data-fj-manual]').onclick=()=>{fiScroll=scroll.scrollTop;const day=state.period===curDate().slice(0,7)?curDate():state.period+'-01';fiDecision({op_type:'additional_expense',operation_day:day,source:'manual',original_amount:null},fiInfo,true);};
     root.querySelector('[data-fj-dict]').onclick=()=>{fiScroll=scroll.scrollTop;fiDictionary();};
   }
-  function fiDictionary(){const root=fiSet(`${fiBack()}<h3>Справочники расходов</h3><p class="fb-em-muted">Названия доступны во всех месяцах. Создание названия не начисляет расход.</p><form class="fj-dict-form">${select('Что добавить','fj-kind','article',[['article','Статью'],['category','Категорию']])}${field('Название','fj-dict-name','text','','required maxlength="160"')}${fiChoice('Категория статьи','fj-dict-cat','category','',fiInfo)}${fiMessage()}<button class="btn btn-primary" type="submit">Сохранить в справочник</button></form><div class="fj-dictionary-list"><h4>Категории</h4><p>${fiDict('category').map(x=>esc(x.name)).join(' · ')}</p><h4>Статьи</h4>${fiDict('article').map(x=>`<div><b>${esc(x.name)}</b><small>${esc(x.category||'Без категории')}</small></div>`).join('')}</div>`,'dictionary');
-    const form=root.querySelector('form'),kind=form.querySelector('#fj-kind'),cat=form.querySelector('#fj-dict-cat').closest('.fj-choice');fiBindChoice(form,'fj-dict-cat');kind.onchange=()=>{cat.hidden=kind.value==='category';form.querySelector('#fj-dict-cat-new').required=!cat.hidden&&form.querySelector('#fj-dict-cat').value==='__fj_new__';form.querySelector('#fj-dict-name').maxLength=kind.value==='category'?80:160;};kind.onchange();root.querySelector('[data-fj-back]').onclick=fiList;
-    form.onsubmit=async e=>{e.preventDefault();if(fiBusy)return;const name=form.querySelector('#fj-dict-name').value.trim(),category=kind.value==='article'?fiChoiceValue(form,'fj-dict-cat'):null;if(!name||kind.value==='article'&&!category){fiShowError(root,'Укажите название и категорию статьи.');return;}fiWait(root,true);try{await rpc('app_financial_fj_dictionary_add',{p_token:TOKEN,p_kind:kind.value,p_name:name,p_category:category});await fiRefresh();fiBusy=false;fiDictionary();toast('Сохранено в справочник');}catch(e){fiWait(root,false);fiShowError(root,e);}};
+  let fkDictTab='article',fkDictArchived=false,fkDictSearch='',fkDictEditing=null;
+  async function fkOpenDictionary(){if(!isOwner||fiBusy)return;try{await fiRefresh();fkDictEditing=null;fiDictionary();}catch(e){toast(fiErrorText(e),true);}}
+  function fiDictionary(){
+    const kind=fkDictTab,editing=fkDictEditing,archived=fkDictArchived;
+    const entries=fiDict(kind,fiInfo,archived);
+    const cats=fiDict('category',fiInfo).map(x=>[x.name,x.name]);
+    const root=fiSet(`${fiBack()}<h3>Справочники расходов</h3><p class="fb-em-muted">Доступны во всех месяцах. Изменение справочника не меняет исторические операции и не начисляет расход.</p>
+      <div class="fj-filters fk-dict-tabs">${Object.entries(fkKinds).map(([k,v])=>`<button type="button" data-fk-kind="${k}" class="btn ${kind===k?'btn-primary':''}">${esc(v)} · ${fiDict(k,fiInfo).length}</button>`).join('')}</div>
+      <div class="fk-dict-tools"><input type="search" class="fj-search" id="fk-dict-search" placeholder="Поиск по названию" value="${esc(fkDictSearch)}"><button type="button" class="btn ${archived?'btn-primary':''}" data-fk-archive>${archived?'Активные':'Удалённые · '+fiDict(kind,fiInfo,true).length}</button></div>
+      ${fiMessage()}${!archived?`<form class="fk-dict-form"><h4>${editing?'Изменить значение':'Добавить значение'}</h4>${field('Название','fk-dict-name','text',editing?.name||'',`required maxlength="${kind==='category'?80:160}"`)}${kind==='article'?select('Категория статьи','fk-dict-cat',editing?.category||'',[['','Выберите категорию'],...cats]):''}${kind==='type'||kind==='method'?select(kind==='type'?'Логика финансового учёта':'Тип оплаты','fk-dict-base',editing?.base_code||'',[['','Выберите'],...Object.entries(fkBaseLabels(kind))]):''}<div class="fk-dict-tools"><button class="btn btn-primary" type="submit">${editing?'Сохранить':'+ Добавить'}</button>${editing?'<button type="button" class="btn" data-fk-cancel-edit>Отмена</button>':''}</div></form>`:''}
+      <div class="fk-dict-list" data-fk-list></div><p class="fb-em-muted">Удаление скрывает значение из новых операций. В разделе «Удалённые» его можно восстановить.</p>`,'dictionary');
+    const list=root.querySelector('[data-fk-list]');
+    function draw(){const q=fkDictSearch.trim().toLocaleLowerCase('ru');const visible=entries.filter(x=>[x.name,x.category,fkBaseLabels(kind)[x.base_code]].join(' ').toLocaleLowerCase('ru').includes(q));list.innerHTML=visible.map((x,i)=>`<div class="fk-dict-row"><div><b>${esc(x.name)}</b>${x.category||x.base_code?`<small>${esc(x.category||fkBaseLabels(kind)[x.base_code]||'')}</small>`:''}</div><div class="fk-dict-tools">${archived?`<button type="button" class="btn btn-sm" data-fk-act="restore" data-fk-i="${i}">Восстановить</button>`:`<button type="button" class="btn btn-sm" data-fk-act="edit" data-fk-i="${i}">Изменить</button><button type="button" class="btn btn-sm fj-danger" data-fk-act="delete" data-fk-i="${i}">Удалить</button>`}</div></div>`).join('')||'<p class="fb-em-muted">Нет значений.</p>';
+      list.querySelectorAll('[data-fk-act]').forEach(b=>b.onclick=()=>{const x=visible[Number(b.dataset.fkI)];if(!x||fiBusy)return;if(b.dataset.fkAct==='edit'){fkDictEditing=x;fiDictionary();return;}if(b.dataset.fkAct==='delete'&&!confirm('Удалить «'+x.name+'» из выбора? История расходов сохранится.'))return;void write(b.dataset.fkAct,x.name,null,null,null);});}
+    async function write(action,name,newName,category,base){if(fiBusy)return;fiWait(root,true);try{await rpc('app_financial_fk_dictionary',{p_token:TOKEN,p_action:action,p_kind:kind,p_name:name,p_new_name:newName,p_category:category,p_base:base});}catch(e){fiWait(root,false);fiShowError(root,e);return;}fkDictEditing=null;try{await fiRefresh();fiBusy=false;fiDictionary();toast('Справочник обновлён');}catch(e){fiWait(root,false);fiShowError(root,'Изменение сохранено. Обновите справочник: '+fiErrorText(e));}}
+    draw();root.querySelector('#fk-dict-search').oninput=e=>{fkDictSearch=e.target.value;draw();};root.querySelector('[data-fj-back]').onclick=fiList;
+    root.querySelectorAll('[data-fk-kind]').forEach(b=>b.onclick=()=>{fkDictTab=b.dataset.fkKind;fkDictEditing=null;fkDictSearch='';fiDictionary();});root.querySelector('[data-fk-archive]').onclick=()=>{fkDictArchived=!archived;fkDictEditing=null;fkDictSearch='';fiDictionary();};
+    const cancel=root.querySelector('[data-fk-cancel-edit]');if(cancel)cancel.onclick=()=>{fkDictEditing=null;fiDictionary();};
+    const form=root.querySelector('form');if(form)form.onsubmit=e=>{e.preventDefault();const name=form.querySelector('#fk-dict-name').value.trim(),category=form.querySelector('#fk-dict-cat')?.value||null,base=form.querySelector('#fk-dict-base')?.value||null;if(!name||(kind==='article'&&!category)||(['type','method'].includes(kind)&&!base)){fiShowError(root,'Заполните название и связанное поле.');return;}void write(editing?'edit':'add',editing?.name||name,editing?name:null,category,base);};
   }
   function fiDecision(entry,info,manual=false){
     const editing=entry.status==='approved',initialType=entry.op_type,initialPayroll=initialType==='employee_payout';
     const emps=[['','Выберите сотрудника'],...(info.employees||[]).map(x=>[String(x.id),String(x.name)+' · '+(x.type==='trainer'?'Тренер':'Администратор')])];
-    const chosenName=editing?entry.approved_name:initialType==='refund'?'Возврат клиенту':initialType==='goods_purchase'?'Закупка товара':'';
-    const chosenCat=editing?entry.category:manual?'':fiDefaultCat(initialType);
+    const defaultName=initialType==='refund'?'Возврат клиенту':initialType==='goods_purchase'?'Закупка товара':'';
+    const chosenName=editing?entry.approved_name:fiDict('article',info).some(x=>x.name===defaultName)?defaultName:'';
+    const defaultCat=fiDefaultCat(initialType),chosenCat=editing?entry.category:manual?'':fiDict('category',info).some(x=>x.name===defaultCat)?defaultCat:'';
+    const oldType=editing?(entry.fk_type_label||fiTypes[initialType]):'',oldMethod=editing?(entry.fk_method_label||fiMethods[entry.payment_method]):'';
+    const chosenType=oldType||fkDefault('type',initialType,info);
     const day=entry.operation_day||curDate();const requestId=manual?crypto.randomUUID():null;
     const root=fiSet(`<header class="fj-form-head">${fiBack()}<h3>${manual?'Новый расход / выплата':editing?'Изменить операцию':'Подтвердить · '+esc(fiTypes[initialType]||'Расход')}</h3><p class="fb-em-muted">${manual?'Период учёта: '+esc(monthTitle(state.period)):'Источник: '+esc(entry.source_id)+' · '+esc(day)+' · исходная сумма '+money(entry.original_amount)}</p>${!manual&&entry.source_detail?`<p class="fb-em-muted">${esc(entry.source_detail)}</p>`:''}</header>
-      <form class="fj-decision-form">${manual?`<div class="fj-form-grid">${select('Вид операции','fi-type',initialType,Object.entries(fiTypes))}${field('Дата операции','fi-op-date','date',day,'required max="'+esc(curDate())+'"')}</div>`:''}
+      <form class="fj-decision-form">${fkMappedChoice('Вид операции','fi-type','type',chosenType,info,manual?'':initialType,initialType)}${manual?field('Дата операции','fi-op-date','date',day,'required max="'+esc(curDate())+'"'):''}
       ${fiChoice('Название статьи / выплата','fi-name','article',chosenName,info)}${fiChoice('Категория','fi-category','category',chosenCat,info)}
-      <div class="fj-form-grid">${field('Сумма, BYN','fi-amount','text',editing?Number(entry.approved_amount).toFixed(2):manual?'':Number(entry.original_amount).toFixed(2),'inputmode="decimal" required')}${select('Юрлицо','fi-legal',editing?entry.legal_entity:'',legalOpts)}${select('Филиал','fi-unit',editing?entry.approved_unit||'all':entry.unit||'',[['','Выберите филиал'],['all','Все филиалы'],...Object.entries(U)])}${select('Способ оплаты','fi-method',editing?entry.payment_method:'',[['','Выберите способ'],['cash','Наличными'],['bank','Банковский перевод'],['card','Картой'],['other','Другое']])}</div>
+      <div class="fj-form-grid">${field('Сумма, BYN','fi-amount','text',editing?Number(entry.approved_amount).toFixed(2):manual?'':Number(entry.original_amount).toFixed(2),'inputmode="decimal" required')}${select('Юрлицо','fi-legal',editing?entry.legal_entity:'',legalOpts)}${select('Филиал','fi-unit',editing?entry.approved_unit||'all':entry.unit||'',[['','Выберите филиал'],['all','Все филиалы'],...Object.entries(U)])}${fkMappedChoice('Способ оплаты','fi-method','method',oldMethod,info)}</div>
       <div data-fj-employee>${select('Сотрудник','fi-employee',editing?String(entry.employee_id||''):'',emps)}</div>
       <label class="fb-em-check"><input type="checkbox" id="fi-verified" ${editing&&entry.payment_verified?'checked':''}> Фактическая оплата подтверждена</label><div data-fj-paid-date>${field('Дата подтверждённой оплаты','fi-date','date',editing?entry.payment_date||day:day,'max="'+esc(curDate())+'"')}</div>
       <p class="fb-em-muted" data-fj-help></p>${editing&&n(entry.bank_link_count)>0?'<p class="fj-note">Есть связь с банковской выпиской. При изменении суммы, юрлица, филиала или оплаты связанная банковская строка вернётся на проверку.</p>':''}${editing&&!entry.payment_verified&&n(entry.actual_paid_amount)>0?`<p class="fj-note">Частично оплачено: ${money(entry.actual_paid_amount)}. Сумму и оплату сначала нужно сверить отдельно.</p>`:''}
       ${fiMessage()}<footer class="fj-actions">${!manual?`<button type="button" class="btn fj-danger" data-fj-remove>${editing?'Удалить':'Исключить'}</button>`:''}<span class="fj-grow"></span><button type="button" class="btn" data-fj-cancel>Отмена</button><button type="submit" class="btn btn-primary">${editing?'Сохранить':manual?'Добавить и утвердить':'Утвердить'}</button></footer></form>`,'decision');
-    const form=root.querySelector('form'),get=id=>form.querySelector('#'+id),type=()=>manual?get('fi-type').value:initialType,payroll=()=>type()==='employee_payout';
-    fiBindChoice(form,'fi-name');fiBindChoice(form,'fi-category');
+    const form=root.querySelector('form'),get=id=>form.querySelector('#'+id),typeChoice=()=>fkMappedValue(form,'fi-type','type',info,oldType,editing?initialType:''),methodChoice=()=>fkMappedValue(form,'fi-method','method',info,oldMethod,editing?entry.payment_method:''),type=()=>typeChoice().base,payroll=()=>type()==='employee_payout';
+    fiBindChoice(form,'fi-name');fiBindChoice(form,'fi-category');fkBindMapped(form,'fi-type');fkBindMapped(form,'fi-method');
     const update=()=>{root.querySelector('[data-fj-employee]').hidden=!payroll();get('fi-employee').required=payroll();root.querySelector('[data-fj-paid-date]').hidden=!get('fi-verified').checked;get('fi-date').required=get('fi-verified').checked;root.querySelector('[data-fj-help]').textContent=payroll()?'Выплата сотруднику уменьшает остаток зарплаты, но не создаёт второй расход. Необходимо подтвердить факт оплаты.':'Если оплата ещё не подтверждена, расход будет начислен, но останется неоплаченным.';};
     get('fi-name').addEventListener('change',()=>{const a=fiDict('article',info).find(x=>x.name===get('fi-name').value);if(a?.category){const cat=get('fi-category');if([...cat.options].some(o=>o.value===a.category)){cat.value=a.category;cat.dispatchEvent(new Event('change'));}}});
-    if(manual){get('fi-type').onchange=()=>{const cat=get('fi-category');get('fi-name').value='';get('fi-name').dispatchEvent(new Event('change'));cat.value=fiDefaultCat(type());cat.dispatchEvent(new Event('change'));update();};get('fi-op-date').onchange=()=>{get('fi-date').value=get('fi-op-date').value;};}
+    if(manual){get('fi-type').onchange=()=>{const cat=get('fi-category');get('fi-name').value='';get('fi-name').dispatchEvent(new Event('change'));cat.value=fiDict('category',info).some(x=>x.name===fiDefaultCat(type()))?fiDefaultCat(type()):'';cat.dispatchEvent(new Event('change'));update();};get('fi-type-base').onchange=()=>{update();};get('fi-op-date').onchange=()=>{get('fi-date').value=get('fi-op-date').value;};}
     get('fi-verified').onchange=update;update();root.querySelector('[data-fj-back]').onclick=fiList;root.querySelector('[data-fj-cancel]').onclick=fiList;
-    form.onsubmit=async ev=>{ev.preventDefault();if(fiBusy)return;const amount=value(get('fi-amount').value),payload={name:fiChoiceValue(form,'fi-name'),category:fiChoiceValue(form,'fi-category'),amount,legal:get('fi-legal').value,unit:get('fi-unit').value,employee_id:payroll()?get('fi-employee').value:null,method:get('fi-method').value,verified:get('fi-verified').checked,paid_date:get('fi-verified').checked?get('fi-date').value:null};
-      if(!payload.name||!payload.category||!goodAmount(amount)||Number(amount)<=0||!payload.legal||!payload.unit||!payload.method||(payroll()&&(!payload.employee_id||payload.unit==='all'||!payload.verified))||payload.verified&&!payload.paid_date){fiShowError(root,'Заполните статью, категорию, сумму, юрлицо, филиал, способ оплаты'+(payroll()?', сотрудника и подтверждение выплаты.':'.'));return;}
+    form.onsubmit=async ev=>{ev.preventDefault();if(fiBusy)return;const amount=value(get('fi-amount').value),payload={name:fiChoiceValue(form,'fi-name'),category:fiChoiceValue(form,'fi-category'),amount,legal:get('fi-legal').value,unit:get('fi-unit').value,employee_id:payroll()?get('fi-employee').value:null,method:methodChoice().base,method_label:methodChoice().label,type_label:typeChoice().label,verified:get('fi-verified').checked,paid_date:get('fi-verified').checked?get('fi-date').value:null};
+      if(!payload.name||!payload.category||!goodAmount(amount)||Number(amount)<=0||!payload.legal||!payload.unit||!payload.method||!payload.method_label||!payload.type_label||!type()||(payroll()&&(!payload.employee_id||payload.unit==='all'||!payload.verified))||payload.verified&&!payload.paid_date){fiShowError(root,'Заполните статью, категорию, сумму, юрлицо, филиал, способ оплаты'+(payroll()?', сотрудника и подтверждение выплаты.':'.'));return;}
       if(editing&&n(entry.bank_link_count)>0&&!confirm('Сохранить изменения? При изменении финансовых параметров банковская строка вернётся на проверку.'))return;
-      fiWait(root,true);try{if(manual)await rpc('app_financial_fj_manual',{p_token:TOKEN,p_id:requestId,p_period:state.period,p_day:get('fi-op-date').value,p_type:type(),p_fields:payload});else await rpc('app_financial_fj_decide',{p_token:TOKEN,p_id:entry.id,p_action:editing?'edit':'approve',p_fields:payload});await fiAfter(root,editing?'Изменения сохранены':'Операция утверждена');}catch(e){fiWait(root,false);fiShowError(root,e);}};
-    const remove=root.querySelector('[data-fj-remove]');if(remove)remove.onclick=async()=>{if(fiBusy||!confirm(editing?'Удалить из финансового учёта? Операция не появится повторно при импорте. Связанные банковские строки вернутся на проверку.':'Исключить из учёта? Операция больше не будет предложена импортом.'))return;fiWait(root,true);try{await rpc('app_financial_fj_decide',{p_token:TOKEN,p_id:entry.id,p_action:editing?'delete':'reject',p_fields:{}});await fiAfter(root,editing?'Операция удалена из учёта':'Операция исключена');}catch(e){fiWait(root,false);fiShowError(root,e);}};
+      fiWait(root,true);try{if(manual)await rpc('app_financial_fk_manual',{p_token:TOKEN,p_id:requestId,p_period:state.period,p_day:get('fi-op-date').value,p_type:type(),p_fields:payload});else await rpc('app_financial_fk_decide',{p_token:TOKEN,p_id:entry.id,p_action:editing?'edit':'approve',p_fields:payload});await fiAfter(root,editing?'Изменения сохранены':'Операция утверждена');}catch(e){fiWait(root,false);fiShowError(root,e);}};
+    const remove=root.querySelector('[data-fj-remove]');if(remove)remove.onclick=async()=>{if(fiBusy||!confirm(editing?'Удалить из финансового учёта? Операция не появится повторно при импорте. Связанные банковские строки вернутся на проверку.':'Исключить из учёта? Операция больше не будет предложена импортом.'))return;fiWait(root,true);try{await rpc('app_financial_fk_decide',{p_token:TOKEN,p_id:entry.id,p_action:editing?'delete':'reject',p_fields:{}});await fiAfter(root,editing?'Операция удалена из учёта':'Операция исключена');}catch(e){fiWait(root,false);fiShowError(root,e);}};
   }
   async function fiOpenArticle(id){try{await fiRefresh();const entry=fiInfo.rows.find(r=>r.status==='approved'&&String(r.article_id)===String(id));if(!entry)throw Error('Операция не найдена. Обновите данные.');fiFilter='approved';fiSearch='';fiScroll=0;fiDecision(entry,fiInfo);}catch(e){toast(fiErrorText(e),true);}}
 
@@ -6914,24 +6953,25 @@ async function renderBalance(body){
   const frequencyOpts=[['monthly','Ежемесячно'],['quarterly','Раз в квартал (каждые 3 месяца)'],['yearly','Раз в год (каждые 12 месяцев)']];
   const frequencyLabel=f=>frequencyOpts.find(x=>x[0]===f)?.[1]||'Ежемесячно';
   function frequencyOfArticle(a,month){const hist=Array.isArray(a?.frequencies)?a.frequencies:[];const valid=hist.filter(x=>x.from<=month).sort((x,y)=>y.from.localeCompare(x.from));return valid[0]?.frequency||'monthly';}
-  const catChoices=()=>fiUnique([...EXP_CATEGORIES,...fiDict('category',state.review).map(x=>x.name),...rows().map(x=>x.category).filter(Boolean)]);
+  const catChoices=()=>fiDict('category',state.review).map(x=>x.name);
   const catSuggest=()=>'<datalist id="fb-en-cat-list">'+catChoices().map(x=>'<option value="'+esc(x)+'"></option>').join('')+'</datalist>';
   const value=v=>String(v||'').trim().replace(',','.');
   const goodAmount=v=>/^\d+(?:\.\d{1,2})?$/.test(v)&&Number.isFinite(Number(v))&&Number(v)<=100000000;
   async function saveAction(action,item){return rpc('app_balance_fb_write',{p_token:TOKEN,p_action:action,p_item:item});}
   function newArticle(){const html=field('Название','fb-n','text','','required maxlength="160" list="fj-article-list"')+'<datalist id="fj-article-list">'+fiDict('article',state.review).map(x=>'<option value="'+esc(x.name)+'"></option>').join('')+'</datalist>'+
-    field('Категория','fb-cat-new','text','Прочее','list="fb-en-cat-list" required maxlength="80"')+catSuggest()+
+    field('Категория','fb-cat-new','text','','list="fb-en-cat-list" required maxlength="80"')+catSuggest()+
     select('Тип статьи','fb-kind','fixed',kindOpts)+select('Периодичность','fb-frequency','monthly',frequencyOpts)+field('Сумма за один платёж, BYN (для постоянной)','fb-s','text','','inputmode="decimal"')+
     field('Число оплаты в месяце','fb-d','number',5,'required min="1" max="31"')+select('Юрлицо','fb-e','',legalOpts)+select('Филиал','fb-u','',unitOpts);
     const overlay=dlg('Новая статья','Квартальные и годовые расходы появляются только в месяцы очередной оплаты. Отсчёт начинается с выбранного месяца.',html,'Добавить',async form=>{
       const name=form.querySelector('#fb-n').value.trim(),kind=form.querySelector('#fb-kind').value,frequency=form.querySelector('#fb-frequency').value,
         amount=value(form.querySelector('#fb-s').value),day=form.querySelector('#fb-d').value,legal=form.querySelector('#fb-e').value;
       const category=form.querySelector('#fb-cat-new').value.trim();
+      if(fkArchiveConflict('article',name)||fkArchiveConflict('category',category)){toast('Это значение удалено из справочника. Восстановите его или выберите другое.',true);return false;}
       if(!name||!legal||!category||category.length>80||!(+day>=1&&+day<=31)||(kind==='fixed'&&!goodAmount(amount))){toast('Проверьте название, сумму, день оплаты и юрлицо',true);return false;}
       await saveAction('add',{name,kind,amount:kind==='fixed'?amount:null,day,legal_entity:legal,unit:form.querySelector('#fb-u').value,category,period:state.period,frequency});toast('Статья добавлена');
     });
     const f=overlay.querySelector('#fb-em-form'),kind=f.querySelector('#fb-kind'),moneyField=f.querySelector('#fb-s').closest('label');
-    const update=()=>{moneyField.hidden=kind.value==='var';};kind.onchange=update;update();
+    const update=()=>{moneyField.hidden=kind.value==='var';};kind.onchange=update;update();f.querySelector('#fb-n').addEventListener('change',e=>{const a=fiDict('article',state.review).find(x=>x.name===e.target.value);if(a?.category&&catChoices().includes(a.category))f.querySelector('#fb-cat-new').value=a.category;});
   }
   function editArticle(x){const html=field('Название','fb-n','text',x.name,'required maxlength="160"')+
     field('Категория','fb-cat-edit','text',x.category||'Прочее','list="fb-en-cat-list" required maxlength="80"')+catSuggest()+
@@ -6945,6 +6985,7 @@ async function renderBalance(body){
     const overlay=dlg('Изменить статью','Периодичность и сумма меняются с выбранного месяца. Прошлые и подтверждённые оплаты сохраняются.',html,'Сохранить',async f=>{
       const name=f.querySelector('#fb-n').value.trim(),legal=f.querySelector('#fb-e').value,day=f.querySelector('#fb-d').value;
       const category=f.querySelector('#fb-cat-edit').value.trim();
+      if(fkArchiveConflict('article',name,x.name)||fkArchiveConflict('category',category,x.category)){toast('Это значение удалено из справочника. Восстановите его или выберите другое.',true);return false;}
       if(!name||!legal||!category||category.length>80||!(+day>=1&&+day<=31)){toast('Укажите название, категорию, юрлицо и день оплаты',true);return false;}
       const item={id:x.id,name,day,kind:x.kind,category,legal_entity:legal,unit:f.querySelector('#fb-u').value,frequency:f.querySelector('#fb-frequency').value,frequency_from:f.querySelector('#fb-frequency-from').value};
       if(x.kind==='fixed'){const amount=value(f.querySelector('#fb-s').value);if(!goodAmount(amount)){toast('Введите корректную сумму',true);return false;}
@@ -6955,20 +6996,12 @@ async function renderBalance(body){
       }
       await saveAction('edit',item);toast('Изменения сохранены');
     });
-    if(isOwner){
-      const actions=overlay.querySelector('.fb-em-modal-actions');
-      const remove=document.createElement('button');remove.type='button';remove.className='fb-action fb-en-danger';
-      remove.textContent='Убрать с этого месяца';actions.prepend(remove);
-      remove.onclick=()=>{closeModal(overlay);
-        dlg('Прекратить статью с '+monthTitle(state.period),
-          'Статья не будет показываться и учитываться начиная с выбранного месяца. Прошлые месяцы и уже оплаченные суммы останутся неизменными.',
-          '<p class="fb-em-muted">'+esc(expTitle(x))+' · '+esc(E[x.legal_entity]||'')+'</p>',
-          'Убрать статью',async()=>{
-            await saveAction('stop',{id:x.id,period:state.period});
-            expView.selected.delete(String(x.id));toast('Статья убрана с '+monthTitle(state.period));
-          });
-      };
-    }
+    if(isOwner){const actions=overlay.querySelector('.fb-em-modal-actions');const remove=document.createElement('button');remove.type='button';remove.className='fb-action fb-en-danger';remove.textContent='Удалить';actions.prepend(remove);remove.onclick=()=>{closeModal(overlay);deleteArticle(x);};}
+  }
+  function deleteArticle(x){if(!isOwner)return;const period=state.period,linked=fiLinkedArticle(x.id);
+    const choices=linked?[['all','Удалить утверждённую разовую операцию']]:[['month','Только за '+monthTitle(period)],['future','С '+monthTitle(period)+' и на будущее'],['all','Полностью, за все месяцы']];
+    const html=`<div class="fk-delete-details"><b>${esc(x.name)}</b><span>${money(x.amount)} · ${esc(monthTitle(period))}</span></div>${select('Период удаления','fk-delete-scope',choices[0][0],choices)}<label class="fb-em-check"><input type="checkbox" id="fk-delete-confirm" required> Подтверждаю удаление расхода и связанных отметок оплаты в выбранном периоде.</label>`;
+    dlg('Удалить расход','Расход и оплаты в выбранном периоде перестанут влиять на Баланс. Связанные банковские строки вернутся на проверку. История других статей не изменится.',html,'Удалить',async form=>{await rpc('app_balance_fk_delete',{p_token:TOKEN,p_id:x.id,p_period:period,p_scope:form.querySelector('#fk-delete-scope').value});expView.selected.delete(String(x.id));toast('Расход удалён из выбранного периода');});
   }
   function payArticle(x,period){const amount=x.amount==null?'':num(x.amount,2).replace(/\s/g,'').replace(',','.');
     const html=field('Фактическая сумма, BYN','fb-amount','text',amount,'required inputmode="decimal"')+
@@ -7204,8 +7237,8 @@ async function renderBalance(body){
       <h4>Подтвердить расход</h4><p>${esc(description)}</p><div class="fb-fd-save-status" id="fb-fd-import-message" role="alert" hidden></div>
       <label>Статья в FAD<select id="fb-eu-target">${euOpts([['','Создать новую статью'],...possible.map(a=>[a.id,a.name+' · '+(U[a.unit]||'Все филиалы')])],choice)}</select></label>
       <div class="fb-eu-form-grid">
-       <label class="fb-eu-wide">Название статьи<input id="fb-eu-name" maxlength="160" required value="${esc(label)}"></label>
-       <label>Категория<select id="fb-eu-category" required>${euOpts([['','Выберите категорию'],...fiUnique([...BANK_CATEGORIES,...catChoices(),current?.category]).map(x=>[x,x])],current?.category||'')}</select></label>
+       <label class="fb-eu-wide">Название статьи<input id="fb-eu-name" list="fk-bank-names" maxlength="160" required value="${esc(label)}"><datalist id="fk-bank-names">${fiDict('article',state.review).map(x=>`<option value="${esc(x.name)}"></option>`).join('')}</datalist></label>
+       <label>Категория<input id="fb-eu-category" list="fk-bank-cats" maxlength="80" required value="${esc(current?.category||'')}"><datalist id="fk-bank-cats">${catChoices().map(x=>`<option value="${esc(x)}"></option>`).join('')}</datalist></label>
        <label>Тип<select id="fb-eu-kind" required>${euOpts([['','Выберите тип'],['fixed','Постоянный'],['var','Переменный']],current?.kind||'')}</select></label>
        <label>Периодичность<select id="fb-eu-frequency" required>${euOpts([['','Выберите периодичность'],...frequencyOpts],current?frequencyOfArticle(current,row.month):'')}</select></label>
        <label>Число оплаты<select id="fb-eu-day" required>${euOpts([['','Укажите число'],...Array.from({length:31},(_,i)=>[String(i+1),String(i+1)])],current?.due_day||'')}</select></label>
@@ -7229,6 +7262,7 @@ async function renderBalance(body){
       form.querySelector('#fb-eu-unit').value=x.unit||'all';
       form.querySelector('#fb-eu-entity').value=x.legal_entity;
     });
+    form.querySelector('#fb-eu-name').addEventListener('change',e=>{const a=fiDict('article',state.review).find(x=>x.name===e.target.value);if(a?.category&&catChoices().includes(a.category))form.querySelector('#fb-eu-category').value=a.category;});
     form.querySelector('#fb-eu-paid').onchange=e=>{form.querySelector('#fb-eu-date-wrap').hidden=!e.target.checked;};
     const message=form.querySelector('#fb-fd-import-message');
     const showImportError=text=>{message.hidden=false;message.textContent=text;message.classList.add('error');message.scrollIntoView({block:'nearest'});};
@@ -7240,6 +7274,7 @@ async function renderBalance(body){
         category:f['fb-eu-category'].value,kind:f['fb-eu-kind'].value,frequency:f['fb-eu-frequency'].value,day:f['fb-eu-day'].value,
         legal:f['fb-eu-entity'].value,unit:f['fb-eu-unit'].value==='all'?'':f['fb-eu-unit'].value,
         paid:f['fb-eu-paid'].checked,date:f['fb-eu-paid'].checked?f['fb-eu-date'].value:null};
+      const existing=possible.find(x=>x.id===item.article_id);if(fkArchiveConflict('article',item.name,existing?.name)||fkArchiveConflict('category',item.category,existing?.category)){showImportError('Название удалено из справочника. Восстановите его или выберите другое.');return;}
       if(!item.name||!item.category||!item.kind||!item.frequency||!item.day||!item.legal||!f['fb-eu-unit'].value||!f['fb-eu-checked'].checked){showImportError('Заполните название, категорию, тип, периодичность, день, юрлицо, филиал и подтверждение проверки на дубли.');return;}
       if(item.legal!==row.legal_entity){showImportError('Юрлицо должно совпадать с выпиской. Если в источнике ошибка — отклоните строку.');return;}
       if(item.paid&&!/^20\d{2}-\d{2}-\d{2}$/.test(item.date||'')){showImportError('Для отметки «Оплачено» укажите точную фактическую дату оплаты.');return;}
@@ -7337,6 +7372,7 @@ async function renderBalance(body){
       if(v.sheetOpen)requestAnimationFrame(()=>el('fb-en-expenses')?.querySelector('.fb-m-sheet-head button')?.focus());
       else requestAnimationFrame(()=>el('fb-en-expenses')?.querySelector('.fb-m-filters-trigger')?.focus());return;}
     if(Object.prototype.hasOwnProperty.call(d,'euImport')){if(isOwner)void openBankImport();return;}
+    if(Object.prototype.hasOwnProperty.call(d,'fkDictionary')){if(isOwner)void fkOpenDictionary();return;}
     if(d.enMobileAdd){if(isOwner)newArticle();return;}
     if(d.enChip){v.chip=d.enChip;v.collapse={};rerenderExpenseList();return;}
     if(d.enDay){const day=Number(d.enDay);v.day=v.day===day?null:day;v.collapse={};rerenderExpenseList();return;}
@@ -7355,6 +7391,7 @@ async function renderBalance(body){
       const id=d.id,period=d.month||state.period,article=rows().find(x=>x.id===id);
       if(!isOwner)return;
       if(!article){toast('Статья не найдена · обновите данные',true);return;}
+      if(cmd==='delete'){deleteArticle(article);return;}
       if(cmd==='fi-edit'||fiLinkedArticle(id)){void fiOpenArticle(id);return;}
       if(cmd==='edit')editArticle(article);
       if(cmd==='pay')payArticle(article,period);
