@@ -4985,6 +4985,10 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="month"]::-webk
 
 </style>
 
+<style id="fad-fp-refresh-style">
+.fad-fp-control{display:flex;align-items:center;gap:7px;margin-left:auto;min-width:0;color:#64786b;flex-shrink:0}.fad-fp-control #fadFpStatus{font-size:11px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fad-fp-control #fadFpRefresh{width:44px;height:44px;min-width:44px;padding:0;display:grid;place-items:center;border:1px solid #d5e1d9;border-radius:12px;background:#fff;color:#176849;cursor:pointer}.fad-fp-control #fadFpRefresh[data-tone=busy] svg{animation:fadFpSpin 1.2s linear infinite}.fad-fp-control #fadFpRefresh[data-tone=warn]{color:#93601d;border-color:#e5cda3}.fad-fp-control #fadFpRefresh:disabled{cursor:wait}.fad-fp-pull{position:fixed;top:78px;left:50%;transform:translateX(-50%);max-width:calc(100% - 24px);z-index:156;background:#fff;color:#176849;border:1px solid #cfe3d5;box-shadow:0 5px 16px #173e3026;border-radius:24px;padding:10px 15px;font-size:12px;font-weight:700;pointer-events:none;white-space:nowrap}.fad-fp-pull[hidden]{display:none!important}@keyframes fadFpSpin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.fad-fp-control #fadFpRefresh[data-tone=busy] svg{animation:none}}@media(max-width:767px){.fad-fp-control{gap:4px}.fad-fp-control #fadFpStatus{max-width:75px;font-size:10px;white-space:normal;line-height:1.15}.fad-fp-control #fadFpRefresh{width:44px;height:44px}}
+</style>
+
 <div id="root"></div>
 <div id="toast" class="toast"></div>
 
@@ -5003,7 +5007,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '24.11.2026-fo'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '25.11.2026-fp'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -5012,6 +5016,125 @@ let APP_REMOTE_VERSION = APP_VERSION;
 let APP_UPDATE_AVAILABLE = false;
 let APP_UPDATE_CHECKING = false;
 let APP_HIDDEN_AT = 0;
+/* FP · Unified data refresh. No new write RPCs; use existing authorized import endpoints. */
+const fadFpRequests=new Map();
+let fadFpBootToken=null, fadFpCycle=null, fadFpStatus={text:'Обновить данные',tone:'idle'}, fadFpRpcWrites=0;
+const fadFpMonth=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Minsk',year:'numeric',month:'2-digit'}).format(new Date());
+function fadFpReplyValid(url,p,j){
+ if(!j?.ok)return false;
+ if(url.endsWith('/fad-bonus-sync'))return j.saved===true&&j.month===p.month;
+ if(url.endsWith('/fad-balance-sync'))return j.payroll_review?.status!=='incomplete';
+ if(p.action==='admin_payroll_sync')return Number(j.days)>0&&Number(j.returned??j.covered)>0;
+ return (!j.service||PAYROLL_COMPATIBLE_SERVICE.test(String(j.service)))&&['updated','fresh'].includes(j.status)&&!j.advanceWarning&&!j.replacementWarning;
+}
+async function fadFpSyncFetch(url,options){
+ const p=JSON.parse(options.body), key=JSON.stringify([p.token,url,p.action||'',p.month||p.period,p.source||'',p.mode||'']);
+ const prior=fadFpRequests.get(key);
+ if(prior&&(prior.pending||Date.now()-prior.at<60000))return (await prior.promise).clone();
+ const entry={pending:true,at:0,promise:null};
+ entry.promise=(async()=>{
+   try{const r=await fetch(url,options);const j=await r.clone().json().catch(()=>null);
+     if(r.ok&&fadFpReplyValid(url,p,j)){entry.at=Date.now();}else if(fadFpRequests.get(key)===entry)fadFpRequests.delete(key);
+     return r;
+   }catch(e){if(fadFpRequests.get(key)===entry)fadFpRequests.delete(key);throw e;}
+   finally{entry.pending=false;}
+ })();
+ fadFpRequests.set(key,entry);
+ for(const [k,v] of fadFpRequests)if(!v.pending&&Date.now()-v.at>60000)fadFpRequests.delete(k);
+ return (await entry.promise).clone();
+}
+function fadFpSetStatus(text,tone='idle',details=''){
+ fadFpStatus={text,tone,details};fadFpPaintStatus();
+}
+function fadFpPaintStatus(){
+ const b=document.getElementById('fadFpRefresh'),label=document.getElementById('fadFpStatus');
+ if(!b||!label)return;
+ b.dataset.tone=fadFpStatus.tone;b.disabled=fadFpStatus.tone==='busy';
+ b.title=fadFpStatus.text+(fadFpStatus.details?' · '+fadFpStatus.details:'');b.setAttribute('aria-label',b.title);
+ label.textContent=fadFpStatus.text;label.title=b.title;
+ const old=document.getElementById('refreshBtn');if(old)old.disabled=b.disabled;
+}
+function fadFpUnsafe(){
+ return appHasUnsavedWork()||fadFpRpcWrites>0||REPORT_SAVE_QUEUES.size>0||
+  (typeof EQUIPMENT_BUSY!=='undefined'&&EQUIPMENT_BUSY)||
+  (typeof BONUS_FORECAST_HISTORY!=='undefined'&&(BONUS_FORECAST_HISTORY.busy||BONUS_FORECAST_HISTORY.reviewBusy))||
+  !!document.querySelector('.fad-global-datepicker,.fad-mobile-more-overlay:not([hidden]),.fad-sidebar-drawer-open,#tabbody .payroll [data-payroll-sync]:disabled,#tabbody .adpay-head [data-action="sync"]:disabled');
+}
+async function fadFpImport(job,token,month,force){
+ const payload=job.id==='plan'?{mode:'sync',token,month}:job.id==='balance'?{token,source:'impulse',month,mode:'sync'}:job.id==='admin'?{action:'admin_payroll_sync',token,period:month,mode:'sync',force:true}:{token,period:month,force};
+ const url=SUPABASE_URL+'/functions/v1/'+job.endpoint;
+ const r=await fadFpSyncFetch(url,{method:'POST',headers:{'Content-Type':'application/json',apikey:SUPABASE_ANON_KEY,Authorization:'Bearer '+SUPABASE_ANON_KEY},body:JSON.stringify(payload),signal:AbortSignal.timeout(120000)});
+ const j=await r.json().catch(()=>null);
+ if(!r.ok||!j?.ok)throw Error(String(j?.error||j?.message||'HTTP '+r.status).slice(0,120));
+ if(!fadFpReplyValid(url,payload,j)){
+   if(job.id==='trainer'&&j.status==='running')throw Error('импорт уже выполняется; откройте зарплаты для проверки');
+   throw Error('обновление подтверждено не полностью');
+ }
+ if(job.id==='admin'&&(j.unmapped?.length||j.notReturned?.length||j.warnings?.length||j.advanceWarnings?.length))throw Error('часть данных требует сверки');
+}
+function fadFpJobs(s){
+ const owner=s?.role==='owner',out=[];
+ if(owner)out.push({id:'plan',endpoint:'fad-bonus-sync',label:'План'});
+ if(owner||s?.payrollAccess===true)out.push({id:'trainer',endpoint:'fad-payroll-sync',label:'Зарплата тренеров'});
+ if(owner||s?.adminPayrollAccess===true)out.push({id:'admin',endpoint:'fad-payroll-sync',label:'Зарплата администраторов'});
+ if(owner)out.push({id:'balance',endpoint:'fad-balance-sync',label:'Баланс'});
+ return out;
+}
+async function fadFpRefresh(reason='manual',redraw){
+ if(!TOKEN||!session)return;
+ if(fadFpCycle)return fadFpCycle;
+ if(reason!=='entry'&&fadFpUnsafe()){toast('Сначала завершите редактирование или сохранение данных',true);return;}
+ const token=TOKEN,login=session.login,month=fadFpMonth(),jobs=fadFpJobs(session);
+ const live=()=>TOKEN===token&&session?.login===login;
+ fadFpSetStatus('Обновляем данные…','busy');
+ const work=(async()=>{
+   const errors=[];
+   // Import sequentially to avoid simultaneous writes to financial/payroll source tables.
+   for(let i=0;i<jobs.length;i++){
+     if(!live())return;
+     const job=jobs[i];fadFpSetStatus('Impulse · '+(i+1)+'/'+jobs.length,'busy',job.label);
+     try{await fadFpImport(job,token,month,reason!=='entry');}catch(e){errors.push(job.label+': '+String(e?.message||e).slice(0,150));}
+   }
+   if(!live())return;
+   fadFpSetStatus('Данные FAD…','busy');
+   if(session.role!=='trainer'){
+     try{await loadReports(true);if(!live())return;ALL_REPORTS=null;}catch(e){errors.push('Отчёты: '+String(e?.message||e).slice(0,120));}
+     try{const t=await apiListTeam();if(!live())return;TEAM=t;}catch(e){errors.push('Сотрудники: '+String(e?.message||e).slice(0,120));}
+   }
+   if(!live())return;
+   // Other views read their own server snapshots when opened. Don't instantiate hidden forms.
+   if(typeof BONUS_FORECAST_HISTORY!=='undefined'&&!BONUS_FORECAST_HISTORY.busy){BONUS_FORECAST_HISTORY.period='';BONUS_FORECAST_HISTORY.scope='';BONUS_FORECAST_HISTORY.data=null;BONUS_FORECAST_HISTORY.seq++;BONUS_FORECAST_HISTORY.loading=false;}
+   void fadRefreshBalanceBadge();
+   let deferred=fadFpUnsafe();
+   if(!deferred&&redraw){try{deferred=(await redraw())===false;}catch(e){errors.push('Экран: '+String(e?.message||e).slice(0,120));}}
+   if(!live())return;
+   const stamp=new Intl.DateTimeFormat('ru-RU',{timeZone:'Europe/Minsk',hour:'2-digit',minute:'2-digit'}).format(new Date());
+   if(errors.length){fadFpSetStatus('Частичное обновление','warn',errors.join(' · ')+(deferred?' · экран не перерисован':''));toast('Не всё обновилось: '+errors.join(' · ').slice(0,220),true);}
+   else if(deferred){fadFpSetStatus('Данные получены','warn','Экран не обновлён: открыта форма или идёт сохранение');if(reason!=='entry')toast('Данные получены. Экран сохранён, чтобы не потерять изменения.');}
+   else{fadFpSetStatus('Обновлено · '+stamp,'ok',jobs.length?'ImpulseCRM и FAD, текущий месяц':'Данные FAD из Supabase');if(reason!=='entry')toast(jobs.length?'Данные FAD и ImpulseCRM обновлены':'Данные FAD обновлены');}
+ })().catch(e=>{if(live())fadFpSetStatus('Ошибка обновления','warn',String(e?.message||e));});
+ fadFpCycle=work;
+ try{await work;}finally{if(fadFpCycle===work)fadFpCycle=null;}
+}
+function fadFpInstallPull(main,refresh){
+ let start=null,armed=false,dy=0;
+ const indicator=document.createElement('div');indicator.className='fad-fp-pull';indicator.hidden=true;indicator.setAttribute('aria-hidden','true');main.prepend(indicator);
+ const reset=()=>{start=null;armed=false;dy=0;indicator.hidden=true;};
+ const down=e=>{
+   reset();if(!matchMedia('(max-width:767px)').matches||e.touches.length!==1||main.scrollTop>2||fadFpCycle||fadFpUnsafe())return;
+   const t=e.target;if(t.closest('input,textarea,select,button,a,[contenteditable],.fad-fo-directions,.fad-mobile-more-overlay'))return;
+   for(let n=t;n&&n!==main;n=n.parentElement){const s=getComputedStyle(n);if((/(auto|scroll)/.test(s.overflowY)&&n.scrollHeight>n.clientHeight+2)||(/(auto|scroll)/.test(s.overflowX)&&n.scrollWidth>n.clientWidth+2))return;}
+   start={x:e.touches[0].clientX,y:e.touches[0].clientY};
+ };
+ const move=e=>{if(!start||e.touches.length!==1)return reset();const t=e.touches[0],x=t.clientX-start.x;dy=t.clientY-start.y;
+   if(!armed&&(Math.abs(x)>Math.max(12,dy*.75)||dy< -8||main.scrollTop>2))return reset();
+   if(dy>12){armed=true;if(e.cancelable)e.preventDefault();indicator.hidden=false;indicator.textContent=dy>=80?'Отпустите для обновления':'Потяните вниз для обновления';}
+ };
+ const end=()=>{const fire=armed&&dy>=80;reset();if(fire)void refresh();};
+ main.addEventListener('touchstart',down,{passive:true});main.addEventListener('touchmove',move,{passive:false});main.addEventListener('touchend',end,{passive:true});main.addEventListener('touchcancel',reset,{passive:true});
+ return ()=>{main.removeEventListener('touchstart',down);main.removeEventListener('touchmove',move);main.removeEventListener('touchend',end);main.removeEventListener('touchcancel',reset);indicator.remove();};
+}
+
 let APP_REPORT_UNSAVED_CHECK = ()=>false;
 const APP_DIRTY_REASONS = new Set();
 
@@ -5516,10 +5639,12 @@ function exportAuditExcel(rows,fromDate,toDate,login){
 }
 
 async function rpc(fn, args){
-  const {data, error} = await sb.rpc(fn, args || {});
+  const writing=/(?:save|set_|delete|remove|update|insert|create|approve|replace|reset|write|decid|confirm|pay_|import|archive|restore|assign|mutat|patch|transfer|submit)/i.test(fn);
+  if(writing)fadFpRpcWrites++;
+  try{const {data, error} = await sb.rpc(fn, args || {});
   if(error) throw error;
   auditRpcSuccess(fn,args||{},data);
-  return data;
+  return data;}finally{if(writing)fadFpRpcWrites--;}
 }
 let forbiddenCheckPromise=null;
 function isForbiddenErr(e){
@@ -5568,7 +5693,7 @@ async function doLogout(){
   }
   try{ if(TOKEN) await auditAction('Выход из системы','auth','',{}); }catch(e){}
   try{ if(TOKEN) await rpc('app_logout', {p_token:TOKEN}); }catch(e){}
-  TOKEN = null; session = null; REPORTS = null; ALL_REPORTS = null;
+  TOKEN = null; session = null; REPORTS = null; ALL_REPORTS = null; fadFpBootToken=null;fadFpCycle=null;fadFpRequests.clear();fadFpStatus={text:'Обновить данные',tone:'idle'};
   try{ sessionStorage.removeItem('sess'); }catch(e){}
   boot();
 }
@@ -5577,7 +5702,7 @@ async function doLogout(){
 let REPORTS = null;
 let ALL_REPORTS = null;
 async function loadReports(force){
-  if(REPORTS === null || force) REPORTS = await rpc('app_list_reports', {p_token:TOKEN}) || [];
+  if(REPORTS === null || force){const token=TOKEN;const data=await rpc('app_list_reports', {p_token:token}) || [];if(TOKEN!==token)throw Error('Сессия изменилась');REPORTS=data;}
   return REPORTS;
 }
 async function loadAllReports(force){
@@ -6220,6 +6345,7 @@ function renderRoleUI(tabs){
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16 M4 12h16 M4 18h16"/></svg>
         </button>
         <div class="fad-main-heading"><div class="fad-main-eyebrow">${session?.role==='trainer'?'FLEXICO · КОМАНДА':'FLEXICO · АДМИНИСТРАТОРЫ'}</div><h1 id="fadCurrentTitle"></h1></div>
+        <div class="fad-fp-control"><span id="fadFpStatus" role="status" aria-live="polite"></span><button id="fadFpRefresh" type="button" aria-label="Обновить данные" title="Обновить данные"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14-5L3 9m0-6v6h6m-5 4a8 8 0 0 0 14 5l3-3m0 6v-6h-6"/></svg></button></div>
         <span class="fad-main-version" title="Версия FAD">${APP_VERSION}</span>
       </div>
       <div class="wrap"><div id="tabbody" role="region" aria-label="Содержимое выбранной вкладки"></div></div>
@@ -6267,15 +6393,11 @@ function renderRoleUI(tabs){
   const fadVisualStop=fadInstallVisualSystem(root.querySelector('#fadMain'));
   fadSidebarCleanup=()=>{document.removeEventListener('keydown',onKeydown);fadVisualStop();};
   root.querySelector('#logout').onclick=()=>doLogout();
-  const _rb=root.querySelector('#refreshBtn'); if(_rb) _rb.onclick=()=>{
-    if(appHasUnsavedWork()){toast('Есть несохранённые изменения — сначала сохраните их',true);return;}
-    // Пока идёт получение зарплаты из Impulse, не пересоздаём активный экран:
-    // его собственный обработчик перечитает данные после успешного ответа.
-    if(root.querySelector('#tabbody .payroll [data-payroll-sync]:disabled, #tabbody .adpay .adpay-head [data-action="sync"]:disabled')){
-      toast('Идёт обновление зарплаты — дождитесь завершения',true);return;
-    }
-    if(currentTab>=0)show(currentTab); // Тот же рендерер/права, без перезагрузки страницы.
-  };
+  const _rb=root.querySelector('#refreshBtn');
+  const globalRefresh=()=>fadFpRefresh('manual',refreshVisible);
+  if(_rb)_rb.onclick=globalRefresh;
+  root.querySelector('#fadFpRefresh').onclick=globalRefresh;
+  fadFpPaintStatus();
   // Персональная последняя открытая основная вкладка. Не привязана к DOM-индексу:
   // при изменении ролей/порядка меню восстанавливаем только доступный стабильный key.
   // В приватном режиме и при запрете хранилища остаёмся на первой доступной вкладке.
@@ -6291,7 +6413,8 @@ function renderRoleUI(tabs){
       return false;
     }
     body.removeAttribute('data-bonus-token');
-    if(['replacements','employees','salaries','roles'].includes(tabs[i].key)||['replacements','employees','salaries','roles'].includes(tabs[currentTab]?.key)){
+    body._fpRefresh=null;
+    if((fadFpCycle&&currentTab!==i)||['replacements','employees','salaries','roles'].includes(tabs[i].key)||['replacements','employees','salaries','roles'].includes(tabs[currentTab]?.key)){
       const nextBody=document.createElement('div');nextBody.id='tabbody';
       nextBody.setAttribute('role','region');nextBody.setAttribute('aria-label','Содержимое выбранной вкладки');
       body.replaceWith(nextBody);body=nextBody;
@@ -6316,6 +6439,21 @@ function renderRoleUI(tabs){
     try{localStorage.setItem(activeTabStorageKey,key);}catch(_){}
     return true;
   }
+  async function refreshVisible(){
+    if(!shell.isConnected||currentTab<0||fadFpUnsafe())return false;
+    const main=root.querySelector('#fadMain'),top=main.scrollTop,key=tabs[currentTab].key;
+    const hook=body._fpRefresh;
+    if(typeof hook==='function'){const result=await hook();return result!==false;}
+    const old=body,next=document.createElement('div');next.id='tabbody';next.dataset.activeTab=key;
+    next.setAttribute('role','region');next.setAttribute('aria-label','Содержимое выбранной вкладки');
+    if(key==='reports'){next._fpReportFilters={};for(const id of ['pick','stf','stfP','pfrom','pto']){const el=old.querySelector('#'+id);if(el)next._fpReportFilters[id]=el.value;}}
+    old.replaceWith(next);body=next;
+    await tabs[currentTab].render(next);
+    if(next.isConnected&&next.dataset.activeTab===key)main.scrollTop=top;
+    return true;
+  }
+  const stopPull=fadFpInstallPull(root.querySelector('#fadMain'),()=>fadFpRefresh('pull',refreshVisible));
+  const oldFpCleanup=fadSidebarCleanup;fadSidebarCleanup=()=>{stopPull();oldFpCleanup?.();};
   renderNav(tabs,nav,show);
   /* Mobile route surfaces are presentation-only. Real permissions remain in tabs/show(). */
   const mobileNav=root.querySelector('#fadMobileNav');
@@ -6355,12 +6493,14 @@ function renderRoleUI(tabs){
   const initial=reportRoute>=0?reportRoute:restored>=0?restored:fadOrderedNavItems().map(item=>tabs.findIndex(t=>t.key===item.id)).find(i=>i>=0);
   if(initial!==undefined)show(initial);
   else {root.querySelector('#fadCurrentTitle').textContent='Нет доступных разделов';body.innerHTML='<div class="empty">Для пользователя нет доступных разделов.</div>';}
+  if(TOKEN&&fadFpBootToken!==TOKEN){fadFpBootToken=TOKEN;setTimeout(()=>{if(shell.isConnected)void fadFpRefresh('entry',refreshVisible);},0);}
+
 }
 
 // Refresh visible figures automatically for every role, without touching ImpulseCRM.
 // No overlapping refreshes; existing render guard discards outdated snapshots.
 setInterval(()=>{
-  if(document.hidden||!session||appHasUnsavedWork())return;
+  if(document.hidden||!session||fadFpCycle||appHasUnsavedWork())return;
   const panel=document.getElementById('tabbody');
   if(!panel||!panel.dataset.bonusToken||!panel.querySelector('.bonus-page'))return;
   if(panel.querySelector('input[data-bp-plan]:focus')||panel.querySelector('button.bp-toggle:focus'))return;
@@ -6848,9 +6988,9 @@ async function renderBalance(body){
     finally{state.busy=false;if(live())render();}
   }
   async function refreshExternal(){if(!isOwner||state.busy)return;state.busy=true;render();
-    try{const response=await fetch(SUPABASE_URL+'/functions/v1/fad-balance-sync',{
+    try{const response=await fadFpSyncFetch(SUPABASE_URL+'/functions/v1/fad-balance-sync',{
       method:'POST',headers:{'Content-Type':'application/json',apikey:SUPABASE_ANON_KEY,Authorization:'Bearer '+SUPABASE_ANON_KEY},
-      body:JSON.stringify({token:TOKEN,source:'impulse',month:state.period,mode:'sync'})});
+      body:JSON.stringify({token:TOKEN,source:'impulse',month:state.period,mode:'sync'}),signal:AbortSignal.timeout(120000)});
       const j=await response.json().catch(()=>({}));if(!response.ok||!j.ok)throw Error(String(j.error||'Ошибка импорта ImpulseCRM'));
       toast('Выручка обновлена. Расходы направлены на проверку.');
       if(j.payroll_review?.status==='incomplete')setTimeout(()=>toast('⚠ Журнал выплат не полностью прочитан. Повторите обновление или проверьте ImpulseCRM.',true),2800);
@@ -7485,6 +7625,7 @@ async function renderBalance(body){
     if(key){v[key]=t.value;v.collapse={};rerenderExpenseList();}
   });
 
+  body._fpRefresh=async()=>{if(!live()||state.busy||fiBusy)return false;await load();return state.status==='ok';};
   await load();
 }
 
@@ -8231,6 +8372,7 @@ async function renderAllReports(body){
     wireDayCards(alllist,()=>renderAllReports(body),all); wireEdit(alllist);
   }
   const pfrom=body.querySelector('#pfrom'), pto=body.querySelector('#pto'), periodsum=body.querySelector('#periodsum');
+  if(body._fpReportFilters){for(const [id,value] of Object.entries(body._fpReportFilters)){const el=body.querySelector('#'+id);if(!el)continue;if(el.type==='date'&&((el.min&&value<el.min)||(el.max&&value>el.max)))continue;if(el.tagName==='SELECT'&&![...el.options].some(o=>o.value===value))continue;el.value=value;}delete body._fpReportFilters;}
   const reportDates=mountFadReportDateSelectors(body,pick,pfrom,pto);
   function showPeriod(){
     reportDates.sync();
@@ -8992,7 +9134,7 @@ function bindPayrollSync(page, refresh){
     const current=()=>page.isConnected&&period===month;
     const work=(async()=>{
       try{
-        const response=await fetch(SUPABASE_URL+"/functions/v1/fad-payroll-sync",{
+        const response=await fadFpSyncFetch(SUPABASE_URL+"/functions/v1/fad-payroll-sync",{
           method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+SUPABASE_ANON_KEY},
           body:JSON.stringify({token:TOKEN,period:month,force}),signal:AbortSignal.timeout(115000),
         });
@@ -9782,7 +9924,7 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
           ", баланс "+payrollPaymentMoney(row.imported_advance)+" BYN)").join("; ")+". Для зарплаты использован журнал «Баланс сотрудников»." :
         (state.updated ? "" : "Авансы загружаются из ImpulseCRM вместе с начислениями."));
       render();
-      if(autoSync)void syncControl.run();
+      if(autoSync&&!(fadFpCycle&&state.period===fadFpMonth()))void syncControl.run();
       return true;
     }catch(error){
       if (!page.isConnected || id !== state.ticket) return;
@@ -10119,6 +10261,7 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
       }
     }
   };
+  host._fpRefresh=async()=>{if(!page.isConnected||state.busy||state.loading)return false;return await load(false);};
   void load();
 }
 
@@ -11715,10 +11858,11 @@ async function renderSalaries(body){
     ${canAdmins?`<button type="button" class="subtab${SALARIES_VIEW==='admin'?' on':''}" data-salary="admin" role="tab" aria-selected="${SALARIES_VIEW==='admin'}">Зарплата администраторов</button>`:''}
   </div><div id="salaryPanel"></div>`;
   const panel=body.querySelector('#salaryPanel');
+  body._fpRefresh=()=>typeof panel._fpRefresh==='function'?panel._fpRefresh():false;
   let request=0;
   async function draw(){
     const ticket=++request,view=SALARIES_VIEW;
-    panel.replaceChildren();
+    panel._fpRefresh=null;panel.replaceChildren();
     if(view==='admin'){
       if(!canAdmins){panel.innerHTML='<div class="empty">Нет доступа к зарплате администраторов.</div>';return;}
       renderAdminPayroll(panel);return;
@@ -15227,7 +15371,7 @@ async function renderBonusDashboard(body){
       try{
         const currentMonth=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Minsk',year:'numeric',month:'2-digit'}).format(new Date());
         if(model.owner&&model.period===currentMonth){
-          const response=await fetch(SUPABASE_URL+'/functions/v1/fad-bonus-sync',{
+          const response=await fadFpSyncFetch(SUPABASE_URL+'/functions/v1/fad-bonus-sync',{
             method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON_KEY,'apikey':SUPABASE_ANON_KEY},
             body:JSON.stringify({mode:'sync',token:TOKEN,month:model.period}),
             signal:AbortSignal.timeout(120000)
@@ -15735,7 +15879,7 @@ function renderAdminPayroll(host){
       state.open=null;draw();
       // У тренеров первичная синхронизация запускается при открытии. Здесь
       // автоматически получаем часы, если по выбранному месяцу снимка ещё нет.
-      if(isPayrollOwner&&!state.busy&&!state.autoAttempted.has(pageMonth)&&!payload.hours_updated_at){
+      if(isPayrollOwner&&!state.busy&&!state.autoAttempted.has(pageMonth)&&!payload.hours_updated_at&&!(fadFpCycle&&pageMonth===fadFpMonth())){
         state.autoAttempted.add(pageMonth);
         void doSync(true);
       }
@@ -15795,7 +15939,7 @@ function renderAdminPayroll(host){
   }
   async function edge(mode,month){
     let res;
-    try{res=await fetch(SUPABASE_URL+'/functions/v1/fad-payroll-sync',{
+    try{res=await fadFpSyncFetch(SUPABASE_URL+'/functions/v1/fad-payroll-sync',{
       method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON_KEY},
       body:JSON.stringify({action:'admin_payroll_sync',token:TOKEN,period:month,mode,force:true}),
       signal:AbortSignal.timeout(115000)
@@ -15958,6 +16102,7 @@ function renderAdminPayroll(host){
       return;
     }
   });
+  host._fpRefresh=async()=>{if(!page.isConnected||state.busy||state.saving.size||state.daySaving.size||state.resetting)return false;await load();return !!state.model;};
   void load();
 }
 
