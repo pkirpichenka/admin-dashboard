@@ -4986,6 +4986,8 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="month"]::-webk
 </style>
 
 <style id="fad-fp-refresh-style">
+.fad-app-shell .fad-sidebar-actions{grid-template-columns:minmax(0,1fr)!important}.payroll [data-payroll-sync][hidden]{display:none!important}
+
 .fad-fp-control{display:flex;align-items:center;gap:7px;margin-left:auto;min-width:0;color:#64786b;flex-shrink:0}.fad-fp-control #fadFpStatus{font-size:11px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fad-fp-control #fadFpRefresh{width:44px;height:44px;min-width:44px;padding:0;display:grid;place-items:center;border:1px solid #d5e1d9;border-radius:12px;background:#fff;color:#176849;cursor:pointer}.fad-fp-control #fadFpRefresh[data-tone=busy] svg{animation:fadFpSpin 1.2s linear infinite}.fad-fp-control #fadFpRefresh[data-tone=warn]{color:#93601d;border-color:#e5cda3}.fad-fp-control #fadFpRefresh:disabled{cursor:wait}.fad-fp-pull{position:fixed;top:78px;left:50%;transform:translateX(-50%);max-width:calc(100% - 24px);z-index:156;background:#fff;color:#176849;border:1px solid #cfe3d5;box-shadow:0 5px 16px #173e3026;border-radius:24px;padding:10px 15px;font-size:12px;font-weight:700;pointer-events:none;white-space:nowrap}.fad-fp-pull[hidden]{display:none!important}@keyframes fadFpSpin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.fad-fp-control #fadFpRefresh[data-tone=busy] svg{animation:none}}@media(max-width:767px){.fad-fp-control{gap:4px}.fad-fp-control #fadFpStatus{max-width:75px;font-size:10px;white-space:normal;line-height:1.15}.fad-fp-control #fadFpRefresh{width:44px;height:44px}}
 </style>
 
@@ -5007,7 +5009,7 @@ const studioEntity = id => (SMAP[id]&&SMAP[id].entity)||'';
 const studioTag = id => `${sdot(id)}${studioName(id)}`;
 const studioAddr = id => SMAP[id]?SMAP[id].address:(id||'—');
 const CUR = 'BYN'; // белорусский рубль
-const APP_VERSION = '25.11.2026-fp'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
+const APP_VERSION = '25.11.2026-fq'; try{ console.log('FAD version', APP_VERSION); }catch(e){}  // метка версии — видна в шапке, помогает проверить деплой
 
 
 const APP_UPDATE_INTERVAL_MS = 5*60*1000;
@@ -5018,6 +5020,7 @@ let APP_UPDATE_CHECKING = false;
 let APP_HIDDEN_AT = 0;
 /* FP · Unified data refresh. No new write RPCs; use existing authorized import endpoints. */
 const fadFpRequests=new Map();
+const fadFqTrainerResults=new Map();
 let fadFpBootToken=null, fadFpCycle=null, fadFpStatus={text:'Обновить данные',tone:'idle'}, fadFpRpcWrites=0;
 const fadFpMonth=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Minsk',year:'numeric',month:'2-digit'}).format(new Date());
 function fadFpReplyValid(url,p,j){
@@ -5025,7 +5028,7 @@ function fadFpReplyValid(url,p,j){
  if(url.endsWith('/fad-bonus-sync'))return j.saved===true&&j.month===p.month;
  if(url.endsWith('/fad-balance-sync'))return j.payroll_review?.status!=='incomplete';
  if(p.action==='admin_payroll_sync')return Number(j.days)>0&&Number(j.returned??j.covered)>0;
- return (!j.service||PAYROLL_COMPATIBLE_SERVICE.test(String(j.service)))&&['updated','fresh'].includes(j.status)&&!j.advanceWarning&&!j.replacementWarning;
+ return (!j.service||PAYROLL_COMPATIBLE_SERVICE.test(String(j.service)))&&['updated','fresh'].includes(j.status);
 }
 async function fadFpSyncFetch(url,options){
  const p=JSON.parse(options.body), key=JSON.stringify([p.token,url,p.action||'',p.month||p.period,p.source||'',p.mode||'']);
@@ -5055,22 +5058,47 @@ function fadFpPaintStatus(){
  const old=document.getElementById('refreshBtn');if(old)old.disabled=b.disabled;
 }
 function fadFpUnsafe(){
- return appHasUnsavedWork()||fadFpRpcWrites>0||REPORT_SAVE_QUEUES.size>0||
+ return appHasUnsavedWork()||fadFpRpcWrites>0||REPORT_SAVE_QUEUES.size>0||!!document.querySelector('#tabbody')?._fpBusy?.()||
   (typeof EQUIPMENT_BUSY!=='undefined'&&EQUIPMENT_BUSY)||
   (typeof BONUS_FORECAST_HISTORY!=='undefined'&&(BONUS_FORECAST_HISTORY.busy||BONUS_FORECAST_HISTORY.reviewBusy))||
   !!document.querySelector('.fad-global-datepicker,.fad-mobile-more-overlay:not([hidden]),.fad-sidebar-drawer-open,#tabbody .payroll [data-payroll-sync]:disabled,#tabbody .adpay-head [data-action="sync"]:disabled');
 }
+// FQ: a confirmed payroll import can contain reconciliation notices, not a failed write.
+function fadFqTrainerWarnings(j){
+ const out=[];
+ if(j.advanceWarning)out.push(PAYROLL_ADVANCE_WARNINGS[j.advanceWarning]||'Авансы требуют сверки ('+String(j.advanceWarning).slice(0,80)+')');
+ if(j.replacementWarning){const labels={impulse_replacement_key_denied:'ImpulseCRM отклонил доступ к журналу замен',impulse_replacement_endpoint_unavailable:'Журнал замен недоступен через API',impulse_replacement_rate_mismatch:'Начисления за замены требуют сверки со ставками'};out.push(labels[j.replacementWarning]||'Детализация замен требует сверки ('+String(j.replacementWarning).slice(0,80)+')');}
+ return out;
+}
 async function fadFpImport(job,token,month,force){
  const payload=job.id==='plan'?{mode:'sync',token,month}:job.id==='balance'?{token,source:'impulse',month,mode:'sync'}:job.id==='admin'?{action:'admin_payroll_sync',token,period:month,mode:'sync',force:true}:{token,period:month,force};
  const url=SUPABASE_URL+'/functions/v1/'+job.endpoint;
- const r=await fadFpSyncFetch(url,{method:'POST',headers:{'Content-Type':'application/json',apikey:SUPABASE_ANON_KEY,Authorization:'Bearer '+SUPABASE_ANON_KEY},body:JSON.stringify(payload),signal:AbortSignal.timeout(120000)});
- const j=await r.json().catch(()=>null);
- if(!r.ok||!j?.ok)throw Error(String(j?.error||j?.message||'HTTP '+r.status).slice(0,120));
+ let j,r;
+ for(let attempt=0;attempt<4;attempt++){
+   r=await fadFpSyncFetch(url,{method:'POST',headers:{'Content-Type':'application/json',apikey:SUPABASE_ANON_KEY,Authorization:'Bearer '+SUPABASE_ANON_KEY},body:JSON.stringify(payload),signal:AbortSignal.timeout(120000)});
+   j=await r.json().catch(()=>null);
+   if(!r.ok||!j?.ok)throw Error(String(j?.error||j?.message||'HTTP '+r.status).slice(0,120)+(j?.stage?' · этап: '+String(j.stage).slice(0,60):''));
+   if(job.id!=='trainer'||j.status!=='running'||attempt===3)break;
+   if(TOKEN!==token)throw Error('Сессия завершена');
+   await new Promise(resolve=>setTimeout(resolve,5000));
+   if(TOKEN!==token)throw Error('Сессия завершена');
+   payload.force=false;
+ }
  if(!fadFpReplyValid(url,payload,j)){
-   if(job.id==='trainer'&&j.status==='running')throw Error('импорт уже выполняется; откройте зарплаты для проверки');
-   throw Error('обновление подтверждено не полностью');
+   if(job.id==='trainer'){
+     if(j.status==='running')throw Error('Импорт ещё выполняется. Повторите обновление позже');
+     if(j.service&&!PAYROLL_COMPATIBLE_SERVICE.test(String(j.service)))throw Error('Несовместимая версия функции: '+String(j.service).slice(0,90));
+     throw Error('Сервер не подтвердил запись: '+String(j.status||'статус отсутствует').slice(0,90));
+   }
+   if(job.id==='balance'&&j.payroll_review?.status==='incomplete')throw Error('Журнал выплат прочитан не полностью');
+   throw Error('Сервер не подтвердил обновление: '+String(j.status||j.error||'неполный ответ').slice(0,90));
  }
  if(job.id==='admin'&&(j.unmapped?.length||j.notReturned?.length||j.warnings?.length||j.advanceWarnings?.length))throw Error('часть данных требует сверки');
+ if(job.id==='trainer'){
+   if(TOKEN===token)fadFqTrainerResults.set(month,j);
+   return fadFqTrainerWarnings(j);
+ }
+ return [];
 }
 function fadFpJobs(s){
  const owner=s?.role==='owner',out=[];
@@ -5086,14 +5114,19 @@ async function fadFpRefresh(reason='manual',redraw){
  if(reason!=='entry'&&fadFpUnsafe()){toast('Сначала завершите редактирование или сохранение данных',true);return;}
  const token=TOKEN,login=session.login,month=fadFpMonth(),jobs=fadFpJobs(session);
  const live=()=>TOKEN===token&&session?.login===login;
+ // A manual click also replaces the former per-tab historical import action.
+ const target=reason==='manual'?document.querySelector('#tabbody')?._fpTarget?.():null;
+ if(target&&/^20\d{2}-(0[1-9]|1[0-2])$/.test(target.month)&&target.month<month){
+   const job=jobs.find(j=>j.id===target.id);if(job)jobs.push({...job,month:target.month,label:job.label+' · '+target.month});
+ }
  fadFpSetStatus('Обновляем данные…','busy');
  const work=(async()=>{
-   const errors=[];
+   const errors=[],warnings=[];
    // Import sequentially to avoid simultaneous writes to financial/payroll source tables.
    for(let i=0;i<jobs.length;i++){
      if(!live())return;
      const job=jobs[i];fadFpSetStatus('Impulse · '+(i+1)+'/'+jobs.length,'busy',job.label);
-     try{await fadFpImport(job,token,month,reason!=='entry');}catch(e){errors.push(job.label+': '+String(e?.message||e).slice(0,150));}
+     try{const notes=await fadFpImport(job,token,job.month||month,reason!=='entry');for(const note of notes)warnings.push(job.label+': '+note);}catch(e){errors.push(job.label+': '+String(e?.message||e).slice(0,150));}
    }
    if(!live())return;
    fadFpSetStatus('Данные FAD…','busy');
@@ -5109,8 +5142,9 @@ async function fadFpRefresh(reason='manual',redraw){
    if(!deferred&&redraw){try{deferred=(await redraw())===false;}catch(e){errors.push('Экран: '+String(e?.message||e).slice(0,120));}}
    if(!live())return;
    const stamp=new Intl.DateTimeFormat('ru-RU',{timeZone:'Europe/Minsk',hour:'2-digit',minute:'2-digit'}).format(new Date());
-   if(errors.length){fadFpSetStatus('Частичное обновление','warn',errors.join(' · ')+(deferred?' · экран не перерисован':''));toast('Не всё обновилось: '+errors.join(' · ').slice(0,220),true);}
-   else if(deferred){fadFpSetStatus('Данные получены','warn','Экран не обновлён: открыта форма или идёт сохранение');if(reason!=='entry')toast('Данные получены. Экран сохранён, чтобы не потерять изменения.');}
+   if(errors.length){fadFpSetStatus('Частичное обновление','warn',[...errors,...warnings].join(' · ')+(deferred?' · экран не перерисован':''));toast('Не всё обновилось: '+errors.join(' · ').slice(0,220),true);}
+   else if(deferred){fadFpSetStatus('Данные получены','warn',['Экран не обновлён: открыта форма или идёт сохранение',...warnings].join(' · '));if(reason!=='entry')toast('Данные получены. Экран сохранён, чтобы не потерять изменения.');}
+   else if(warnings.length){fadFpSetStatus('Обновлено · сверка','warn','Обновлено '+stamp+' · '+warnings.join(' · '));if(reason!=='entry')toast('Данные обновлены. Зарплата тренеров: есть уточнения для сверки.');}
    else{fadFpSetStatus('Обновлено · '+stamp,'ok',jobs.length?'ImpulseCRM и FAD, текущий месяц':'Данные FAD из Supabase');if(reason!=='entry')toast(jobs.length?'Данные FAD и ImpulseCRM обновлены':'Данные FAD обновлены');}
  })().catch(e=>{if(live())fadFpSetStatus('Ошибка обновления','warn',String(e?.message||e));});
  fadFpCycle=work;
@@ -5693,7 +5727,7 @@ async function doLogout(){
   }
   try{ if(TOKEN) await auditAction('Выход из системы','auth','',{}); }catch(e){}
   try{ if(TOKEN) await rpc('app_logout', {p_token:TOKEN}); }catch(e){}
-  TOKEN = null; session = null; REPORTS = null; ALL_REPORTS = null; fadFpBootToken=null;fadFpCycle=null;fadFpRequests.clear();fadFpStatus={text:'Обновить данные',tone:'idle'};
+  TOKEN = null; session = null; REPORTS = null; ALL_REPORTS = null; fadFpBootToken=null;fadFpCycle=null;fadFpRequests.clear();fadFqTrainerResults.clear();fadFpStatus={text:'Обновить данные',tone:'idle'};
   try{ sessionStorage.removeItem('sess'); }catch(e){}
   boot();
 }
@@ -6053,7 +6087,7 @@ function header(){
     <div class="fad-sidebar-user">
       <div class="fad-sidebar-identity" title="${escapeHtml(name)}"><span class="fad-sidebar-avatar">${escapeHtml(initials)}</span>
       <div class="fad-sidebar-user-info"><strong>${escapeHtml(fadPersonName(session?.login,session?.name,true))}</strong><span>${escapeHtml(roleLabel())} ${pill}</span></div></div>
-      <div class="fad-sidebar-actions"><button class="btn btn-ghost btn-sm" id="refreshBtn" type="button">Обновить</button>
+      <div class="fad-sidebar-actions">
       <button class="btn btn-ghost btn-sm" id="logout" type="button">Выйти</button></div>
     </div>`;
 }
@@ -6413,7 +6447,7 @@ function renderRoleUI(tabs){
       return false;
     }
     body.removeAttribute('data-bonus-token');
-    body._fpRefresh=null;
+    body._fpRefresh=null;body._fpTarget=null;body._fpBusy=null;
     if((fadFpCycle&&currentTab!==i)||['replacements','employees','salaries','roles'].includes(tabs[i].key)||['replacements','employees','salaries','roles'].includes(tabs[currentTab]?.key)){
       const nextBody=document.createElement('div');nextBody.id='tabbody';
       nextBody.setAttribute('role','region');nextBody.setAttribute('aria-label','Содержимое выбранной вкладки');
@@ -6626,7 +6660,7 @@ async function renderBalance(body){
   }
   function toolbar(){return `<div class="fb-em-toolbar"><div class="fb-em-caption">Студии Flexico <span>Толбухина, 2 · Машерова, 11 · Куйбышева, 22</span></div>
     <div class="fb-em-tools">${dateButton()}
-    ${isOwner?`<button type="button" class="fb-action" id="fi-open" title="Ручное утверждение операций ImpulseCRM">На проверке${state.review?.count_pending?' · '+n(state.review.count_pending):''}</button><button type="button" class="fb-action" data-fk-dictionary>Справочники</button><button type="button" class="fb-action primary" id="fb-reload" ${state.busy?'disabled':''}>${state.busy?'Обновление…':'Обновить данные'}</button>`:''}</div></div>`;}
+    ${isOwner?`<button type="button" class="fb-action" id="fi-open" title="Ручное утверждение операций ImpulseCRM">На проверке${state.review?.count_pending?' · '+n(state.review.count_pending):''}</button><button type="button" class="fb-action" data-fk-dictionary>Справочники</button>`:''}</div></div>`;}
   function status(){const list=data().source_status||[];const imp=list.find(x=>x.source==='impulse')||{};
     const when=imp.last_success_at?new Date(imp.last_success_at).toLocaleString('ru-RU',{timeZone:'Europe/Minsk',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'нет загрузки';
     const coverage=data().stale===false?'полнота подтверждена':'данные неполные';
@@ -7625,6 +7659,7 @@ async function renderBalance(body){
     if(key){v[key]=t.value;v.collapse={};rerenderExpenseList();}
   });
 
+  body._fpTarget=()=>({id:'balance',month:state.period});
   body._fpRefresh=async()=>{if(!live()||state.busy||fiBusy)return false;await load();return state.status==='ok';};
   await load();
 }
@@ -9015,7 +9050,7 @@ function paytechMarker(message){
 function paytechRender({id,open='',updated='',period='',source='ImpulseCRM',syncWarning=false,details=[],notices=[],archiveCount=0,how=false,reset=false,syncButtonLabel='Обновить из Impulse'}){
   const esc=escapeHtml;
   const issueCount=notices.filter(n=>n.severity==='warning').length;
-  const chip=(key,content,cls='',right=false)=>`<div class="paytech-chip-wrap${right?' paytech-chip-wrap-right':''}"><button type="button" class="paytech-chip ${cls}" data-paytech-select="${key}" aria-expanded="${open===key}" aria-controls="paytech-${id}-${key}">${content}${key==='impulse'?paytechIcon('chevron'):''}</button>${open===key&&(key==='impulse'||key==='how')?`<div id="paytech-${id}-${key}" class="paytech-popover" role="region" aria-label="${key==='impulse'?'Состояние ImpulseCRM':'Порядок расчёта'}">${key==='impulse'?`<h3>Синхронизация ImpulseCRM</h3><dl><dt>Источник</dt><dd>${esc(source)}</dd><dt>Период</dt><dd>${esc(period||'—')}</dd><dt>Обновлено</dt><dd>${esc(updated||'Нет подтверждённого обновления')}</dd>${details.map(x=>`<dt>${esc(x.label)}</dt><dd>${esc(String(x.value))}</dd>`).join('')}</dl><p>${syncWarning?'Проверьте предупреждения: последний подтверждённый расчёт сохранён.':'Данные обновлены, доступные авансы сверены с ImpulseCRM.'}</p><button type="button" class="paytech-action" data-paytech-action="sync">${paytechIcon('refresh')} ${esc(syncButtonLabel)}</button>`:`<h3>Как считается</h3><ol><li>Расчёт предварительный: итог пересчитывается при любой правке.</li><li>Часы можно править отдельно за каждый день. Данные Impulse при этом не меняются.</li><li>Авансы загружаются из Impulse автоматически и вручную не правятся.</li><li>Нажмите на строку, чтобы увидеть смены и расчёт сотрудника.</li></ol>`}</div>`:''}</div>`;
+  const chip=(key,content,cls='',right=false)=>`<div class="paytech-chip-wrap${right?' paytech-chip-wrap-right':''}"><button type="button" class="paytech-chip ${cls}" data-paytech-select="${key}" aria-expanded="${open===key}" aria-controls="paytech-${id}-${key}">${content}${key==='impulse'?paytechIcon('chevron'):''}</button>${open===key&&(key==='impulse'||key==='how')?`<div id="paytech-${id}-${key}" class="paytech-popover" role="region" aria-label="${key==='impulse'?'Состояние ImpulseCRM':'Порядок расчёта'}">${key==='impulse'?`<h3>Синхронизация ImpulseCRM</h3><dl><dt>Источник</dt><dd>${esc(source)}</dd><dt>Период</dt><dd>${esc(period||'—')}</dd><dt>Обновлено</dt><dd>${esc(updated||'Нет подтверждённого обновления')}</dd>${details.map(x=>`<dt>${esc(x.label)}</dt><dd>${esc(String(x.value))}</dd>`).join('')}</dl><p>${syncWarning?'Проверьте предупреждения: последний подтверждённый расчёт сохранён.':'Данные обновлены, доступные авансы сверены с ImpulseCRM.'}</p><p class="paytech-refresh-hint">Для обновления используйте общую кнопку в шапке FAD.</p>`:`<h3>Как считается</h3><ol><li>Расчёт предварительный: итог пересчитывается при любой правке.</li><li>Часы можно править отдельно за каждый день. Данные Impulse при этом не меняются.</li><li>Авансы загружаются из Impulse автоматически и вручную не правятся.</li><li>Нажмите на строку, чтобы увидеть смены и расчёт сотрудника.</li></ol>`}</div>`:''}</div>`;
   const cards=notices.filter(n=>open==='archive'?n.kind==='archive':true);
   return `<div class="paytech-shell" data-paytech-shell="${id}"><div class="paytech-row">
     ${chip('impulse',`<span class="paytech-source-dot" aria-hidden="true"></span><span>Impulse · ${esc(updated||'нет данных')}</span>`,syncWarning?'paytech-chip-amber':'paytech-chip-ok')}
@@ -9023,7 +9058,7 @@ function paytechRender({id,open='',updated='',period='',source='ImpulseCRM',sync
     ${how?chip('how',paytechIcon('info')+'<span>Как считается</span>','paytech-chip-neutral',true):''}
     ${!how&&archiveCount?chip('archive',paytechIcon('archive')+`<span>Архив · ${archiveCount}</span>`,'paytech-chip-neutral',true):''}
     ${reset?'<span class="paytech-row-spacer"></span><button type="button" class="paytech-reset" data-paytech-action="reset">Сбросить все правки</button>':''}
-    </div>${open==='attention'||open==='archive'?`<section class="paytech-panel" id="paytech-${id}-${open}" aria-label="${open==='archive'?'Архивные тренеры':'Требует внимания'}"><div class="paytech-panel-head"><h3>${open==='archive'?'Архивные тренеры':'Требует внимания'}</h3><button type="button" class="paytech-collapse" data-paytech-action="collapse">Свернуть</button></div>${cards.length?`<div class="paytech-issues">${cards.map((n,index)=>`<article class="paytech-issue"><span class="paytech-issue-dot ${n.severity==='warning'?'is-warning':'is-info'}" aria-hidden="true"></span><div class="paytech-issue-body"><h4>${esc(n.title)}</h4><p>${esc(n.text||'')}</p>${n.employeeIds?.length?`<div class="paytech-tags">${n.employeeIds.map(e=>`<span>${esc(String(e))}</span>`).join('')}</div>`:''}${n.details?.length?`<div class="paytech-advance-details">${n.details.map(line=>`<div class="paytech-advance-item">${esc(String(line))}</div>`).join('')}</div>`:''}</div>${n.actionLabel?`<button type="button" class="paytech-action" data-paytech-notice="${notices.indexOf(n)}">${esc(n.actionLabel)}</button>`:''}</article>`).join('')}</div>`:'<p class="paytech-empty">Нет сообщений для проверки.</p>'}</section>`:''}</div>`;
+    </div>${open==='attention'||open==='archive'?`<section class="paytech-panel" id="paytech-${id}-${open}" aria-label="${open==='archive'?'Архивные тренеры':'Требует внимания'}"><div class="paytech-panel-head"><h3>${open==='archive'?'Архивные тренеры':'Требует внимания'}</h3><button type="button" class="paytech-collapse" data-paytech-action="collapse">Свернуть</button></div>${cards.length?`<div class="paytech-issues">${cards.map((n,index)=>`<article class="paytech-issue"><span class="paytech-issue-dot ${n.severity==='warning'?'is-warning':'is-info'}" aria-hidden="true"></span><div class="paytech-issue-body"><h4>${esc(n.title)}</h4><p>${esc(n.text||'')}</p>${n.employeeIds?.length?`<div class="paytech-tags">${n.employeeIds.map(e=>`<span>${esc(String(e))}</span>`).join('')}</div>`:''}${n.details?.length?`<div class="paytech-advance-details">${n.details.map(line=>`<div class="paytech-advance-item">${esc(String(line))}</div>`).join('')}</div>`:''}</div>${n.action==='sync'?'<small>Обновление — кнопкой в шапке FAD.</small>':n.actionLabel?`<button type="button" class="paytech-action" data-paytech-notice="${notices.indexOf(n)}">${esc(n.actionLabel)}</button>`:''}</article>`).join('')}</div>`:'<p class="paytech-empty">Нет сообщений для проверки.</p>'}</section>`:''}</div>`;
 }
 
 /* ================= Зарплата тренеров · экран ================= */
@@ -9176,6 +9211,7 @@ function bindPayrollSync(page, refresh){
           }
           if(current()){
             feedback("Данные тренеров успешно обновлены из ImpulseCRM.");
+            fadFqTrainerResults.set(month,result);
             page.dispatchEvent(new CustomEvent("paytech-sync-result",{detail:result}));
             const notices=[];
             if(Number(result.archivedCarried)>0){
@@ -9198,7 +9234,7 @@ function bindPayrollSync(page, refresh){
       }catch(error){
         const reason=error?.name==="TimeoutError"?"Превышено время ожидания (115 секунд)":
           error?.name==="AbortError"?"Запрос прерван":"Сетевая ошибка при обращении к fad-payroll-sync";
-        if(current())feedback(reason+". Последний сохранённый расчёт не изменён. Нажмите «Обновить из Impulse» ещё раз.",true);
+        if(current())feedback(reason+". Последний сохранённый расчёт не изменён. Повторите обновление общей кнопкой в шапке FAD.",true);
       }finally{
         pending.delete(month);
         if(page.isConnected&&period===month)trigger.disabled=false;
@@ -9243,7 +9279,7 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
             </div>
           </div>
         </div>
-        <button type="button" class="btn btn-primary" data-payroll-sync>Обновить из Impulse</button>
+        <button type="button" class="btn btn-primary" data-payroll-sync hidden aria-hidden="true" tabindex="-1">Обновить из Impulse</button>
       </div>
     </header>
     <div id="paytechTrainer" class="paytech-holder"></div>
@@ -9279,7 +9315,7 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
       <div class="payroll-drawer-body">
         <section class="payroll-section"><h3>Расчёт</h3><div id="payrollCalculation"></div></section>
         <section class="payroll-section"><h3>Авансы</h3><div id="payrollAdvances"></div>
-          <p class="payroll-hint">Авансы загружаются из раздела «Баланс сотрудников» ImpulseCRM. Для сверки прошлого месяца выберите его вверху и нажмите «Обновить из Impulse».</p>
+          <p class="payroll-hint">Авансы загружаются из раздела «Баланс сотрудников» ImpulseCRM. Для сверки прошлого месяца выберите его вверху и нажмите общую кнопку обновления в шапке FAD.</p>
         </section>
         <section class="payroll-section">
           <h3>Проведённые занятия <span class="payroll-view" role="group" aria-label="Детализация занятий и сообщения"></span></h3>
@@ -9907,6 +9943,7 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
           row.due=Math.max(0,Math.ceil(row.balance/5)*5);
         }
       }
+      if(fadFqTrainerResults.has(state.period))state.paytechResult=fadFqTrainerResults.get(state.period);
       state.rows = snapshot.rows;
       state.updated = snapshot.updated_at;
       state.source = snapshot.source;
@@ -9924,7 +9961,7 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
           ", баланс "+payrollPaymentMoney(row.imported_advance)+" BYN)").join("; ")+". Для зарплаты использован журнал «Баланс сотрудников»." :
         (state.updated ? "" : "Авансы загружаются из ImpulseCRM вместе с начислениями."));
       render();
-      if(autoSync&&!(fadFpCycle&&state.period===fadFpMonth()))void syncControl.run();
+      if(autoSync&&state.period===fadFpMonth()&&!fadFpCycle)void syncControl.run();
       return true;
     }catch(error){
       if (!page.isConnected || id !== state.ticket) return;
@@ -10261,6 +10298,7 @@ function renderTrainerPayroll(host, employees, openTrainerCard){
       }
     }
   };
+  host._fpTarget=()=>({id:"trainer",month:state.period});
   host._fpRefresh=async()=>{if(!page.isConnected||state.busy||state.loading)return false;return await load(false);};
   void load();
 }
@@ -10822,7 +10860,7 @@ async function renderReplacementsAdvanced(body){
     const count=state.state==='ready'?trainers.filter(t=>t.is_active&&!t.exclude_from_replacements&&!scheduleMatch(t)).length:0;
     if(count)msg+=` · не сопоставлены с Impulse: ${count}`;
     get('rep-status').innerHTML=`<span class="${state.state==='error'?'rep-plan-status-error':state.state==='ready'?'rep-plan-status-ok':''}">${escapeHtml(msg)}</span>
-      <button type="button" id="rep-refresh-schedule" class="btn btn-ghost">${state.state==='loading'?'Отменить':'обновить'}</button>
+      <button type="button" id="rep-refresh-schedule" class="btn btn-ghost">${state.state==='loading'?'Отменить':'Проверить занятость'}</button>
       ${session.role==='owner'&&state.state==='ready'?'<button type="button" class="btn btn-secondary" id="rep-map-toggle" aria-expanded="'+st.mappingOpen+'">Связи тренеров · '+count+'</button>':''}`;
     get('rep-refresh-schedule').onclick=()=>state.state==='loading'?cancelSchedule():void loadSchedule(true);
     const toggle=get('rep-map-toggle');
@@ -11859,10 +11897,12 @@ async function renderSalaries(body){
   </div><div id="salaryPanel"></div>`;
   const panel=body.querySelector('#salaryPanel');
   body._fpRefresh=()=>typeof panel._fpRefresh==='function'?panel._fpRefresh():false;
+  body._fpTarget=()=>panel._fpTarget?.();
+  body._fpBusy=()=>panel._fpBusy?.();
   let request=0;
   async function draw(){
     const ticket=++request,view=SALARIES_VIEW;
-    panel._fpRefresh=null;panel.replaceChildren();
+    panel._fpRefresh=null;panel._fpTarget=null;panel._fpBusy=null;panel.replaceChildren();
     if(view==='admin'){
       if(!canAdmins){panel.innerHTML='<div class="empty">Нет доступа к зарплате администраторов.</div>';return;}
       renderAdminPayroll(panel);return;
@@ -14411,7 +14451,7 @@ function bonusRenderHtml(model){const owner=model.owner,branches=model.branches;
           ${bonusForecastAccess(model)?`<button type="button" id="bp-tab-forecast" class="bp-inner-tab" role="tab" data-bp-view="forecast" aria-controls="bp-forecast" aria-selected="false" ${model.period>bonusForecastMinskToday().slice(0,7)?'disabled title="Прогноз недоступен для будущего месяца"':''}>Прогноз и рекомендации</button>`:''}
         </div>
       </div>
-      <div class="bp-month-row"><span>Период</span><select class="bp-month" id="bp-month">${bonusMonthOptions(model.period)}</select><button type="button" id="bp-refresh" class="bp-refresh-btn" aria-label="${owner&&model.period===liveMonth?'Запросить свежие продажи из ImpulseCRM':'Обновить данные из Supabase'}" title="${owner&&model.period===liveMonth?'Обновить продажи из ImpulseCRM':'Обновить отображение из Supabase'}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14-5L3 9m0-6v6h6M4 13a8 8 0 0 0 14 5l3-3m0 6v-6h-6"/></svg></button></div>
+      <div class="bp-month-row"><span>Период</span><select class="bp-month" id="bp-month">${bonusMonthOptions(model.period)}</select></div>
     </div>
     <div class="bp-inner-pane" id="bp-main-panel" role="tabpanel" aria-labelledby="bp-tab-main">
     <section class="bp-totals">
@@ -15809,7 +15849,7 @@ function renderAdminPayroll(host){
 
   function draw(){if(!page.isConnected||!state.model)return;const {kpis,branches,selected,t}=renderCards();
     const warnings=adminTechNotices();const badAdvanceIds=new Set(warnings.filter(n=>n.kind==='advances').flatMap(n=>n.ids||[]));const badRateIds=new Set(warnings.filter(n=>n.kind==='rate').flatMap(n=>n.ids||[]));const receipt=state.model.receivedAt?` · снимок Impulse ${new Date(state.model.receivedAt).toLocaleString('ru-RU',{timeZone:'Europe/Minsk'})}`:'';
-    page.innerHTML=`<div class="adpay-head"><div><h1>Зарплата администраторов</h1><div class="adpay-muted">Часы по дням — Impulse · план и продажи — «План»</div></div><div class="adpay-controls"><label>Ставка, BYN/ч ${isPayrollOwner?`<input id="adpay-rate" type="number" step="0.5" min="0" value="${rate()}">`:`<strong class="adpay-readonly-rate">${fmt(rate())}</strong>`}</label>${calendarMarkup()}<button type="button" class="btn btn-primary" data-action="sync" ${state.busy?'disabled':''}>${state.busy?'Получаем данные…':'Обновить из Impulse'}</button>${isPayrollOwner?'<button type="button" class="icon-btn" data-action="settings" aria-label="Настройки зарплаты администраторов" title="Настройки"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 .6 1.65 1.65 0 0 0-.33 1V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82-.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-.6-1 1.65 1.65 0 0 0-1-.33H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.6-1 1.65 1.65 0 0 0-.33-1l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.6c.39-.18.67-.55.67-1V3a2 2 0 0 1 4 0v.09c0 .45.26.85.67 1 .4.17.86.1 1.15-.18l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06c-.28.29-.35.75-.18 1.15.15.41.55.67 1 .67H21a2 2 0 0 1 0 4h-.09c-.45 0-.85.26-1 .67-.17.4-.1.86.18 1.15Z"/></svg></button>':''}</div></div>
+    page.innerHTML=`<div class="adpay-head"><div><h1>Зарплата администраторов</h1><div class="adpay-muted">Часы по дням — Impulse · план и продажи — «План»</div></div><div class="adpay-controls"><label>Ставка, BYN/ч ${isPayrollOwner?`<input id="adpay-rate" type="number" step="0.5" min="0" value="${rate()}">`:`<strong class="adpay-readonly-rate">${fmt(rate())}</strong>`}</label>${calendarMarkup()}${isPayrollOwner?'<button type="button" class="icon-btn" data-action="settings" aria-label="Настройки зарплаты администраторов" title="Настройки"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 .6 1.65 1.65 0 0 0-.33 1V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82-.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-.6-1 1.65 1.65 0 0 0-1-.33H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.6-1 1.65 1.65 0 0 0-.33-1l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.6c.39-.18.67-.55.67-1V3a2 2 0 0 1 4 0v.09c0 .45.26.85.67 1 .4.17.86.1 1.15-.18l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06c-.28.29-.35.75-.18 1.15.15.41.55.67 1 .67H21a2 2 0 0 1 0 4h-.09c-.45 0-.85.26-1 .67-.17.4-.1.86.18 1.15Z"/></svg></button>':''}</div></div>
     ${state.equipmentError?`<div class="adpay-note error" role="alert">Доплаты за оборудование не загружены — итог показан без них. Не выдавайте зарплату до восстановления учёта. ${esc(state.equipmentError)}</div>`:''}
     ${canPayrollEdit()?'':'<div class="adpay-note" role="status">Режим просмотра: руководитель отключил редактирование зарплат. Все расчёты и расшифровки доступны.</div>'}
     ${state.syncStatusError?`<div class="adpay-note error" role="alert"><b>Ошибка обновления ImpulseCRM</b><div>${esc(state.syncStatus)}</div></div>`:''}
@@ -15879,7 +15919,7 @@ function renderAdminPayroll(host){
       state.open=null;draw();
       // У тренеров первичная синхронизация запускается при открытии. Здесь
       // автоматически получаем часы, если по выбранному месяцу снимка ещё нет.
-      if(isPayrollOwner&&!state.busy&&!state.autoAttempted.has(pageMonth)&&!payload.hours_updated_at&&!(fadFpCycle&&pageMonth===fadFpMonth())){
+      if(isPayrollOwner&&!state.busy&&!state.autoAttempted.has(pageMonth)&&!payload.hours_updated_at&&pageMonth===fadFpMonth()&&!fadFpCycle){
         state.autoAttempted.add(pageMonth);
         void doSync(true);
       }
@@ -16102,6 +16142,8 @@ function renderAdminPayroll(host){
       return;
     }
   });
+  host._fpTarget=()=>({id:"admin",month:state.month});
+  host._fpBusy=()=>state.busy||state.saving.size>0||state.daySaving.size>0||state.resetting;
   host._fpRefresh=async()=>{if(!page.isConnected||state.busy||state.saving.size||state.daySaving.size||state.resetting)return false;await load();return !!state.model;};
   void load();
 }
